@@ -95,3 +95,15 @@ lib/
 types/
   report.ts                 # TypeScript types
 ```
+
+
+## Environment Variables
+
+Required variable names:
+
+```env
+OPENAI_API_KEY=
+GOOGLE_PAGESPEED_API_KEY=
+```
+
+Both are optional for local demos: without keys, the scanner uses deterministic fallback scoring and recommendations.
