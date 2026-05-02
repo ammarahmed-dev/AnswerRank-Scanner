@@ -2,17 +2,18 @@ import * as cheerio from "cheerio";
 import { ExtractedData } from "@/types/report";
 
 export function normalizeUrl(input: string): string {
-  const trimmed = input.trim();
-  if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
-    return `https://${trimmed}`;
-  }
+  const trimmed = input.trim().replace(/\s+/g, "");
+  if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) return `https://${trimmed}`;
   return trimmed;
 }
 
 export function validateUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
+    const validProtocol = parsed.protocol === "http:" || parsed.protocol === "https:";
+    const host = parsed.hostname.toLowerCase();
+    const blockedHosts = ["localhost", "127.0.0.1", "0.0.0.0"];
+    return validProtocol && !blockedHosts.includes(host);
   } catch {
     return false;
   }
@@ -35,6 +36,7 @@ export async function fetchHtml(url: string): Promise<string> {
     });
 
     if (!res.ok) {
+      if (res.status === 403 || res.status === 401) throw new Error("Blocked by target website");
       throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     }
 
@@ -43,7 +45,9 @@ export async function fetchHtml(url: string): Promise<string> {
       throw new Error("URL does not return an HTML page.");
     }
 
-    return await res.text();
+    const text = await res.text();
+    if (!text.trim()) throw new Error("Empty HTML response");
+    return text;
   } finally {
     clearTimeout(timeout);
   }
