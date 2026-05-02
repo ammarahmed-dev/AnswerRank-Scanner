@@ -2,8 +2,9 @@
 
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import LoadingState from "./components/LoadingState";
-import ReportSection from "./components/ReportSection";
+import ReportSectionNew from "./components/ReportSectionNew";
 import { AnalysisReport } from "@/types/report";
+import { ScanResult } from "@/types/index";
 import {
   AlertCircle,
   ArrowRight,
@@ -56,7 +57,7 @@ export default function Home() {
   const [url, setUrl] = useState("");
   const [state, setState] = useState<AppState>("idle");
   const [loadingStep, setLoadingStep] = useState(0);
-  const [report, setReport] = useState<AnalysisReport | null>(null);
+  const [report, setReport] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [crawlCount, setCrawlCount] = useState(0);
   const [isClient, setIsClient] = useState(false);
@@ -86,12 +87,12 @@ export default function Home() {
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/analyze", {
+      const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: trimmed }),
+        body: JSON.stringify({ url: trimmed, includeAI: false }),
       });
-      const data = (await res.json()) as AnalysisReport & { error?: string };
+      const data = (await res.json()) as ScanResult & { error?: string };
       if (!res.ok || data.error) {
         setErrorMsg(data.error ?? "Something went wrong. Please try again.");
         return setState("error");
@@ -363,7 +364,7 @@ export default function Home() {
             {isClient && <span className="header-pill">{Math.max(0, MAX_CRAWLS - crawlCount)} free scans left</span>}
           </div>
           <div className="animate-fade-in-up">
-            <ReportSection report={report} onReset={handleReset} />
+            <ReportSectionNew report={report} onReset={handleReset} />
           </div>
         </section>
       )}

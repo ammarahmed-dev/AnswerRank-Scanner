@@ -1,0 +1,305 @@
+/**
+ * Deterministic Scoring Engine
+ * Implements all SEO/AEO checks for AnswerRank Scanner
+ */
+
+import { ScrapedData, CheckResult } from "@/types/index";
+
+const CHECKS_CONFIG = [
+  {
+    id: "title",
+    label: "Page Title",
+    weight: 8,
+    check: (data: ScrapedData) => {
+      const len = data.title?.length ?? 0;
+      if (!data.title) return "fail";
+      if (len >= 30 && len <= 60) return "pass";
+      if (len >= 20 && len <= 70) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      const len = data.title?.length ?? 0;
+      if (!data.title) return "No page title found";
+      if (len >= 30 && len <= 60) return `Optimal title (${len} chars)`;
+      if (len < 30) return `Title too short (${len} chars, target 30-60)`;
+      return `Title too long (${len} chars, target 30-60)`;
+    },
+  },
+  {
+    id: "meta_desc",
+    label: "Meta Description",
+    weight: 8,
+    check: (data: ScrapedData) => {
+      const len = data.metaDescription?.length ?? 0;
+      if (!data.metaDescription) return "fail";
+      if (len >= 120 && len <= 160) return "pass";
+      if (len >= 100 && len <= 170) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      const len = data.metaDescription?.length ?? 0;
+      if (!data.metaDescription) return "No meta description";
+      if (len >= 120 && len <= 160) return `Optimal description (${len} chars)`;
+      if (len < 120) return `Description too short (${len} chars, target 120-160)`;
+      return `Description too long (${len} chars, target 120-160)`;
+    },
+  },
+  {
+    id: "h1",
+    label: "H1 Tag",
+    weight: 8,
+    check: (data: ScrapedData) => {
+      const h1Count = data.headings.filter((h) => h.startsWith("H1:"))?.length ?? 0;
+      if (h1Count === 1) return "pass";
+      if (h1Count === 0) return "fail";
+      return "warn";
+    },
+    detail: (data: ScrapedData) => {
+      const h1Count = data.headings.filter((h) => h.startsWith("H1:"))?.length ?? 0;
+      if (h1Count === 0) return "No H1 tag found";
+      if (h1Count === 1) return "Exactly 1 H1 tag (optimal)";
+      return `${h1Count} H1 tags found (should be exactly 1)`;
+    },
+  },
+  {
+    id: "heading_structure",
+    label: "Heading Hierarchy",
+    weight: 5,
+    check: (data: ScrapedData) => {
+      const h2Count = data.headings.filter((h) => h.startsWith("H2:"))?.length ?? 0;
+      const h3Count = data.headings.filter((h) => h.startsWith("H3:"))?.length ?? 0;
+      // H2s should exist if H3s exist (proper hierarchy)
+      if (h3Count > 0 && h2Count === 0) return "fail";
+      if (h2Count > 0) return "pass";
+      if (h2Count === 0 && h3Count === 0) return "warn";
+      return "pass";
+    },
+    detail: (data: ScrapedData) => {
+      const h2Count = data.headings.filter((h) => h.startsWith("H2:"))?.length ?? 0;
+      const h3Count = data.headings.filter((h) => h.startsWith("H3:"))?.length ?? 0;
+      if (h3Count > 0 && h2Count === 0)
+        return "H3 found without H2 (breaks hierarchy)";
+      if (h2Count > 0) return `Good structure with ${h2Count} H2 and ${h3Count} H3 tags`;
+      return "No H2/H3 hierarchy detected";
+    },
+  },
+  {
+    id: "schema_present",
+    label: "Schema Markup",
+    weight: 10,
+    check: (data: ScrapedData) => {
+      if (data.schemaBlocks > 0) return "pass";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      if (data.schemaBlocks === 0) return "No JSON-LD schema detected";
+      return `${data.schemaBlocks} schema block${data.schemaBlocks > 1 ? "s" : ""} found`;
+    },
+  },
+  {
+    id: "faq_schema",
+    label: "FAQ Schema",
+    weight: 10,
+    check: (data: ScrapedData) => {
+      if (data.schemaTypes.includes("FAQPage")) return "pass";
+      if (data.schemaTypes.length > 0) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      if (data.schemaTypes.includes("FAQPage"))
+        return "FAQPage schema present (excellent for AI)";
+      return "FAQPage schema not detected";
+    },
+  },
+  {
+    id: "article_schema",
+    label: "Article/HowTo Schema",
+    weight: 7,
+    check: (data: ScrapedData) => {
+      const hasArticleSchema =
+        data.schemaTypes.includes("Article") ||
+        data.schemaTypes.includes("HowTo") ||
+        data.schemaTypes.includes("NewsArticle") ||
+        data.schemaTypes.includes("BlogPosting");
+      if (hasArticleSchema) return "pass";
+      if (data.schemaTypes.length > 0) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      const articleTypes = data.schemaTypes.filter((t) =>
+        ["Article", "HowTo", "NewsArticle", "BlogPosting"].includes(t)
+      );
+      if (articleTypes.length > 0)
+        return `${articleTypes.join(", ")} schema present`;
+      return "Article-type schema not detected";
+    },
+  },
+  {
+    id: "og_tags",
+    label: "Open Graph Tags",
+    weight: 6,
+    check: (data: ScrapedData) => {
+      const hasOgTitle = Boolean(data.ogTitle);
+      const hasOgDesc = Boolean(data.ogDescription);
+      if (hasOgTitle && hasOgDesc) return "pass";
+      if (hasOgTitle || hasOgDesc) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      const tags = [];
+      if (data.ogTitle) tags.push("og:title");
+      if (data.ogDescription) tags.push("og:description");
+      if (tags.length === 2) return "og:title and og:description present";
+      if (tags.length === 1) return `Only ${tags[0]} present`;
+      return "No Open Graph tags found";
+    },
+  },
+  {
+    id: "og_image",
+    label: "OG Image",
+    weight: 4,
+    check: (data: ScrapedData) => {
+      if (data.ogImage) return "pass";
+      return "warn";
+    },
+    detail: (data: ScrapedData) => {
+      if (data.ogImage) return "og:image present for social sharing";
+      return "og:image not set";
+    },
+  },
+  {
+    id: "https",
+    label: "HTTPS",
+    weight: 8,
+    check: (data: ScrapedData) => {
+      if (data.url.startsWith("https://")) return "pass";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      if (data.url.startsWith("https://")) return "HTTPS enabled (secure)";
+      return "Not using HTTPS (security risk)";
+    },
+  },
+  {
+    id: "robots",
+    label: "Robots.txt",
+    weight: 5,
+    check: (_data: ScrapedData) => {
+      // This would require a separate check during scraping
+      // For now, we'll make it optional/warn
+      return "warn";
+    },
+    detail: () => "Robots.txt validation requires separate HTTP check",
+  },
+  {
+    id: "sitemap",
+    label: "Sitemap.xml",
+    weight: 5,
+    check: (_data: ScrapedData) => {
+      // This would require a separate check during scraping
+      return "warn";
+    },
+    detail: () => "Sitemap validation requires separate HTTP check",
+  },
+  {
+    id: "alt_text",
+    label: "Image Alt Text",
+    weight: 6,
+    check: (data: ScrapedData) => {
+      if (data.images.length === 0) return "pass"; // No images = pass
+      const altRatio =
+        data.images.filter((img) => img.hasAlt).length /
+        data.images.length;
+      if (altRatio >= 0.8) return "pass";
+      if (altRatio >= 0.5) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      if (data.images.length === 0) return "No images found";
+      const altCount = data.images.filter((img) => img.hasAlt).length;
+      const pct = Math.round((altCount / data.images.length) * 100);
+      return `${altCount}/${data.images.length} images have alt text (${pct}%)`;
+    },
+  },
+  {
+    id: "word_count",
+    label: "Content Length",
+    weight: 7,
+    check: (data: ScrapedData) => {
+      if (data.wordCount >= 300) return "pass";
+      if (data.wordCount >= 150) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      if (data.wordCount >= 300) return `Good content length (${data.wordCount} words)`;
+      if (data.wordCount >= 150) return `Moderate content (${data.wordCount} words, target 300+)`;
+      return `Thin content (${data.wordCount} words, target 300+)`;
+    },
+  },
+  {
+    id: "internal_links",
+    label: "Internal Links",
+    weight: 4,
+    check: (data: ScrapedData) => {
+      if (data.internalLinks > 3) return "pass";
+      if (data.internalLinks > 0) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      if (data.internalLinks > 3) return `Good link structure (${data.internalLinks} internal links)`;
+      if (data.internalLinks > 0)
+        return `Few internal links (${data.internalLinks}, target 3+)`;
+      return "No internal links found";
+    },
+  },
+  {
+    id: "structured_density",
+    label: "Schema Density",
+    weight: 5,
+    check: (data: ScrapedData) => {
+      if (data.schemaBlocks > 1) return "pass";
+      if (data.schemaBlocks === 1) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      if (data.schemaBlocks > 1)
+        return `Rich schema implementation (${data.schemaBlocks} blocks)`;
+      if (data.schemaBlocks === 1) return "Single schema block found";
+      return "No schema markup";
+    },
+  },
+];
+
+export function runDeterministicChecks(
+  data: ScrapedData
+): CheckResult[] {
+  return CHECKS_CONFIG.map((config) => ({
+    id: config.id,
+    label: config.label,
+    status: config.check(data),
+    detail: config.detail(data),
+    weight: config.weight,
+  }));
+}
+
+export function calculateScore(checks: CheckResult[]): number {
+  if (checks.length === 0) return 0;
+
+  let totalWeight = 0;
+  let passedWeight = 0;
+
+  checks.forEach((check) => {
+    totalWeight += check.weight;
+    if (check.status === "pass") {
+      passedWeight += check.weight;
+    } else if (check.status === "warn") {
+      // Warn counts as 50% credit
+      passedWeight += check.weight * 0.5;
+    }
+  });
+
+  if (totalWeight === 0) return 0;
+
+  const score = Math.round((passedWeight / totalWeight) * 100);
+  return Math.min(100, Math.max(0, score));
+}

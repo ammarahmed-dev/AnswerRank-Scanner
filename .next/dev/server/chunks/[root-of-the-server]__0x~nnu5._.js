@@ -207,6 +207,8 @@ __turbopack_context__.s([
     ()=>normalizeUrl,
     "parseHtml",
     ()=>parseHtml,
+    "parseHtmlToScrapedData",
+    ()=>parseHtmlToScrapedData,
     "validateUrl",
     ()=>validateUrl
 ]);
@@ -363,6 +365,101 @@ function parseHtml(html, baseUrl) {
         internalLinks,
         externalLinks,
         bodyText
+    };
+}
+function parseHtmlToScrapedData(html, baseUrl) {
+    const $ = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$cheerio$2f$dist$2f$esm$2f$load$2d$parse$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["load"](html);
+    const parsedBase = new URL(baseUrl);
+    // Basic metadata
+    const title = $("title").first().text().trim();
+    const metaDescription = $('meta[name="description"]').attr("content")?.trim() ?? "";
+    const ogTitle = $('meta[property="og:title"]').attr("content")?.trim() ?? "";
+    const ogDescription = $('meta[property="og:description"]').attr("content")?.trim() ?? "";
+    const ogImage = $('meta[property="og:image"]').attr("content")?.trim() ?? "";
+    // Collect all headings with type prefix
+    const headings = [];
+    $("h1").each((_, el)=>{
+        const text = $(el).text().trim();
+        if (text) headings.push(`H1: ${text}`);
+    });
+    $("h2").each((_, el)=>{
+        const text = $(el).text().trim();
+        if (text) headings.push(`H2: ${text}`);
+    });
+    $("h3").each((_, el)=>{
+        const text = $(el).text().trim();
+        if (text) headings.push(`H3: ${text}`);
+    });
+    // JSON-LD schemas
+    let schemaBlocks = 0;
+    const schemaTypes = [];
+    $('script[type="application/ld+json"]').each((_, el)=>{
+        schemaBlocks++;
+        try {
+            const parsed = JSON.parse($(el).html() || "");
+            const graphItems = Array.isArray(parsed?.["@graph"]) ? parsed["@graph"] : [];
+            const types = [
+                ...Array.isArray(parsed) ? parsed : [
+                    parsed
+                ],
+                ...graphItems
+            ];
+            types.forEach((item)=>{
+                if (item["@type"]) {
+                    const t = Array.isArray(item["@type"]) ? item["@type"] : [
+                        item["@type"]
+                    ];
+                    schemaTypes.push(...t);
+                }
+            });
+        } catch  {
+        // ignore malformed JSON-LD
+        }
+    });
+    // Images with alt text tracking
+    const images = [];
+    $("img").each((_, el)=>{
+        const alt = $(el).attr("alt");
+        images.push({
+            hasAlt: Boolean(alt && alt.trim() !== "")
+        });
+    });
+    // Links
+    let internalLinks = 0;
+    $("a[href]").each((_, el)=>{
+        const href = $(el).attr("href") || "";
+        try {
+            const resolved = new URL(href, baseUrl);
+            if (resolved.hostname === parsedBase.hostname) {
+                internalLinks++;
+            }
+        } catch  {
+            // relative link counts as internal
+            internalLinks++;
+        }
+    });
+    // Body text - strip nav/footer/header/script/style first
+    const bodyHtml = html; // Keep original for extraction
+    const cleanHtml = bodyHtml.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "").replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, "").replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, "").replace(/<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>/gi, "");
+    const $clean = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$cheerio$2f$dist$2f$esm$2f$load$2d$parse$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["load"](cleanHtml);
+    const rawText = $clean("body").text().replace(/\s+/g, " ").trim();
+    const bodyText = rawText.slice(0, 8000);
+    // Word count
+    const wordCount = bodyText.split(/\s+/).filter((word)=>word.length > 0).length;
+    return {
+        url: baseUrl,
+        title,
+        metaDescription,
+        headings,
+        schemaTypes: Array.from(new Set(schemaTypes)),
+        schemaBlocks,
+        bodyText,
+        images,
+        internalLinks,
+        wordCount,
+        ogTitle,
+        ogDescription,
+        ogImage
     };
 }
 }),
