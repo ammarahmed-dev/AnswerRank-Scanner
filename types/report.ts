@@ -46,6 +46,13 @@ export interface AnalysisReport {
   scores: ScoreBreakdown;
   aiAnalysis: AIAnalysis;
   pageSpeedScore: number | null;
+  integrations: {
+    aiProvider: "openai" | "gemini" | "fallback";
+    aiPowered: boolean;
+    pageSpeedProvider: "google" | "fallback";
+    pageSpeedMeasured: boolean;
+    notes: string[];
+  };
   analysisTimestamp: string;
 }
 
