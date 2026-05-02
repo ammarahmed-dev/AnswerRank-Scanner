@@ -5,17 +5,27 @@ import { getPageSpeedScore } from "@/lib/pagespeed";
 import { analyzeWithAI } from "@/lib/openai";
 import { AnalysisReport } from "@/types/report";
 
+function errorResponse(error: string, status: number, details?: string) {
+  return NextResponse.json({ error, details }, { status });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = (await req.json()) as { url?: string };
     const rawUrl = body?.url;
     if (!rawUrl || typeof rawUrl !== "string") {
-      return NextResponse.json({ error: "Please provide a valid URL." }, { status: 400 });
+      return errorResponse("Please provide a valid URL.", 400);
     }
 
-    const normalizedUrl = normalizeUrl(rawUrl);
+    let normalizedUrl = "";
+    try {
+      normalizedUrl = normalizeUrl(rawUrl);
+    } catch {
+      return errorResponse("Invalid URL. Enter a public website URL like https://example.com.", 400);
+    }
+
     if (!validateUrl(normalizedUrl)) {
-      return NextResponse.json({ error: "Invalid URL. Only public http(s) URLs are supported." }, { status: 400 });
+      return errorResponse("Invalid URL. Only public http(s) URLs are supported.", 400);
     }
 
     let html = "";
@@ -24,34 +34,74 @@ export async function POST(req: NextRequest) {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown error";
       if (message.toLowerCase().includes("timeout") || message.toLowerCase().includes("aborted")) {
-        return NextResponse.json({ error: "Request timed out while fetching this URL." }, { status: 408 });
+        return errorResponse("Request timed out while fetching this URL.", 408);
       }
-      return NextResponse.json({ error: "Could not fetch this website. It may block bots or be unavailable.", details: message }, { status: 422 });
+      if (message.toLowerCase().includes("blocked")) {
+        return errorResponse("This website blocked the scanner. Try a public marketing page or a different URL.", 422, message);
+      }
+      return errorResponse("Could not fetch this website. It may block bots or be unavailable.", 422, message);
     }
 
     if (!html.trim()) {
-      return NextResponse.json({ error: "Website returned empty HTML. Try another page URL." }, { status: 422 });
+      return errorResponse("Website returned empty HTML. Try another page URL.", 422);
     }
 
     const extractedData = parseHtml(html, normalizedUrl);
     if (!extractedData.bodyText && !extractedData.pageTitle && !extractedData.metaDescription) {
-      return NextResponse.json({ error: "Could not extract meaningful content from this page." }, { status: 422 });
+      return errorResponse("Could not extract meaningful content from this page.", 422);
     }
 
-    const pageSpeedScore = await getPageSpeedScore(normalizedUrl);
+    const pageSpeedResult = await getPageSpeedScore(normalizedUrl);
+    const pageSpeedScore = pageSpeedResult.score;
     const scores = calculateScores(extractedData, pageSpeedScore);
 
     let aiAnalysis;
+    let aiProvider: AnalysisReport["integrations"]["aiProvider"] = "fallback";
+    const integrationNotes: string[] = [];
+
     try {
-      aiAnalysis = process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY ? await analyzeWithAI(extractedData) : getFallbackAnalysis(extractedData, scores);
-    } catch {
+      if (process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY) {
+        const aiResult = await analyzeWithAI(extractedData);
+        aiAnalysis = aiResult.analysis;
+        aiProvider = aiResult.provider;
+        if (process.env.OPENAI_API_KEY && process.env.GEMINI_API_KEY && aiProvider === "gemini") {
+          integrationNotes.push("OpenAI was configured but did not complete successfully, so Gemini was used as the AI fallback provider.");
+        }
+      } else {
+        aiAnalysis = getFallbackAnalysis(extractedData, scores);
+        integrationNotes.push("No AI API key configured, so deterministic fallback recommendations were used.");
+      }
+    } catch (err: unknown) {
       aiAnalysis = getFallbackAnalysis(extractedData, scores);
+      aiProvider = "fallback";
+      const message = err instanceof Error ? err.message : "Unknown AI provider error";
+      integrationNotes.push(`AI provider failed, so deterministic fallback recommendations were used. ${message}`);
     }
 
-    const report: AnalysisReport = { url: normalizedUrl, extractedData, scores, aiAnalysis, pageSpeedScore, analysisTimestamp: new Date().toISOString() };
+    if (pageSpeedScore === null) {
+      integrationNotes.push(
+        `${pageSpeedResult.error ?? "Google PageSpeed did not return a score."} Performance used fallback heuristics.`
+      );
+    }
+
+    const report: AnalysisReport = {
+      url: normalizedUrl,
+      extractedData,
+      scores,
+      aiAnalysis,
+      pageSpeedScore,
+      integrations: {
+        aiProvider,
+        aiPowered: aiProvider !== "fallback",
+        pageSpeedProvider: pageSpeedScore === null ? "fallback" : "google",
+        pageSpeedMeasured: pageSpeedScore !== null,
+        notes: integrationNotes,
+      },
+      analysisTimestamp: new Date().toISOString()
+    };
     return NextResponse.json(report, { status: 200 });
   } catch (err: unknown) {
     console.error("Analyze route error:", err);
-    return NextResponse.json({ error: "An unexpected error occurred. Please try again." }, { status: 500 });
+    return errorResponse("An unexpected error occurred. Please try again.", 500);
   }
 }

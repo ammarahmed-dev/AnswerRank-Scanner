@@ -167,7 +167,7 @@ export function getFallbackAnalysis(data: ExtractedData, scores: ScoreBreakdown)
 
   if (scores.metadata < 10) {
     weaknesses.push("Meta title or description is missing or poorly optimized.");
-    fixes.push("Add a descriptive meta title (50–70 chars) and meta description (120–155 chars).");
+    fixes.push("Add a descriptive meta title (50-70 chars) and meta description (120-155 chars).");
   }
   if (scores.schema < 10) {
     weaknesses.push("No JSON-LD structured data detected.");
@@ -196,8 +196,8 @@ export function getFallbackAnalysis(data: ExtractedData, scores: ScoreBreakdown)
   return {
     plainEnglishSummary:
       "This page was analyzed using deterministic checks. Add an OpenAI API key for a full AI-powered analysis.",
-    detectedBusinessType: "Unknown — add OpenAI key for AI detection",
-    targetAudience: "Unknown — add OpenAI key for AI detection",
+    detectedBusinessType: "Unknown - add OpenAI key for AI detection",
+    targetAudience: "Unknown - add OpenAI key for AI detection",
     detectedEntities: data.schemaTypes.length > 0 ? data.schemaTypes : ["None detected"],
     missingEntities: ["OpenAI key required for entity analysis"],
     aiSearchWeaknesses: weaknesses.length > 0 ? weaknesses : ["No critical weaknesses detected."],
@@ -216,6 +216,6 @@ export function getFallbackAnalysis(data: ExtractedData, scores: ScoreBreakdown)
       schemaRecs.length > 0
         ? schemaRecs
         : ["Your schema setup looks reasonable. Consider adding FAQPage schema."],
-    finalVerdict: `Your site scored ${scores.total}/100. ${scores.total >= 70 ? "Good foundation — focus on schema and FAQ content to boost AI visibility." : "Significant gaps in schema, metadata, or content clarity are limiting AI discoverability."}`,
+    finalVerdict: `Your site scored ${scores.total}/100. ${scores.total >= 70 ? "Good foundation - focus on schema and FAQ content to boost AI visibility." : "Significant gaps in schema, metadata, or content clarity are limiting AI discoverability."}`,
   };
 }

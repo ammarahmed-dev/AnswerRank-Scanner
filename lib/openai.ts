@@ -48,9 +48,40 @@ Return ONLY this JSON structure (no code fences):
 }`;
 }
 
+function asStringArray(value: unknown, fallback: string[]): string[] {
+  if (!Array.isArray(value)) return fallback;
+  const cleaned = value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+  return cleaned.length ? cleaned : fallback;
+}
+
+function normalizeAnalysis(value: Partial<AIAnalysis>): AIAnalysis {
+  const recommendedFaqs = Array.isArray(value.recommendedFaqs)
+    ? value.recommendedFaqs
+        .filter((faq): faq is { question: string; answer: string } =>
+          typeof faq?.question === "string" && typeof faq?.answer === "string"
+        )
+        .slice(0, 10)
+    : [];
+
+  return {
+    plainEnglishSummary: typeof value.plainEnglishSummary === "string" ? value.plainEnglishSummary : "Analysis completed with limited AI output.",
+    detectedBusinessType: typeof value.detectedBusinessType === "string" ? value.detectedBusinessType : "Unclear from page content",
+    targetAudience: typeof value.targetAudience === "string" ? value.targetAudience : "Unclear from page content",
+    detectedEntities: asStringArray(value.detectedEntities, ["None detected"]),
+    missingEntities: asStringArray(value.missingEntities, ["Add clearer brand, product, and audience entities."]),
+    aiSearchWeaknesses: asStringArray(value.aiSearchWeaknesses, ["No critical weaknesses returned by AI analysis."]),
+    highImpactFixes: asStringArray(value.highImpactFixes, ["Improve metadata, schema, and FAQ content for AI answer readiness."]),
+    recommendedFaqs: recommendedFaqs.length
+      ? recommendedFaqs
+      : [{ question: "What does this page offer?", answer: "Add a direct, customer-facing answer based on the page content." }],
+    schemaRecommendations: asStringArray(value.schemaRecommendations, ["Add Organization, WebSite, and FAQPage schema where relevant."]),
+    finalVerdict: typeof value.finalVerdict === "string" ? value.finalVerdict : "The page has usable signals, but schema and answer-ready content can be improved.",
+  };
+}
+
 export async function analyzeWithAI(
   data: ExtractedData
-): Promise<AIAnalysis> {
+): Promise<{ analysis: AIAnalysis; provider: "openai" | "gemini" }> {
   const geminiKey = process.env.GEMINI_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
 
@@ -59,11 +90,32 @@ export async function analyzeWithAI(
   }
 
   const userMessage = buildUserMessage(data);
-  let raw = "";
+  const errors: string[] = [];
+
+  if (openaiKey) {
+    try {
+      const client = new OpenAI({ apiKey: openaiKey });
+      const completion = await client.chat.completions.create({
+        model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        temperature: 0.3,
+        max_tokens: 2000,
+        response_format: { type: "json_object" }
+      });
+      const raw = completion.choices[0]?.message?.content?.trim() ?? "";
+      return parseProviderResponse(raw, "openai");
+    } catch (err: unknown) {
+      errors.push(`OpenAI failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+    }
+  }
 
   if (geminiKey) {
-    const ai = new GoogleGenAI({ apiKey: geminiKey });
-    const response = await ai.models.generateContent({
+    try {
+      const ai = new GoogleGenAI({ apiKey: geminiKey });
+      const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: [
             { role: 'user', parts: [{ text: SYSTEM_PROMPT + '\n\n' + userMessage }] }
@@ -72,26 +124,19 @@ export async function analyzeWithAI(
             temperature: 0.3,
             responseMimeType: "application/json",
         }
-    });
-    raw = response.text || "";
-  } else if (openaiKey) {
-    const client = new OpenAI({ apiKey: openaiKey });
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userMessage },
-      ],
-      temperature: 0.3,
-      max_tokens: 2000,
-      response_format: { type: "json_object" }
-    });
-    raw = completion.choices[0]?.message?.content?.trim() ?? "";
+      });
+      return parseProviderResponse(response.text || "", "gemini");
+    } catch (err: unknown) {
+      errors.push(`Gemini failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+    }
   }
 
+  throw new Error(errors.join(" | ") || "No AI provider returned a valid response.");
+}
+
+function parseProviderResponse(raw: string, provider: "openai" | "gemini"): { analysis: AIAnalysis; provider: "openai" | "gemini" } {
   // Strip potential markdown fences
   const cleaned = raw.replace(/^```json?\n?/i, "").replace(/```$/i, "").trim();
-
-  const parsed = JSON.parse(cleaned) as AIAnalysis;
-  return parsed;
+  const parsed = JSON.parse(cleaned) as Partial<AIAnalysis>;
+  return { analysis: normalizeAnalysis(parsed), provider };
 }

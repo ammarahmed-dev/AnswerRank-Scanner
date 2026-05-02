@@ -3,8 +3,10 @@ import { ExtractedData } from "@/types/report";
 
 export function normalizeUrl(input: string): string {
   const trimmed = input.trim().replace(/\s+/g, "");
-  if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) return `https://${trimmed}`;
-  return trimmed;
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  const parsed = new URL(withProtocol);
+  parsed.hash = "";
+  return parsed.toString();
 }
 
 export function validateUrl(url: string): boolean {
@@ -12,8 +14,13 @@ export function validateUrl(url: string): boolean {
     const parsed = new URL(url);
     const validProtocol = parsed.protocol === "http:" || parsed.protocol === "https:";
     const host = parsed.hostname.toLowerCase();
-    const blockedHosts = ["localhost", "127.0.0.1", "0.0.0.0"];
-    return validProtocol && !blockedHosts.includes(host);
+    const blockedHosts = ["localhost", "127.0.0.1", "0.0.0.0", "::1"];
+    const isPrivateIp =
+      /^10\./.test(host) ||
+      /^192\.168\./.test(host) ||
+      /^172\.(1[6-9]|2\d|3[0-1])\./.test(host) ||
+      /^169\.254\./.test(host);
+    return validProtocol && Boolean(parsed.hostname) && !blockedHosts.includes(host) && !isPrivateIp;
   } catch {
     return false;
   }
@@ -26,6 +33,7 @@ export async function fetchHtml(url: string): Promise<string> {
   try {
     const res = await fetch(url, {
       signal: controller.signal,
+      redirect: "follow",
       headers: {
         "User-Agent":
           "Mozilla/5.0 (compatible; AnswerRankScanner/1.0; +https://answerrankscanner.com)",
@@ -45,9 +53,12 @@ export async function fetchHtml(url: string): Promise<string> {
       throw new Error("URL does not return an HTML page.");
     }
 
+    const contentLength = Number(res.headers.get("content-length") || 0);
+    if (contentLength > 2_500_000) throw new Error("HTML response is too large to analyze in the demo scanner.");
+
     const text = await res.text();
     if (!text.trim()) throw new Error("Empty HTML response");
-    return text;
+    return text.slice(0, 2_500_000);
   } finally {
     clearTimeout(timeout);
   }
@@ -96,7 +107,8 @@ export function parseHtml(html: string, baseUrl: string): ExtractedData {
     try {
       const parsed = JSON.parse($(el).html() || "");
       jsonLdBlocks.push(parsed);
-      const types = Array.isArray(parsed) ? parsed : [parsed];
+      const graphItems = Array.isArray(parsed?.["@graph"]) ? parsed["@graph"] : [];
+      const types = [...(Array.isArray(parsed) ? parsed : [parsed]), ...graphItems];
       types.forEach((item: { "@type"?: string | string[] }) => {
         if (item["@type"]) {
           const t = Array.isArray(item["@type"]) ? item["@type"] : [item["@type"]];
@@ -151,7 +163,7 @@ export function parseHtml(html: string, baseUrl: string): ExtractedData {
     twitterTitle,
     twitterDescription,
     jsonLdBlocks,
-    schemaTypes,
+    schemaTypes: Array.from(new Set(schemaTypes)),
     imageCount,
     imagesMissingAlt,
     internalLinks,
