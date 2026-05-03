@@ -13,9 +13,11 @@ const STEPS = [
 
 interface Props {
   step: number;
+  mode?: "scan" | "saved-report";
 }
 
-export default function LoadingState({ step }: Props) {
+export default function LoadingState({ step, mode = "scan" }: Props) {
+  const isSavedReport = mode === "saved-report";
   const currentStep = Math.min(step, STEPS.length - 1);
   const progress = Math.min(92, Math.max(8, Math.round(((step + 0.25) / STEPS.length) * 100)));
 
@@ -28,18 +30,24 @@ export default function LoadingState({ step }: Props) {
             <Loader2 className="absolute h-9 w-9 animate-spin opacity-40" />
           </div>
           <div className="min-w-0">
-            <h3 className="section-heading">Running AI visibility scan</h3>
-            <p className="section-kicker mt-1">Current step: {STEPS[currentStep]}</p>
+            <h3 className="section-heading">{isSavedReport ? "Loading saved report" : "Running AI visibility scan"}</h3>
+            <p className="section-kicker mt-1">
+              {isSavedReport ? "Fetching the saved report snapshot." : `Current step: ${STEPS[currentStep]}`}
+            </p>
           </div>
         </div>
-        <span className="badge">{progress}% complete</span>
+        <span className="badge">{isSavedReport ? "Saved report" : `${progress}% complete`}</span>
       </div>
 
       <div className="loading-progress">
-        <div className="score-bar-fill" style={{ width: `${progress}%` }} />
+        <div className="score-bar-fill" style={{ width: `${isSavedReport ? 62 : progress}%` }} />
       </div>
 
-      <div className="loading-step-grid">
+      {isSavedReport ? (
+        <div className="saved-report-loading">
+          <span>Restoring score, checks, recommendations, and share metadata.</span>
+        </div>
+      ) : <div className="loading-step-grid">
         {STEPS.map((label, i) => {
           const done = i < step;
           const active = i === currentStep;
@@ -53,7 +61,7 @@ export default function LoadingState({ step }: Props) {
             </div>
           );
         })}
-      </div>
+      </div>}
     </section>
   );
 }

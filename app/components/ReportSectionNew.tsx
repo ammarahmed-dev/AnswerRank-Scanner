@@ -87,6 +87,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const { url, score, checks, aiInsights, pagespeed, scannedAt } = report;
   const [notice, setNotice] = useState("");
   const [copied, setCopied] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const [expandedCheck, setExpandedCheck] = useState<string | null>(null);
 
   const passChecks = checks.filter((c) => c.status === "pass");
@@ -99,6 +100,22 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     () => [...failChecks, ...warnChecks].sort((a, b) => b.weight - a.weight).slice(0, 4),
     [failChecks, warnChecks]
   );
+  const reportIdLabel = report.reportId ? report.reportId.slice(0, 8) : "Live scan";
+
+  const handleCopyShareLink = async () => {
+    const href = report.reportId
+      ? `${window.location.origin}/report?id=${report.reportId}`
+      : window.location.href;
+
+    try {
+      await navigator.clipboard.writeText(href);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      setNotice("Clipboard access was blocked.");
+      setTimeout(() => setNotice(""), 3000);
+    }
+  };
 
   const handleCopy = async () => {
     const lines = [
@@ -153,6 +170,20 @@ export default function ReportSectionNew({ report, onReset }: Props) {
             <a href={url} target="_blank" rel="noreferrer" className="report-open-link">
               Open page <ExternalLink className="h-3.5 w-3.5" />
             </a>
+            <div className="report-save-panel">
+              <div>
+                <span>Saved report</span>
+                <strong>{reportIdLabel}</strong>
+              </div>
+              <div>
+                <span>Scanned</span>
+                <strong>{new Date(scannedAt).toLocaleString()}</strong>
+              </div>
+              <button type="button" onClick={handleCopyShareLink} className="btn btn-secondary report-inline-share">
+                {shareCopied ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
+                {shareCopied ? "Copied" : "Copy share link"}
+              </button>
+            </div>
             {aiInsights && (
               <div className="verdict-box">
                 <p className="mb-2 text-sm font-bold text-cyan-100">AI Insights</p>
@@ -329,9 +360,13 @@ export default function ReportSectionNew({ report, onReset }: Props) {
           {copied ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
           {copied ? "Copied" : "Copy report"}
         </button>
+        <button onClick={handleCopyShareLink} className="btn btn-secondary">
+          {shareCopied ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
+          {shareCopied ? "Link copied" : "Copy share link"}
+        </button>
         <button onClick={onReset} className="btn btn-primary">
           <RotateCcw className="h-4 w-4" />
-          Scan another URL
+          Rescan or scan another URL
         </button>
       </div>
 

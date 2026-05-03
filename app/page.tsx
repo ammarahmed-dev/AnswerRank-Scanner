@@ -2,7 +2,9 @@
 
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import LoadingState from "./components/LoadingState";
-import ReportSectionNew from "./components/ReportSectionNew";
+import SiteFooter from "./components/SiteFooter";
+import SiteHeader from "./components/SiteHeader";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 import { useRouter } from "next/navigation";
 import {
@@ -16,7 +18,6 @@ import {
   Lock,
   Search,
   ShieldCheck,
-  Sparkles,
   Target,
   WandSparkles,
 } from "lucide-react";
@@ -26,6 +27,7 @@ type AppState = "idle" | "loading" | "done" | "error" | "paywall";
 const LOADING_STEP_TIMES = [900, 1800, 3000, 4700, 6800, 8600];
 const MAX_CRAWLS = 20;
 const CRAWL_STORAGE_KEY = "answerrank_crawls_v4";
+const CLIENT_STORAGE_KEY = "answerrank_client_id_v1";
 
 const trustStats = [
   { value: "6", label: "Readiness categories", text: "Metadata, headings, schema, clarity, AI readiness, and performance." },
@@ -63,6 +65,7 @@ export default function Home() {
   const [errorMsg, setErrorMsg] = useState("");
   const [crawlCount, setCrawlCount] = useState(0);
   const [isClient, setIsClient] = useState(false);
+  const [clientId, setClientId] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -72,6 +75,10 @@ export default function Home() {
     localStorage.removeItem("answerrank_crawls_v3");
     const stored = localStorage.getItem(CRAWL_STORAGE_KEY);
     setCrawlCount(stored ? parseInt(stored, 10) : 0);
+    const storedClientId = localStorage.getItem(CLIENT_STORAGE_KEY);
+    const nextClientId = storedClientId || crypto.randomUUID();
+    localStorage.setItem(CLIENT_STORAGE_KEY, nextClientId);
+    setClientId(nextClientId);
   }, []);
 
   useEffect(() => {
@@ -94,10 +101,15 @@ export default function Home() {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 65000);
+      const supabase = getSupabaseBrowserClient();
+      const token = supabase ? (await supabase.auth.getSession()).data.session?.access_token : undefined;
       const res = await fetch("/api/scan", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: trimmed, includeAI: true }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ url: trimmed, includeAI: true, clientId }),
         signal: controller.signal,
       });
       clearTimeout(timeout);
@@ -110,10 +122,13 @@ export default function Home() {
       const newCount = crawlCount + 1;
       setCrawlCount(newCount);
       localStorage.setItem(CRAWL_STORAGE_KEY, newCount.toString());
+      if (data.reportId) {
+        sessionStorage.setItem(`answerrank_report:${data.reportId}`, JSON.stringify(data));
+      }
       sessionStorage.setItem(`answerrank_report:${data.url}`, JSON.stringify(data));
       setReport(data);
       setState("done");
-      router.push(`/report?url=${encodeURIComponent(data.url)}`);
+      router.push(data.reportId ? `/report?id=${data.reportId}` : `/report?url=${encodeURIComponent(data.url)}`);
     } catch (err) {
       setErrorMsg(err instanceof DOMException && err.name === "AbortError"
         ? "The scan took too long. External AI or performance APIs may be slow. Please try again."
@@ -133,25 +148,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
-      <header className="site-header">
-        <a href="/" className="brand-lockup" aria-label="AnswerRank home">
-          <span className="brand-mark"><Sparkles className="h-5 w-5" /></span>
-          <span>
-            <span className="brand-name">AnswerRank</span>
-            <span className="brand-subtitle">AI visibility scanner</span>
-          </span>
-        </a>
-        <nav className="site-nav" aria-label="Primary navigation">
-          <a href="#how">How it works</a>
-          <a href="#report">Report</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#faq">FAQ</a>
-        </nav>
-        <div className="header-actions">
-          {isClient && <span className="header-pill">{Math.max(0, MAX_CRAWLS - crawlCount)} free scans left</span>}
-          <a href="/#scanner" className="btn btn-primary header-cta">Scan now</a>
-        </div>
-      </header>
+      <SiteHeader scanCountLabel={isClient ? `${Math.max(0, MAX_CRAWLS - crawlCount)} free scans left` : undefined} />
 
       {state !== "done" && (
         <>
@@ -363,24 +360,6 @@ export default function Home() {
         </div>
       )}
 
-      {state === "done" && report && (
-        <section className="report-page" id="report-top">
-          <div className="launch-container report-header-row">
-            <a href="/" className="brand-lockup">
-              <span className="brand-mark"><Sparkles className="h-5 w-5" /></span>
-              <span>
-                <span className="brand-name">AnswerRank</span>
-                <span className="brand-subtitle">AI visibility scanner</span>
-              </span>
-            </a>
-            {isClient && <span className="header-pill">{Math.max(0, MAX_CRAWLS - crawlCount)} free scans left</span>}
-          </div>
-          <div className="animate-fade-in-up">
-            <ReportSectionNew report={report} onReset={handleReset} />
-          </div>
-        </section>
-      )}
-
       {state === "paywall" && (
         <section className="launch-container paywall-section">
           <div className="pricing-panel">
@@ -392,25 +371,7 @@ export default function Home() {
         </section>
       )}
 
-      <footer className="site-footer">
-        <div className="launch-container footer-grid">
-          <div>
-            <div className="brand-lockup">
-              <span className="brand-mark"><Sparkles className="h-5 w-5" /></span>
-              <span>
-                <span className="brand-name">AnswerRank</span>
-                <span className="brand-subtitle">AI visibility scanner</span>
-              </span>
-            </div>
-            <p>One-page SaaS MVP for AI visibility readiness reports.</p>
-          </div>
-          <div>
-            <a href="/#scanner">Scanner</a>
-            <a href="/#how">How it works</a>
-            <a href="/#pricing">Pricing</a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }
