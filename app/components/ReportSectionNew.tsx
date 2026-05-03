@@ -1,6 +1,6 @@
 "use client";
 
-import { ScanResult, CheckResult } from "@/types/index";
+import { CheckResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
 import {
   CheckCircle2,
@@ -12,9 +12,10 @@ import {
   Lightbulb,
   Lock,
   RotateCcw,
+  ShieldCheck,
   Zap,
 } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 
 interface Props {
   report: ScanResult;
@@ -22,16 +23,65 @@ interface Props {
 }
 
 const statusColors = {
-  pass: "bg-emerald-50 text-emerald-800 border-emerald-200",
-  warn: "bg-amber-50 text-amber-800 border-amber-200",
-  fail: "bg-red-50 text-red-800 border-red-200",
+  pass: "audit-pass",
+  warn: "audit-warn",
+  fail: "audit-fail",
 };
 
 const statusIcons = {
-  pass: <CheckCircle2 className="h-4 w-4 text-emerald-600" />,
-  warn: <AlertCircle className="h-4 w-4 text-amber-600" />,
-  fail: <AlertCircle className="h-4 w-4 text-red-600" />,
+  pass: <CheckCircle2 className="h-4 w-4 text-emerald-300" />,
+  warn: <AlertCircle className="h-4 w-4 text-amber-300" />,
+  fail: <AlertCircle className="h-4 w-4 text-red-300" />,
 };
+
+const statusLabels = {
+  pass: "Passing",
+  warn: "Needs attention",
+  fail: "Critical issue",
+};
+
+const statusAdvice = {
+  pass: "This signal is in good shape. Keep it consistent as the page evolves.",
+  warn: "This is usable, but tightening it will improve AI and search confidence.",
+  fail: "Prioritize this fix. Missing or weak signals can reduce visibility and trust.",
+};
+
+const CHECK_GROUPS: Record<string, string> = {
+  title: "Metadata",
+  meta_desc: "Metadata",
+  h1: "Content Structure",
+  heading_structure: "Content Structure",
+  schema_present: "Schema",
+  faq_schema: "Schema",
+  article_schema: "Schema",
+  og_tags: "Social Preview",
+  og_image: "Social Preview",
+  https: "Technical Trust",
+  robots: "Indexing",
+  sitemap: "Indexing",
+  alt_text: "Accessibility",
+  word_count: "Content Depth",
+  internal_links: "Site Architecture",
+  structured_density: "Schema",
+};
+
+function getAction(check: CheckResult) {
+  if (check.status === "pass") return "Monitor this during future content updates.";
+  if (check.id === "title") return "Rewrite the title to be clear, specific, and close to 30-60 characters.";
+  if (check.id === "meta_desc") return "Add a concise benefit-led meta description around 120-160 characters.";
+  if (check.id === "h1") return "Use one clear H1 that names the primary page topic or offer.";
+  if (check.id === "heading_structure") return "Organize sections with H2s first, then H3s underneath them.";
+  if (check.id.includes("schema")) return "Add JSON-LD for the page type, FAQs, organization, and key entities where relevant.";
+  if (check.id === "og_tags") return "Add Open Graph title and description for richer previews.";
+  if (check.id === "og_image") return "Set a high-quality social preview image.";
+  if (check.id === "https") return "Serve the page over HTTPS before promoting it.";
+  if (check.id === "robots") return "Expose and review robots.txt so crawlers can understand access rules.";
+  if (check.id === "sitemap") return "Publish sitemap.xml and submit it to search tools.";
+  if (check.id === "alt_text") return "Add descriptive alt text to meaningful images.";
+  if (check.id === "word_count") return "Expand the page with clearer proof, FAQs, use cases, and entity-rich copy.";
+  if (check.id === "internal_links") return "Add contextual internal links to relevant service, proof, and FAQ pages.";
+  return "Review this signal and bring it closer to the recommended standard.";
+}
 
 export default function ReportSectionNew({ report, onReset }: Props) {
   const { url, score, checks, aiInsights, pagespeed, scannedAt } = report;
@@ -42,12 +92,13 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const passChecks = checks.filter((c) => c.status === "pass");
   const warnChecks = checks.filter((c) => c.status === "warn");
   const failChecks = checks.filter((c) => c.status === "fail");
-
-  const getScoreColor = () => {
-    if (score >= 70) return "text-emerald-600";
-    if (score >= 40) return "text-amber-600";
-    return "text-red-600";
-  };
+  const schemaDetected = checks.some((c) => c.id.toLowerCase().includes("schema") && c.status === "pass");
+  const readinessLabel = score >= 75 ? "Strong" : score >= 50 ? "Needs Work" : "At Risk";
+  const entityNodes = ["Brand", "Category", "Audience", "Use Cases", "Proof", "FAQs", "Schema"];
+  const priorityChecks = useMemo(
+    () => [...failChecks, ...warnChecks].sort((a, b) => b.weight - a.weight).slice(0, 4),
+    [failChecks, warnChecks]
+  );
 
   const handleCopy = async () => {
     const lines = [
@@ -56,13 +107,13 @@ export default function ReportSectionNew({ report, onReset }: Props) {
       `Scanned: ${new Date(scannedAt).toLocaleString()}`,
       "",
       "Passed Checks:",
-      ...passChecks.map((c) => `✓ ${c.label}: ${c.detail}`),
+      ...passChecks.map((c) => `PASS: ${c.label}: ${c.detail}`),
       "",
       "Warnings:",
-      ...warnChecks.map((c) => `⚠ ${c.label}: ${c.detail}`),
+      ...warnChecks.map((c) => `WARN: ${c.label}: ${c.detail}`),
       "",
       "Failed Checks:",
-      ...failChecks.map((c) => `✗ ${c.label}: ${c.detail}`),
+      ...failChecks.map((c) => `FAIL: ${c.label}: ${c.detail}`),
     ];
 
     if (aiInsights) {
@@ -88,23 +139,23 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     <div className="report-shell report-stack pb-8">
       <section className="surface report-hero">
         <div className="report-hero-grid">
-          <div className="flex items-center justify-center">
-            <div className={`text-6xl font-extrabold ${getScoreColor()}`}>{score}</div>
-          </div>
-          <div className="min-w-0">
-            <div className="mb-4 flex flex-wrap items-center justify-center gap-2 lg:justify-start">
-              <span className="eyebrow">AI Visibility Scan</span>
-              {aiInsights && <span className="badge">AI Analysis</span>}
+          <ScoreCircle score={score} />
+          <div className="report-hero-copy">
+            <div className="report-hero-badges">
+              <span className="eyebrow">Free Local Scan</span>
+              <span className="badge">{readinessLabel}</span>
+              {aiInsights && <span className="badge">AI Assisted Report</span>}
+              <span className="badge">{schemaDetected ? "Schema Detected" : "No Schema Found"}</span>
               {pagespeed && <span className="badge">PageSpeed {pagespeed.score}/100</span>}
               <span className="badge text-xs">{new Date(scannedAt).toLocaleDateString()}</span>
             </div>
             <h2 className="report-title break-words">{url}</h2>
-            <a href={url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-blue-700 hover:text-blue-900">
+            <a href={url} target="_blank" rel="noreferrer" className="report-open-link">
               Open page <ExternalLink className="h-3.5 w-3.5" />
             </a>
             {aiInsights && (
-              <div className="verdict-box mt-4">
-                <p className="text-sm font-bold text-slate-600 mb-2">AI Insights</p>
+              <div className="verdict-box">
+                <p className="mb-2 text-sm font-bold text-cyan-100">AI Insights</p>
                 <p className="body-copy">{aiInsights.summary}</p>
               </div>
             )}
@@ -112,159 +163,170 @@ export default function ReportSectionNew({ report, onReset }: Props) {
         </div>
       </section>
 
+      <section className="report-command-grid">
+        <div className="surface report-card command-summary-card">
+          <div className="command-card-label">Executive Summary</div>
+          <h3>{readinessLabel} readiness, {failChecks.length} critical issue{failChecks.length === 1 ? "" : "s"}</h3>
+          <div className="summary-score-grid executive-metric-grid">
+            <MetricTile label="Passing" value={passChecks.length} tone="success" />
+            <MetricTile label="Warnings" value={warnChecks.length} tone="warning" />
+            <MetricTile label="Issues" value={failChecks.length} tone="danger" />
+            <MetricTile label="Checks" value={checks.length} tone="neutral" />
+          </div>
+        </div>
+
+        {aiInsights && (
+          <div className="surface report-card command-quick-card">
+            <SectionHeader
+              icon={<Zap className="h-4 w-4" />}
+              title="Quick Win"
+              text="Highest-impact fix to make first."
+            />
+            <p>{aiInsights.quickWin}</p>
+          </div>
+        )}
+
+        <div className="surface report-card command-priority-card">
+          <div className="command-card-label">Priority Queue</div>
+          <div className="priority-stack">
+            {priorityChecks.map((check, index) => (
+              <div key={check.id} className={`priority-compact priority-${check.status}`}>
+                <div>
+                  <em>{index + 1}</em>
+                  {statusIcons[check.status]}
+                  <span>{check.label}</span>
+                </div>
+                <strong>{check.weight}</strong>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {aiInsights && (
+        <section className="insight-grid">
+          <div className="surface report-card insight-recommendations">
+            <SectionHeader
+              icon={<Lightbulb className="h-4 w-4" />}
+              title="AI Recommendations"
+              text="Prioritized suggestions generated from the scanned page."
+            />
+            <div className="recommendation-grid">
+              {aiInsights.recommendations.slice(0, 5).map((rec, i) => (
+                <div key={rec} className="recommendation-item">
+                  <span>{i + 1}</span>
+                  <div>
+                    <strong>{i === 0 ? "Start here" : `Step ${i + 1}`}</strong>
+                    <p>{rec}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {aiInsights.contentGap && (
+            <div className="surface report-card insight-gap">
+              <SectionHeader
+                icon={<AlertCircle className="h-4 w-4" />}
+                title="Content Gap"
+                text="The missing context most likely to limit AI visibility."
+              />
+              <div className="content-gap-callout">
+                <span>Missing angle</span>
+                <p>{aiInsights.contentGap}</p>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      <section className="surface report-card">
+        <SectionHeader
+          icon={<Info className="h-4 w-4" />}
+          title="AI Visibility Map"
+          text="The core signals an answer engine needs to understand and cite the page."
+        />
+        <div className="entity-map">
+          {entityNodes.map((node) => (
+            <div key={node} className="entity-node">{node}</div>
+          ))}
+        </div>
+      </section>
+
       <div className="report-grid">
         <main className="report-main">
-          {aiInsights && (
-            <section className="surface report-card bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
-              <SectionHeader
-                icon={<Zap className="h-4 w-4 text-blue-600" />}
-                title="Quick Win"
-                text="Highest-impact fix you can implement today"
-              />
-              <div className="mt-4 p-3 bg-white rounded border border-blue-200">
-                <p className="font-semibold text-blue-900">{aiInsights.quickWin}</p>
-              </div>
-            </section>
-          )}
+          <section className="surface report-card audit-overview-card">
+            <SectionHeader
+              icon={<ShieldCheck className="h-4 w-4" />}
+              title="Audit Overview"
+              text="The full technical scoring layer behind the readiness score."
+            />
+            <div className="status-lane-grid">
+              <StatusLane title="Critical Issues" checks={failChecks} />
+              <StatusLane title="Warnings" checks={warnChecks} />
+              <StatusLane title="Passing Signals" checks={passChecks} />
+            </div>
+          </section>
 
           <section className="surface report-card">
             <SectionHeader
               icon={<Info className="h-4 w-4" />}
-              title={`Audit Results: ${passChecks.length} Pass, ${warnChecks.length} Warning, ${failChecks.length} Issues`}
-              text="Deterministic SEO and AEO checks"
+              title="Detailed Audit Breakdown"
+              text="Tap a card only when you need the next action."
             />
-            <div className="mt-5 space-y-2">
+            <div className="audit-detail-grid">
               {checks.map((check) => (
-                <div
+                <AuditCheckCard
                   key={check.id}
-                  className={`border rounded p-3 cursor-pointer transition ${statusColors[check.status]}`}
-                  onClick={() => setExpandedCheck(expandedCheck === check.id ? null : check.id)}
-                >
-                  <div className="flex items-center gap-2">
-                    {statusIcons[check.status]}
-                    <div className="flex-1">
-                      <p className="font-semibold">{check.label}</p>
-                    </div>
-                    <span className="text-xs font-bold">Weight: {check.weight}</span>
-                  </div>
-                  {expandedCheck === check.id && (
-                    <p className="mt-2 text-sm pl-6">{check.detail}</p>
-                  )}
-                </div>
+                  check={check}
+                  expanded={expandedCheck === check.id}
+                  onToggle={() => setExpandedCheck(expandedCheck === check.id ? null : check.id)}
+                />
               ))}
             </div>
           </section>
-
-          {aiInsights && aiInsights.recommendations.length > 0 && (
-            <section className="surface report-card">
-              <SectionHeader
-                icon={<Lightbulb className="h-4 w-4" />}
-                title="Recommendations"
-                text="AI-powered suggestions for improvement"
-              />
-              <ul className="mt-5 space-y-3">
-                {aiInsights.recommendations.map((rec, i) => (
-                  <li key={i} className="flex gap-3">
-                    <span className="mt-1 flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-sm font-bold">
-                      {i + 1}
-                    </span>
-                    <p className="body-copy flex-1">{rec}</p>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {aiInsights && aiInsights.contentGap && (
-            <section className="surface report-card border-l-4 border-l-amber-500">
-              <SectionHeader
-                icon={<AlertCircle className="h-4 w-4 text-amber-600" />}
-                title="Content Gap"
-                text="Based on heading analysis"
-              />
-              <p className="mt-3 body-copy">{aiInsights.contentGap}</p>
-            </section>
-          )}
         </main>
-
-        <aside className="report-sidebar">
-          {!aiInsights && (
-            <section className="surface report-card bg-blue-50 border border-blue-200">
-              <p className="text-sm font-bold text-blue-900 mb-2">AI Unavailable</p>
-              <p className="text-sm text-blue-800">
-                AI analysis is unavailable. Showing deterministic report only.
-              </p>
-            </section>
-          )}
-
-          {pagespeed && (
-            <section className="surface report-card">
-              <p className="section-kicker font-bold uppercase tracking-[0.12em]">PageSpeed</p>
-              <p className="mt-2 text-3xl font-extrabold text-slate-950">{pagespeed.score}/100</p>
-              <div className="mt-3 space-y-1 text-sm text-slate-600">
-                {pagespeed.lcp && <p>LCP: {pagespeed.lcp}ms</p>}
-                {pagespeed.cls && <p>CLS: {pagespeed.cls}</p>}
-                {pagespeed.fid && <p>FID: {pagespeed.fid}ms</p>}
-              </div>
-            </section>
-          )}
-
-          <section className="surface report-card">
-            <h3 className="section-heading">Summary</h3>
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-600">Passed</span>
-                <span className="font-bold text-emerald-600">{passChecks.length}/{checks.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Warnings</span>
-                <span className="font-bold text-amber-600">{warnChecks.length}/{checks.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Issues</span>
-                <span className="font-bold text-red-600">{failChecks.length}/{checks.length}</span>
-              </div>
-            </div>
-          </section>
-        </aside>
       </div>
 
       <section className="surface pro-card">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
-          <div className="flex-1">
+        <div className="pro-card-grid">
+          <div>
             <SectionHeader
               icon={<Crown className="h-4 w-4" />}
               title="Pro Report locked"
-              text="A clear paid upgrade path for the next Stripe step."
+              text="Upgrade-ready packaging for the deeper commercial report."
             />
-            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="pro-feature-grid">
               {[
-                "Full AI breakdown",
-                "Competitor analysis",
-                "Complete schema recommendations",
-                "FAQ generation",
-                "PDF export",
-                "Priority checklist",
+                "Full AI search breakdown",
+                "Competitor/entity comparison",
+                "Schema implementation checklist",
+                "10 recommended FAQs",
+                "Exportable PDF report",
+                "Priority fix roadmap",
               ].map((item) => (
-                <div key={item} className="panel flex items-center gap-2 px-3 py-3 text-sm font-semibold text-slate-700">
-                  <Lock className="h-3.5 w-3.5 flex-shrink-0 text-blue-700" />
+                <div key={item} className="pro-feature">
+                  <Lock className="h-3.5 w-3.5 flex-shrink-0 text-cyan-300" />
                   {item}
                 </div>
               ))}
             </div>
           </div>
-          <div className="lg:w-64">
+          <div className="pro-cta-panel">
+            <span className="badge">Pro Report</span>
+            <strong>$9</strong>
+            <p>Unlock the full implementation plan when checkout is connected.</p>
             <button onClick={() => setNotice("Stripe checkout will be connected in the next step.")} className="btn btn-primary">
               Unlock Full Report - $9
             </button>
-            <p className="muted-copy mt-3 text-center">One-time report purchase. No subscription yet.</p>
+            <p className="muted-copy text-center">One-time report purchase. No subscription yet.</p>
           </div>
         </div>
       </section>
 
-      <div className="flex flex-col justify-center gap-3 sm:flex-row">
+      <div className="report-action-row flex flex-col justify-center gap-3 sm:flex-row">
         <button onClick={handleCopy} className="btn btn-secondary">
-          {copied ? <CheckCircle2 className="h-4 w-4 text-emerald-700" /> : <Copy className="h-4 w-4" />}
+          {copied ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
           {copied ? "Copied" : "Copy report"}
         </button>
         <button onClick={onReset} className="btn btn-primary">
@@ -275,6 +337,70 @@ export default function ReportSectionNew({ report, onReset }: Props) {
 
       {notice && <div className="toast">{notice}</div>}
     </div>
+  );
+}
+
+function MetricTile({ label, value, tone }: { label: string; value: number; tone: "success" | "warning" | "danger" | "neutral" }) {
+  return (
+    <div className={`metric-tile metric-${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function StatusLane({ title, checks }: { title: string; checks: CheckResult[] }) {
+  return (
+    <div className="status-lane">
+      <div className="status-lane-header">
+        <span>{title}</span>
+        <strong>{checks.length}</strong>
+      </div>
+      <div className="status-lane-list">
+        {checks.slice(0, 5).map((check) => (
+          <div key={check.id}>
+            {statusIcons[check.status]}
+            <span>{check.label}</span>
+          </div>
+        ))}
+        {checks.length === 0 && <p>No signals in this group.</p>}
+      </div>
+    </div>
+  );
+}
+
+function AuditCheckCard({ check, expanded, onToggle }: { check: CheckResult; expanded: boolean; onToggle: () => void }) {
+  return (
+    <button type="button" onClick={onToggle} className={`audit-card ${statusColors[check.status]}`}>
+      <div className="audit-card-top">
+        <div className="audit-card-title">
+          {statusIcons[check.status]}
+          <div>
+            <span>{CHECK_GROUPS[check.id] ?? "Audit Signal"}</span>
+            <strong>{check.label}</strong>
+          </div>
+        </div>
+        <div className="audit-weight">
+          <span>Weight</span>
+          <strong>{check.weight}</strong>
+        </div>
+      </div>
+
+      <div className="audit-card-body">
+        <p>{check.detail}</p>
+        <div className="audit-card-footer">
+          <span className="audit-status-pill">{statusLabels[check.status]}</span>
+          <small>{expanded ? "Action shown below" : "Tap for recommended action"}</small>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="audit-action">
+          <span>Recommended action</span>
+          <p>{getAction(check)}</p>
+        </div>
+      )}
+    </button>
   );
 }
 

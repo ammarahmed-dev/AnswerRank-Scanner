@@ -203,12 +203,16 @@ module.exports = mod;
 __turbopack_context__.s([
     "fetchHtml",
     ()=>fetchHtml,
+    "fetchJinaReaderText",
+    ()=>fetchJinaReaderText,
     "normalizeUrl",
     ()=>normalizeUrl,
     "parseHtml",
     ()=>parseHtml,
     "parseHtmlToScrapedData",
     ()=>parseHtmlToScrapedData,
+    "parseReaderTextToScrapedData",
+    ()=>parseReaderTextToScrapedData,
     "validateUrl",
     ()=>validateUrl
 ]);
@@ -268,6 +272,62 @@ async function fetchHtml(url) {
     } finally{
         clearTimeout(timeout);
     }
+}
+async function fetchJinaReaderText(url) {
+    const controller = new AbortController();
+    const timeout = setTimeout(()=>controller.abort(), 15000);
+    const readerUrl = `https://r.jina.ai/${url}`;
+    const headers = {
+        Accept: "text/plain",
+        "X-Respond-With": "no-content"
+    };
+    if (process.env.JINA_API_KEY) {
+        headers.Authorization = `Bearer ${process.env.JINA_API_KEY}`;
+    }
+    try {
+        const res = await fetch(readerUrl, {
+            signal: controller.signal,
+            redirect: "follow",
+            headers
+        });
+        if (!res.ok) {
+            throw new Error(`Jina Reader returned HTTP ${res.status}.`);
+        }
+        const text = await res.text();
+        if (!text.trim()) throw new Error("Jina Reader returned empty content.");
+        return text.slice(0, 50000);
+    } finally{
+        clearTimeout(timeout);
+    }
+}
+function parseReaderTextToScrapedData(readerText, baseUrl) {
+    const lines = readerText.split(/\r?\n/).map((line)=>line.trim());
+    const titleLine = lines.find((line)=>line.toLowerCase().startsWith("title:"));
+    const title = titleLine?.replace(/^title:\s*/i, "").trim() || new URL(baseUrl).hostname;
+    const markdownIndex = lines.findIndex((line)=>line.toLowerCase().includes("markdown content"));
+    const contentLines = markdownIndex >= 0 ? lines.slice(markdownIndex + 1) : lines;
+    const headings = contentLines.filter((line)=>/^#{1,3}\s+/.test(line)).slice(0, 60).map((line)=>{
+        const level = line.match(/^#+/)?.[0].length ?? 2;
+        const text = line.replace(/^#{1,6}\s+/, "").trim();
+        return `H${Math.min(level, 3)}: ${text}`;
+    });
+    const bodyText = contentLines.join(" ").replace(/^#+\s+/g, "").replace(/\s+/g, " ").trim().slice(0, 8000);
+    const wordCount = bodyText.split(/\s+/).filter(Boolean).length;
+    return {
+        url: baseUrl,
+        title,
+        metaDescription: "",
+        headings,
+        schemaTypes: [],
+        schemaBlocks: 0,
+        bodyText,
+        images: [],
+        internalLinks: 0,
+        wordCount,
+        ogTitle: "",
+        ogDescription: "",
+        ogImage: ""
+    };
 }
 function parseHtml(html, baseUrl) {
     const $ = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$cheerio$2f$dist$2f$esm$2f$load$2d$parse$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["load"](html);
@@ -677,7 +737,8 @@ async function getPageSpeedScore(url) {
     try {
         const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=performance`;
         const controller = new AbortController();
-        const timeout = setTimeout(()=>controller.abort(), 30000);
+        const timeoutMs = Number(process.env.PAGESPEED_TIMEOUT_MS ?? 10000);
+        const timeout = setTimeout(()=>controller.abort(), timeoutMs);
         let res;
         try {
             res = await fetch(endpoint, {

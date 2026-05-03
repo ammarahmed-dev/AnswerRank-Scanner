@@ -28,5 +28,9 @@
   },
   "overrides": {
     "postcss": "^8.5.13"
+  },
+  "resolutions": {
+    "whatwg-encoding": "@exodus/bytes",
+    "node-domexception": "domexception"
   }
 }

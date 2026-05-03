@@ -5,7 +5,17 @@
 
 import { ScrapedData, CheckResult } from "@/types/index";
 
-const CHECKS_CONFIG = [
+type CheckStatus = CheckResult["status"];
+
+type CheckConfig = {
+  id: string;
+  label: string;
+  weight: number;
+  check: (data: ScrapedData) => CheckStatus;
+  detail: (data: ScrapedData) => string;
+};
+
+const CHECKS_CONFIG: CheckConfig[] = [
   {
     id: "title",
     label: "Page Title",

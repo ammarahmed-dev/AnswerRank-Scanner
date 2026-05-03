@@ -3,8 +3,8 @@
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import LoadingState from "./components/LoadingState";
 import ReportSectionNew from "./components/ReportSectionNew";
-import { AnalysisReport } from "@/types/report";
 import { ScanResult } from "@/types/index";
+import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   ArrowRight,
@@ -24,7 +24,8 @@ import {
 type AppState = "idle" | "loading" | "done" | "error" | "paywall";
 
 const LOADING_STEP_TIMES = [900, 1800, 3000, 4700, 6800, 8600];
-const MAX_CRAWLS = 5;
+const MAX_CRAWLS = 20;
+const CRAWL_STORAGE_KEY = "answerrank_crawls_v4";
 
 const trustStats = [
   { value: "6", label: "Readiness categories", text: "Metadata, headings, schema, clarity, AI readiness, and performance." },
@@ -54,6 +55,7 @@ const faqs = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [url, setUrl] = useState("");
   const [state, setState] = useState<AppState>("idle");
   const [loadingStep, setLoadingStep] = useState(0);
@@ -65,8 +67,11 @@ export default function Home() {
 
   useEffect(() => {
     setIsClient(true);
-    const stored = localStorage.getItem("answerrank_crawls");
-    if (stored) setCrawlCount(parseInt(stored, 10));
+    localStorage.removeItem("answerrank_crawls");
+    localStorage.removeItem("answerrank_crawls_v2");
+    localStorage.removeItem("answerrank_crawls_v3");
+    const stored = localStorage.getItem(CRAWL_STORAGE_KEY);
+    setCrawlCount(stored ? parseInt(stored, 10) : 0);
   }, []);
 
   useEffect(() => {
@@ -87,11 +92,15 @@ export default function Home() {
     setErrorMsg("");
 
     try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 65000);
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: trimmed, includeAI: false }),
+        body: JSON.stringify({ url: trimmed, includeAI: true }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
       const data = (await res.json()) as ScanResult & { error?: string };
       if (!res.ok || data.error) {
         setErrorMsg(data.error ?? "Something went wrong. Please try again.");
@@ -100,12 +109,15 @@ export default function Home() {
 
       const newCount = crawlCount + 1;
       setCrawlCount(newCount);
-      localStorage.setItem("answerrank_crawls", newCount.toString());
+      localStorage.setItem(CRAWL_STORAGE_KEY, newCount.toString());
+      sessionStorage.setItem(`answerrank_report:${data.url}`, JSON.stringify(data));
       setReport(data);
       setState("done");
-      setTimeout(() => document.getElementById("report-top")?.scrollIntoView({ behavior: "smooth" }), 100);
-    } catch {
-      setErrorMsg("Network error. Please check your connection and try again.");
+      router.push(`/report?url=${encodeURIComponent(data.url)}`);
+    } catch (err) {
+      setErrorMsg(err instanceof DOMException && err.name === "AbortError"
+        ? "The scan took too long. External AI or performance APIs may be slow. Please try again."
+        : "Network error. Please check your connection and try again.");
       setState("error");
     }
   };
@@ -122,7 +134,7 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <header className="site-header">
-        <a href="#" className="brand-lockup" aria-label="AnswerRank home">
+        <a href="/" className="brand-lockup" aria-label="AnswerRank home">
           <span className="brand-mark"><Sparkles className="h-5 w-5" /></span>
           <span>
             <span className="brand-name">AnswerRank</span>
@@ -137,7 +149,7 @@ export default function Home() {
         </nav>
         <div className="header-actions">
           {isClient && <span className="header-pill">{Math.max(0, MAX_CRAWLS - crawlCount)} free scans left</span>}
-          <a href="#scanner" className="btn btn-primary header-cta">Scan now</a>
+          <a href="/#scanner" className="btn btn-primary header-cta">Scan now</a>
         </div>
       </header>
 
@@ -354,7 +366,7 @@ export default function Home() {
       {state === "done" && report && (
         <section className="report-page" id="report-top">
           <div className="launch-container report-header-row">
-            <a href="#" className="brand-lockup">
+            <a href="/" className="brand-lockup">
               <span className="brand-mark"><Sparkles className="h-5 w-5" /></span>
               <span>
                 <span className="brand-name">AnswerRank</span>
@@ -393,9 +405,9 @@ export default function Home() {
             <p>One-page SaaS MVP for AI visibility readiness reports.</p>
           </div>
           <div>
-            <a href="#scanner">Scanner</a>
-            <a href="#how">How it works</a>
-            <a href="#pricing">Pricing</a>
+            <a href="/#scanner">Scanner</a>
+            <a href="/#how">How it works</a>
+            <a href="/#pricing">Pricing</a>
           </div>
         </div>
       </footer>

@@ -11,7 +11,8 @@ export async function getPageSpeedScore(url: string): Promise<PageSpeedResult> {
     const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=performance`;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
+    const timeoutMs = Number(process.env.PAGESPEED_TIMEOUT_MS ?? 10000);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     let res: Response;
     try {
