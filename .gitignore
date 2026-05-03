@@ -4,3 +4,4 @@ node_modules
 .next/dev/cache/turbopack/2275bd85/CURRENT
 .next/dev/cache/turbopack/2275bd85/LOG
 .next/dev/trace
+.next

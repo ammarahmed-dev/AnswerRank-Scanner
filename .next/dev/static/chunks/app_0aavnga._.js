@@ -217,27 +217,27 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 const statusColors = {
-    pass: "bg-emerald-50 text-emerald-800 border-emerald-200",
-    warn: "bg-amber-50 text-amber-800 border-amber-200",
-    fail: "bg-red-50 text-red-800 border-red-200"
+    pass: "border-emerald-400/20 bg-emerald-400/10 text-emerald-100",
+    warn: "border-amber-400/24 bg-amber-400/10 text-amber-100",
+    fail: "border-red-400/24 bg-red-400/10 text-red-100"
 };
 const statusIcons = {
     pass: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$check$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__CheckCircle2$3e$__["CheckCircle2"], {
-        className: "h-4 w-4 text-emerald-600"
+        className: "h-4 w-4 text-emerald-300"
     }, void 0, false, {
         fileName: "[project]/app/components/ReportSectionNew.tsx",
         lineNumber: 31,
         columnNumber: 9
     }, ("TURBOPACK compile-time value", void 0)),
     warn: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__["AlertCircle"], {
-        className: "h-4 w-4 text-amber-600"
+        className: "h-4 w-4 text-amber-300"
     }, void 0, false, {
         fileName: "[project]/app/components/ReportSectionNew.tsx",
         lineNumber: 32,
         columnNumber: 9
     }, ("TURBOPACK compile-time value", void 0)),
     fail: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$circle$2d$alert$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__AlertCircle$3e$__["AlertCircle"], {
-        className: "h-4 w-4 text-red-600"
+        className: "h-4 w-4 text-red-300"
     }, void 0, false, {
         fileName: "[project]/app/components/ReportSectionNew.tsx",
         lineNumber: 33,
@@ -253,11 +253,17 @@ function ReportSectionNew({ report, onReset }) {
     const passChecks = checks.filter((c)=>c.status === "pass");
     const warnChecks = checks.filter((c)=>c.status === "warn");
     const failChecks = checks.filter((c)=>c.status === "fail");
-    const getScoreColor = ()=>{
-        if (score >= 70) return "text-emerald-600";
-        if (score >= 40) return "text-amber-600";
-        return "text-red-600";
-    };
+    const schemaDetected = checks.some((c)=>c.id.toLowerCase().includes("schema") && c.status === "pass");
+    const readinessLabel = score >= 75 ? "Strong" : score >= 50 ? "Needs Work" : "At Risk";
+    const entityNodes = [
+        "Brand",
+        "Category",
+        "Audience",
+        "Use Cases",
+        "Proof",
+        "FAQs",
+        "Schema"
+    ];
     const handleCopy = async ()=>{
         const lines = [
             `AnswerRank Report for ${url}`,
@@ -265,13 +271,13 @@ function ReportSectionNew({ report, onReset }) {
             `Scanned: ${new Date(scannedAt).toLocaleString()}`,
             "",
             "Passed Checks:",
-            ...passChecks.map((c)=>`✓ ${c.label}: ${c.detail}`),
+            ...passChecks.map((c)=>`PASS: ${c.label}: ${c.detail}`),
             "",
             "Warnings:",
-            ...warnChecks.map((c)=>`⚠ ${c.label}: ${c.detail}`),
+            ...warnChecks.map((c)=>`WARN: ${c.label}: ${c.detail}`),
             "",
             "Failed Checks:",
-            ...failChecks.map((c)=>`✗ ${c.label}: ${c.detail}`)
+            ...failChecks.map((c)=>`FAIL: ${c.label}: ${c.detail}`)
         ];
         if (aiInsights) {
             lines.push("", "AI Insights:", aiInsights.summary, "", "Quick Win:", aiInsights.quickWin, "", "Recommendations:");
@@ -304,12 +310,12 @@ function ReportSectionNew({ report, onReset }) {
                                 children: score
                             }, void 0, false, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 92,
+                                lineNumber: 89,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                            lineNumber: 91,
+                            lineNumber: 88,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -323,7 +329,7 @@ function ReportSectionNew({ report, onReset }) {
                                             children: "AI Visibility Scan"
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 96,
+                                            lineNumber: 93,
                                             columnNumber: 15
                                         }, this),
                                         aiInsights && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -331,7 +337,7 @@ function ReportSectionNew({ report, onReset }) {
                                             children: "AI Analysis"
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 97,
+                                            lineNumber: 94,
                                             columnNumber: 30
                                         }, this),
                                         pagespeed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -343,7 +349,7 @@ function ReportSectionNew({ report, onReset }) {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 98,
+                                            lineNumber: 95,
                                             columnNumber: 29
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -351,13 +357,13 @@ function ReportSectionNew({ report, onReset }) {
                                             children: new Date(scannedAt).toLocaleDateString()
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 99,
+                                            lineNumber: 96,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                    lineNumber: 95,
+                                    lineNumber: 92,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -365,7 +371,7 @@ function ReportSectionNew({ report, onReset }) {
                                     children: url
                                 }, void 0, false, {
                                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                    lineNumber: 101,
+                                    lineNumber: 98,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -379,13 +385,13 @@ function ReportSectionNew({ report, onReset }) {
                                             className: "h-3.5 w-3.5"
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 103,
+                                            lineNumber: 100,
                                             columnNumber: 25
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                    lineNumber: 102,
+                                    lineNumber: 99,
                                     columnNumber: 13
                                 }, this),
                                 aiInsights && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -396,7 +402,7 @@ function ReportSectionNew({ report, onReset }) {
                                             children: "AI Insights"
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 107,
+                                            lineNumber: 104,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -404,30 +410,30 @@ function ReportSectionNew({ report, onReset }) {
                                             children: aiInsights.summary
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 108,
+                                            lineNumber: 105,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                    lineNumber: 106,
+                                    lineNumber: 103,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                            lineNumber: 94,
+                            lineNumber: 91,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                    lineNumber: 90,
+                    lineNumber: 87,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                lineNumber: 89,
+                lineNumber: 86,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -444,14 +450,14 @@ function ReportSectionNew({ report, onReset }) {
                                             className: "h-4 w-4 text-blue-600"
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 120,
+                                            lineNumber: 117,
                                             columnNumber: 23
                                         }, this),
                                         title: "Quick Win",
                                         text: "Highest-impact fix you can implement today"
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 119,
+                                        lineNumber: 116,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -461,18 +467,18 @@ function ReportSectionNew({ report, onReset }) {
                                             children: aiInsights.quickWin
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 125,
+                                            lineNumber: 122,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 124,
+                                        lineNumber: 121,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 118,
+                                lineNumber: 115,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -483,14 +489,14 @@ function ReportSectionNew({ report, onReset }) {
                                             className: "h-4 w-4"
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 132,
+                                            lineNumber: 129,
                                             columnNumber: 21
                                         }, this),
                                         title: `Audit Results: ${passChecks.length} Pass, ${warnChecks.length} Warning, ${failChecks.length} Issues`,
                                         text: "Deterministic SEO and AEO checks"
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 131,
+                                        lineNumber: 128,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -510,12 +516,12 @@ function ReportSectionNew({ report, onReset }) {
                                                                     children: check.label
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                                    lineNumber: 146,
+                                                                    lineNumber: 143,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                                lineNumber: 145,
+                                                                lineNumber: 142,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -526,13 +532,13 @@ function ReportSectionNew({ report, onReset }) {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                                lineNumber: 148,
+                                                                lineNumber: 145,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                        lineNumber: 143,
+                                                        lineNumber: 140,
                                                         columnNumber: 19
                                                     }, this),
                                                     expandedCheck === check.id && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -540,24 +546,24 @@ function ReportSectionNew({ report, onReset }) {
                                                         children: check.detail
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                        lineNumber: 151,
+                                                        lineNumber: 148,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, check.id, true, {
                                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                lineNumber: 138,
+                                                lineNumber: 135,
                                                 columnNumber: 17
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 136,
+                                        lineNumber: 133,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 130,
+                                lineNumber: 127,
                                 columnNumber: 11
                             }, this),
                             aiInsights && aiInsights.recommendations.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -568,14 +574,14 @@ function ReportSectionNew({ report, onReset }) {
                                             className: "h-4 w-4"
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 161,
+                                            lineNumber: 158,
                                             columnNumber: 23
                                         }, this),
                                         title: "Recommendations",
                                         text: "AI-powered suggestions for improvement"
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 160,
+                                        lineNumber: 157,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
@@ -588,7 +594,7 @@ function ReportSectionNew({ report, onReset }) {
                                                         children: i + 1
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                        lineNumber: 168,
+                                                        lineNumber: 165,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -596,24 +602,24 @@ function ReportSectionNew({ report, onReset }) {
                                                         children: rec
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                        lineNumber: 171,
+                                                        lineNumber: 168,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, i, true, {
                                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                lineNumber: 167,
+                                                lineNumber: 164,
                                                 columnNumber: 19
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 165,
+                                        lineNumber: 162,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 159,
+                                lineNumber: 156,
                                 columnNumber: 13
                             }, this),
                             aiInsights && aiInsights.contentGap && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -624,14 +630,14 @@ function ReportSectionNew({ report, onReset }) {
                                             className: "h-4 w-4 text-amber-600"
                                         }, void 0, false, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 181,
+                                            lineNumber: 178,
                                             columnNumber: 23
                                         }, this),
                                         title: "Content Gap",
                                         text: "Based on heading analysis"
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 180,
+                                        lineNumber: 177,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -639,19 +645,19 @@ function ReportSectionNew({ report, onReset }) {
                                         children: aiInsights.contentGap
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 185,
+                                        lineNumber: 182,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 179,
+                                lineNumber: 176,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                        lineNumber: 116,
+                        lineNumber: 113,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("aside", {
@@ -665,7 +671,7 @@ function ReportSectionNew({ report, onReset }) {
                                         children: "AI Unavailable"
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 193,
+                                        lineNumber: 190,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -673,13 +679,13 @@ function ReportSectionNew({ report, onReset }) {
                                         children: "AI analysis is unavailable. Showing deterministic report only."
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 194,
+                                        lineNumber: 191,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 192,
+                                lineNumber: 189,
                                 columnNumber: 13
                             }, this),
                             pagespeed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -690,7 +696,7 @@ function ReportSectionNew({ report, onReset }) {
                                         children: "PageSpeed"
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 202,
+                                        lineNumber: 199,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -701,7 +707,7 @@ function ReportSectionNew({ report, onReset }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 203,
+                                        lineNumber: 200,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -715,7 +721,7 @@ function ReportSectionNew({ report, onReset }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                lineNumber: 205,
+                                                lineNumber: 202,
                                                 columnNumber: 35
                                             }, this),
                                             pagespeed.cls && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -725,7 +731,7 @@ function ReportSectionNew({ report, onReset }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                lineNumber: 206,
+                                                lineNumber: 203,
                                                 columnNumber: 35
                                             }, this),
                                             pagespeed.fid && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -736,19 +742,19 @@ function ReportSectionNew({ report, onReset }) {
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                lineNumber: 207,
+                                                lineNumber: 204,
                                                 columnNumber: 35
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 204,
+                                        lineNumber: 201,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 201,
+                                lineNumber: 198,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -759,7 +765,7 @@ function ReportSectionNew({ report, onReset }) {
                                         children: "Summary"
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 213,
+                                        lineNumber: 210,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -773,7 +779,7 @@ function ReportSectionNew({ report, onReset }) {
                                                         children: "Passed"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                        lineNumber: 216,
+                                                        lineNumber: 213,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -785,13 +791,13 @@ function ReportSectionNew({ report, onReset }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                        lineNumber: 217,
+                                                        lineNumber: 214,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                lineNumber: 215,
+                                                lineNumber: 212,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -802,7 +808,7 @@ function ReportSectionNew({ report, onReset }) {
                                                         children: "Warnings"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                        lineNumber: 220,
+                                                        lineNumber: 217,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -814,13 +820,13 @@ function ReportSectionNew({ report, onReset }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                        lineNumber: 221,
+                                                        lineNumber: 218,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                lineNumber: 219,
+                                                lineNumber: 216,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -831,7 +837,7 @@ function ReportSectionNew({ report, onReset }) {
                                                         children: "Issues"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                        lineNumber: 224,
+                                                        lineNumber: 221,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -843,37 +849,37 @@ function ReportSectionNew({ report, onReset }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                        lineNumber: 225,
+                                                        lineNumber: 222,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                lineNumber: 223,
+                                                lineNumber: 220,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 214,
+                                        lineNumber: 211,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 212,
+                                lineNumber: 209,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                        lineNumber: 190,
+                        lineNumber: 187,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                lineNumber: 115,
+                lineNumber: 112,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -889,14 +895,14 @@ function ReportSectionNew({ report, onReset }) {
                                         className: "h-4 w-4"
                                     }, void 0, false, {
                                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                        lineNumber: 236,
+                                        lineNumber: 233,
                                         columnNumber: 21
                                     }, this),
                                     title: "Pro Report locked",
                                     text: "A clear paid upgrade path for the next Stripe step."
                                 }, void 0, false, {
                                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                    lineNumber: 235,
+                                    lineNumber: 232,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -915,25 +921,25 @@ function ReportSectionNew({ report, onReset }) {
                                                     className: "h-3.5 w-3.5 flex-shrink-0 text-blue-700"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                                    lineNumber: 250,
+                                                    lineNumber: 247,
                                                     columnNumber: 19
                                                 }, this),
                                                 item
                                             ]
                                         }, item, true, {
                                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                            lineNumber: 249,
+                                            lineNumber: 246,
                                             columnNumber: 17
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                    lineNumber: 240,
+                                    lineNumber: 237,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                            lineNumber: 234,
+                            lineNumber: 231,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -945,7 +951,7 @@ function ReportSectionNew({ report, onReset }) {
                                     children: "Unlock Full Report - $9"
                                 }, void 0, false, {
                                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                    lineNumber: 257,
+                                    lineNumber: 254,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -953,24 +959,24 @@ function ReportSectionNew({ report, onReset }) {
                                     children: "One-time report purchase. No subscription yet."
                                 }, void 0, false, {
                                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                    lineNumber: 260,
+                                    lineNumber: 257,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/components/ReportSectionNew.tsx",
-                            lineNumber: 256,
+                            lineNumber: 253,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/components/ReportSectionNew.tsx",
-                    lineNumber: 233,
+                    lineNumber: 230,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                lineNumber: 232,
+                lineNumber: 229,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -984,20 +990,20 @@ function ReportSectionNew({ report, onReset }) {
                                 className: "h-4 w-4 text-emerald-700"
                             }, void 0, false, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 267,
+                                lineNumber: 264,
                                 columnNumber: 21
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$copy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Copy$3e$__["Copy"], {
                                 className: "h-4 w-4"
                             }, void 0, false, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 267,
+                                lineNumber: 264,
                                 columnNumber: 77
                             }, this),
                             copied ? "Copied" : "Copy report"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                        lineNumber: 266,
+                        lineNumber: 263,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1008,20 +1014,20 @@ function ReportSectionNew({ report, onReset }) {
                                 className: "h-4 w-4"
                             }, void 0, false, {
                                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                                lineNumber: 271,
+                                lineNumber: 268,
                                 columnNumber: 11
                             }, this),
                             "Scan another URL"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                        lineNumber: 270,
+                        lineNumber: 267,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                lineNumber: 265,
+                lineNumber: 262,
                 columnNumber: 7
             }, this),
             notice && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1029,13 +1035,13 @@ function ReportSectionNew({ report, onReset }) {
                 children: notice
             }, void 0, false, {
                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                lineNumber: 276,
+                lineNumber: 273,
                 columnNumber: 18
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/components/ReportSectionNew.tsx",
-        lineNumber: 88,
+        lineNumber: 85,
         columnNumber: 5
     }, this);
 }
@@ -1050,7 +1056,7 @@ function SectionHeader({ icon, title, text }) {
                 children: icon
             }, void 0, false, {
                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                lineNumber: 284,
+                lineNumber: 281,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1060,7 +1066,7 @@ function SectionHeader({ icon, title, text }) {
                         children: title
                     }, void 0, false, {
                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                        lineNumber: 286,
+                        lineNumber: 283,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1068,19 +1074,19 @@ function SectionHeader({ icon, title, text }) {
                         children: text
                     }, void 0, false, {
                         fileName: "[project]/app/components/ReportSectionNew.tsx",
-                        lineNumber: 287,
+                        lineNumber: 284,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/components/ReportSectionNew.tsx",
-                lineNumber: 285,
+                lineNumber: 282,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/components/ReportSectionNew.tsx",
-        lineNumber: 283,
+        lineNumber: 280,
         columnNumber: 5
     }, this);
 }

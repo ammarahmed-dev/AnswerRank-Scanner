@@ -65,6 +65,80 @@ export async function fetchHtml(url: string): Promise<string> {
   }
 }
 
+export async function fetchJinaReaderText(url: string): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+  const readerUrl = `https://r.jina.ai/${url}`;
+  const headers: Record<string, string> = {
+    Accept: "text/plain",
+    "X-Respond-With": "no-content",
+  };
+
+  if (process.env.JINA_API_KEY) {
+    headers.Authorization = `Bearer ${process.env.JINA_API_KEY}`;
+  }
+
+  try {
+    const res = await fetch(readerUrl, {
+      signal: controller.signal,
+      redirect: "follow",
+      headers,
+    });
+
+    if (!res.ok) {
+      throw new Error(`Jina Reader returned HTTP ${res.status}.`);
+    }
+
+    const text = await res.text();
+    if (!text.trim()) throw new Error("Jina Reader returned empty content.");
+    return text.slice(0, 50000);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+export function parseReaderTextToScrapedData(
+  readerText: string,
+  baseUrl: string
+): ScrapedData {
+  const lines = readerText.split(/\r?\n/).map((line) => line.trim());
+  const titleLine = lines.find((line) => line.toLowerCase().startsWith("title:"));
+  const title = titleLine?.replace(/^title:\s*/i, "").trim() || new URL(baseUrl).hostname;
+  const markdownIndex = lines.findIndex((line) => line.toLowerCase().includes("markdown content"));
+  const contentLines = markdownIndex >= 0 ? lines.slice(markdownIndex + 1) : lines;
+  const headings = contentLines
+    .filter((line) => /^#{1,3}\s+/.test(line))
+    .slice(0, 60)
+    .map((line) => {
+      const level = line.match(/^#+/)?.[0].length ?? 2;
+      const text = line.replace(/^#{1,6}\s+/, "").trim();
+      return `H${Math.min(level, 3)}: ${text}`;
+    });
+  const bodyText = contentLines
+    .join(" ")
+    .replace(/^#+\s+/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 8000);
+  const wordCount = bodyText.split(/\s+/).filter(Boolean).length;
+
+  return {
+    url: baseUrl,
+    title,
+    metaDescription: "",
+    headings,
+    schemaTypes: [],
+    schemaBlocks: 0,
+    bodyText,
+    images: [],
+    internalLinks: 0,
+    wordCount,
+    ogTitle: "",
+    ogDescription: "",
+    ogImage: "",
+  };
+}
+
 export function parseHtml(html: string, baseUrl: string): ExtractedData {
   const $ = cheerio.load(html);
   const parsedBase = new URL(baseUrl);

@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { normalizeUrl, validateUrl, fetchHtml, parseHtmlToScrapedData } from "@/lib/scrape";
+import {
+  normalizeUrl,
+  validateUrl,
+  fetchHtml,
+  fetchJinaReaderText,
+  parseHtmlToScrapedData,
+  parseReaderTextToScrapedData,
+} from "@/lib/scrape";
 import { runDeterministicChecks, calculateScore } from "@/lib/score-engine";
 import { buildAIPrompt } from "@/lib/build-ai-prompt";
 import { generateAIInsights } from "@/lib/ai-provider";
 import { getPageSpeedScore } from "@/lib/pagespeed";
-import { ScanResult, AIInsights } from "@/types/index";
+import { ScrapedData, ScanResult, AIInsights } from "@/types/index";
 
 // Simple in-memory rate limiter: store { url: timestamp }
 const aiCallCache = new Map<string, number>();
@@ -23,6 +30,77 @@ function checkAIRateLimit(url: string): boolean {
 
 function errorResponse(error: string, status: number, details?: string) {
   return NextResponse.json({ error, details }, { status });
+}
+
+function timeoutAfter<T>(ms: number, value: T): Promise<T> {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(value), ms);
+  });
+}
+
+async function getAIInsightsWithBudget(
+  scrapedData: ScrapedData
+): Promise<AIInsights | null> {
+  try {
+    const prompt = buildAIPrompt(scrapedData);
+    const aiRawResponse = await generateAIInsights(prompt);
+
+    if (!aiRawResponse) return null;
+
+    return parseAIInsights(aiRawResponse);
+  } catch (err: unknown) {
+    console.error(
+      "AI analysis failed:",
+      err instanceof Error ? err.message : "Unknown error"
+    );
+    return null;
+  }
+}
+
+function parseAIInsights(raw: string): AIInsights {
+  const cleaned = raw
+    .trim()
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/i, "")
+    .trim();
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+
+  if (firstBrace >= 0 && lastBrace > firstBrace) {
+    try {
+      const parsed = JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
+      return {
+        recommendations: Array.isArray(parsed.recommendations)
+          ? parsed.recommendations.filter((item: unknown) => typeof item === "string").slice(0, 5)
+          : [],
+        quickWin:
+          typeof parsed.quickWin === "string"
+            ? parsed.quickWin
+            : "Improve the clearest missing AI visibility signal first.",
+        contentGap:
+          typeof parsed.contentGap === "string"
+            ? parsed.contentGap
+            : "Add more explicit answer-focused content for the target audience.",
+        summary:
+          typeof parsed.summary === "string"
+            ? parsed.summary
+            : "AI analysis completed, but the summary was not returned in the expected shape.",
+      };
+    } catch (err) {
+      console.warn("AI response was not valid JSON; using text fallback.", err);
+    }
+  }
+
+  return {
+    recommendations: [
+      "Add clear FAQ-style answer blocks for the most important buyer questions.",
+      "Strengthen page metadata so the primary entity, offer, and audience are explicit.",
+      "Add or expand structured data for Organization, WebPage, FAQPage, and relevant article/service types.",
+    ],
+    quickWin: "Add a concise FAQ section with matching FAQPage schema.",
+    contentGap: "The page needs more explicit, answer-ready content that maps brand, category, audience, use cases, proof, FAQs, and schema.",
+    summary: cleaned.slice(0, 500) || "AI analysis completed, but the provider returned an empty response.",
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -55,45 +133,50 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Fetch HTML
-    let html = "";
+    // Fetch and parse page content. Jina Reader is a fallback for bot-blocked pages.
+    let scrapedData: ScrapedData;
     try {
-      html = await fetchHtml(url);
+      const html = await fetchHtml(url);
+      if (!html.trim()) {
+        return errorResponse(
+          "Website returned empty HTML. Try another page URL.",
+          422
+        );
+      }
+      scrapedData = parseHtmlToScrapedData(html, url);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Unknown error";
-      if (
-        message.toLowerCase().includes("timeout") ||
-        message.toLowerCase().includes("aborted")
-      ) {
+      console.warn(`Direct fetch failed for ${url}; trying Jina Reader. ${message}`);
+      try {
+        const readerText = await fetchJinaReaderText(url);
+        scrapedData = parseReaderTextToScrapedData(readerText, url);
+      } catch (readerErr: unknown) {
+        const readerMessage = readerErr instanceof Error ? readerErr.message : "Unknown error";
+        if (
+          message.toLowerCase().includes("timeout") ||
+          message.toLowerCase().includes("aborted")
+        ) {
+          return errorResponse(
+            "Request timed out while fetching this URL.",
+            408,
+            readerMessage
+          );
+        }
+        if (message.toLowerCase().includes("blocked")) {
+          return errorResponse(
+            "This website blocked the scanner and Jina Reader could not recover the content.",
+            422,
+            readerMessage
+          );
+        }
         return errorResponse(
-          "Request timed out while fetching this URL.",
-          408
-        );
-      }
-      if (message.toLowerCase().includes("blocked")) {
-        return errorResponse(
-          "This website blocked the scanner. Try a public marketing page or a different URL.",
+          "Could not fetch this website directly or through Jina Reader.",
           422,
-          message
+          readerMessage
         );
       }
-      return errorResponse(
-        "Could not fetch this website. It may block bots or be unavailable.",
-        422,
-        message
-      );
     }
-
-    if (!html.trim()) {
-      return errorResponse(
-        "Website returned empty HTML. Try another page URL.",
-        422
-      );
-    }
-
-    // Parse HTML to ScrapedData
-    const scrapedData = parseHtmlToScrapedData(html, url);
 
     if (
       !scrapedData.bodyText &&
@@ -120,66 +203,30 @@ export async function POST(req: NextRequest) {
       includeAIReport = false;
     }
 
-    if (includeAIReport) {
-      try {
-        const prompt = buildAIPrompt(scrapedData);
-        const aiRawResponse = await generateAIInsights(prompt);
+    const optionalBudgetMs = Number(process.env.OPTIONAL_ANALYSIS_BUDGET_MS ?? 8000);
+    const aiPromise = includeAIReport
+      ? getAIInsightsWithBudget(scrapedData)
+      : Promise.resolve(null);
 
-        if (aiRawResponse) {
-          try {
-            // Try to extract JSON from response
-            const jsonMatch = aiRawResponse.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]);
-              aiInsights = {
-                recommendations: Array.isArray(parsed.recommendations)
-                  ? parsed.recommendations
-                  : [],
-                quickWin:
-                  typeof parsed.quickWin === "string"
-                    ? parsed.quickWin
-                    : "No quick win provided",
-                contentGap:
-                  typeof parsed.contentGap === "string"
-                    ? parsed.contentGap
-                    : "No gap identified",
-                summary:
-                  typeof parsed.summary === "string"
-                    ? parsed.summary
-                    : "AI analysis complete",
-              };
-            }
-          } catch (parseErr) {
-            console.error("Failed to parse AI response:", parseErr);
-            // aiInsights stays null on parse failure
-          }
-        }
-      } catch (err: unknown) {
-        console.error(
-          "AI analysis failed:",
-          err instanceof Error ? err.message : "Unknown error"
-        );
-        // Continue without AI insights
-      }
-    }
+    const pagespeedPromise = process.env.GOOGLE_PAGESPEED_API_KEY
+      ? getPageSpeedScore(url)
+          .then((psResult) => psResult.score !== null ? { score: psResult.score } : null)
+          .catch((err) => {
+            console.error(
+              "PageSpeed fetch failed:",
+              err instanceof Error ? err.message : "Unknown error"
+            );
+            return null;
+          })
+      : Promise.resolve(null);
 
-    // Handle PageSpeed
-    let pagespeed = null;
-    if (process.env.GOOGLE_PAGESPEED_API_KEY) {
-      try {
-        const psResult = await getPageSpeedScore(url);
-        if (psResult.score !== null) {
-          pagespeed = {
-            score: psResult.score,
-          };
-        }
-      } catch (err) {
-        console.error(
-          "PageSpeed fetch failed:",
-          err instanceof Error ? err.message : "Unknown error"
-        );
-      }
-    }
+    const optionalResults = await Promise.race([
+      Promise.all([aiPromise, pagespeedPromise]),
+      timeoutAfter<[AIInsights | null, { score: number } | null]>(optionalBudgetMs, [null, null]),
+    ]);
+
+    aiInsights = optionalResults[0];
+    const pagespeed = optionalResults[1];
 
     // Build response
     const result: ScanResult = {
