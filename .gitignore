@@ -5,3 +5,5 @@ node_modules
 .next/dev/cache/turbopack/2275bd85/LOG
 .next/dev/trace
 .next
+data/*.sqlite
+data/*.sqlite-*

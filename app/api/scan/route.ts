@@ -11,7 +11,12 @@ import { runDeterministicChecks, calculateScore } from "@/lib/score-engine";
 import { buildAIPrompt } from "@/lib/build-ai-prompt";
 import { generateAIInsights } from "@/lib/ai-provider";
 import { getPageSpeedScore } from "@/lib/pagespeed";
+import { saveReportRecord } from "@/lib/report-db";
+import { getAuthContext } from "@/lib/auth-server";
+import { checkAndIncrementUsage, getClientKey, getPlanLimit } from "@/lib/usage-limits";
 import { ScrapedData, ScanResult, AIInsights } from "@/types/index";
+
+export const runtime = "nodejs";
 
 // Simple in-memory rate limiter: store { url: timestamp }
 const aiCallCache = new Map<string, number>();
@@ -108,6 +113,7 @@ export async function POST(req: NextRequest) {
     const body = (await req.json()) as {
       url?: string;
       includeAI?: boolean;
+      clientId?: string;
     };
 
     const rawUrl = body?.url;
@@ -130,6 +136,20 @@ export async function POST(req: NextRequest) {
       return errorResponse(
         "Invalid URL. Only public http(s) URLs are supported.",
         400
+      );
+    }
+
+    const authContext = await getAuthContext(req);
+    const usageKey = authContext.user ? `user:${authContext.user.id}` : `guest:${getClientKey(body.clientId, req)}`;
+    const usage = await checkAndIncrementUsage(usageKey, getPlanLimit(authContext.plan));
+    if (!usage.allowed) {
+      return NextResponse.json(
+        {
+          error: `Daily scan limit reached. Your ${authContext.plan} plan includes ${usage.limit} scans per day.`,
+          limit: usage.limit,
+          remaining: usage.remaining,
+        },
+        { status: 429 }
       );
     }
 
@@ -238,7 +258,7 @@ export async function POST(req: NextRequest) {
       scannedAt: new Date().toISOString(),
     };
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json(await saveReportRecord(result, authContext.user?.id), { status: 200 });
   } catch (err: unknown) {
     console.error("Scan route error:", err);
     return errorResponse(

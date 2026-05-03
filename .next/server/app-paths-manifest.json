@@ -1,8 +1,13 @@
 {
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/api/account/route": "app/api/account/route.js",
   "/api/analyze/route": "app/api/analyze/route.js",
+  "/api/reports/[id]/route": "app/api/reports/[id]/route.js",
   "/api/scan/route": "app/api/scan/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/login/page": "app/login/page.js",
   "/page": "app/page.js",
-  "/report/page": "app/report/page.js"
+  "/report/page": "app/report/page.js",
+  "/signup/page": "app/signup/page.js"
 }

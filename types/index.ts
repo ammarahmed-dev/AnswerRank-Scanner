@@ -37,6 +37,7 @@ export interface PageSpeedData {
 }
 
 export interface ScanResult {
+  reportId?: string;
   url: string;
   score: number;
   checks: CheckResult[];
