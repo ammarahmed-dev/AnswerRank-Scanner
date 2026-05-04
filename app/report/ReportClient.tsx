@@ -7,7 +7,7 @@ import LoadingState from "../components/LoadingState";
 import ReportSectionNew from "../components/ReportSectionNew";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 
 const LOADING_STEP_TIMES = [900, 1800, 3000, 4700, 6800, 8600];
@@ -71,6 +71,10 @@ export default function ReportClient() {
 
           sessionStorage.setItem(`answerrank_report:${reportId}`, JSON.stringify(data));
           sessionStorage.setItem(`answerrank_report:${data.url}`, JSON.stringify(data));
+          const cachedCompetitors = sessionStorage.getItem(`answerrank_competitors:${reportId}`);
+          if (cachedCompetitors) {
+            data.competitorUrls = JSON.parse(cachedCompetitors) as string[];
+          }
           setReport(data);
           setState("done");
         } catch (err) {
@@ -110,7 +114,7 @@ export default function ReportClient() {
       try {
         const timeout = setTimeout(() => controller.abort(), 65000);
         const supabase = getSupabaseBrowserClient();
-        const token = supabase ? (await supabase.auth.getSession()).data.session?.access_token : undefined;
+        const token = (await getSafeSupabaseSession(supabase))?.access_token;
         const res = await fetch("/api/scan", {
           method: "POST",
           headers: {
@@ -129,6 +133,10 @@ export default function ReportClient() {
           return;
         }
 
+        const cachedCompetitors = sessionStorage.getItem(`answerrank_competitors:${sharedUrl}`);
+        if (cachedCompetitors) {
+          data.competitorUrls = JSON.parse(cachedCompetitors) as string[];
+        }
         sessionStorage.setItem(`answerrank_report:${data.url}`, JSON.stringify(data));
         if (data.reportId) {
           sessionStorage.setItem(`answerrank_report:${data.reportId}`, JSON.stringify(data));

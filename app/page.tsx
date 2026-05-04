@@ -4,7 +4,7 @@ import { CSSProperties, useEffect, useRef, useState } from "react";
 import LoadingState from "./components/LoadingState";
 import SiteFooter from "./components/SiteFooter";
 import SiteHeader from "./components/SiteHeader";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 import { useRouter } from "next/navigation";
 import {
@@ -16,6 +16,7 @@ import {
   Globe,
   Layers3,
   Lock,
+  Plus,
   Search,
   ShieldCheck,
   Target,
@@ -32,7 +33,7 @@ const CLIENT_STORAGE_KEY = "answerrank_client_id_v1";
 const trustStats = [
   { value: "6", label: "Readiness categories", text: "Metadata, headings, schema, clarity, AI readiness, and performance." },
   { value: "3", label: "Priority fixes", text: "The free report focuses attention on the highest-impact work first." },
-  { value: "0", label: "Setup required", text: "No login, no database, and deterministic fallback scoring for demos." },
+  { value: "0", label: "Setup required", text: "Run a quick scan instantly, then sign in when you want saved reports and history." },
   { value: "$9", label: "Pro report path", text: "A realistic locked upgrade section ready for Stripe checkout next." },
 ];
 
@@ -53,7 +54,7 @@ const workflow = [
 const faqs = [
   ["Does it work without API keys?", "Yes. The free scanner uses deterministic fallback scoring when OpenAI or PageSpeed keys are not configured."],
   ["Is Stripe connected?", "Not yet. The Pro Report section is a locked teaser and shows a checkout placeholder message."],
-  ["Does this store scanned URLs?", "No. There is no auth and no database in this MVP."],
+  ["Does this store scanned URLs?", "Shared reports and logged-in scan history are saved so you can revisit and copy results later."],
 ];
 
 export default function Home() {
@@ -66,6 +67,8 @@ export default function Home() {
   const [crawlCount, setCrawlCount] = useState(0);
   const [isClient, setIsClient] = useState(false);
   const [clientId, setClientId] = useState("");
+  const [showCompetitors, setShowCompetitors] = useState(false);
+  const [competitorUrls, setCompetitorUrls] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -93,6 +96,11 @@ export default function Home() {
     if (crawlCount >= MAX_CRAWLS) return setState("paywall");
     const trimmed = url.trim();
     if (!trimmed) return inputRef.current?.focus();
+    const competitors = competitorUrls
+      .split(/[\n,]+/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 3);
 
     setState("loading");
     setReport(null);
@@ -102,7 +110,7 @@ export default function Home() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 65000);
       const supabase = getSupabaseBrowserClient();
-      const token = supabase ? (await supabase.auth.getSession()).data.session?.access_token : undefined;
+      const token = (await getSafeSupabaseSession(supabase))?.access_token;
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: {
@@ -122,6 +130,9 @@ export default function Home() {
       const newCount = crawlCount + 1;
       setCrawlCount(newCount);
       localStorage.setItem(CRAWL_STORAGE_KEY, newCount.toString());
+      if (competitors.length) {
+        data.competitorUrls = competitors;
+      }
       if (data.reportId) {
         sessionStorage.setItem(`answerrank_report:${data.reportId}`, JSON.stringify(data));
       }
@@ -177,6 +188,21 @@ export default function Home() {
                     {state === "loading" ? "Scanning" : "Scan Website"}
                     <ArrowRight className="h-4 w-4" />
                   </button>
+                  <button type="button" onClick={() => setShowCompetitors(!showCompetitors)} className="hero-competitor-toggle">
+                    <Plus className="h-4 w-4" />
+                    {showCompetitors ? "Hide competitors" : "Add competitors"}
+                  </button>
+                  {showCompetitors && (
+                    <div className="hero-competitor-panel">
+                      <textarea
+                        value={competitorUrls}
+                        onChange={(event) => setCompetitorUrls(event.target.value)}
+                        placeholder={"https://competitor.com\nhttps://another.com"}
+                        rows={3}
+                      />
+                      <p>Optional. Add up to 3 competitor URLs for automatic benchmarking.</p>
+                    </div>
+                  )}
                 </form>
                 <div className="hero-assurance">
                   <span><CheckCircle2 className="h-4 w-4" /> No signup</span>
@@ -318,7 +344,7 @@ export default function Home() {
               <div>
                 <p className="launch-eyebrow">Pricing preview</p>
                 <h2>Useful free scans now. A paid Pro Report path when Stripe is ready.</h2>
-                <p>The free report includes the core score, metadata, schema found, top fixes, FAQs, and final verdict. The locked Pro section teases the commercial upgrade without adding auth, a database, or checkout yet.</p>
+                <p>The free report includes the core score, metadata, schema found, top fixes, FAQs, and final verdict. Logged-in accounts can save reports and revisit scan history.</p>
               </div>
               <div className="pricing-panel">
                 <span className="price">$9</span>

@@ -219,7 +219,6 @@ export async function POST(req: NextRequest) {
     let includeAIReport = body.includeAI && enableAI;
 
     if (includeAIReport && !checkAIRateLimit(url)) {
-      console.log(`AI call for ${url} within cooldown, silencing`);
       includeAIReport = false;
     }
 

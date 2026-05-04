@@ -49,10 +49,8 @@ export async function generateAIInsights(prompt: string): Promise<string | null>
     if (!provider.key) continue;
 
     try {
-      console.log(`Attempting ${provider.name} for AI insights...`);
       const result = await provider.call(prompt, provider.key);
       if (result) {
-        console.log(`${provider.name} succeeded`);
         return result;
       }
     } catch (err) {

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowUpRight, BarChart3, CheckCircle2, CreditCard, ExternalLink, LayoutDashboard, Loader2, UserRound } from "lucide-react";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type AccountData = {
   profile: {
@@ -58,8 +58,7 @@ export default function DashboardClient() {
         return;
       }
 
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
+      const token = (await getSafeSupabaseSession(supabase))?.access_token;
 
       if (!token) {
         router.replace("/login?next=/dashboard");

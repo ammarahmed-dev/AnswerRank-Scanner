@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { LayoutDashboard, LogOut } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getSafeSupabaseUser, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 export default function AuthButton() {
   const supabase = getSupabaseBrowserClient();
@@ -12,7 +12,9 @@ export default function AuthButton() {
   useEffect(() => {
     if (!supabase) return;
 
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    getSafeSupabaseUser(supabase)
+      .then(setUser)
+      .catch(() => setUser(null));
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
