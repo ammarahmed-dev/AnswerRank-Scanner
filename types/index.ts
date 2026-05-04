@@ -38,6 +38,7 @@ export interface PageSpeedData {
 
 export interface ScanResult {
   reportId?: string;
+  competitorUrls?: string[];
   url: string;
   score: number;
   checks: CheckResult[];
