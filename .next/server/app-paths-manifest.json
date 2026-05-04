@@ -1,14 +1,21 @@
 {
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/admin/page": "app/admin/page.js",
   "/api/account/route": "app/api/account/route.js",
+  "/api/admin/summary/route": "app/api/admin/summary/route.js",
   "/api/analyze/route": "app/api/analyze/route.js",
+  "/api/checkout/route": "app/api/checkout/route.js",
   "/api/compare/route": "app/api/compare/route.js",
+  "/api/health/route": "app/api/health/route.js",
   "/api/reports/[id]/route": "app/api/reports/[id]/route.js",
   "/api/scan/route": "app/api/scan/route.js",
+  "/api/stripe/webhook/route": "app/api/stripe/webhook/route.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
   "/report/page": "app/report/page.js",
-  "/signup/page": "app/signup/page.js"
+  "/signup/page": "app/signup/page.js",
+  "/upgrade/cancel/page": "app/upgrade/cancel/page.js",
+  "/upgrade/success/page": "app/upgrade/success/page.js"
 }

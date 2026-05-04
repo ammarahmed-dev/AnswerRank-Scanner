@@ -16,6 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import { ReactNode, useEffect, useMemo, useState } from "react";
+import UpgradeButton from "./UpgradeButton";
 
 interface Props {
   report: ScanResult;
@@ -484,6 +485,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
             text="A launch-ready implementation plan built from this scan."
           />
           <button onClick={handleCopy} className="btn btn-secondary">Copy expanded report</button>
+          <UpgradeButton>Unlock Pro</UpgradeButton>
         </div>
 
         <div className="pro-executive-panel">

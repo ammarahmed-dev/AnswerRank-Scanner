@@ -4,6 +4,7 @@ import { CSSProperties, useEffect, useRef, useState } from "react";
 import LoadingState from "./components/LoadingState";
 import SiteFooter from "./components/SiteFooter";
 import SiteHeader from "./components/SiteHeader";
+import UpgradeButton from "./components/UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 import { useRouter } from "next/navigation";
@@ -53,7 +54,7 @@ const workflow = [
 
 const faqs = [
   ["Does it work without API keys?", "Yes. The free scanner uses deterministic fallback scoring when OpenAI or PageSpeed keys are not configured."],
-  ["Is Stripe connected?", "Not yet. The Pro Report section is a locked teaser and shows a checkout placeholder message."],
+  ["Is Stripe connected?", "Yes. Pro upgrades use Stripe Checkout and unlock higher scan limits after payment."],
   ["Does this store scanned URLs?", "Shared reports and logged-in scan history are saved so you can revisit and copy results later."],
 ];
 
@@ -343,7 +344,7 @@ export default function Home() {
             <div className="launch-container pricing-grid">
               <div>
                 <p className="launch-eyebrow">Pricing preview</p>
-                <h2>Useful free scans now. A paid Pro Report path when Stripe is ready.</h2>
+                <h2>Useful free scans now. Pro upgrades when you need more volume.</h2>
                 <p>The free report includes the core score, metadata, schema found, top fixes, FAQs, and final verdict. Logged-in accounts can save reports and revisit scan history.</p>
               </div>
               <div className="pricing-panel">
@@ -354,7 +355,7 @@ export default function Home() {
                   <li><Lock className="h-4 w-4" /> Competitor/entity comparison</li>
                   <li><Lock className="h-4 w-4" /> Exportable PDF checklist</li>
                 </ul>
-                <button onClick={() => alert("Stripe checkout will be connected in the next step.")} className="btn btn-primary">Unlock Full Report</button>
+                <UpgradeButton>Upgrade to Pro</UpgradeButton>
               </div>
             </div>
           </section>
@@ -391,8 +392,9 @@ export default function Home() {
           <div className="pricing-panel">
             <span className="price">$9</span>
             <strong>Free demo limit reached</strong>
-            <p>Stripe checkout will be connected in the next step.</p>
-            <button onClick={() => setState("idle")} className="btn btn-primary">Back to scanner</button>
+            <p>Upgrade to Pro for higher scan limits and saved report workflows.</p>
+            <UpgradeButton>Upgrade to Pro</UpgradeButton>
+            <button onClick={() => setState("idle")} className="btn btn-secondary">Back to scanner</button>
           </div>
         </section>
       )}

@@ -2109,6 +2109,35 @@ a { color: inherit; }
     var(--color-card);
 }
 
+.dashboard-admin-card {
+  border-color: rgba(56, 189, 248, 0.26);
+  background:
+    radial-gradient(circle at 85% 0%, rgba(56, 189, 248, 0.18), transparent 13rem),
+    var(--color-card);
+}
+
+.admin-stat-grid {
+  margin-bottom: 16px;
+}
+
+.admin-stat-card {
+  min-height: 190px;
+}
+
+.admin-stat-card > span:not(.icon-tile) {
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.admin-stat-card > strong {
+  margin-top: auto;
+  color: white;
+  font-size: 3rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
 .dashboard-upgrade-card ul {
   display: grid;
   gap: 10px;

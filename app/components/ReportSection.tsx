@@ -64,7 +64,7 @@ export default function ReportSection({ report, onReset }: Props) {
   };
 
   const showUpgrade = () => {
-    setNotice("Stripe checkout will be connected in the next step.");
+    setNotice("Use the Pro upgrade button to open Stripe Checkout.");
     setTimeout(() => setNotice(""), 2800);
   };
 
