@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
+import { isMasterAdmin } from "@/lib/admin";
 import { getPlanLimit } from "@/lib/usage-limits";
 
 export const runtime = "nodejs";
@@ -90,6 +91,7 @@ export async function GET(req: Request) {
       id: auth.user.id,
       email: auth.user.email ?? "",
       plan: auth.plan,
+      isAdmin: isMasterAdmin(auth.user.email),
     },
     usage: {
       count: scanCount,

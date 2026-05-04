@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, BarChart3, CheckCircle2, CreditCard, ExternalLink, LayoutDashboard, Loader2, UserRound } from "lucide-react";
+import { ArrowUpRight, BarChart3, CheckCircle2, CreditCard, ExternalLink, LayoutDashboard, Loader2, ShieldCheck, UserRound } from "lucide-react";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
+import UpgradeButton from "../components/UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type AccountData = {
@@ -12,6 +13,7 @@ type AccountData = {
     id: string;
     email: string;
     plan: "guest" | "free" | "pro" | "agency";
+    isAdmin?: boolean;
   };
   usage: {
     count: number;
@@ -132,6 +134,21 @@ export default function DashboardClient() {
             </div>
 
             <div className="dashboard-grid">
+              {account.profile.isAdmin && (
+                <section className="surface dashboard-card dashboard-admin-card">
+                  <div className="dashboard-card-title">
+                    <span className="icon-tile"><ShieldCheck className="h-5 w-5" /></span>
+                    <div>
+                      <h2>Owner admin</h2>
+                      <p>Private app controls.</p>
+                    </div>
+                  </div>
+                  <strong className="dashboard-plan-name">Admin</strong>
+                  <p className="dashboard-plan-copy">View users, scan activity, paid accounts, and recent reports.</p>
+                  <a href="/admin" className="btn btn-secondary">Open admin</a>
+                </section>
+              )}
+
               <section className="surface dashboard-card dashboard-profile-card">
                 <div className="dashboard-card-title">
                   <span className="icon-tile"><UserRound className="h-5 w-5" /></span>
@@ -199,7 +216,7 @@ export default function DashboardClient() {
                   <li>Saved report history</li>
                   <li>Shareable client report links</li>
                 </ul>
-                <a href="/#pricing" className="btn btn-primary">Upgrade plan</a>
+                <UpgradeButton>Upgrade plan</UpgradeButton>
               </section>
             </div>
 

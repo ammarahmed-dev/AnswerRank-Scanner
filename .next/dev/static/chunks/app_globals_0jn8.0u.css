@@ -458,6 +458,10 @@
     height: calc(var(--spacing) * 7);
   }
 
+  .h-8 {
+    height: calc(var(--spacing) * 8);
+  }
+
   .h-9 {
     height: calc(var(--spacing) * 9);
   }
@@ -488,6 +492,10 @@
 
   .w-7 {
     width: calc(var(--spacing) * 7);
+  }
+
+  .w-8 {
+    width: calc(var(--spacing) * 8);
   }
 
   .w-9 {
@@ -3635,6 +3643,34 @@ a {
 .dashboard-upgrade-card {
   background: radial-gradient(circle at 90% 10%, #8b5cf638, transparent 15rem),
     var(--color-card);
+}
+
+.dashboard-admin-card {
+  background: radial-gradient(circle at 85% 0%, #38bdf82e, transparent 13rem),
+    var(--color-card);
+  border-color: #38bdf842;
+}
+
+.admin-stat-grid {
+  margin-bottom: 16px;
+}
+
+.admin-stat-card {
+  min-height: 190px;
+}
+
+.admin-stat-card > span:not(.icon-tile) {
+  color: var(--color-ink-muted);
+  font-size: .9rem;
+  font-weight: 850;
+}
+
+.admin-stat-card > strong {
+  color: #fff;
+  margin-top: auto;
+  font-size: 3rem;
+  font-weight: 950;
+  line-height: 1;
 }
 
 .dashboard-upgrade-card ul {
