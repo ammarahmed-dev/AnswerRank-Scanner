@@ -72,6 +72,31 @@ export default function Home() {
   const [showCompetitors, setShowCompetitors] = useState(false);
   const [competitorUrls, setCompetitorUrls] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const refreshAccountUsage = async () => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    const token = (await getSafeSupabaseSession(supabase))?.access_token;
+    if (!token) {
+      setAccount({ plan: "guest", isAdmin: false, remaining: null, unlimited: false });
+      return;
+    }
+    try {
+      const res = await fetch("/api/account", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+      const data = (await res.json()) as { profile: { plan: "guest" | "free" | "pro" | "agency"; isAdmin?: boolean }; usage: { remaining: number | null; unlimited: boolean } };
+      setAccount({
+        plan: data.profile.plan,
+        isAdmin: Boolean(data.profile.isAdmin),
+        remaining: data.usage.remaining,
+        unlimited: data.usage.unlimited,
+      });
+    } catch {
+      return;
+    }
+  };
 
   useEffect(() => {
     setIsClient(true);
@@ -82,37 +107,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let active = true;
     async function loadAccount() {
-      const supabase = getSupabaseBrowserClient();
-      if (!supabase) return;
-      const token = (await getSafeSupabaseSession(supabase))?.access_token;
-      if (!token) {
-        if (active) setAccount({ plan: "guest", isAdmin: false, remaining: null, unlimited: false });
-        return;
-      }
-      try {
-        const res = await fetch("/api/account", {
-          headers: { Authorization: `Bearer ${token}` },
-          cache: "no-store",
-        });
-        if (!res.ok) return;
-        const data = (await res.json()) as { profile: { plan: "guest" | "free" | "pro" | "agency"; isAdmin?: boolean }; usage: { remaining: number | null; unlimited: boolean } };
-        if (!active) return;
-        setAccount({
-          plan: data.profile.plan,
-          isAdmin: Boolean(data.profile.isAdmin),
-          remaining: data.usage.remaining,
-          unlimited: data.usage.unlimited,
-        });
-      } catch {
-        return;
-      }
+      await refreshAccountUsage();
     }
     loadAccount();
-    return () => {
-      active = false;
-    };
   }, []);
 
   useEffect(() => {
@@ -168,6 +166,7 @@ export default function Home() {
         sessionStorage.setItem(`answerrank_report:${data.reportId}`, JSON.stringify(data));
       }
       sessionStorage.setItem(`answerrank_report:${data.url}`, JSON.stringify(data));
+      await refreshAccountUsage();
       setReport(data);
       setState("done");
       router.push(data.reportId ? `/report?id=${data.reportId}` : `/report?url=${encodeURIComponent(data.url)}`);
