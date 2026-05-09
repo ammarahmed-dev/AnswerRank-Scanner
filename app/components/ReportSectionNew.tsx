@@ -2,709 +2,480 @@
 
 import { CheckResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
-import {
-  CheckCircle2,
-  Copy,
-  Crown,
-  ExternalLink,
-  AlertCircle,
-  Info,
-  Lightbulb,
-  Lock,
-  RotateCcw,
-  ShieldCheck,
-  Zap,
-} from "lucide-react";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { AlertCircle, CheckCircle2, Copy, Crown, Download, ExternalLink, Lock, RotateCcw, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import UpgradeButton from "./UpgradeButton";
+import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 interface Props {
   report: ScanResult;
   onReset: () => void;
 }
 
-type CompetitorResult = {
-  url: string;
-  score: number;
-  metrics: {
-    overall: number;
-    entity: number;
-    schema: number;
-    proof: number;
-  };
+type Priority = "critical" | "high" | "medium" | "low";
+type Impact = "high" | "medium" | "low";
+type Effort = "easy" | "medium" | "hard";
+type Category = "schema" | "metadata" | "content" | "performance" | "trust" | "ai-readiness" | "headings";
+
+type ReportIssue = {
+  id: string;
+  title: string;
+  priority: Priority;
+  impact: Impact;
+  effort: Effort;
+  category: Category;
+  problem: string;
+  whyItMatters: string;
+  recommendedFix: string;
+  example?: string;
 };
 
-const statusColors = {
-  pass: "audit-pass",
-  warn: "audit-warn",
-  fail: "audit-fail",
+type Plan = "guest" | "free" | "pro" | "agency";
+
+const CATEGORY_LABELS: Record<Category, string> = {
+  schema: "Schema",
+  metadata: "Metadata",
+  content: "Content Clarity",
+  performance: "Performance",
+  trust: "Trust Signals",
+  "ai-readiness": "AI Answer Readiness",
+  headings: "Headings",
 };
 
-const statusIcons = {
-  pass: <CheckCircle2 className="h-4 w-4 text-emerald-300" />,
-  warn: <AlertCircle className="h-4 w-4 text-amber-300" />,
-  fail: <AlertCircle className="h-4 w-4 text-red-300" />,
-};
-
-const statusLabels = {
-  pass: "Passing",
-  warn: "Needs attention",
-  fail: "Critical issue",
-};
-
-const statusAdvice = {
-  pass: "This signal is in good shape. Keep it consistent as the page evolves.",
-  warn: "This is usable, but tightening it will improve AI and search confidence.",
-  fail: "Prioritize this fix. Missing or weak signals can reduce visibility and trust.",
-};
-
-const CHECK_GROUPS: Record<string, string> = {
-  title: "Metadata",
-  meta_desc: "Metadata",
-  h1: "Content Structure",
-  heading_structure: "Content Structure",
-  schema_present: "Schema",
-  faq_schema: "Schema",
-  article_schema: "Schema",
-  og_tags: "Social Preview",
-  og_image: "Social Preview",
-  https: "Technical Trust",
-  robots: "Indexing",
-  sitemap: "Indexing",
-  alt_text: "Accessibility",
-  word_count: "Content Depth",
-  internal_links: "Site Architecture",
-  structured_density: "Schema",
-};
-
-function getAction(check: CheckResult) {
-  if (check.status === "pass") return "Monitor this during future content updates.";
-  if (check.id === "title") return "Rewrite the title to be clear, specific, and close to 30-60 characters.";
-  if (check.id === "meta_desc") return "Add a concise benefit-led meta description around 120-160 characters.";
-  if (check.id === "h1") return "Use one clear H1 that names the primary page topic or offer.";
-  if (check.id === "heading_structure") return "Organize sections with H2s first, then H3s underneath them.";
-  if (check.id.includes("schema")) return "Add JSON-LD for the page type, FAQs, organization, and key entities where relevant.";
-  if (check.id === "og_tags") return "Add Open Graph title and description for richer previews.";
-  if (check.id === "og_image") return "Set a high-quality social preview image.";
-  if (check.id === "https") return "Serve the page over HTTPS before promoting it.";
-  if (check.id === "robots") return "Expose and review robots.txt so crawlers can understand access rules.";
-  if (check.id === "sitemap") return "Publish sitemap.xml and submit it to search tools.";
-  if (check.id === "alt_text") return "Add descriptive alt text to meaningful images.";
-  if (check.id === "word_count") return "Expand the page with clearer proof, FAQs, use cases, and entity-rich copy.";
-  if (check.id === "internal_links") return "Add contextual internal links to relevant service, proof, and FAQ pages.";
-  return "Review this signal and bring it closer to the recommended standard.";
+function statusLabel(score: number) {
+  if (score >= 85) return "Excellent";
+  if (score >= 70) return "Strong";
+  if (score >= 50) return "Needs Work";
+  return "Poor";
 }
 
-function getEffort(check: CheckResult) {
-  if (check.id.includes("schema")) return "Medium";
-  if (check.id === "word_count" || check.id === "heading_structure") return "Medium";
-  return "Low";
+function priorityFromWeight(weight: number): Priority {
+  if (weight >= 10) return "critical";
+  if (weight >= 7) return "high";
+  if (weight >= 4) return "medium";
+  return "low";
 }
 
-function getSchemaChecklist(checks: CheckResult[]) {
-  const hasSchema = checks.some((check) => check.id === "schema_present" && check.status === "pass");
-  const hasFaq = checks.some((check) => check.id === "faq_schema" && check.status === "pass");
-  const hasArticle = checks.some((check) => check.id === "article_schema" && check.status === "pass");
+function mapCategory(id: string): Category {
+  if (id.includes("schema")) return "schema";
+  if (id === "title" || id === "meta_desc" || id.includes("og")) return "metadata";
+  if (id.includes("heading") || id === "h1") return "headings";
+  if (id === "https" || id === "robots" || id === "sitemap") return "trust";
+  if (id === "word_count" || id === "internal_links" || id === "alt_text") return "content";
+  return "ai-readiness";
+}
 
+function effortById(id: string): Effort {
+  if (id.includes("schema")) return "medium";
+  if (id === "word_count" || id === "heading_structure") return "hard";
+  return "easy";
+}
+
+function impactByPriority(priority: Priority): Impact {
+  if (priority === "critical" || priority === "high") return "high";
+  if (priority === "medium") return "medium";
+  return "low";
+}
+
+function recommendedFix(check: CheckResult) {
+  if (check.id === "title") return "Rewrite the title to include the primary offer and audience in 30-60 characters.";
+  if (check.id === "meta_desc") return "Add a clear 120-160 character meta description with problem, solution, and proof.";
+  if (check.id === "h1") return "Use one H1 that states exactly what the page offers and who it is for.";
+  if (check.id === "heading_structure") return "Restructure sections with H2 and H3 hierarchy to improve crawl and comprehension.";
+  if (check.id.includes("schema")) return "Add JSON-LD for Organization, WebPage, FAQPage, and page-relevant entity schema.";
+  if (check.id === "https") return "Serve the page on HTTPS and redirect all HTTP requests.";
+  if (check.id === "robots") return "Publish a crawl-safe robots.txt and validate it in search tools.";
+  if (check.id === "sitemap") return "Create sitemap.xml and submit it to search indexing tools.";
+  if (check.id === "word_count") return "Add use-case detail, proof points, and concise FAQ blocks.";
+  if (check.id === "internal_links") return "Add contextual internal links to service, proof, and FAQ pages.";
+  return "Improve this signal to increase answer-engine confidence and citation readiness.";
+}
+
+function issueExample(check: CheckResult) {
+  if (check.id.includes("schema")) {
+    return `{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{
+    "@type": "Question",
+    "name": "What does your product do?",
+    "acceptedAnswer": { "@type": "Answer", "text": "Short clear answer." }
+  }]
+}`;
+  }
+  if (check.id === "title") return "Example title: AI Visibility Audit for SaaS Landing Pages | AnswerRank";
+  if (check.id === "meta_desc") return "Example description: Scan any SaaS landing page and get a 60-second AI visibility audit with prioritized fixes.";
+  return undefined;
+}
+
+function normalizeIssues(checks: CheckResult[]): ReportIssue[] {
+  return checks.map((check) => {
+    const priority = priorityFromWeight(check.weight);
+    const category = mapCategory(check.id);
+    return {
+      id: check.id,
+      title: check.label,
+      priority,
+      impact: impactByPriority(priority),
+      effort: effortById(check.id),
+      category,
+      problem: check.detail,
+      whyItMatters: "Weak signals reduce how confidently AI assistants and search systems can understand and cite this page.",
+      recommendedFix: recommendedFix(check),
+      example: issueExample(check),
+    };
+  });
+}
+
+function badgeTone(value: string) {
+  if (value === "critical" || value === "high") return "badge-danger";
+  if (value === "medium") return "badge-warn";
+  return "badge-neutral";
+}
+
+function getChecklist() {
   return [
-    { title: "Organization schema", done: hasSchema, detail: "Identify brand name, URL, logo, social profiles, and primary contact points." },
-    { title: "WebPage schema", done: hasSchema, detail: "Describe the page topic, canonical URL, primary entity, and publisher." },
-    { title: "FAQPage schema", done: hasFaq, detail: "Add concise question/answer pairs for buyer objections and AI answer extraction." },
-    { title: "Article or BlogPosting schema", done: hasArticle, detail: "Use when the page is educational, editorial, or guide-style content." },
-    { title: "BreadcrumbList schema", done: false, detail: "Clarify where this page sits in the site hierarchy." },
-    { title: "SameAs entity links", done: false, detail: "Connect the brand to authoritative profiles and proof sources." },
+    "Add FAQ section to homepage",
+    "Add FAQPage schema",
+    "Add Organization schema",
+    "Improve H1 clarity",
+    "Add use-case section",
+    "Add comparison/alternative content",
+    "Add trust signals above the fold",
   ];
 }
 
-function getRecommendedFaqs(report: ScanResult) {
-  const host = (() => {
-    try {
-      return new URL(report.url).hostname.replace(/^www\./, "");
-    } catch {
-      return "this company";
-    }
-  })();
-
-  const base = [
-    `What does ${host} help customers do?`,
-    `Who is ${host} best suited for?`,
-    `What problem does ${host} solve?`,
-    `How is ${host} different from alternatives?`,
-    `What proof or results does ${host} provide?`,
-    `How does pricing or engagement work?`,
-    `What should a new customer do first?`,
-    `Which use cases does ${host} support?`,
-    `What integrations, process, or requirements should customers know?`,
-    `How can someone contact or evaluate ${host}?`,
-  ];
-
-  const fromAI = report.aiInsights?.recommendations
-    .slice(0, 3)
-    .map((rec) => `How should the page address: ${rec.replace(/[.?!]$/, "")}?`) ?? [];
-
-  return [...fromAI, ...base].slice(0, 10);
-}
-
-function getAiBreakdown(report: ScanResult) {
-  const failed = report.checks.filter((check) => check.status === "fail").length;
-  const warnings = report.checks.filter((check) => check.status === "warn").length;
-  const schemaOk = report.checks.some((check) => check.id.includes("schema") && check.status === "pass");
-
+function getFaqs(host: string) {
   return [
-    { label: "Entity clarity", value: report.score >= 70 ? "Strong" : "Needs sharpening", detail: "Make the brand, audience, offer, and category explicit in headings and metadata." },
-    { label: "Answer readiness", value: failed ? "Limited" : "Good", detail: failed ? `${failed} critical signals reduce confidence for AI summaries.` : "Core signals are present enough for a clear summary." },
-    { label: "Schema coverage", value: schemaOk ? "Detected" : "Missing", detail: schemaOk ? "Structured data exists; expand it with FAQ and entity detail." : "Add JSON-LD so answer engines can parse page meaning directly." },
-    { label: "Content depth", value: warnings > 4 ? "Thin areas found" : "Usable", detail: "Add proof, FAQs, use cases, and decision criteria where the page is light." },
+    { q: `What does ${host} help teams do?`, a: `${host} helps teams improve AI visibility with structured, answer-ready page signals.` },
+    { q: `Who is ${host} best for?`, a: "It is best for SaaS teams, growth marketers, and founders optimizing discoverability." },
+    { q: `How is ${host} different from a basic SEO audit?`, a: "It focuses on AI answer-readiness, schema clarity, and citation confidence." },
+    { q: `What should we fix first?`, a: "Start with critical schema/metadata gaps, then improve content clarity and trust signals." },
+    { q: `How often should pages be rescanned?`, a: "Rescan after major copy, schema, or structural updates to validate progress." },
   ];
-}
-
-function checkValue(checks: CheckResult[], id: string) {
-  const status = checks.find((check) => check.id === id)?.status;
-  if (status === "pass") return 100;
-  if (status === "warn") return 60;
-  return 20;
-}
-
-function average(values: number[]) {
-  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
-}
-
-function getCurrentMetrics(report: ScanResult) {
-  return {
-    overall: report.score,
-    entity: average([checkValue(report.checks, "title"), checkValue(report.checks, "meta_desc"), checkValue(report.checks, "h1")]),
-    schema: average([checkValue(report.checks, "schema_present"), checkValue(report.checks, "faq_schema")]),
-    proof: average([checkValue(report.checks, "word_count"), checkValue(report.checks, "alt_text"), checkValue(report.checks, "internal_links")]),
-  };
 }
 
 export default function ReportSectionNew({ report, onReset }: Props) {
-  const { url, score, checks, aiInsights, pagespeed, scannedAt } = report;
   const [notice, setNotice] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [shareCopied, setShareCopied] = useState(false);
-  const [expandedCheck, setExpandedCheck] = useState<string | null>(null);
-  const [competitorUrls, setCompetitorUrls] = useState("");
-  const [competitors, setCompetitors] = useState<CompetitorResult[]>([]);
-  const [compareLoading, setCompareLoading] = useState(false);
-  const [compareError, setCompareError] = useState("");
-
-  const passChecks = checks.filter((c) => c.status === "pass");
-  const warnChecks = checks.filter((c) => c.status === "warn");
-  const failChecks = checks.filter((c) => c.status === "fail");
-  const schemaDetected = checks.some((c) => c.id.toLowerCase().includes("schema") && c.status === "pass");
-  const readinessLabel = score >= 75 ? "Strong" : score >= 50 ? "Needs Work" : "At Risk";
-  const entityNodes = ["Brand", "Category", "Audience", "Use Cases", "Proof", "FAQs", "Schema"];
-  const priorityChecks = useMemo(
-    () => [...failChecks, ...warnChecks].sort((a, b) => b.weight - a.weight).slice(0, 4),
-    [failChecks, warnChecks]
-  );
-  const roadmap = useMemo(() => [...failChecks, ...warnChecks].sort((a, b) => b.weight - a.weight).slice(0, 6), [failChecks, warnChecks]);
-  const schemaChecklist = useMemo(() => getSchemaChecklist(checks), [checks]);
-  const recommendedFaqs = useMemo(() => getRecommendedFaqs(report), [report]);
-  const aiBreakdown = useMemo(() => getAiBreakdown(report), [report]);
-  const currentMetrics = useMemo(() => getCurrentMetrics(report), [report]);
-  const reportIdLabel = report.reportId ? report.reportId.slice(0, 8) : "Live scan";
+  const [plan, setPlan] = useState<Plan>("guest");
+  const [copyOk, setCopyOk] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const checks = report.checks;
 
   useEffect(() => {
-    if (!report.competitorUrls?.length || competitors.length || compareLoading) return;
-    setCompetitorUrls(report.competitorUrls.join("\n"));
-    runCompare(report.competitorUrls);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [report.competitorUrls]);
-
-  const runCompare = async (urls: string[]) => {
-    if (!urls.length) {
-      setCompareError("Add at least one competitor URL.");
-      return;
-    }
-
-    setCompareLoading(true);
-    setCompareError("");
-
-    try {
-      const res = await fetch("/api/compare", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls }),
-      });
-      const data = (await res.json()) as { competitors?: CompetitorResult[]; error?: string };
-
-      if (!res.ok || data.error) {
-        setCompareError(data.error ?? "Could not compare these URLs.");
-        return;
+    async function loadPlan() {
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) return;
+      const token = (await getSafeSupabaseSession(supabase))?.access_token;
+      if (!token) return setPlan("guest");
+      try {
+        const res = await fetch("/api/account", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+        if (!res.ok) return setPlan("free");
+        const data = (await res.json()) as { profile?: { plan?: Plan } };
+        setPlan(data.profile?.plan ?? "free");
+      } catch {
+        setPlan("free");
       }
-
-      setCompetitors(data.competitors ?? []);
-    } catch {
-      setCompareError("Could not compare these URLs.");
-    } finally {
-      setCompareLoading(false);
     }
-  };
+    loadPlan();
+  }, []);
 
-  const handleCompare = async () => {
-    const urls = competitorUrls.split(/[\n,]+/).map((item) => item.trim()).filter(Boolean).slice(0, 3);
-    await runCompare(urls);
-  };
-
-  const handleCopyShareLink = async () => {
-    const href = report.reportId
-      ? `${window.location.origin}/report?id=${report.reportId}`
-      : window.location.href;
-
+  const isPro = plan === "pro" || plan === "agency";
+  const host = useMemo(() => {
     try {
-      await navigator.clipboard.writeText(href);
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2000);
+      return new URL(report.url).hostname.replace(/^www\./, "");
     } catch {
-      setNotice("Clipboard access was blocked.");
-      setTimeout(() => setNotice(""), 3000);
+      return "your company";
     }
-  };
+  }, [report.url]);
+  const issues = useMemo(
+    () => normalizeIssues(checks).filter((issue) => checks.find((c) => c.id === issue.id)?.status !== "pass"),
+    [checks]
+  );
+  const critical = issues.filter((i) => i.priority === "critical");
+  const high = issues.filter((i) => i.priority === "high");
+  const nice = issues.filter((i) => i.priority === "medium" || i.priority === "low");
+  const visibleIssues = isPro ? issues : issues.slice(0, 3);
+  const hiddenCount = Math.max(0, issues.length - visibleIssues.length);
+  const scoreStatus = statusLabel(report.score);
+  const diagnosis = issues[0]?.problem ?? "Core visibility signals are in good shape.";
+  const topOpportunity = issues[0]?.recommendedFix ?? "Keep schema and answer blocks current as pages evolve.";
 
-  const handleCopy = async () => {
+  const categoryScores = useMemo(() => {
+    const groups: Record<Category, number[]> = {
+      metadata: [],
+      headings: [],
+      schema: [],
+      content: [],
+      "ai-readiness": [],
+      performance: [],
+      trust: [],
+    };
+
+    checks.forEach((check) => {
+      const category = mapCategory(check.id);
+      const value = check.status === "pass" ? 100 : check.status === "warn" ? 60 : 25;
+      groups[category].push(value);
+    });
+
+    if (report.pagespeed?.score !== undefined) {
+      groups.performance.push(report.pagespeed.score);
+    }
+
+    return (Object.entries(groups) as Array<[Category, number[]]>).map(([category, values]) => ({
+      category,
+      score: values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0,
+    }));
+  }, [checks, report.pagespeed?.score]);
+
+  const schemaSuggestions = [
+    "Organization",
+    "WebPage",
+    "FAQPage",
+    "BreadcrumbList",
+    "Product or Service",
+  ];
+  const detectedSchema = checks.some((check) => check.id === "schema_present" && check.status === "pass");
+  const faqs = getFaqs(host);
+  const checklist = getChecklist();
+
+  const copyReport = async () => {
     const lines = [
-      `AnswerRank Report for ${url}`,
-      `Score: ${score}/100`,
-      `Scanned: ${new Date(scannedAt).toLocaleString()}`,
+      `AnswerRank Report - ${report.url}`,
+      `Score: ${report.score} (${scoreStatus})`,
+      `Scanned: ${new Date(report.scannedAt).toLocaleString()}`,
       "",
-      "Passed Checks:",
-      ...passChecks.map((c) => `PASS: ${c.label}: ${c.detail}`),
-      "",
-      "Warnings:",
-      ...warnChecks.map((c) => `WARN: ${c.label}: ${c.detail}`),
-      "",
-      "Failed Checks:",
-      ...failChecks.map((c) => `FAIL: ${c.label}: ${c.detail}`),
+      "Top Issues:",
+      ...visibleIssues.map((issue, i) => `${i + 1}. ${issue.title} [${issue.priority}] - ${issue.recommendedFix}`),
     ];
-
-    if (aiInsights) {
-      lines.push("", "AI Insights:", aiInsights.summary, "", "Quick Win:", aiInsights.quickWin, "", "Recommendations:");
-      aiInsights.recommendations.forEach((rec, i) => {
-        lines.push(`${i + 1}. ${rec}`);
-      });
+    if (isPro) {
+      lines.push("", "Implementation Checklist:", ...checklist.map((item) => `- ${item}`));
     }
+    await navigator.clipboard.writeText(lines.join("\n"));
+    setCopyOk(true);
+    setTimeout(() => setCopyOk(false), 1500);
+  };
 
-    lines.push(
-      "",
-      "Priority Fix Roadmap:",
-      ...roadmap.map((check, i) => `${i + 1}. ${check.label} (${getEffort(check)} effort): ${getAction(check)}`),
-      "",
-      "Schema Checklist:",
-      ...schemaChecklist.map((item) => `${item.done ? "DONE" : "TODO"}: ${item.title} - ${item.detail}`),
-      "",
-      "Recommended FAQs:",
-      ...recommendedFaqs.map((faq, i) => `${i + 1}. ${faq}`)
-    );
-
-    const text = lines.join("\n");
-
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setNotice("Clipboard access was blocked.");
-      setTimeout(() => setNotice(""), 3000);
-    }
+  const downloadPdf = () => {
+    if (!isPro) return;
+    window.print();
   };
 
   return (
     <div className="report-shell report-stack pb-8">
       <section className="surface report-hero">
         <div className="report-hero-grid">
-          <ScoreCircle score={score} />
+          <ScoreCircle score={report.score} />
           <div className="report-hero-copy">
             <div className="report-hero-badges">
-              <span className="eyebrow">Free Local Scan</span>
-              <span className="badge">{readinessLabel}</span>
-              {aiInsights && <span className="badge">AI Assisted Report</span>}
-              <span className="badge">{schemaDetected ? "Schema Detected" : "No Schema Found"}</span>
-              {pagespeed && <span className="badge">PageSpeed {pagespeed.score}/100</span>}
-              <span className="badge text-xs">{new Date(scannedAt).toLocaleDateString()}</span>
+              <span className="badge">{isPro ? "Pro Report" : "Free Preview"}</span>
+              <span className="badge">AI Assisted</span>
+              <span className="badge">Local Scan</span>
+              <span className="badge">{scoreStatus}</span>
             </div>
-            <h2 className="report-title break-words">{url}</h2>
-            <a href={url} target="_blank" rel="noreferrer" className="report-open-link">
+            <h2 className="report-title break-words">{report.url}</h2>
+            <a href={report.url} target="_blank" rel="noreferrer" className="report-open-link">
               Open page <ExternalLink className="h-3.5 w-3.5" />
             </a>
             <div className="report-save-panel">
-              <div>
-                <span>Report snapshot</span>
-                <strong>{reportIdLabel}</strong>
-              </div>
-              <div>
-                <span>Scanned</span>
-                <strong>{new Date(scannedAt).toLocaleString()}</strong>
-              </div>
-              <button type="button" onClick={handleCopyShareLink} className="btn btn-secondary report-inline-share">
-                {shareCopied ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
-                {shareCopied ? "Copied" : "Copy report link"}
-              </button>
+              <div><span>Main diagnosis</span><strong>{diagnosis}</strong></div>
+              <div><span>Top opportunity</span><strong>{topOpportunity}</strong></div>
             </div>
-            {aiInsights && (
-              <div className="verdict-box">
-                <p className="mb-2 text-sm font-bold text-cyan-100">AI Insights</p>
-                <p className="body-copy">{aiInsights.summary}</p>
-              </div>
-            )}
           </div>
         </div>
       </section>
-
-      <section className="report-command-grid">
-        <div className="surface report-card command-summary-card">
-          <div className="command-card-label">Executive Summary</div>
-          <h3>{readinessLabel} readiness, {failChecks.length} critical issue{failChecks.length === 1 ? "" : "s"}</h3>
-          <div className="summary-score-grid executive-metric-grid">
-            <MetricTile label="Passing" value={passChecks.length} tone="success" />
-            <MetricTile label="Warnings" value={warnChecks.length} tone="warning" />
-            <MetricTile label="Issues" value={failChecks.length} tone="danger" />
-            <MetricTile label="Checks" value={checks.length} tone="neutral" />
-          </div>
-        </div>
-
-        {aiInsights && (
-          <div className="surface report-card command-quick-card">
-            <SectionHeader
-              icon={<Zap className="h-4 w-4" />}
-              title="Quick Win"
-              text="Highest-impact fix to make first."
-            />
-            <p>{aiInsights.quickWin}</p>
-          </div>
-        )}
-
-        <div className="surface report-card command-priority-card">
-          <div className="command-card-label">Priority Queue</div>
-          <div className="priority-stack">
-            {priorityChecks.map((check, index) => (
-              <div key={check.id} className={`priority-compact priority-${check.status}`}>
-                <div>
-                  <em>{index + 1}</em>
-                  {statusIcons[check.status]}
-                  <span>{check.label}</span>
-                </div>
-                <strong>{check.weight}</strong>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {aiInsights && (
-        <section className="insight-grid">
-          <div className="surface report-card insight-recommendations">
-            <SectionHeader
-              icon={<Lightbulb className="h-4 w-4" />}
-              title="AI Recommendations"
-              text="Prioritized suggestions generated from the scanned page."
-            />
-            <div className="recommendation-grid">
-              {aiInsights.recommendations.slice(0, 5).map((rec, i) => (
-                <div key={rec} className="recommendation-item">
-                  <span>{i + 1}</span>
-                  <div>
-                    <strong>{i === 0 ? "Start here" : `Step ${i + 1}`}</strong>
-                    <p>{rec}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {aiInsights.contentGap && (
-            <div className="surface report-card insight-gap">
-              <SectionHeader
-                icon={<AlertCircle className="h-4 w-4" />}
-                title="Content Gap"
-                text="The missing context most likely to limit AI visibility."
-              />
-              <div className="content-gap-callout">
-                <span>Missing angle</span>
-                <p>{aiInsights.contentGap}</p>
-              </div>
-            </div>
-          )}
-        </section>
-      )}
 
       <section className="surface report-card">
-        <SectionHeader
-          icon={<Info className="h-4 w-4" />}
-          title="AI Visibility Map"
-          text="The core signals an answer engine needs to understand and cite the page."
-        />
-        <div className="entity-map">
-          {entityNodes.map((node) => (
-            <div key={node} className="entity-node">{node}</div>
+        <h3 className="section-heading">Score Breakdown</h3>
+        <p className="section-kicker mt-1">Category-level readiness for AI visibility.</p>
+        <div className="summary-score-grid executive-metric-grid mt-4">
+          {categoryScores.map((item) => (
+            <div key={item.category} className="metric-tile metric-neutral">
+              <span>{CATEGORY_LABELS[item.category]}</span>
+              <strong>{item.score}</strong>
+            </div>
           ))}
         </div>
       </section>
 
-      <div className="report-grid">
-        <main className="report-main">
-          <section className="surface report-card audit-overview-card">
-            <SectionHeader
-              icon={<ShieldCheck className="h-4 w-4" />}
-              title="Audit Overview"
-              text="The full technical scoring layer behind the readiness score."
-            />
-            <div className="status-lane-grid">
-              <StatusLane title="Critical Issues" checks={failChecks} />
-              <StatusLane title="Warnings" checks={warnChecks} />
-              <StatusLane title="Passing Signals" checks={passChecks} />
-            </div>
-          </section>
-
-          <section className="surface report-card">
-            <SectionHeader
-              icon={<Info className="h-4 w-4" />}
-              title="Detailed Audit Breakdown"
-              text="Tap a card only when you need the next action."
-            />
-            <div className="audit-detail-grid">
-              {checks.map((check) => (
-                <AuditCheckCard
-                  key={check.id}
-                  check={check}
-                  expanded={expandedCheck === check.id}
-                  onToggle={() => setExpandedCheck(expandedCheck === check.id ? null : check.id)}
-                />
-              ))}
-            </div>
-          </section>
-        </main>
-      </div>
-
-      <section className="surface pro-card pro-report-live">
-        <div className="pro-report-header">
-          <SectionHeader
-            icon={<Crown className="h-4 w-4" />}
-            title="Pro Report Preview"
-            text="A launch-ready implementation plan built from this scan."
-          />
-          <button onClick={handleCopy} className="btn btn-secondary">Copy expanded report</button>
-          <UpgradeButton>Unlock Pro</UpgradeButton>
-        </div>
-
-        <div className="pro-executive-panel">
-          <div>
-            <span>Highest leverage move</span>
-            <h3>{roadmap[0]?.label ?? "Strengthen AI visibility signals"}</h3>
-            <p>{roadmap[0] ? getAction(roadmap[0]) : "Improve page clarity, structured data, proof, and FAQ coverage."}</p>
-          </div>
-          <div className="pro-impact-metrics">
-            <div><strong>{roadmap.length}</strong><span>Fixes</span></div>
-            <div><strong>{schemaChecklist.filter((item) => !item.done).length}</strong><span>Schema tasks</span></div>
-            <div><strong>10</strong><span>FAQs</span></div>
+      <section className="report-command-grid">
+        <div className="surface report-card">
+          <div className="command-card-label">Critical Fixes</div>
+          <div className="priority-stack">
+            {critical.slice(0, 5).map((item) => <PriorityRow key={item.id} item={item} />)}
+            {!critical.length && <p className="muted-copy">No critical blockers detected.</p>}
           </div>
         </div>
-
-        <div className="pro-report-layout">
-          <div className="pro-primary-column">
-            <ProBlock title="Priority fix roadmap">
-              {roadmap.map((check, index) => (
-                <div className="pro-roadmap-row" key={check.id}>
-                  <span>{index + 1}</span>
-                  <div>
-                    <div className="pro-roadmap-heading">
-                      <strong>{check.label}</strong>
-                      <em>{getEffort(check)}</em>
-                    </div>
-                    <p>{getAction(check)}</p>
-                  </div>
-                </div>
-              ))}
-            </ProBlock>
-
-            <ProBlock title="Full AI search breakdown">
-              <div className="pro-breakdown-grid">
-                {aiBreakdown.map((item) => (
-                  <div className="pro-breakdown-card" key={item.label}>
-                    <div className="pro-breakdown-heading">
-                      <strong>{item.label}</strong>
-                      <span>{item.value}</span>
-                    </div>
-                    <p>{item.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </ProBlock>
+        <div className="surface report-card">
+          <div className="command-card-label">High-Impact Fixes</div>
+          <div className="priority-stack">
+            {high.slice(0, 5).map((item) => <PriorityRow key={item.id} item={item} />)}
+            {!high.length && <p className="muted-copy">No high-impact blockers detected.</p>}
           </div>
+        </div>
+        <div className="surface report-card">
+          <div className="command-card-label">Nice-to-Have Fixes</div>
+          <div className="priority-stack">
+            {nice.slice(0, 5).map((item) => <PriorityRow key={item.id} item={item} />)}
+            {!nice.length && <p className="muted-copy">Core quality baseline looks solid.</p>}
+          </div>
+        </div>
+      </section>
 
-          <div className="pro-secondary-column">
-            <ProBlock title="Schema implementation checklist">
-              {schemaChecklist.map((item) => (
-                <div className="pro-check-row" key={item.title}>
-                  {item.done ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Lock className="h-4 w-4 text-cyan-300" />}
+      <section className="surface report-card">
+        <h3 className="section-heading">Detailed Issues</h3>
+        <p className="section-kicker mt-1">Priority, impact, effort, and implementation guidance.</p>
+        <div className="audit-detail-grid mt-4">
+          {visibleIssues.map((issue) => (
+            <button key={issue.id} type="button" className="audit-card audit-warn" onClick={() => setExpanded(expanded === issue.id ? null : issue.id)}>
+              <div className="audit-card-top">
+                <div className="audit-card-title">
+                  <AlertCircle className="h-4 w-4 text-amber-300" />
                   <div>
-                    <strong>{item.title}</strong>
-                    <p>{item.detail}</p>
+                    <span>{CATEGORY_LABELS[issue.category]}</span>
+                    <strong>{issue.title}</strong>
                   </div>
                 </div>
-              ))}
-            </ProBlock>
-
-            <ProBlock title="Competitor/entity comparison">
-              <div className="competitor-input-panel">
-                <textarea
-                  value={competitorUrls}
-                  onChange={(event) => setCompetitorUrls(event.target.value)}
-                  placeholder={"https://competitor.com\nhttps://another.com"}
-                  rows={3}
-                />
-                <button type="button" onClick={handleCompare} disabled={compareLoading} className="btn btn-secondary">
-                  {compareLoading ? "Comparing" : "Compare URLs"}
-                </button>
+                <div className="audit-weight"><span>Priority</span><strong>{issue.priority}</strong></div>
               </div>
-              {compareError && <p className="competitor-error">{compareError}</p>}
-              <div className="pro-competitor-table">
-                {[
-                  ["Overall score", currentMetrics.overall, "overall"],
-                  ["Entity clarity", currentMetrics.entity, "entity"],
-                  ["Schema coverage", currentMetrics.schema, "schema"],
-                  ["Proof depth", currentMetrics.proof, "proof"],
-                ].map(([signal, current, key]) => {
-                  const values = competitors.map((item) => item.metrics[key as keyof CompetitorResult["metrics"]]);
-                  const best = values.length ? Math.max(...values) : null;
-                  const delta = best === null ? null : Number(current) - best;
-                  return (
-                    <div key={signal} className="pro-competitor-row">
-                      <strong>{signal}</strong>
-                      <span>{best === null ? "Add URLs" : (delta ?? 0) >= 0 ? `Ahead +${delta}` : `Behind ${delta}`}</span>
-                      <p>
-                        Your page: {current}/100
-                        {best !== null ? ` · Best competitor: ${best}/100` : " · Enter competitor URLs to generate a benchmark."}
-                      </p>
-                    </div>
-                  );
-                })}
+              <div className="audit-card-body">
+                <div className="report-badge-row">
+                  <span className={`report-mini-badge ${badgeTone(issue.priority)}`}>{issue.priority}</span>
+                  <span className={`report-mini-badge ${badgeTone(issue.impact)}`}>impact: {issue.impact}</span>
+                  <span className="report-mini-badge badge-neutral">effort: {issue.effort}</span>
+                </div>
+                <p>{issue.problem}</p>
               </div>
-              {competitors.length > 0 && (
-                <div className="competitor-url-list">
-                  {competitors.map((item) => (
-                    <div key={item.url}>
-                      <strong>{item.score}</strong>
-                      <span>{item.url}</span>
-                    </div>
-                  ))}
+              {expanded === issue.id && (
+                <div className="audit-action">
+                  <span>Why it matters</span>
+                  <p>{issue.whyItMatters}</p>
+                  <span>Recommended fix</span>
+                  <p>{issue.recommendedFix}</p>
+                  {isPro && issue.example && (
+                    <>
+                      <span>Example</span>
+                      <pre className="report-code-block">{issue.example}</pre>
+                    </>
+                  )}
                 </div>
               )}
-            </ProBlock>
-          </div>
+            </button>
+          ))}
         </div>
 
-        <ProBlock title="Recommended FAQ set">
-          <div className="pro-faq-grid">
-            {recommendedFaqs.map((faq, index) => (
-              <p key={faq}><span>{index + 1}</span>{faq}</p>
+        {!isPro && hiddenCount > 0 && (
+          <div className="locked-panel">
+            <Lock className="h-4 w-4" />
+            <p>{hiddenCount} additional issues are locked in Free Preview.</p>
+            <div className="locked-actions">
+              <UpgradeButton>Unlock Full Report</UpgradeButton>
+              <span>Get all fixes + PDF</span>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className="surface report-card">
+        <h3 className="section-heading">Schema Recommendations</h3>
+        <p className="section-kicker mt-1">{detectedSchema ? "Schema was detected. Expand coverage for better answer extraction." : "Schema is missing or partial. Add structured data next."}</p>
+        <div className="pro-check-row" style={{ marginTop: 14 }}>
+          <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+          <div>
+            <strong>Suggested schema types</strong>
+            <p>{schemaSuggestions.join(", ")}</p>
+          </div>
+        </div>
+        {isPro ? (
+          <pre className="report-code-block mt-3">{`{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "${host}",
+  "url": "${report.url}",
+  "sameAs": ["https://linkedin.com/company/your-brand"]
+}`}</pre>
+        ) : (
+          <div className="locked-inline">
+            <Lock className="h-4 w-4" /> Full schema implementation guidance is in Pro.
+          </div>
+        )}
+      </section>
+
+      <section className="surface report-card">
+        <h3 className="section-heading">Recommended FAQs</h3>
+        <p className="section-kicker mt-1">Questions your page should answer clearly.</p>
+        <div className="pro-faq-grid mt-3">
+          {(isPro ? faqs : faqs.slice(0, 2)).map((item) => (
+            <p key={item.q}><span>Q</span><strong>{item.q}</strong><br />{isPro ? item.a : "Answer template unlocked in Pro report."}</p>
+          ))}
+        </div>
+      </section>
+
+      <section className="surface report-card">
+        <h3 className="section-heading">Implementation Checklist</h3>
+        {isPro ? (
+          <div className="priority-stack mt-3">
+            {checklist.map((item) => (
+              <div key={item} className="pro-check-row">
+                <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                <div><strong>{item}</strong></div>
+              </div>
             ))}
           </div>
-        </ProBlock>
+        ) : (
+          <div className="locked-panel">
+            <Lock className="h-4 w-4" />
+            <p>Unlock full checklist, all detailed fixes, and PDF export.</p>
+            <UpgradeButton>Upgrade to Pro Report</UpgradeButton>
+          </div>
+        )}
+      </section>
+
+      <section className="surface report-card">
+        <h3 className="section-heading">PDF Download</h3>
+        <p className="section-kicker mt-1">Export this audit as PDF using browser print layout.</p>
+        {isPro ? (
+          <button className="btn btn-primary mt-3" onClick={downloadPdf}>
+            <Download className="h-4 w-4" /> Download PDF
+          </button>
+        ) : (
+          <div className="locked-inline"><Lock className="h-4 w-4" /> PDF download is available on Pro.</div>
+        )}
       </section>
 
       <div className="report-action-row flex flex-col justify-center gap-3 sm:flex-row">
-        <button onClick={handleCopy} className="btn btn-secondary">
-          {copied ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
-          {copied ? "Copied" : "Copy report"}
+        <button onClick={copyReport} className="btn btn-secondary">
+          <Copy className="h-4 w-4" /> {copyOk ? "Copied" : "Copy report summary"}
         </button>
-        <button onClick={handleCopyShareLink} className="btn btn-secondary">
-          {shareCopied ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
-          {shareCopied ? "Link copied" : "Copy report link"}
-        </button>
+        {!isPro && <UpgradeButton>Get all fixes + PDF</UpgradeButton>}
         <button onClick={onReset} className="btn btn-primary">
-          <RotateCcw className="h-4 w-4" />
-          Rescan or scan another URL
+          <RotateCcw className="h-4 w-4" /> Scan another URL
         </button>
       </div>
+
+      {!isPro && (
+        <section className="surface pro-card">
+          <div className="pro-cta-panel">
+            <strong><Crown className="h-4 w-4" /> Pro Report Value</strong>
+            <p>Full issue breakdown, step-by-step fixes, schema recommendations, recommended FAQs, PDF download, and implementation checklist.</p>
+            <UpgradeButton>Unlock Full Report</UpgradeButton>
+          </div>
+        </section>
+      )}
 
       {notice && <div className="toast">{notice}</div>}
     </div>
   );
 }
 
-function MetricTile({ label, value, tone }: { label: string; value: number; tone: "success" | "warning" | "danger" | "neutral" }) {
+function PriorityRow({ item }: { item: ReportIssue }) {
   return (
-    <div className={`metric-tile metric-${tone}`}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
-}
-
-function StatusLane({ title, checks }: { title: string; checks: CheckResult[] }) {
-  return (
-    <div className="status-lane">
-      <div className="status-lane-header">
-        <span>{title}</span>
-        <strong>{checks.length}</strong>
-      </div>
-      <div className="status-lane-list">
-        {checks.slice(0, 5).map((check) => (
-          <div key={check.id}>
-            {statusIcons[check.status]}
-            <span>{check.label}</span>
-          </div>
-        ))}
-        {checks.length === 0 && <p>No signals in this group.</p>}
-      </div>
-    </div>
-  );
-}
-
-function AuditCheckCard({ check, expanded, onToggle }: { check: CheckResult; expanded: boolean; onToggle: () => void }) {
-  return (
-    <button type="button" onClick={onToggle} className={`audit-card ${statusColors[check.status]}`}>
-      <div className="audit-card-top">
-        <div className="audit-card-title">
-          {statusIcons[check.status]}
-          <div>
-            <span>{CHECK_GROUPS[check.id] ?? "Audit Signal"}</span>
-            <strong>{check.label}</strong>
-          </div>
-        </div>
-        <div className="audit-weight">
-          <span>Weight</span>
-          <strong>{check.weight}</strong>
-        </div>
-      </div>
-
-      <div className="audit-card-body">
-        <p>{check.detail}</p>
-        <div className="audit-card-footer">
-          <span className="audit-status-pill">{statusLabels[check.status]}</span>
-          <small>{expanded ? "Action shown below" : "Tap for recommended action"}</small>
-        </div>
-      </div>
-
-      {expanded && (
-        <div className="audit-action">
-          <span>Recommended action</span>
-          <p>{getAction(check)}</p>
-        </div>
-      )}
-    </button>
-  );
-}
-
-function SectionHeader({ icon, title, text }: { icon: ReactNode; title: string; text: string }) {
-  return (
-    <div className="flex items-start gap-3">
-      <div className="icon-tile">{icon}</div>
+    <div className={`priority-compact priority-warn`}>
       <div>
-        <h3 className="section-heading">{title}</h3>
-        <p className="section-kicker mt-1">{text}</p>
+        <Sparkles className="h-4 w-4" />
+        <span>{item.title}</span>
       </div>
-    </div>
-  );
-}
-
-function ProBlock({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="pro-block">
-      <h4>{title}</h4>
-      <div>{children}</div>
+      <strong>{item.priority}</strong>
     </div>
   );
 }

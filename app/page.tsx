@@ -35,7 +35,7 @@ const trustStats = [
   { value: "6", label: "Readiness categories", text: "Metadata, headings, schema, clarity, AI readiness, and performance." },
   { value: "3", label: "Priority fixes", text: "The free report focuses attention on the highest-impact work first." },
   { value: "0", label: "Setup required", text: "No signup and no onboarding steps. Paste a public page and scan immediately." },
-  { value: "$9", label: "Pro report preview", text: "Pro checkout is currently in preview mode and will use Stripe Checkout at launch." },
+  { value: "$9", label: "Pro report", text: "Stripe Checkout is connected in sandbox mode for test upgrades and plan validation." },
 ];
 
 const auditSignals = [
@@ -56,7 +56,7 @@ const faqs = [
   ["Does it work without signup?", "Yes. You can run a free public-page scan instantly with no account required."],
   ["What does the scanner check?", "It checks schema, metadata, heading structure, content clarity, entity signals, and answer-readiness gaps on a public page."],
   ["Is this the same as a traditional SEO audit?", "Not exactly. This is a focused AI visibility audit designed for answer engines and AI-assisted discovery."],
-  ["Is Stripe connected?", "Not yet. Pro checkout is currently in preview mode. Paid reports will use Stripe Checkout at launch."],
+  ["Is Stripe connected?", "Yes. Stripe Checkout is connected in sandbox mode for testing. Live billing can be enabled at launch."],
   ["Does this store scanned URLs?", "For this MVP flow, scans are presented as a one-page report and are not positioned as a persistent scan history product."],
 ];
 
@@ -349,7 +349,7 @@ export default function Home() {
               <div>
                 <p className="launch-eyebrow">Pricing preview</p>
                 <h2>Useful free scans now. Pro upgrades when you need more volume.</h2>
-                <p>The free report includes the core score, metadata, schema found, top fixes, FAQs, and final verdict. Pro checkout is currently in preview mode. Paid reports will use Stripe Checkout at launch.</p>
+                <p>The free report includes core scoring and top findings. Pro unlocks full fixes, implementation guidance, and PDF export. Stripe Checkout is currently in sandbox mode for testing.</p>
               </div>
               <div className="pricing-panel">
                 <span className="price">$9</span>
@@ -396,7 +396,7 @@ export default function Home() {
           <div className="pricing-panel">
             <span className="price">$9</span>
             <strong>Free demo limit reached</strong>
-            <p>Upgrade preview is available while Stripe checkout is being finalized for launch.</p>
+            <p>Upgrade with Stripe sandbox to unlock the full Pro report experience for testing.</p>
             <UpgradeButton>Upgrade to Pro</UpgradeButton>
             <button onClick={() => setState("idle")} className="btn btn-secondary">Back to scanner</button>
           </div>

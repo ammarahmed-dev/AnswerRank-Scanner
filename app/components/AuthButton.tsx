@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, LogOut, ShieldCheck, UserRound } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { getSafeSupabaseUser, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
@@ -69,17 +69,21 @@ export default function AuthButton() {
             <ShieldCheck className="h-4 w-4" /> Admin
           </a>
         )}
+        <a href="/dashboard" title={user.email ?? "Account"}>
+          <UserRound className="h-4 w-4" /> Account
+        </a>
         <a href="/dashboard" title={user.email ?? "Dashboard"}>
-          <LayoutDashboard className="h-4 w-4" /> Dashboard
+          <LayoutDashboard className="h-4 w-4" /> Reports
         </a>
         <button type="button" onClick={handleLogout} aria-label="Log out">
           <LogOut className="h-4 w-4" />
         </button>
       </div>
     ) : (
-      <a href="/login" className="btn btn-secondary auth-open-button">
-        Log in
-      </a>
+      <div className="auth-guest-actions">
+        <a href="/login" className="btn btn-secondary auth-open-button">Login</a>
+        <a href="/signup" className="btn btn-secondary auth-open-button">Register</a>
+      </div>
     )
   );
 }
