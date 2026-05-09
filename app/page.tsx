@@ -8,6 +8,7 @@ import UpgradeButton from "./components/UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 import { useRouter } from "next/navigation";
+import { canRunScan, isMasterAdmin, isProUser } from "@/lib/access";
 import {
   AlertCircle,
   ArrowRight,
@@ -27,8 +28,6 @@ import {
 type AppState = "idle" | "loading" | "done" | "error" | "paywall";
 
 const LOADING_STEP_TIMES = [900, 1800, 3000, 4700, 6800, 8600];
-const MAX_CRAWLS = 20;
-const CRAWL_STORAGE_KEY = "answerrank_crawls_v4";
 const CLIENT_STORAGE_KEY = "answerrank_client_id_v1";
 
 const trustStats = [
@@ -67,7 +66,7 @@ export default function Home() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [report, setReport] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
-  const [crawlCount, setCrawlCount] = useState(0);
+  const [account, setAccount] = useState<{ plan: "guest" | "free" | "pro" | "agency"; isAdmin: boolean; remaining: number | null; unlimited: boolean } | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [clientId, setClientId] = useState("");
   const [showCompetitors, setShowCompetitors] = useState(false);
@@ -76,15 +75,44 @@ export default function Home() {
 
   useEffect(() => {
     setIsClient(true);
-    localStorage.removeItem("answerrank_crawls");
-    localStorage.removeItem("answerrank_crawls_v2");
-    localStorage.removeItem("answerrank_crawls_v3");
-    const stored = localStorage.getItem(CRAWL_STORAGE_KEY);
-    setCrawlCount(stored ? parseInt(stored, 10) : 0);
     const storedClientId = localStorage.getItem(CLIENT_STORAGE_KEY);
     const nextClientId = storedClientId || crypto.randomUUID();
     localStorage.setItem(CLIENT_STORAGE_KEY, nextClientId);
     setClientId(nextClientId);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    async function loadAccount() {
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) return;
+      const token = (await getSafeSupabaseSession(supabase))?.access_token;
+      if (!token) {
+        if (active) setAccount({ plan: "guest", isAdmin: false, remaining: null, unlimited: false });
+        return;
+      }
+      try {
+        const res = await fetch("/api/account", {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { profile: { plan: "guest" | "free" | "pro" | "agency"; isAdmin?: boolean }; usage: { remaining: number | null; unlimited: boolean } };
+        if (!active) return;
+        setAccount({
+          plan: data.profile.plan,
+          isAdmin: Boolean(data.profile.isAdmin),
+          remaining: data.usage.remaining,
+          unlimited: data.usage.unlimited,
+        });
+      } catch {
+        return;
+      }
+    }
+    loadAccount();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -96,7 +124,7 @@ export default function Home() {
 
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (crawlCount >= MAX_CRAWLS) return setState("paywall");
+    if (account && !canRunScan({ plan: account.plan, isAdmin: account.isAdmin }, account.remaining)) return setState("paywall");
     const trimmed = url.trim();
     if (!trimmed) return inputRef.current?.focus();
     const competitors = competitorUrls
@@ -126,13 +154,13 @@ export default function Home() {
       clearTimeout(timeout);
       const data = (await res.json()) as ScanResult & { error?: string };
       if (!res.ok || data.error) {
+        if (res.status === 429) {
+          setErrorMsg(data.error ?? "Free scan limit reached for today.");
+          return setState("paywall");
+        }
         setErrorMsg(data.error ?? "Something went wrong. Please try again.");
         return setState("error");
       }
-
-      const newCount = crawlCount + 1;
-      setCrawlCount(newCount);
-      localStorage.setItem(CRAWL_STORAGE_KEY, newCount.toString());
       if (competitors.length) {
         data.competitorUrls = competitors;
       }
@@ -152,7 +180,6 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    if (crawlCount >= MAX_CRAWLS) return setState("paywall");
     setState("idle");
     setReport(null);
     setErrorMsg("");
@@ -160,9 +187,17 @@ export default function Home() {
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
+  const scanCountLabel = account && isMasterAdmin({ plan: account.plan, isAdmin: account.isAdmin })
+    ? "Master Admin · Unlimited Access"
+    : account && (account.unlimited || isProUser({ plan: account.plan, isAdmin: account.isAdmin }))
+      ? "Pro · Unlimited Access"
+      : account && typeof account.remaining === "number"
+        ? `${account.remaining} free scans left`
+        : undefined;
+
   return (
     <main className="min-h-screen">
-      <SiteHeader scanCountLabel={isClient ? `${Math.max(0, MAX_CRAWLS - crawlCount)} free scans left` : undefined} />
+      <SiteHeader scanCountLabel={isClient ? scanCountLabel : undefined} />
 
       {state !== "done" && (
         <>
@@ -191,7 +226,7 @@ export default function Home() {
                     {state === "loading" ? "Scanning" : "Scan My Website"}
                     <ArrowRight className="h-4 w-4" />
                   </button>
-                  <a href="/#report" className="btn btn-secondary hero-secondary-cta">View Sample Report</a>
+                  <button type="button" onClick={() => document.getElementById("report")?.scrollIntoView({ behavior: "smooth", block: "start" })} className="btn btn-secondary hero-secondary-cta">View Sample Report</button>
                   <button type="button" onClick={() => setShowCompetitors(!showCompetitors)} className="hero-competitor-toggle">
                     <Plus className="h-4 w-4" />
                     {showCompetitors ? "Hide Compare Competitor" : "Compare Competitor"}
@@ -395,8 +430,8 @@ export default function Home() {
         <section className="launch-container paywall-section">
           <div className="pricing-panel">
             <span className="price">$9</span>
-            <strong>Free demo limit reached</strong>
-            <p>Upgrade with Stripe sandbox to unlock the full Pro report experience for testing.</p>
+            <strong>Daily scan limit reached</strong>
+            <p>{errorMsg || "Upgrade with Stripe sandbox to unlock the full Pro report experience for testing."}</p>
             <UpgradeButton>Upgrade to Pro</UpgradeButton>
             <button onClick={() => setState("idle")} className="btn btn-secondary">Back to scanner</button>
           </div>

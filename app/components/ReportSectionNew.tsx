@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle2, Copy, Crown, Download, ExternalLink, Lock, R
 import { useEffect, useMemo, useState } from "react";
 import UpgradeButton from "./UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { canDownloadPdf, canViewFullReport, isMasterAdmin } from "@/lib/access";
 
 interface Props {
   report: ScanResult;
@@ -180,7 +181,8 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     loadPlan();
   }, []);
 
-  const isPro = plan === "pro" || plan === "agency";
+  const isPro = canViewFullReport(plan);
+  const isAdmin = isMasterAdmin(plan);
   const host = useMemo(() => {
     try {
       return new URL(report.url).hostname.replace(/^www\./, "");
@@ -257,7 +259,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   };
 
   const downloadPdf = () => {
-    if (!isPro) return;
+    if (!canDownloadPdf(plan)) return;
     window.print();
   };
 
@@ -269,6 +271,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
           <div className="report-hero-copy">
             <div className="report-hero-badges">
               <span className="badge">{isPro ? "Pro Report" : "Free Preview"}</span>
+              {isAdmin && <span className="badge">Master Admin · Unlimited Access</span>}
               <span className="badge">AI Assisted</span>
               <span className="badge">Local Scan</span>
               <span className="badge">{scoreStatus}</span>

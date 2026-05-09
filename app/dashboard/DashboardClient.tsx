@@ -7,6 +7,7 @@ import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
 import UpgradeButton from "../components/UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { isMasterAdmin } from "@/lib/access";
 
 type AccountData = {
   profile: {
@@ -96,8 +97,10 @@ export default function DashboardClient() {
     return Math.min(100, Math.round((account.usage.count / account.usage.limit) * 100));
   }, [account]);
 
-  const scanCountLabel = account?.usage.unlimited
-    ? "Unlimited scans"
+  const scanCountLabel = account && isMasterAdmin({ plan: account.profile.plan, isAdmin: account.profile.isAdmin })
+    ? "Master Admin · Unlimited Access"
+    : account?.usage.unlimited
+    ? "Pro · Unlimited Access"
     : account
       ? `${account.usage.remaining} free scans left`
       : undefined;
@@ -173,6 +176,9 @@ export default function DashboardClient() {
                   </div>
                 </div>
                 <strong className="dashboard-plan-name">{planLabel(account.profile.plan)}</strong>
+                {isMasterAdmin({ plan: account.profile.plan, isAdmin: account.profile.isAdmin }) && (
+                  <p className="dashboard-plan-copy">Master Admin · Unlimited Access</p>
+                )}
                 <p className="dashboard-plan-copy">
                   {account.usage.unlimited
                     ? "Unlimited scans are active for this workspace."
