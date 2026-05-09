@@ -14,6 +14,7 @@ import { getPageSpeedScore } from "@/lib/pagespeed";
 import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { checkAndIncrementUsage, getClientKey, getPlanLimit } from "@/lib/usage-limits";
+import { isMasterAdmin } from "@/lib/admin";
 import { ScrapedData, ScanResult, AIInsights } from "@/types/index";
 
 export const runtime = "nodejs";
@@ -140,12 +141,13 @@ export async function POST(req: NextRequest) {
     }
 
     const authContext = await getAuthContext(req);
+    const effectivePlan = authContext.user && isMasterAdmin(authContext.user.email) ? "agency" : authContext.plan;
     const usageKey = authContext.user ? `user:${authContext.user.id}` : `guest:${getClientKey(body.clientId, req)}`;
-    const usage = await checkAndIncrementUsage(usageKey, getPlanLimit(authContext.plan));
+    const usage = await checkAndIncrementUsage(usageKey, getPlanLimit(effectivePlan));
     if (!usage.allowed) {
       return NextResponse.json(
         {
-          error: `Daily scan limit reached. Your ${authContext.plan} plan includes ${usage.limit} scans per day.`,
+          error: `Daily scan limit reached. Your ${effectivePlan} plan includes ${usage.limit} scans per day.`,
           limit: usage.limit,
           remaining: usage.remaining,
         },

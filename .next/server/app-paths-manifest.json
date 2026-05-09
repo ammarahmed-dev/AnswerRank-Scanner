@@ -4,6 +4,7 @@
   "/admin/page": "app/admin/page.js",
   "/api/account/route": "app/api/account/route.js",
   "/api/admin/summary/route": "app/api/admin/summary/route.js",
+  "/api/admin/users/route": "app/api/admin/users/route.js",
   "/api/analyze/route": "app/api/analyze/route.js",
   "/api/checkout/route": "app/api/checkout/route.js",
   "/api/compare/route": "app/api/compare/route.js",

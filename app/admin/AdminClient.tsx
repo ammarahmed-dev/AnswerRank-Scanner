@@ -21,6 +21,18 @@ type AdminData = {
     created_at: string;
     user_id: string | null;
   }>;
+  users?: Array<{
+    id: string;
+    email: string;
+    role: string;
+    plan: string;
+    freeScansUsed: number;
+    freeScansLeft: number | null;
+    totalReports: number;
+    createdAt: string;
+    lastSignInAt: string | null;
+    lastScanAt: string | null;
+  }>;
 };
 
 function formatDate(value: string) {
@@ -74,7 +86,18 @@ export default function AdminClient() {
         return;
       }
 
-      setData((await res.json()) as AdminData);
+      const summary = (await res.json()) as AdminData;
+      const usersRes = await fetch("/api/admin/users", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      if (!usersRes.ok) {
+        setData(summary);
+        setLoading(false);
+        return;
+      }
+      const usersData = (await usersRes.json()) as { users: AdminData["users"] };
+      setData({ ...summary, users: usersData.users ?? [] });
       setLoading(false);
     }
 
@@ -167,6 +190,47 @@ export default function AdminClient() {
                   <p>Saved reports will appear here as scans are created.</p>
                 </div>
               )}
+            </section>
+
+            <section className="surface dashboard-reports">
+              <div className="dashboard-section-header">
+                <div>
+                  <span className="launch-eyebrow">User management</span>
+                  <h2>Registered users</h2>
+                </div>
+              </div>
+              <div className="admin-users-table-wrap">
+                <table className="admin-users-table">
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>Role</th>
+                      <th>Plan</th>
+                      <th>Free used</th>
+                      <th>Free left</th>
+                      <th>Total reports</th>
+                      <th>Created</th>
+                      <th>Last sign in</th>
+                      <th>Last scan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(data.users ?? []).map((user) => (
+                      <tr key={user.id}>
+                        <td>{user.email}</td>
+                        <td>{user.role}</td>
+                        <td>{user.plan}</td>
+                        <td>{user.freeScansUsed}</td>
+                        <td>{user.freeScansLeft ?? "Unlimited"}</td>
+                        <td>{user.totalReports}</td>
+                        <td>{formatDate(user.createdAt)}</td>
+                        <td>{user.lastSignInAt ? formatDate(user.lastSignInAt) : "-"}</td>
+                        <td>{user.lastScanAt ? formatDate(user.lastScanAt) : "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </section>
           </>
         )}

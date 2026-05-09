@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
 import { getPlanLimit } from "@/lib/usage-limits";
+import { normalizeUserPlan } from "@/lib/access";
 
 export const runtime = "nodejs";
 
@@ -83,15 +84,17 @@ export async function GET(req: Request) {
     getTodayUsage(auth.user.id),
     getRecentReports(auth.user.id),
   ]);
-  const limit = getPlanLimit(auth.plan);
-  const unlimited = auth.plan === "pro" || auth.plan === "agency";
+  const isAdmin = isMasterAdmin(auth.user.email);
+  const plan = isAdmin ? "agency" : normalizeUserPlan(auth.plan);
+  const limit = getPlanLimit(plan);
+  const unlimited = plan === "pro" || plan === "agency";
 
   return NextResponse.json({
     profile: {
       id: auth.user.id,
       email: auth.user.email ?? "",
-      plan: auth.plan,
-      isAdmin: isMasterAdmin(auth.user.email),
+      plan,
+      isAdmin,
     },
     usage: {
       count: scanCount,
