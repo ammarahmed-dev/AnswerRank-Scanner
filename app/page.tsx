@@ -34,8 +34,8 @@ const CLIENT_STORAGE_KEY = "answerrank_client_id_v1";
 const trustStats = [
   { value: "6", label: "Readiness categories", text: "Metadata, headings, schema, clarity, AI readiness, and performance." },
   { value: "3", label: "Priority fixes", text: "The free report focuses attention on the highest-impact work first." },
-  { value: "0", label: "Setup required", text: "Run a quick scan instantly, then sign in when you want saved reports and history." },
-  { value: "$9", label: "Pro report path", text: "A realistic locked upgrade section ready for Stripe checkout next." },
+  { value: "0", label: "Setup required", text: "No signup and no onboarding steps. Paste a public page and scan immediately." },
+  { value: "$9", label: "Pro report preview", text: "Pro checkout is currently in preview mode and will use Stripe Checkout at launch." },
 ];
 
 const auditSignals = [
@@ -53,9 +53,11 @@ const workflow = [
 ];
 
 const faqs = [
-  ["Does it work without API keys?", "Yes. The free scanner uses deterministic fallback scoring when OpenAI or PageSpeed keys are not configured."],
-  ["Is Stripe connected?", "Yes. Pro upgrades use Stripe Checkout and unlock higher scan limits after payment."],
-  ["Does this store scanned URLs?", "Shared reports and logged-in scan history are saved so you can revisit and copy results later."],
+  ["Does it work without signup?", "Yes. You can run a free public-page scan instantly with no account required."],
+  ["What does the scanner check?", "It checks schema, metadata, heading structure, content clarity, entity signals, and answer-readiness gaps on a public page."],
+  ["Is this the same as a traditional SEO audit?", "Not exactly. This is a focused AI visibility audit designed for answer engines and AI-assisted discovery."],
+  ["Is Stripe connected?", "Not yet. Pro checkout is currently in preview mode. Paid reports will use Stripe Checkout at launch."],
+  ["Does this store scanned URLs?", "For this MVP flow, scans are presented as a one-page report and are not positioned as a persistent scan history product."],
 ];
 
 export default function Home() {
@@ -171,7 +173,7 @@ export default function Home() {
                 <p className="launch-eyebrow"><ShieldCheck className="h-4 w-4" /> Free public-page audit</p>
                 <h1>See how ready your website is for AI search.</h1>
                 <p className="hero-lede">
-                  AnswerRank scans your page and turns metadata, schema, content clarity, and answer-readiness signals into a prioritized visibility report.
+                  Paste any SaaS landing page and get a 60-second AI visibility audit covering schema, metadata, content clarity, entity signals, and answer-readiness gaps.
                 </p>
                 <form onSubmit={handleScan} className="hero-scanner" aria-label="Scan a website">
                   <div className="hero-input-wrap">
@@ -186,12 +188,13 @@ export default function Home() {
                     />
                   </div>
                   <button type="submit" disabled={state === "loading" || !url.trim()} className="btn btn-primary hero-scan-button">
-                    {state === "loading" ? "Scanning" : "Scan Website"}
+                    {state === "loading" ? "Scanning" : "Scan My Website"}
                     <ArrowRight className="h-4 w-4" />
                   </button>
+                  <a href="/#report" className="btn btn-secondary hero-secondary-cta">View Sample Report</a>
                   <button type="button" onClick={() => setShowCompetitors(!showCompetitors)} className="hero-competitor-toggle">
                     <Plus className="h-4 w-4" />
-                    {showCompetitors ? "Hide competitors" : "Add competitors"}
+                    {showCompetitors ? "Hide Compare Competitor" : "Compare Competitor"}
                   </button>
                   {showCompetitors && (
                     <div className="hero-competitor-panel">
@@ -207,8 +210,9 @@ export default function Home() {
                 </form>
                 <div className="hero-assurance">
                   <span><CheckCircle2 className="h-4 w-4" /> No signup</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> No database</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> Works without keys</span>
+                  <span><CheckCircle2 className="h-4 w-4" /> No setup required</span>
+                  <span><CheckCircle2 className="h-4 w-4" /> 60-second audit</span>
+                  <span><CheckCircle2 className="h-4 w-4" /> Free public-page scan</span>
                 </div>
               </div>
 
@@ -345,7 +349,7 @@ export default function Home() {
               <div>
                 <p className="launch-eyebrow">Pricing preview</p>
                 <h2>Useful free scans now. Pro upgrades when you need more volume.</h2>
-                <p>The free report includes the core score, metadata, schema found, top fixes, FAQs, and final verdict. Logged-in accounts can save reports and revisit scan history.</p>
+                <p>The free report includes the core score, metadata, schema found, top fixes, FAQs, and final verdict. Pro checkout is currently in preview mode. Paid reports will use Stripe Checkout at launch.</p>
               </div>
               <div className="pricing-panel">
                 <span className="price">$9</span>
@@ -392,7 +396,7 @@ export default function Home() {
           <div className="pricing-panel">
             <span className="price">$9</span>
             <strong>Free demo limit reached</strong>
-            <p>Upgrade to Pro for higher scan limits and saved report workflows.</p>
+            <p>Upgrade preview is available while Stripe checkout is being finalized for launch.</p>
             <UpgradeButton>Upgrade to Pro</UpgradeButton>
             <button onClick={() => setState("idle")} className="btn btn-secondary">Back to scanner</button>
           </div>

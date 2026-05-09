@@ -79,7 +79,7 @@ export default function ReportClient() {
           setState("done");
         } catch (err) {
           if (err instanceof DOMException && err.name === "AbortError") return;
-          setErrorMsg("Could not load this saved report. Please try again.");
+          setErrorMsg("Could not load this report. Please try again.");
           setState("error");
         }
       }
@@ -165,7 +165,7 @@ export default function ReportClient() {
       <section className="report-page" id="report-top">
         {state === "loading" && (
           <div className="launch-container py-8">
-            <LoadingState step={loadingStep} mode={reportId ? "saved-report" : "scan"} />
+            <LoadingState step={loadingStep} mode={reportId ? "report" : "scan"} />
           </div>
         )}
 
@@ -176,7 +176,7 @@ export default function ReportClient() {
               <div>
                 <strong>Report unavailable</strong>
                 <p>{errorMsg}</p>
-                <small>Open a valid shared report link or scan the URL again from the homepage.</small>
+                <small>Open a valid report link or scan the URL again from the homepage.</small>
               </div>
               <a href="/#scanner" className="btn btn-danger">Scan a URL</a>
             </div>
