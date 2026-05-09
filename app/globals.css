@@ -1171,6 +1171,12 @@ a { color: inherit; }
   font-size: 0.76rem;
   font-weight: 820;
 }
+.score-breakdown-card p {
+  margin-top: 8px;
+  color: var(--color-ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
 .report-command-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1328,6 +1334,18 @@ a { color: inherit; }
   border-radius: 14px;
   background: rgba(5, 12, 27, 0.58);
   padding: 12px;
+}
+.action-plan-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  background: rgba(56, 189, 248, 0.1);
+  color: #bfdbfe;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
 }
 .action-plan-item-text p {
   color: #eef2ff;
@@ -1578,7 +1596,7 @@ a { color: inherit; }
 }
 .roadmap-item-row {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   align-items: start;
   border: 1px solid var(--color-line);
@@ -1586,10 +1604,19 @@ a { color: inherit; }
   background: rgba(5, 12, 27, 0.48);
   padding: 10px;
 }
+.roadmap-item-main {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
 .roadmap-item-row p {
   color: var(--color-ink-soft);
   font-size: 0.9rem;
   line-height: 1.4;
+}
+.roadmap-pill-row {
+  justify-content: flex-start;
 }
 
 .pdf-card-grid {
@@ -3185,11 +3212,10 @@ a { color: inherit; }
   .issue-pill-row {
     justify-content: flex-start;
   }
-  .roadmap-item-row {
+  .roadmap-item-main {
     grid-template-columns: 16px minmax(0, 1fr);
   }
   .roadmap-item-row .issue-pill-row {
-    grid-column: 2;
     justify-content: flex-start;
   }
 }

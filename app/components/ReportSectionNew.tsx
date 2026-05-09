@@ -2,7 +2,7 @@
 
 import { CheckResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
-import { AlertCircle, CheckCircle2, Copy, Download, ExternalLink, Lock, RotateCcw, TrendingUp, Zap } from "lucide-react";
+import { AlertCircle, CheckCircle2, Copy, Download, ExternalLink, Lock, RotateCcw, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import UpgradeButton from "./UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -56,6 +56,16 @@ function statusLabel(score: number) {
   if (score >= 70) return "Strong";
   if (score >= 50) return "Needs Work";
   return "Poor";
+}
+
+function categoryNote(category: Category, score: number) {
+  if (category === "schema") return score >= 70 ? "Structured data signal looks solid." : "Schema coverage can be expanded.";
+  if (category === "metadata") return score >= 70 ? "Metadata is mostly optimized." : "Titles and descriptions need tightening.";
+  if (category === "content") return score >= 70 ? "Content depth is healthy." : "Add clearer answer-focused blocks.";
+  if (category === "headings") return score >= 70 ? "Heading hierarchy is strong." : "Heading structure needs cleanup.";
+  if (category === "trust") return score >= 70 ? "Trust baseline is stable." : "Strengthen trust and crawl signals.";
+  if (category === "performance") return score >= 70 ? "Performance posture is competitive." : "Performance wins are available.";
+  return score >= 70 ? "AI readiness trend is positive." : "AI readability can be improved.";
 }
 
 function priorityFromWeight(weight: number): Priority {
@@ -435,6 +445,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
               </div>
               <div className="score-bar"><span className="score-bar-fill" style={{ width: `${item.score}%` }} /></div>
               <small>{item.status}</small>
+              <p>{categoryNote(item.category, item.score)}</p>
             </div>
           ))}
         </div>
@@ -572,9 +583,11 @@ export default function ReportSectionNew({ report, onReset }: Props) {
                 <div className="roadmap-group-items">
                   {items.length ? items.map((item) => (
                     <div key={`${group}-${item.text}`} className="roadmap-item-row">
-                      <CheckCircle2 className="h-4 w-4" />
-                      <p>{item.text}</p>
-                      <div className="issue-pill-row">
+                      <div className="roadmap-item-main">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <p>{item.text}</p>
+                      </div>
+                      <div className="issue-pill-row roadmap-pill-row">
                         <span className={`mini-pill ${badgeTone(item.impact)}`}>impact {item.impact}</span>
                         <span className={`mini-pill ${badgeTone(item.effort)}`}>effort {item.effort}</span>
                       </div>
@@ -658,6 +671,7 @@ function PriorityColumn({ title, description, items, tone }: { title: string; de
       <div className="action-plan-items">
         {items.length ? items.slice(0, 6).map((item) => (
           <div key={`${title}-${item.id}`} className="action-plan-item">
+            <span className="action-plan-icon"><Sparkles className="h-3.5 w-3.5" /></span>
             <div className="action-plan-item-text">
               <p>{item.title}</p>
               <small>{item.problem}</small>
