@@ -13,11 +13,11 @@ const STEPS = [
 
 interface Props {
   step: number;
-  mode?: "scan" | "saved-report";
+  mode?: "scan" | "report";
 }
 
 export default function LoadingState({ step, mode = "scan" }: Props) {
-  const isSavedReport = mode === "saved-report";
+  const isReportLoad = mode === "report";
   const currentStep = Math.min(step, STEPS.length - 1);
   const progress = Math.min(92, Math.max(8, Math.round(((step + 0.25) / STEPS.length) * 100)));
 
@@ -30,22 +30,22 @@ export default function LoadingState({ step, mode = "scan" }: Props) {
             <Loader2 className="absolute h-9 w-9 animate-spin opacity-40" />
           </div>
           <div className="min-w-0">
-            <h3 className="section-heading">{isSavedReport ? "Loading saved report" : "Running AI visibility scan"}</h3>
+            <h3 className="section-heading">{isReportLoad ? "Loading report" : "Running AI visibility scan"}</h3>
             <p className="section-kicker mt-1">
-              {isSavedReport ? "Fetching the saved report snapshot." : `Current step: ${STEPS[currentStep]}`}
+              {isReportLoad ? "Preparing your one-page audit view." : `Current step: ${STEPS[currentStep]}`}
             </p>
           </div>
         </div>
-        <span className="badge">{isSavedReport ? "Saved report" : `${progress}% complete`}</span>
+        <span className="badge">{isReportLoad ? "Report view" : `${progress}% complete`}</span>
       </div>
 
       <div className="loading-progress">
-        <div className="score-bar-fill" style={{ width: `${isSavedReport ? 62 : progress}%` }} />
+        <div className="score-bar-fill" style={{ width: `${isReportLoad ? 62 : progress}%` }} />
       </div>
 
-      {isSavedReport ? (
+      {isReportLoad ? (
         <div className="saved-report-loading">
-          <span>Restoring score, checks, recommendations, and share metadata.</span>
+          <span>Loading score, checks, recommendations, and report details.</span>
         </div>
       ) : <div className="loading-step-grid">
         {STEPS.map((label, i) => {

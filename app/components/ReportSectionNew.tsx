@@ -330,7 +330,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
             </a>
             <div className="report-save-panel">
               <div>
-                <span>Saved report</span>
+                <span>Report snapshot</span>
                 <strong>{reportIdLabel}</strong>
               </div>
               <div>
@@ -339,7 +339,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
               </div>
               <button type="button" onClick={handleCopyShareLink} className="btn btn-secondary report-inline-share">
                 {shareCopied ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
-                {shareCopied ? "Copied" : "Copy share link"}
+                {shareCopied ? "Copied" : "Copy report link"}
               </button>
             </div>
             {aiInsights && (
@@ -611,7 +611,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
         </button>
         <button onClick={handleCopyShareLink} className="btn btn-secondary">
           {shareCopied ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4" />}
-          {shareCopied ? "Link copied" : "Copy share link"}
+          {shareCopied ? "Link copied" : "Copy report link"}
         </button>
         <button onClick={onReset} className="btn btn-primary">
           <RotateCcw className="h-4 w-4" />
