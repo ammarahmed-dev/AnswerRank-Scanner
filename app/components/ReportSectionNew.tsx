@@ -2,7 +2,7 @@
 
 import { CheckResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
-import { AlertCircle, CheckCircle2, Copy, Download, ExternalLink, Lock, RotateCcw } from "lucide-react";
+import { AlertCircle, CheckCircle2, Copy, Download, ExternalLink, Lock, RotateCcw, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import UpgradeButton from "./UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -35,6 +35,7 @@ type ReportIssue = {
 type SchemaRecommendation = {
   detected: string[];
   suggested: string[];
+  missing: string[];
   reasons: string[];
   jsonLd: string;
   inferred: boolean;
@@ -181,11 +182,11 @@ function inferChecklistGroups(items: string[]) {
 
 function getSchemaRecommendation(report: ScanResult, issues: ReportIssue[], host: string): SchemaRecommendation {
   const checks = report.checks;
-  const detected: string[] = [];
-  if (checks.some((c) => c.id === "schema_present" && c.status === "pass")) detected.push("JSON-LD detected");
-  if (checks.some((c) => c.id === "faq_schema" && c.status === "pass")) detected.push("FAQPage");
-  if (checks.some((c) => c.id === "article_schema" && c.status === "pass")) detected.push("Article/HowTo");
-  if (detected.length === 0) detected.push("Not detected from page content");
+  const detectedTypes: string[] = [];
+  if (checks.some((c) => c.id === "schema_present" && c.status === "pass")) detectedTypes.push("JSON-LD");
+  if (checks.some((c) => c.id === "faq_schema" && c.status === "pass")) detectedTypes.push("FAQPage");
+  if (checks.some((c) => c.id === "article_schema" && c.status === "pass")) detectedTypes.push("Article/HowTo");
+  const detected = detectedTypes.length ? detectedTypes : ["Not detected from page content."];
 
   const lowerSignals = `${report.url} ${issues.map((i) => i.problem).join(" ")} ${issues.map((i) => i.title).join(" ")}`.toLowerCase();
   const suggested = ["Organization", "WebSite", "WebPage", "FAQPage"];
@@ -197,6 +198,7 @@ function getSchemaRecommendation(report: ScanResult, issues: ReportIssue[], host
   if (checks.some((c) => c.id === "internal_links" && c.status !== "pass")) suggested.push("BreadcrumbList");
 
   const uniqueSuggested = Array.from(new Set(suggested));
+  const missing = uniqueSuggested.filter((type) => !detectedTypes.some((detectedType) => detectedType.toLowerCase().includes(type.toLowerCase())));
   const orgName = host.split(".")[0].replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
   const faqJson = {
     "@context": "https://schema.org",
@@ -239,6 +241,7 @@ function getSchemaRecommendation(report: ScanResult, issues: ReportIssue[], host
   return {
     detected,
     suggested: uniqueSuggested,
+    missing,
     reasons,
     jsonLd: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }, null, 2),
     inferred: true,
@@ -276,7 +279,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     try {
       return new URL(report.url).hostname.replace(/^www\./, "");
     } catch {
-      return "not-detected";
+      return "this website";
     }
   }, [report.url]);
 
@@ -293,11 +296,23 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const diagnosis = issues[0]?.problem ?? "Core visibility signals are in good shape.";
   const topOpportunity = issues[0]?.recommendedFix ?? "Keep schema and answer blocks current as pages evolve.";
   const topInsights = [
-    issues[0]?.title ? `${issues[0].title}: ${issues[0].problem}` : "No critical blockers were detected.",
-    report.pagespeed?.score !== undefined ? `Performance score is ${report.pagespeed.score}/100.` : "Performance score was not detected from page content.",
-    checks.some((c) => c.id === "schema_present" && c.status === "pass")
-      ? "Schema markup exists, but coverage can still be expanded."
-      : "Schema markup was not detected from page content.",
+    {
+      title: "Biggest issue",
+      text: issues[0]?.title ? `${issues[0].title}: ${issues[0].problem}` : "No critical blockers were detected.",
+      icon: AlertCircle,
+    },
+    {
+      title: "Fastest win",
+      text: issues.find((issue) => issue.effort === "easy")?.recommendedFix ?? "Apply metadata and FAQ schema updates first for quick wins.",
+      icon: Zap,
+    },
+    {
+      title: "Estimated impact",
+      text: report.pagespeed?.score !== undefined
+        ? `Performance score is ${report.pagespeed.score}/100. Resolving priority issues should increase visibility confidence.`
+        : "Performance score was not detected from page content.",
+      icon: TrendingUp,
+    },
   ];
 
   const categoryScores = useMemo(() => {
@@ -376,7 +391,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
           <div className="report-hero-copy">
             <div className="report-hero-badges">
               <span className="badge">{isPro ? "Pro Report" : "Free Preview"}</span>
-              {isAdmin && <span className="badge">Master Admin · Unlimited Access</span>}
+              {isAdmin && <span className="badge">Master Admin - Unlimited Access</span>}
               <span className="badge">{scoreStatus}</span>
               <span className="badge">AI Visibility Readiness Report</span>
             </div>
@@ -384,12 +399,25 @@ export default function ReportSectionNew({ report, onReset }: Props) {
             <a href={report.url} target="_blank" rel="noreferrer" className="report-open-link">
               Open page <ExternalLink className="h-3.5 w-3.5" />
             </a>
+            <p className="report-meta-line">
+              Scanned {new Date(report.scannedAt).toLocaleDateString()} - Score {report.score}/100 - Status {scoreStatus}
+            </p>
             <div className="report-save-panel">
               <div><span>Main diagnosis</span><strong>{diagnosis}</strong></div>
               <div><span>Top opportunity</span><strong>{topOpportunity}</strong></div>
             </div>
             <div className="insights-list">
-              {topInsights.map((insight) => <p key={insight}>{insight}</p>)}
+              {topInsights.map((insight) => {
+                const Icon = insight.icon;
+                return (
+                  <article key={insight.title} className="insight-card">
+                    <div className="insight-card-head">
+                      <span><Icon className="h-4 w-4" /> {insight.title}</span>
+                    </div>
+                    <p>{insight.text}</p>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -416,9 +444,9 @@ export default function ReportSectionNew({ report, onReset }: Props) {
         <h3 className="section-heading">Priority Action Plan</h3>
         <p className="section-kicker mt-1">Your highest-impact fixes, grouped by urgency.</p>
         <div className="action-plan-grid mt-4">
-          <PriorityColumn title="Critical" items={critical} tone="critical" />
-          <PriorityColumn title="High Impact" items={high} tone="high" />
-          <PriorityColumn title="Nice to Have" items={nice} tone="medium" />
+          <PriorityColumn title="Critical" description="Fix immediately to avoid visibility loss." items={critical} tone="critical" />
+          <PriorityColumn title="High Impact" description="Strong lift with manageable effort." items={high} tone="high" />
+          <PriorityColumn title="Nice to Have" description="Quality boosters after core fixes." items={nice} tone="medium" />
         </div>
       </section>
 
@@ -474,6 +502,14 @@ export default function ReportSectionNew({ report, onReset }: Props) {
             <article>
               <h4>Suggested schema types</h4>
               <ul>{schemaRecommendation.suggested.map((item) => <li key={item}>{item}</li>)}</ul>
+            </article>
+            <article>
+              <h4>Missing opportunities</h4>
+              <ul>
+                {schemaRecommendation.missing.length
+                  ? schemaRecommendation.missing.map((item) => <li key={item}>{item}</li>)
+                  : <li>No major schema gaps detected from this scan.</li>}
+              </ul>
             </article>
             <article>
               <h4>Why this is recommended</h4>
@@ -573,6 +609,12 @@ export default function ReportSectionNew({ report, onReset }: Props) {
             </ul>
           </div>
           <div className="pdf-action-card">
+            <div className="pdf-preview-mini" aria-hidden="true">
+              <span>AnswerRank Scanner</span>
+              <strong>AI Visibility Report</strong>
+              <small>{host}</small>
+              <em>{report.score}/100 - {scoreStatus}</em>
+            </div>
             <strong>Client-shareable audit PDF</strong>
             <p>Print-optimized white report style with clean section breaks and readable typography.</p>
             {canDownloadPdf(plan) ? (
@@ -605,17 +647,21 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   );
 }
 
-function PriorityColumn({ title, items, tone }: { title: string; items: ReportIssue[]; tone: "critical" | "high" | "medium" }) {
+function PriorityColumn({ title, description, items, tone }: { title: string; description: string; items: ReportIssue[]; tone: "critical" | "high" | "medium" }) {
   return (
     <article className="action-plan-column">
       <div className="action-plan-head">
         <span>{title}</span>
         <strong>{items.length}</strong>
       </div>
+      <p className="action-plan-desc">{description}</p>
       <div className="action-plan-items">
         {items.length ? items.slice(0, 6).map((item) => (
           <div key={`${title}-${item.id}`} className="action-plan-item">
-            <p>{item.title}</p>
+            <div className="action-plan-item-text">
+              <p>{item.title}</p>
+              <small>{item.problem}</small>
+            </div>
             <span className={`mini-pill ${badgeTone(tone)}`}>{item.priority}</span>
           </div>
         )) : <p className="muted-copy">No issues in this group.</p>}
