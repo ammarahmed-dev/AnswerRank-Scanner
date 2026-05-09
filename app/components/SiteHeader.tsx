@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import AuthButton from "./AuthButton";
 
 type Props = {
   scanCountLabel?: string;
@@ -23,6 +24,7 @@ export default function SiteHeader({ scanCountLabel }: Props) {
       <div className="header-actions">
         {scanCountLabel && <span className="header-pill">{scanCountLabel}</span>}
         <div className="header-action-buttons">
+          <AuthButton />
           <a href="/#scanner" className="btn btn-primary header-cta">Scan My Website</a>
         </div>
       </div>
