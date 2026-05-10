@@ -25,7 +25,9 @@ export default function SiteHeader({ scanCountLabel }: Props) {
         {scanCountLabel && <span className="header-pill">{scanCountLabel}</span>}
         <div className="header-action-buttons">
           <AuthButton />
-          <a href="/#scanner" className="btn btn-primary header-cta">Scan My Website</a>
+          <span className="hidden md:inline-flex">
+            <a href="/#scanner" className="btn btn-primary header-cta">Scan My Website</a>
+          </span>
         </div>
       </div>
     </header>

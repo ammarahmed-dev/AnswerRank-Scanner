@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import UpgradeButton from "./UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { canDownloadPdf, canViewFullReport, isMasterAdmin } from "@/lib/access";
+import PrintLayout from "./PrintLayout";
 
 interface Props {
   report: ScanResult;
@@ -394,6 +395,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   };
 
   return (
+    <>
     <div className="report-shell report-stack pb-8 premium-report">
       <section className="surface report-hero print-section print-cover">
         <div className="report-hero-grid">
@@ -678,6 +680,8 @@ export default function ReportSectionNew({ report, onReset }: Props) {
         </button>
       </div>
     </div>
+    <PrintLayout report={report} />
+    </>
   );
 }
 
