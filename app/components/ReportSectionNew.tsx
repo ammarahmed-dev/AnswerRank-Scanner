@@ -2,7 +2,7 @@
 
 import { CheckResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
-import { AlertCircle, CheckCircle2, Copy, Download, ExternalLink, Lock, RotateCcw, Sparkles, TrendingUp, Zap } from "lucide-react";
+import { AlertCircle, CheckCircle2, ChevronDown, Copy, Download, ExternalLink, Lock, RotateCcw, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import UpgradeButton from "./UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -451,7 +451,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
         </div>
       </section>
 
-      <section className="surface report-card print-section">
+      <section className="surface report-card print-section pt-8">
         <h3 className="section-heading">Priority Action Plan</h3>
         <p className="section-kicker mt-1">Your highest-impact fixes, grouped by urgency.</p>
         <div className="action-plan-grid mt-4">
@@ -465,32 +465,53 @@ export default function ReportSectionNew({ report, onReset }: Props) {
         <h3 className="section-heading">Detailed Issues</h3>
         <p className="section-kicker mt-1">Problem, impact, effort, and implementation guidance.</p>
         <div className="detailed-issues-list mt-4">
-          {visibleIssues.map((issue) => (
-            <article key={issue.id} className="issue-accordion-card">
-              <button className="issue-accordion-toggle" onClick={() => setExpanded(expanded === issue.id ? null : issue.id)} type="button">
-                <div>
-                  <span>{CATEGORY_LABELS[issue.category]}</span>
-                  <strong>{issue.title}</strong>
-                </div>
-                <div className="issue-pill-row">
-                  <span className={`mini-pill ${badgeTone(issue.priority)}`}>{issue.priority}</span>
-                  <span className={`mini-pill ${badgeTone(issue.impact)}`}>impact {issue.impact}</span>
-                  <span className={`mini-pill ${badgeTone(issue.effort)}`}>effort {issue.effort}</span>
-                </div>
-              </button>
-              <div className="issue-problem-row">
-                <AlertCircle className="h-4 w-4" />
-                <p>{issue.problem}</p>
-              </div>
-              {expanded === issue.id && (
-                <div className="issue-expanded">
-                  <p><strong>Why it matters:</strong> {issue.whyItMatters}</p>
-                  <p><strong>Recommended fix:</strong> {issue.recommendedFix}</p>
-                  {isPro && issue.example && <pre className="report-code-block">{issue.example}</pre>}
-                </div>
-              )}
-            </article>
-          ))}
+          {visibleIssues.map((issue) => {
+            const isOpen = expanded === issue.id;
+            return (
+              <article key={issue.id} className={`issue-accordion-card${isOpen ? " is-open" : ""}`}>
+                <button
+                  className="issue-accordion-toggle"
+                  onClick={() => setExpanded(isOpen ? null : issue.id)}
+                  type="button"
+                  aria-expanded={isOpen}
+                >
+                  <div className="issue-toggle-left">
+                    <span className={`issue-category-pill issue-cat-${issue.category}`}>
+                      {CATEGORY_LABELS[issue.category]}
+                    </span>
+                    <strong className="issue-toggle-title">{issue.title}</strong>
+                  </div>
+                  <div className="issue-toggle-right">
+                    <div className="issue-pill-row">
+                      <span className={`mini-pill ${badgeTone(issue.priority)}`}>{issue.priority}</span>
+                      <span className={`mini-pill ${badgeTone(issue.impact)}`}>↑ {issue.impact}</span>
+                      <span className={`mini-pill ${badgeTone(issue.effort)}`}>{issue.effort}</span>
+                    </div>
+                    <ChevronDown className={`issue-chevron${isOpen ? " is-open" : ""}`} />
+                  </div>
+                </button>
+                {isOpen && (
+                  <div className="issue-expanded">
+                    <div className="issue-section">
+                      <p className="issue-section-label"><AlertCircle className="h-3.5 w-3.5" /> Problem</p>
+                      <p className="issue-section-text">{issue.problem}</p>
+                    </div>
+                    <div className="issue-section">
+                      <p className="issue-section-label">Why it matters</p>
+                      <p className="issue-section-text">{issue.whyItMatters}</p>
+                    </div>
+                    <div className="issue-section">
+                      <p className="issue-section-label">Recommended fix</p>
+                      <p className="issue-section-text">{issue.recommendedFix}</p>
+                    </div>
+                    {isPro && issue.example && (
+                      <pre className="report-code-block">{issue.example}</pre>
+                    )}
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
         {!isPro && hiddenCount > 0 && (
           <div className="locked-panel">
@@ -671,12 +692,12 @@ function PriorityColumn({ title, description, items, tone }: { title: string; de
       <div className="action-plan-items">
         {items.length ? items.slice(0, 6).map((item) => (
           <div key={`${title}-${item.id}`} className="action-plan-item">
-            <span className="action-plan-icon"><Sparkles className="h-3.5 w-3.5" /></span>
-            <div className="action-plan-item-text">
+            <span className="action-plan-icon flex-shrink-0"><Sparkles className="h-3.5 w-3.5" /></span>
+            <div className="action-plan-item-text flex-1 min-w-0">
               <p>{item.title}</p>
               <small>{item.problem}</small>
             </div>
-            <span className={`mini-pill ${badgeTone(tone)}`}>{item.priority}</span>
+            <span className={`mini-pill ${badgeTone(tone)} flex-shrink-0`}>{item.priority}</span>
           </div>
         )) : <p className="muted-copy">No issues in this group.</p>}
       </div>
