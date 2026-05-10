@@ -126,6 +126,7 @@ export function parseReaderTextToScrapedData(
     url: baseUrl,
     title,
     metaDescription: "",
+    canonical: "",
     headings,
     schemaTypes: [],
     schemaBlocks: 0,
@@ -264,6 +265,8 @@ export function parseHtmlToScrapedData(
     $('meta[property="og:description"]').attr("content")?.trim() ?? "";
   const ogImage =
     $('meta[property="og:image"]').attr("content")?.trim() ?? "";
+  const canonical =
+    $('link[rel="canonical"]').attr("href")?.trim() ?? "";
 
   // Collect all headings with type prefix
   const headings: string[] = [];
@@ -356,6 +359,7 @@ export function parseHtmlToScrapedData(
     url: baseUrl,
     title,
     metaDescription,
+    canonical,
     headings,
     schemaTypes: Array.from(new Set(schemaTypes)),
     schemaBlocks,

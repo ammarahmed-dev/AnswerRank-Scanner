@@ -15,7 +15,7 @@ import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { checkAndIncrementUsage, getClientKey, getPlanLimit } from "@/lib/usage-limits";
 import { isMasterAdmin } from "@/lib/admin";
-import { ScrapedData, ScanResult, AIInsights } from "@/types/index";
+import { ScrapedData, ScanResult, AIInsights, SchemaRecommendation } from "@/types/index";
 
 export const runtime = "nodejs";
 
@@ -38,10 +38,14 @@ function errorResponse(error: string, status: number, details?: string) {
   return NextResponse.json({ error, details }, { status });
 }
 
-function timeoutAfter<T>(ms: number, value: T): Promise<T> {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(value), ms);
-  });
+function parseSchemaRecommendations(parsed: Record<string, unknown>, fallbackDetected: string[]): SchemaRecommendation {
+  const sr = parsed.schemaRecommendations as Record<string, unknown> | undefined;
+  return {
+    detected: Array.isArray(sr?.detected) ? (sr.detected as string[]).filter((s): s is string => typeof s === "string") : fallbackDetected,
+    missing: Array.isArray(sr?.missing) ? (sr.missing as string[]).filter((s): s is string => typeof s === "string") : [],
+    priority: typeof sr?.priority === "string" ? sr.priority : "",
+    reasoning: typeof sr?.reasoning === "string" ? sr.reasoning : "",
+  };
 }
 
 async function getAIInsightsWithBudget(
@@ -53,7 +57,7 @@ async function getAIInsightsWithBudget(
 
     if (!aiRawResponse) return null;
 
-    return parseAIInsights(aiRawResponse);
+    return parseAIInsights(aiRawResponse, scrapedData.schemaTypes);
   } catch (err: unknown) {
     console.error(
       "AI analysis failed:",
@@ -63,7 +67,7 @@ async function getAIInsightsWithBudget(
   }
 }
 
-function parseAIInsights(raw: string): AIInsights {
+function parseAIInsights(raw: string, fallbackDetected: string[] = []): AIInsights {
   const cleaned = raw
     .trim()
     .replace(/^```(?:json)?/i, "")
@@ -91,6 +95,7 @@ function parseAIInsights(raw: string): AIInsights {
           typeof parsed.summary === "string"
             ? parsed.summary
             : "AI analysis completed, but the summary was not returned in the expected shape.",
+        schemaRecommendations: parseSchemaRecommendations(parsed as Record<string, unknown>, fallbackDetected),
       };
     } catch (err) {
       console.warn("AI response was not valid JSON; using text fallback.", err);
@@ -224,7 +229,6 @@ export async function POST(req: NextRequest) {
       includeAIReport = false;
     }
 
-    const optionalBudgetMs = Number(process.env.OPTIONAL_ANALYSIS_BUDGET_MS ?? 8000);
     const aiPromise = includeAIReport
       ? getAIInsightsWithBudget(scrapedData)
       : Promise.resolve(null);
@@ -241,21 +245,28 @@ export async function POST(req: NextRequest) {
           })
       : Promise.resolve(null);
 
-    const optionalResults = await Promise.race([
-      Promise.all([aiPromise, pagespeedPromise]),
-      timeoutAfter<[AIInsights | null, { score: number } | null]>(optionalBudgetMs, [null, null]),
-    ]);
+    const [aiResult, pagespeedResult] = await Promise.allSettled([aiPromise, pagespeedPromise]);
 
-    aiInsights = optionalResults[0];
-    const pagespeed = optionalResults[1];
+    aiInsights = aiResult.status === "fulfilled" ? aiResult.value : null;
+    const pagespeed = pagespeedResult.status === "fulfilled" ? pagespeedResult.value : null;
 
     // Build response
+    const h1 = scrapedData.headings.find((h) => h.startsWith("H1:"))?.replace(/^H1:\s*/, "") ?? "";
     const result: ScanResult = {
       url,
       score,
       checks,
       aiInsights,
       pagespeed,
+      metadata: {
+        title: scrapedData.title,
+        metaDescription: scrapedData.metaDescription,
+        ogTitle: scrapedData.ogTitle,
+        ogDescription: scrapedData.ogDescription,
+        ogImage: scrapedData.ogImage,
+        canonical: scrapedData.canonical,
+        h1,
+      },
       scannedAt: new Date().toISOString(),
     };
 

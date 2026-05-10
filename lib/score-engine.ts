@@ -7,6 +7,21 @@ import { ScrapedData, CheckResult } from "@/types/index";
 
 type CheckStatus = CheckResult["status"];
 
+function hasFaqContent(data: ScrapedData): boolean {
+  const headingText = data.headings.map((h) => h.replace(/^H\d+:\s*/, "")).join(" ");
+  return /\?|faq|question|how to|what is|why |when /i.test(headingText) ||
+    /faq|frequently asked/i.test(data.bodyText.slice(0, 2000));
+}
+
+function hasArticleContent(data: ScrapedData): boolean {
+  const h2Count = data.headings.filter((h) => h.startsWith("H2:")).length;
+  const titleLower = (data.title ?? "").toLowerCase();
+  const descLower = (data.metaDescription ?? "").toLowerCase();
+  return h2Count >= 3 ||
+    /blog|article|guide|tutorial|post|news|how.?to/i.test(titleLower) ||
+    /blog|article|guide|tutorial/i.test(descLower);
+}
+
 type CheckConfig = {
   id: string;
   label: string;
@@ -112,13 +127,15 @@ const CHECKS_CONFIG: CheckConfig[] = [
     weight: 10,
     check: (data: ScrapedData) => {
       if (data.schemaTypes.includes("FAQPage")) return "pass";
-      if (data.schemaTypes.length > 0) return "warn";
-      return "fail";
+      if (hasFaqContent(data)) return "warn";
+      return "pass"; // no FAQ content — check not applicable
     },
     detail: (data: ScrapedData) => {
       if (data.schemaTypes.includes("FAQPage"))
         return "FAQPage schema present (excellent for AI)";
-      return "FAQPage schema not detected";
+      if (hasFaqContent(data))
+        return "Page has Q&A content but no FAQPage schema — high-impact addition";
+      return "No FAQ content detected — FAQPage schema not required";
     },
   },
   {
@@ -132,8 +149,8 @@ const CHECKS_CONFIG: CheckConfig[] = [
         data.schemaTypes.includes("NewsArticle") ||
         data.schemaTypes.includes("BlogPosting");
       if (hasArticleSchema) return "pass";
-      if (data.schemaTypes.length > 0) return "warn";
-      return "fail";
+      if (hasArticleContent(data)) return "warn";
+      return "pass"; // no article structure — check not applicable
     },
     detail: (data: ScrapedData) => {
       const articleTypes = data.schemaTypes.filter((t) =>
@@ -141,7 +158,9 @@ const CHECKS_CONFIG: CheckConfig[] = [
       );
       if (articleTypes.length > 0)
         return `${articleTypes.join(", ")} schema present`;
-      return "Article-type schema not detected";
+      if (hasArticleContent(data))
+        return "Page has article/blog structure but no Article-type schema";
+      return "No article/blog structure detected — Article schema not required";
     },
   },
   {
@@ -274,8 +293,15 @@ const CHECKS_CONFIG: CheckConfig[] = [
     detail: (data: ScrapedData) => {
       if (data.schemaBlocks > 1)
         return `Rich schema implementation (${data.schemaBlocks} blocks)`;
-      if (data.schemaBlocks === 1) return "Single schema block found";
-      return "No schema markup";
+      const suggestions: string[] = [];
+      if (!data.schemaTypes.includes("Organization")) suggestions.push("Organization");
+      if (!data.schemaTypes.includes("WebSite")) suggestions.push("WebSite");
+      if (hasFaqContent(data) && !data.schemaTypes.includes("FAQPage")) suggestions.push("FAQPage");
+      if (hasArticleContent(data) && !data.schemaTypes.some((t) => ["Article", "HowTo", "NewsArticle", "BlogPosting"].includes(t))) suggestions.push("Article");
+      if (data.headings.filter((h) => h.startsWith("H2:")).length > 4 && !data.schemaTypes.includes("BreadcrumbList")) suggestions.push("BreadcrumbList");
+      const list = suggestions.length > 0 ? suggestions.join(", ") : "additional content-specific types";
+      if (data.schemaBlocks === 1) return `Single schema block — layer more types: ${list}`;
+      return `No schema markup — add: ${list}`;
     },
   },
 ];

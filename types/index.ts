@@ -2,6 +2,7 @@ export interface ScrapedData {
   url: string;
   title: string;
   metaDescription: string;
+  canonical: string;
   headings: string[]; // all H1-H3 text content
   schemaTypes: string[]; // detected @type values from JSON-LD
   schemaBlocks: number; // count of JSON-LD script tags
@@ -14,6 +15,16 @@ export interface ScrapedData {
   ogImage: string;
 }
 
+export interface ScanMetadata {
+  title: string;
+  metaDescription: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImage: string;
+  canonical: string;
+  h1: string;
+}
+
 export interface CheckResult {
   id: string;
   label: string;
@@ -22,11 +33,19 @@ export interface CheckResult {
   weight: number;
 }
 
+export interface SchemaRecommendation {
+  detected: string[];
+  missing: string[];
+  priority: string;
+  reasoning: string;
+}
+
 export interface AIInsights {
   recommendations: string[];
   quickWin: string;
   contentGap: string;
   summary: string;
+  schemaRecommendations?: SchemaRecommendation;
 }
 
 export interface PageSpeedData {
@@ -44,5 +63,6 @@ export interface ScanResult {
   checks: CheckResult[];
   aiInsights: AIInsights | null;
   pagespeed: PageSpeedData | null;
+  metadata?: ScanMetadata;
   scannedAt: string;
 }

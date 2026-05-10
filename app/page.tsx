@@ -29,7 +29,7 @@ import {
 
 type AppState = "idle" | "loading" | "done" | "error" | "paywall";
 
-const LOADING_STEP_TIMES = [900, 1800, 3000, 4700, 6800, 8600];
+const LOADING_STEP_TIMES = [2000, 6000, 12000, 22000, 38000, 58000];
 const CLIENT_STORAGE_KEY = "answerrank_client_id_v1";
 
 const trustStats = [
@@ -141,7 +141,7 @@ export default function Home() {
 
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 65000);
+      const timeout = setTimeout(() => controller.abort(), 120000);
       const supabase = getSupabaseBrowserClient();
       const token = (await getSafeSupabaseSession(supabase))?.access_token;
       const res = await fetch("/api/scan", {
