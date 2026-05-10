@@ -39,8 +39,6 @@ type SchemaRecommendation = {
   suggested: string[];
   missing: string[];
   reasons: string[];
-  jsonLd: string;
-  inferred: boolean;
 };
 
 const CATEGORY_LABELS: Record<Category, string> = {
@@ -113,20 +111,6 @@ function recommendedFix(check: CheckResult) {
 }
 
 function issueExample(check: CheckResult) {
-  if (check.id.includes("schema")) {
-    return `{
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [{
-    "@type": "Question",
-    "name": "What does this product do?",
-    "acceptedAnswer": {
-      "@type": "Answer",
-      "text": "It improves AI visibility."
-    }
-  }]
-}`;
-  }
   if (check.id === "title") return "Example: AI Visibility Audit for SaaS Teams | Brand Name";
   if (check.id === "meta_desc") return "Example: Scan your website and get an AI visibility report with prioritized fixes.";
   return undefined;
@@ -211,37 +195,6 @@ function getSchemaRecommendation(report: ScanResult, issues: ReportIssue[], host
 
   const uniqueSuggested = Array.from(new Set(suggested));
   const missing = uniqueSuggested.filter((type) => !detectedTypes.some((detectedType) => detectedType.toLowerCase().includes(type.toLowerCase())));
-  const orgName = host.split(".")[0].replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
-  const faqJson = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: getFaqs(host).slice(0, 2).map((faq) => ({
-      "@type": "Question",
-      name: faq.q,
-      acceptedAnswer: { "@type": "Answer", text: faq.a },
-    })),
-  };
-  const graph: Array<Record<string, unknown>> = [
-    {
-      "@type": "Organization",
-      "@id": `${report.url}#organization`,
-      name: orgName || host,
-      url: report.url,
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${report.url}#website`,
-      url: report.url,
-      name: orgName || host,
-    },
-    {
-      "@type": "WebPage",
-      "@id": `${report.url}#webpage`,
-      url: report.url,
-      isPartOf: { "@id": `${report.url}#website` },
-    },
-    faqJson,
-  ];
 
   const reasons = [
     "Organization and WebSite define your brand entity for AI and search systems.",
@@ -255,15 +208,12 @@ function getSchemaRecommendation(report: ScanResult, issues: ReportIssue[], host
     suggested: uniqueSuggested,
     missing,
     reasons,
-    jsonLd: JSON.stringify({ "@context": "https://schema.org", "@graph": graph }, null, 2),
-    inferred: true,
   };
 }
 
 export default function ReportSectionNew({ report, onReset }: Props) {
   const [plan, setPlan] = useState<Plan>("guest");
   const [copyOk, setCopyOk] = useState(false);
-  const [schemaCopyOk, setSchemaCopyOk] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
 
@@ -366,6 +316,11 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   }, [checks, report.pagespeed?.score]);
 
   const schemaRecommendation = useMemo(() => getSchemaRecommendation(report, issues, host), [report, issues, host]);
+  const detectedSchemaTypes = report.aiInsights?.schemaRecommendations?.detected ?? [];
+  const missingSchemaTypes = report.aiInsights?.schemaRecommendations?.missing ?? [];
+  const prioritySchema = report.aiInsights?.schemaRecommendations?.priority ?? null;
+  const priorityReasoning = report.aiInsights?.schemaRecommendations?.reasoning ?? "";
+  const otherSuggestedTypes = missingSchemaTypes.filter((t) => t !== prioritySchema);
   const faqs = useMemo(() => getFaqs(host), [host]);
   const checklist = [
     "Add FAQ section to key landing pages",
@@ -396,13 +351,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     setTimeout(() => setCopyOk(false), 1500);
   };
 
-  const copySchema = async () => {
-    await navigator.clipboard.writeText(schemaRecommendation.jsonLd);
-    setSchemaCopyOk(true);
-    setTimeout(() => setSchemaCopyOk(false), 1500);
-  };
-
-  const downloadPdf = () => {
+const downloadPdf = () => {
     if (!canDownloadPdf(plan)) return;
     window.print();
   };
@@ -465,6 +414,22 @@ export default function ReportSectionNew({ report, onReset }: Props) {
           ))}
         </div>
       </section>
+
+      {report.metadata && (
+        <section className="surface report-card print-section">
+          <h3 className="section-heading">Metadata Overview</h3>
+          <p className="section-kicker mt-1">Raw metadata values extracted from the page.</p>
+          <div className="metadata-grid mt-4">
+            <MetaRow label="Title" value={report.metadata.title} charLimit={60} />
+            <MetaRow label="Meta Description" value={report.metadata.metaDescription} charLimit={160} />
+            <MetaRow label="H1" value={report.metadata.h1} />
+            <MetaRow label="Canonical URL" value={report.metadata.canonical} isUrl />
+            <MetaRow label="OG Title" value={report.metadata.ogTitle} charLimit={60} />
+            <MetaRow label="OG Description" value={report.metadata.ogDescription} charLimit={155} />
+            <MetaRow label="OG Image" value={report.metadata.ogImage} isUrl />
+          </div>
+        </section>
+      )}
 
       <section className="surface report-card print-section pt-8">
         <h3 className="section-heading">Priority Action Plan</h3>
@@ -537,54 +502,66 @@ export default function ReportSectionNew({ report, onReset }: Props) {
         )}
       </section>
 
-      <section className="surface report-card print-section">
-        <h3 className="section-heading">Schema Recommendations</h3>
-        <p className="section-kicker mt-1">Generated from detected page signals. Review before publishing.</p>
-        <div className="schema-layout mt-4">
-          <div className="schema-meta">
-            <article>
-              <h4>Detected schema types</h4>
-              <ul>{schemaRecommendation.detected.map((item) => <li key={item}>{item}</li>)}</ul>
-            </article>
-            <article>
-              <h4>Suggested schema types</h4>
-              <ul>{schemaRecommendation.suggested.map((item) => <li key={item}>{item}</li>)}</ul>
-            </article>
-            <article>
-              <h4>Missing opportunities</h4>
-              <ul>
-                {schemaRecommendation.missing.length
-                  ? schemaRecommendation.missing.map((item) => <li key={item}>{item}</li>)
-                  : <li>No major schema gaps detected from this scan.</li>}
-              </ul>
-            </article>
-            <article>
-              <h4>Why this is recommended</h4>
-              <ul>{schemaRecommendation.reasons.map((item) => <li key={item}>{item}</li>)}</ul>
-            </article>
-            <p className="schema-note">
-              {schemaRecommendation.inferred
-                ? "Generated from detected page content. Review before publishing."
-                : "Schema suggestions are based on detected on-page structured data."}
-            </p>
-          </div>
-          {isPro ? (
-            <div className="schema-code-shell">
-              <div className="schema-code-head">
-                <strong>Suggested JSON-LD</strong>
-                <button type="button" className="btn btn-secondary" onClick={copySchema}>{schemaCopyOk ? "Copied" : "Copy JSON-LD"}</button>
-              </div>
-              <pre className="report-code-block">{schemaRecommendation.jsonLd}</pre>
+      {report.aiInsights?.schemaRecommendations && (
+        <section className="surface report-card print-section">
+          <h3 className="section-heading">Schema Analysis</h3>
+          <p className="section-kicker mt-1">Detected and recommended schema types based on actual page content.</p>
+          <div className="schema-analysis-grid mt-4">
+            <div className="schema-box schema-detected-box">
+              <h4 className="schema-box-title">Currently Detected ({detectedSchemaTypes.length})</h4>
+              {detectedSchemaTypes.length > 0 ? (
+                <div className="schema-tags">
+                  {detectedSchemaTypes.map((type) => (
+                    <span key={type} className="schema-tag schema-tag-detected">{type}</span>
+                  ))}
+                </div>
+              ) : (
+                <p className="schema-empty-state">No schema detected from page content.</p>
+              )}
             </div>
-          ) : (
-            <div className="locked-panel">
-              <Lock className="h-4 w-4" />
-              <p>Full schema implementation JSON-LD is available on Pro.</p>
-              <UpgradeButton>Unlock Schema Implementation</UpgradeButton>
+
+            <div className="schema-box schema-priority-box">
+              <h4 className="schema-box-title">Priority Schema to Add</h4>
+              {prioritySchema ? (
+                <>
+                  <div className="schema-priority-badge-large">{prioritySchema}</div>
+                  {priorityReasoning && (
+                    <div className="schema-reasoning-inline">
+                      <strong className="schema-reasoning-title">Why this matters</strong>
+                      <p>{priorityReasoning}</p>
+                    </div>
+                  )}
+                  <div className="schema-implementation">
+                    <strong className="schema-impl-title">How to implement</strong>
+                    <ol className="schema-impl-steps">
+                      <li>Visit <a href={`https://schema.org/${prioritySchema}`} target="_blank" rel="noopener noreferrer">schema.org/{prioritySchema}</a> for documentation</li>
+                      <li>Use a <a href="https://technicalseo.com/tools/schema-markup-generator/" target="_blank" rel="noopener noreferrer">schema generator tool</a> with your actual page content</li>
+                      <li>Add the JSON-LD <code>&lt;script&gt;</code> to your page&apos;s <code>&lt;head&gt;</code></li>
+                      <li>Validate with <a href="https://validator.schema.org/" target="_blank" rel="noopener noreferrer">Google&apos;s Schema Validator</a> before deploying</li>
+                    </ol>
+                    <div className="schema-warning">
+                      &#9888; Always base schema on your actual page content. Never publish generic templates without customising every field.
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="schema-empty-state">Your page has good schema coverage. No additional types needed at this time.</p>
+              )}
+            </div>
+          </div>
+
+          {otherSuggestedTypes.length > 0 && (
+            <div className="schema-other-types mt-4">
+              <strong className="schema-other-title">Other schema types to consider</strong>
+              <div className="schema-tags mt-2">
+                {otherSuggestedTypes.map((type) => (
+                  <span key={type} className="schema-tag schema-tag-missing">{type}</span>
+                ))}
+              </div>
             </div>
           )}
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="surface report-card print-section">
         <h3 className="section-heading">Recommended FAQs</h3>
@@ -695,6 +672,25 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     </div>
     {isPrinting && <PrintLayout report={report} />}
     </>
+  );
+}
+
+function MetaRow({ label, value, charLimit, isUrl }: { label: string; value: string; charLimit?: number; isUrl?: boolean }) {
+  const missing = !value;
+  const over = charLimit && value.length > charLimit;
+  return (
+    <div className="metadata-row">
+      <span className="metadata-label">{label}</span>
+      <span className={`metadata-value${missing ? " metadata-missing" : ""}${over ? " metadata-over" : ""}`}>
+        {missing ? "Not set" : value}
+      </span>
+      {!missing && charLimit && (
+        <span className={`metadata-char-count${over ? " metadata-char-over" : ""}`}>
+          {value.length}/{charLimit}
+        </span>
+      )}
+      {!missing && isUrl && <span className="metadata-char-count">URL</span>}
+    </div>
   );
 }
 

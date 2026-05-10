@@ -4,10 +4,10 @@ import { Check, Loader2, Radar } from "lucide-react";
 
 const STEPS = [
   "Fetching website",
-  "Reading metadata",
-  "Checking schema",
-  "Analyzing AI search readiness",
-  "Checking content clarity",
+  "Extracting metadata and schema",
+  "Running visibility checks",
+  "Running PageSpeed analysis",
+  "Generating AI insights",
   "Preparing report",
 ];
 
