@@ -4,6 +4,7 @@ import { CheckResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
 import { AlertCircle, CheckCircle2, ChevronDown, Copy, Download, ExternalLink, Lock, RotateCcw, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import UpgradeButton from "./UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { canDownloadPdf, canViewFullReport, isMasterAdmin } from "@/lib/access";
@@ -264,6 +265,18 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const [copyOk, setCopyOk] = useState(false);
   const [schemaCopyOk, setSchemaCopyOk] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  useEffect(() => {
+    const onBefore = () => flushSync(() => setIsPrinting(true));
+    const onAfter = () => setIsPrinting(false);
+    window.addEventListener("beforeprint", onBefore);
+    window.addEventListener("afterprint", onAfter);
+    return () => {
+      window.removeEventListener("beforeprint", onBefore);
+      window.removeEventListener("afterprint", onAfter);
+    };
+  }, []);
 
   useEffect(() => {
     async function loadPlan() {
@@ -680,7 +693,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
         </button>
       </div>
     </div>
-    <PrintLayout report={report} />
+    {isPrinting && <PrintLayout report={report} />}
     </>
   );
 }
