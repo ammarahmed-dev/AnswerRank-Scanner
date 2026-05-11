@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -97,13 +97,18 @@ export default function DashboardClient() {
     return Math.min(100, Math.round((account.usage.count / account.usage.limit) * 100));
   }, [account]);
 
-  const scanCountLabel = account && isMasterAdmin({ plan: account.profile.plan, isAdmin: account.profile.isAdmin })
-    ? "Master Admin · Unlimited Access"
-    : account?.usage.unlimited
-    ? "Pro · Unlimited Access"
-    : account
-      ? `${account.usage.remaining} free scans left`
-      : undefined;
+  const masterAdmin = account ? isMasterAdmin({ plan: account.profile.plan, isAdmin: account.profile.isAdmin }) : false;
+const paidPlan = account ? account.profile.plan === "pro" || account.profile.plan === "agency" : false;
+const shouldShowUpgradeCard = Boolean(account) && !masterAdmin && !paidPlan;
+const shouldShowPricingCta = shouldShowUpgradeCard;
+
+const scanCountLabel = account && masterAdmin
+  ? "Master Admin · Unlimited Access"
+  : account?.usage.unlimited
+  ? "Pro · Unlimited Access"
+  : account
+    ? `${account.usage.remaining} free scans left`
+    : undefined;
 
   return (
     <main className="min-h-screen">
@@ -176,15 +181,15 @@ export default function DashboardClient() {
                   </div>
                 </div>
                 <strong className="dashboard-plan-name">{planLabel(account.profile.plan)}</strong>
-                {isMasterAdmin({ plan: account.profile.plan, isAdmin: account.profile.isAdmin }) && (
-                  <p className="dashboard-plan-copy">Master Admin · Unlimited Access</p>
+                {masterAdmin && (
+                  <p className="dashboard-plan-copy">Master Admin Â· Unlimited Access</p>
                 )}
                 <p className="dashboard-plan-copy">
                   {account.usage.unlimited
                     ? "Unlimited scans are active for this workspace."
                     : "Free accounts include 10 saved scans per day."}
                 </p>
-                <a href="/#pricing" className="btn btn-secondary">View pricing</a>
+                {shouldShowPricingCta && <a href="/#pricing" className="btn btn-secondary">View pricing</a>}
               </section>
 
               <section className="surface dashboard-card dashboard-usage-card">
@@ -207,23 +212,23 @@ export default function DashboardClient() {
                     ? "Your plan is not capped by the free daily limit."
                     : `${account.usage.remaining} scans remaining today.`}
                 </p>
-              </section>
-
-              <section className="surface dashboard-card dashboard-upgrade-card">
-                <div className="dashboard-card-title">
-                  <span className="icon-tile"><CheckCircle2 className="h-5 w-5" /></span>
-                  <div>
-                    <h2>Upgrade options</h2>
-                    <p>For teams that scan often.</p>
+              </section>              {shouldShowUpgradeCard && (
+                <section className="surface dashboard-card dashboard-upgrade-card">
+                  <div className="dashboard-card-title">
+                    <span className="icon-tile"><CheckCircle2 className="h-5 w-5" /></span>
+                    <div>
+                      <h2>Upgrade options</h2>
+                      <p>For teams that scan often.</p>
+                    </div>
                   </div>
-                </div>
-                <ul>
-                  <li>Unlimited scan allowance</li>
-                  <li>Saved report history</li>
-                  <li>Shareable client report links</li>
-                </ul>
-                <UpgradeButton>Upgrade plan</UpgradeButton>
-              </section>
+                  <ul>
+                    <li>Unlimited scan allowance</li>
+                    <li>Saved report history</li>
+                    <li>Shareable client report links</li>
+                  </ul>
+                  <UpgradeButton>Upgrade plan</UpgradeButton>
+                </section>
+              )}
             </div>
 
             <section className="surface dashboard-reports">
@@ -264,3 +269,6 @@ export default function DashboardClient() {
     </main>
   );
 }
+
+
+

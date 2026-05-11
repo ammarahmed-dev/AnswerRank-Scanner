@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, useEffect, useRef, useState } from "react";
+import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import LoadingState from "./components/LoadingState";
 import SiteFooter from "./components/SiteFooter";
@@ -29,8 +29,24 @@ import {
 } from "lucide-react";
 
 type AppState = "idle" | "loading" | "done" | "error" | "paywall";
+type ProgressStatus = "started" | "complete" | "skipped" | "error";
+type ScanProgressEvent = {
+  type: "progress";
+  step: number;
+  label: string;
+  status: ProgressStatus;
+};
+type ScanResultEvent = { type: "result"; result: ScanResult };
+type ScanErrorEvent = { type: "error"; message: string };
+type ScanSseEvent = ScanProgressEvent | ScanResultEvent | ScanErrorEvent;
+type LoaderProgress = {
+  step: number;
+  label: string;
+  status: ProgressStatus;
+};
 
 const CLIENT_STORAGE_KEY = "answerrank_client_id_v1";
+const STEP_ANIMATION_MS = 140;
 
 const trustStats = [
   { value: "6", label: "Readiness categories", text: "Metadata, headings, schema, clarity, AI readiness, and performance." },
@@ -67,7 +83,7 @@ export default function Home() {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [state, setState] = useState<AppState>("idle");
-  const [loadingStep, setLoadingStep] = useState(0);
+  const [loaderProgress, setLoaderProgress] = useState<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
   const [report, setReport] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -77,6 +93,41 @@ export default function Home() {
   const [showCompetitors, setShowCompetitors] = useState(false);
   const [competitorUrls, setCompetitorUrls] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastRenderedProgressRef = useRef<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
+  const progressQueueRef = useRef<ScanProgressEvent[]>([]);
+  const pendingResultRef = useRef<ScanResult | null>(null);
+  const processingQueueRef = useRef(false);
+  const finalStepCompleteRef = useRef(false);
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const getMinimumStepDuration = (step: number, status: ProgressStatus) => {
+    if (status === "error" || status === "skipped") return 500;
+    if (step === 1 && status === "started") return 450;
+    if (step === 2 && status === "started") return 650;
+    if (step === 3 && status === "started") return 650;
+    if (step === 6 && status === "complete") return 500;
+    return 300;
+  };
+  const progressByStepAndStatus = useMemo(
+    () => ({
+      "1:started": 10,
+      "1:complete": 18,
+      "2:started": 25,
+      "2:complete": 33,
+      "3:started": 40,
+      "3:complete": 50,
+      "4:started": 58,
+      "4:complete": 66,
+      "4:skipped": 66,
+      "4:error": 66,
+      "5:started": 75,
+      "5:complete": 84,
+      "5:skipped": 84,
+      "5:error": 84,
+      "6:started": 92,
+      "6:complete": 100,
+    } as Record<string, number>),
+    []
+  );
   const refreshAccountUsage = async () => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
@@ -130,7 +181,13 @@ export default function Home() {
       .slice(0, 3);
 
     setState("loading");
-    setLoadingStep(0);
+    const initialProgress: LoaderProgress = { step: 1, label: "Preparing scan", status: "started" };
+    setLoaderProgress(initialProgress);
+    lastRenderedProgressRef.current = initialProgress;
+    progressQueueRef.current = [];
+    pendingResultRef.current = null;
+    processingQueueRef.current = false;
+    finalStepCompleteRef.current = false;
     setReport(null);
     setErrorMsg("");
 
@@ -146,7 +203,7 @@ export default function Home() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ url: trimmed, includeAI: true, clientId }),
+        body: JSON.stringify({ url: trimmed, includeAI: true, clientId, competitorUrls: competitors }),
         signal: controller.signal,
       });
 
@@ -164,6 +221,47 @@ export default function Home() {
         return;
       }
 
+      const maybeFinalizeResult = async () => {
+        if (!pendingResultRef.current || !finalStepCompleteRef.current || progressQueueRef.current.length > 0 || processingQueueRef.current) return;
+
+        const result = pendingResultRef.current;
+        pendingResultRef.current = null;
+        if (!result) return;
+        if (result.reportId) {
+          sessionStorage.setItem(`answerrank_report:${result.reportId}`, JSON.stringify(result));
+        }
+        sessionStorage.setItem(`answerrank_report:${result.url}`, JSON.stringify(result));
+        await refreshAccountUsage();
+        setReport(result);
+        setState("done");
+        router.push(result.reportId ? `/report?id=${result.reportId}` : `/report?url=${encodeURIComponent(result.url)}`);
+      };
+
+      const processProgressQueue = async () => {
+        if (processingQueueRef.current) return;
+        processingQueueRef.current = true;
+        try {
+          while (progressQueueRef.current.length) {
+            const nextProgress = progressQueueRef.current.shift();
+            if (!nextProgress) continue;
+            const nextLoader: LoaderProgress = {
+              step: nextProgress.step,
+              label: nextProgress.label,
+              status: nextProgress.status,
+            };
+            lastRenderedProgressRef.current = nextLoader;
+            setLoaderProgress(nextLoader);
+            if (nextProgress.step === 6 && nextProgress.status === "complete") {
+              finalStepCompleteRef.current = true;
+            }
+            await sleep(getMinimumStepDuration(nextProgress.step, nextProgress.status));
+          }
+        } finally {
+          processingQueueRef.current = false;
+          await maybeFinalizeResult();
+        }
+      };
+
       // Read SSE stream
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -178,34 +276,35 @@ export default function Home() {
         buffer = parts.pop() ?? "";
 
         for (const part of parts) {
-          const line = part.trim();
-          if (!line.startsWith("data: ")) continue;
+          const eventLines = part
+            .split("\n")
+            .map((line) => line.trim())
+            .filter(Boolean);
+          const dataLines = eventLines
+            .filter((line) => line.startsWith("data:"))
+            .map((line) => line.replace(/^data:\s?/, ""));
+          if (!dataLines.length) continue;
 
-          const data = JSON.parse(line.slice(6)) as { step?: number; result?: ScanResult; error?: string };
+          const payload = dataLines.join("\n");
+          const data = JSON.parse(payload) as ScanSseEvent;
 
-          if (data.error) {
-            setErrorMsg(data.error);
+          if (data.type === "error") {
+            setErrorMsg(data.message);
             setState("idle");
             setShowErrorModal(true);
             return;
           }
 
-          if (typeof data.step === "number") {
-            setLoadingStep(data.step);
+          if (data.type === "progress") {
+            progressQueueRef.current.push(data);
+            await processProgressQueue();
+            continue;
           }
 
-          if (data.result) {
-            const result = data.result;
-            if (competitors.length) result.competitorUrls = competitors;
-            if (result.reportId) {
-              sessionStorage.setItem(`answerrank_report:${result.reportId}`, JSON.stringify(result));
-            }
-            sessionStorage.setItem(`answerrank_report:${result.url}`, JSON.stringify(result));
-            await refreshAccountUsage();
-            setReport(result);
-            setState("done");
-            router.push(result.reportId ? `/report?id=${result.reportId}` : `/report?url=${encodeURIComponent(result.url)}`);
-            break outer;
+          if (data.type === "result") {
+            pendingResultRef.current = data.result;
+            await maybeFinalizeResult();
+            if (!pendingResultRef.current) break outer;
           }
         }
       }
@@ -459,7 +558,7 @@ export default function Home() {
       {state === "loading" && (
         <div className="loading-overlay" role="dialog" aria-modal="true" aria-label="Running AI visibility scan">
           <div className="loading-dialog">
-            <LoadingState step={loadingStep} />
+            <LoadingState progress={loaderProgress} progressByStepAndStatus={progressByStepAndStatus} />
           </div>
         </div>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckResult, ScanResult } from "@/types/index";
+import { CheckResult, CompetitorScanResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
 import { AlertCircle, CheckCircle2, ChevronDown, Copy, Download, ExternalLink, Lock, RotateCcw, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -307,6 +307,57 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   }, [checks, report.pagespeed?.score]);
 
   const schemaRecommendation = useMemo(() => getSchemaRecommendation(report, issues, host), [report, issues, host]);
+  const competitorRows = useMemo(() => {
+    const candidates = Array.isArray(report.competitors) ? report.competitors : [];
+    return candidates.filter((item): item is CompetitorScanResult => !!item && typeof item.url === "string");
+  }, [report.competitors]);
+  const hasCompetitorUrlsOnly = Boolean(report.competitorUrls?.length) && competitorRows.length === 0;
+  const categoryComparison = useMemo(() => {
+    const ours = categoryScores.reduce((acc, item) => {
+      acc[item.category] = item.score;
+      return acc;
+    }, {} as Record<Category, number>);
+    return competitorRows.map((competitor) => {
+      const mapped: Partial<Record<Category, number>> = {};
+      if (competitor.categoryScores) {
+        if (typeof competitor.categoryScores.metadata === "number") mapped.metadata = competitor.categoryScores.metadata;
+        if (typeof competitor.categoryScores.headings === "number") mapped.headings = competitor.categoryScores.headings;
+        if (typeof competitor.categoryScores.schema === "number") mapped.schema = competitor.categoryScores.schema;
+        if (typeof competitor.categoryScores.contentClarity === "number") mapped.content = competitor.categoryScores.contentClarity;
+        if (typeof competitor.categoryScores.aiReadiness === "number") mapped["ai-readiness"] = competitor.categoryScores.aiReadiness;
+        if (typeof competitor.categoryScores.performance === "number") mapped.performance = competitor.categoryScores.performance;
+        if (typeof competitor.categoryScores.trustSignals === "number") mapped.trust = competitor.categoryScores.trustSignals;
+      }
+      return { competitor, ours, mapped };
+    });
+  }, [categoryScores, competitorRows]);
+  const behindSignals = useMemo(() => {
+    if (!categoryComparison.length) return [] as Array<{ category: Category; gap: number }>;
+    const categories: Category[] = ["metadata", "schema", "content", "ai-readiness", "performance", "trust"];
+    return categories
+      .map((category) => {
+        const ours = categoryComparison[0]?.ours[category] ?? 0;
+        const bestCompetitor = Math.max(...categoryComparison.map((row) => row.mapped[category] ?? 0));
+        return { category, gap: bestCompetitor - ours };
+      })
+      .filter((item) => item.gap > 0)
+      .sort((a, b) => b.gap - a.gap)
+      .slice(0, 3);
+  }, [categoryComparison]);
+  const comparisonState = useMemo(() => {
+    const scoredCompetitors = competitorRows.filter((item) => typeof item.score === "number");
+    if (!scoredCompetitors.length) return { gap: 0, mode: "tied" as const };
+    const bestCompetitorScore = Math.max(...scoredCompetitors.map((item) => item.score as number));
+    const gap = report.score - bestCompetitorScore;
+    if (gap < 0) return { gap, mode: "behind" as const };
+    if (gap > 0) return { gap, mode: "ahead" as const };
+    return { gap, mode: "tied" as const };
+  }, [competitorRows, report.score]);
+  const competitiveTakeaway = comparisonState.mode === "ahead"
+    ? `You are currently ahead by ${comparisonState.gap} points. Keep improving the highest-priority fixes below to protect your lead.`
+    : comparisonState.mode === "behind"
+      ? `Your competitor is currently ahead by ${Math.abs(comparisonState.gap)} points. Start with the critical fixes below to close the gap.`
+      : "Both pages currently have the same visibility score. Start with the highest-priority fixes below to pull ahead.";
   const detectedSchemaTypes = report.aiInsights?.schemaRecommendations?.detected ?? [];
   const missingSchemaTypes = report.aiInsights?.schemaRecommendations?.missing ?? [];
   const prioritySchema = report.aiInsights?.schemaRecommendations?.priority ?? null;
@@ -393,6 +444,69 @@ const downloadPdf = () => {
           ))}
         </div>
       </section>
+
+      {(competitorRows.length > 0 || hasCompetitorUrlsOnly) && (
+        <section className="surface report-card print-section">
+          <h3 className="section-heading">Competitor Analysis</h3>
+          <p className="section-kicker mt-1">Compare your page against the competitor URL included in this scan.</p>
+
+          {competitorRows.length === 0 ? (
+            <div className="competitor-empty-state mt-4">
+              <p>Competitor comparison is ready in the scanner, but this report does not include competitor scan data yet.</p>
+              <a href="/#scanner" className="btn btn-secondary">Run a comparison scan</a>
+            </div>
+          ) : (
+            <div className="competitor-analysis-grid mt-4">
+              <div className="competitor-summary-card">
+                <strong>Your site</strong>
+                <p>{report.url}</p>
+                <span>{report.score}/100</span>
+              </div>
+              {competitorRows.map((item) => {
+                if (item.error || typeof item.score !== "number") {
+                  return (
+                    <div key={item.url} className="competitor-summary-card">
+                      <strong>Competitor</strong>
+                      <p>{item.url}</p>
+                      <small>Could not scan competitor URL</small>
+                    </div>
+                  );
+                }
+                const gap = report.score - item.score;
+                return (
+                  <div key={item.url} className="competitor-summary-card">
+                    <strong>Competitor</strong>
+                    <p>{item.url}</p>
+                    <span>{item.score}/100</span>
+                    <small>
+                      {gap > 0
+                        ? `You are ahead by ${gap} points`
+                        : gap < 0
+                          ? `Competitor is ahead by ${Math.abs(gap)} points`
+                          : "Scores are tied"}
+                    </small>
+                  </div>
+                );
+              })}
+
+              <div className="competitor-notes-card">
+                <strong>Competitive takeaway</strong>
+                <p>{competitiveTakeaway}</p>
+              </div>
+              {behindSignals.length > 0 && (
+                <div className="competitor-notes-card">
+                  <strong>Category gaps</strong>
+                  <ul className="competitor-list">
+                    {behindSignals.map((item) => (
+                      <li key={item.category}>{CATEGORY_LABELS[item.category]}: {item.gap} points behind top competitor</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+      )}
 
       {report.metadata && (
         <section className="surface report-card print-section">

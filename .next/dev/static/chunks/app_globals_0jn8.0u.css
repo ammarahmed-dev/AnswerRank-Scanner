@@ -3095,6 +3095,62 @@ a {
   color: #f97316;
 }
 
+.competitor-empty-state {
+  align-items: start;
+  gap: 12px;
+  display: grid;
+}
+
+.competitor-empty-state p {
+  color: var(--color-ink-muted);
+  margin: 0;
+}
+
+.competitor-analysis-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  display: grid;
+}
+
+.competitor-summary-card, .competitor-notes-card {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: #0f172a57;
+  padding: 14px;
+}
+
+.competitor-summary-card strong, .competitor-notes-card strong {
+  margin-bottom: 6px;
+  display: block;
+}
+
+.competitor-summary-card p, .competitor-notes-card p {
+  color: var(--color-ink-muted);
+  word-break: break-word;
+  margin: 0;
+}
+
+.competitor-summary-card span {
+  margin-top: 8px;
+  font-size: 1.05rem;
+  font-weight: 750;
+  display: block;
+}
+
+.competitor-summary-card small {
+  color: var(--color-ink-muted);
+  margin-top: 4px;
+  display: block;
+}
+
+.competitor-list {
+  color: var(--color-ink-muted);
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+}
+
 .schema-analysis-grid {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.75fr);
   gap: 20px;
@@ -3904,6 +3960,26 @@ a {
   font-size: .8rem;
   font-style: italic;
   line-height: 1.55;
+}
+
+.roadmap-deprecation-note {
+  color: var(--color-ink-muted);
+  background: #64748b14;
+  border-left: 2px solid #64748b66;
+  border-radius: 4px;
+  align-items: flex-start;
+  gap: .5rem;
+  margin-top: .5rem;
+  padding: .5rem .75rem;
+  font-size: .8125rem;
+  line-height: 1.4;
+  display: flex;
+}
+
+.roadmap-deprecation-note svg {
+  color: #64748b99;
+  flex-shrink: 0;
+  margin-top: .1rem;
 }
 
 .roadmap-grid {
@@ -5403,7 +5479,7 @@ a {
     min-height: auto;
   }
 
-  .hero-content, .image-story-grid, .pricing-grid, .faq-grid, .report-grid, .report-sidebar, .report-hero-grid, .metadata-grid, .schema-grid {
+  .hero-content, .image-story-grid, .pricing-grid, .faq-grid, .report-grid, .report-sidebar, .report-hero-grid, .metadata-grid, .schema-grid, .competitor-analysis-grid {
     grid-template-columns: 1fr;
   }
 

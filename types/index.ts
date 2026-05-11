@@ -55,9 +55,37 @@ export interface PageSpeedData {
   fid?: number;
 }
 
+export interface CompetitorScanMetrics {
+  overall?: number;
+  entity?: number;
+  schema?: number;
+  proof?: number;
+}
+
+export interface CompetitorScanResult {
+  url: string;
+  score?: number;
+  checks?: CheckResult[];
+  metadata?: ScanMetadata;
+  pagespeed?: PageSpeedData | null;
+  summary?: string;
+  error?: string;
+  metrics?: CompetitorScanMetrics;
+  categoryScores?: {
+    metadata?: number;
+    headings?: number;
+    schema?: number;
+    contentClarity?: number;
+    aiReadiness?: number;
+    performance?: number;
+    trustSignals?: number;
+  };
+}
+
 export interface ScanResult {
   reportId?: string;
   competitorUrls?: string[];
+  competitors?: CompetitorScanResult[];
   url: string;
   score: number;
   checks: CheckResult[];
