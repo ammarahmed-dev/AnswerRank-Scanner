@@ -1182,7 +1182,13 @@ a { color: inherit; }
   }
 }
 
-.report-page { min-height: 100vh; padding: 24px 0 72px; }
+.report-page {
+  min-height: 100vh;
+  padding: 24px 0 72px;
+  max-width: 100%;
+  overflow-x: clip;
+  background: transparent;
+}
 .report-share-bar {
   display: flex;
   justify-content: flex-end;
@@ -1330,8 +1336,21 @@ a { color: inherit; }
 .auth-form-switch { color: var(--color-ink-muted); text-align: center; font-size: 0.9rem; }
 .auth-form-switch a { color: var(--color-primary); font-weight: 900; text-decoration: none; }
 
-.report-shell { width: min(100%, 1260px); margin-inline: auto; }
-.report-stack { display: flex; flex-direction: column; gap: 28px; }
+.report-shell {
+  width: min(100%, 1260px);
+  margin-inline: auto;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+.report-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
 .report-action-row { width: 100%; }
 .premium-report .report-card,
 .premium-report .report-hero {
@@ -1341,6 +1360,8 @@ a { color: inherit; }
 .report-hero {
   padding: clamp(30px, 4vw, 44px);
   overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
   background:
     radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.16), transparent 24rem),
     radial-gradient(circle at 95% 5%, rgba(99, 102, 241, 0.14), transparent 20rem),
@@ -1349,6 +1370,7 @@ a { color: inherit; }
 .report-hero-grid { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; align-items: center; }
 .report-hero-copy {
   min-width: 0;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -1474,7 +1496,12 @@ a { color: inherit; }
 .report-sidebar .report-card {
   min-height: 100%;
 }
-.report-card { padding: clamp(36px, 4vw, 48px) clamp(26px, 3vw, 34px) clamp(26px, 3vw, 34px); }
+.report-card {
+  padding: clamp(36px, 4vw, 48px) clamp(26px, 3vw, 34px) clamp(26px, 3vw, 34px);
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
 .score-breakdown-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1489,6 +1516,8 @@ a { color: inherit; }
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  min-width: 0;
+  max-width: 100%;
 }
 .score-breakdown-head {
   display: flex;
@@ -1579,6 +1608,8 @@ a { color: inherit; }
   background: rgba(15, 23, 42, 0.34);
   border-radius: var(--radius-md);
   padding: 14px;
+  min-width: 0;
+  max-width: 100%;
 }
 .competitor-summary-card strong,
 .competitor-notes-card strong {
@@ -1618,6 +1649,8 @@ a { color: inherit; }
   padding: 20px;
   border-radius: var(--radius-lg);
   border: 2px solid;
+  min-width: 0;
+  max-width: 100%;
 }
 .schema-detected-box {
   background: rgba(100, 116, 139, 0.05);
@@ -1867,6 +1900,8 @@ a { color: inherit; }
     radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.12), transparent 14rem),
     rgba(255, 255, 255, 0.035);
   padding: 16px;
+  min-width: 0;
+  max-width: 100%;
 }
 .action-plan-head {
   display: flex;
@@ -1961,6 +1996,8 @@ a { color: inherit; }
   overflow: hidden;
   transition: border-color 0.15s ease, background 0.15s ease;
   cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
 }
 .issue-accordion-card:hover {
   background: rgba(255, 255, 255, 0.055);
@@ -2198,6 +2235,8 @@ a { color: inherit; }
     radial-gradient(circle at 84% 0%, rgba(56, 189, 248, 0.12), transparent 12rem),
     #090f1e;
   overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
 }
 .schema-code-head {
   min-height: 50px;
@@ -2220,12 +2259,17 @@ a { color: inherit; }
   border: 0;
   border-radius: 0;
   max-height: 420px;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: auto;
   white-space: pre;
   font-size: 0.82rem;
   line-height: 1.55;
   background: transparent;
   padding: 16px;
+  max-width: 100%;
+  min-width: 0;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .faq-grid-premium {
@@ -2771,6 +2815,12 @@ a { color: inherit; }
   font-size: 0.8rem;
   line-height: 1.45;
   text-align: left;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .audit-action {
   margin-top: auto;
