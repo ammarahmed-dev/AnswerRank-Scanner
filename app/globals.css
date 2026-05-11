@@ -4369,6 +4369,8 @@ a { color: inherit; }
   }
   .report-inline-share {
     width: 100%;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
   .score-widget { width: 164px; }
   .score-ring { width: 144px; height: 144px; }
@@ -4478,6 +4480,8 @@ a { color: inherit; }
     grid-column: 2;
     min-width: 0;
     width: 100%;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
   .pro-roadmap-row span {
     grid-column: 1;
@@ -4511,6 +4515,8 @@ a { color: inherit; }
   }
   .pro-report-header .btn {
     width: 100%;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
   .pro-report-live {
     padding: 18px;
@@ -4711,6 +4717,8 @@ a { color: inherit; }
 
   .upgrade-choice-actions .btn {
     width: 100%;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
 
   .ai-snapshot-locked {
@@ -4719,6 +4727,8 @@ a { color: inherit; }
 
   .ai-snapshot-locked .btn {
     width: 100%;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
 
   .detailed-issues-lock {
@@ -4732,6 +4742,8 @@ a { color: inherit; }
 
   .detailed-issues-lock-copy {
     width: 100%;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
 
   .detailed-issues-lock-cta.btn,
@@ -4755,6 +4767,8 @@ a { color: inherit; }
   }
   .issue-toggle-left {
     width: 100%;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
   .issue-toggle-title {
     white-space: normal;
@@ -4784,6 +4798,8 @@ a { color: inherit; }
   .detailed-issues-lock .detailed-issues-lock-cta {
     width: 100%;
     max-width: 100%;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
 
   /* Schema code head — label full-width on line 1, button wraps to line 2 */
@@ -4794,6 +4810,8 @@ a { color: inherit; }
   }
   .schema-code-head strong {
     width: 100%;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
 }
 
@@ -4822,8 +4840,10 @@ a { color: inherit; }
 
   /* ── Hidden elements ── */
   .site-header,
+  .navbar,
   .site-footer,
   .report-action-row,
+  .report-actions,
   .btn,
   .print-hidden,
   .locked-panel,
@@ -5038,15 +5058,22 @@ a { color: inherit; }
 
 /* ── PrintLayout styles ── */
 @media print {
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
   /* ── Base ── */
   .print-layout {
     font-family: 'Inter', -apple-system, sans-serif;
     font-size: 10.5pt;
     color: #111827;
-    background: white;
+    background: #ffffff !important;
     padding: 0;
     margin: 0;
     width: 100%;
+    break-after: avoid-page;
+    page-break-after: avoid;
   }
 
   /* ── Cover page ── */
@@ -5146,6 +5173,10 @@ a { color: inherit; }
   .pl-page { padding-top: 4pt; }
   .pl-force-break { break-before: page; page-break-before: always; }
   .pl-last-page   { break-after: avoid; page-break-after: avoid; }
+  .pl-page:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
 
   /* ── Repeating page header ── */
   .pl-page-header {
@@ -5239,6 +5270,128 @@ a { color: inherit; }
   .pl-content-gap strong { color: #78716c; }
   .pl-content-gap p      { color: #44403c; }
 
+  /* PDF snapshot + metadata + schema + competitor */
+  .pl-ai-snapshot-grid,
+  .pl-schema-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8pt;
+    margin-bottom: 12pt;
+  }
+  .pl-ai-snapshot-card,
+  .pl-schema-card,
+  .pl-competitor-card,
+  .pl-competitor-takeaway,
+  .pl-meta-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .pl-ai-snapshot-card,
+  .pl-schema-card,
+  .pl-competitor-card,
+  .pl-competitor-takeaway {
+    border: 1pt solid #e5e7eb;
+    border-radius: 6pt;
+    padding: 8pt 10pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: #ffffff;
+  }
+  .pl-ai-snapshot-card strong,
+  .pl-schema-card strong,
+  .pl-competitor-card strong,
+  .pl-competitor-takeaway strong {
+    display: block;
+    font-size: 8pt;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 4pt;
+  }
+  .pl-ai-snapshot-card p,
+  .pl-schema-card p,
+  .pl-competitor-card p,
+  .pl-competitor-takeaway p {
+    margin: 0;
+    color: #374151;
+    font-size: 9.2pt;
+    line-height: 1.5;
+  }
+  .pl-confidence-pill {
+    display: inline-block;
+    margin-bottom: 4pt !important;
+    font-size: 8pt !important;
+    font-weight: 700;
+    color: #0c4a6e !important;
+    background: #e0f2fe;
+    border: 1pt solid #bae6fd;
+    padding: 2pt 6pt;
+    border-radius: 999pt;
+  }
+
+  .pl-meta-grid {
+    display: grid;
+    gap: 7pt;
+    margin-bottom: 10pt;
+  }
+  .pl-meta-row {
+    display: grid;
+    grid-template-columns: 132pt 1fr 64pt;
+    gap: 10pt;
+    border: 1pt solid #e5e7eb;
+    border-radius: 6pt;
+    padding: 8pt 10pt;
+    align-items: start;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: #ffffff;
+  }
+  .pl-meta-label {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #111827;
+  }
+  .pl-meta-value {
+    font-size: 9pt;
+    color: #374151;
+    word-break: break-word;
+  }
+  .pl-meta-value.is-missing {
+    color: #9ca3af;
+    font-style: italic;
+  }
+  .pl-meta-value.is-over,
+  .pl-meta-count.is-over {
+    color: #b45309;
+  }
+  .pl-meta-count {
+    text-align: right;
+    font-size: 8pt;
+    color: #6b7280;
+    white-space: nowrap;
+  }
+
+  .pl-disclaimer {
+    margin: 8pt 0 0;
+    font-size: 8.5pt;
+    color: #6b7280;
+    font-style: italic;
+  }
+
+  .pl-competitor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8pt;
+    margin-bottom: 8pt;
+  }
+  .pl-competitor-card span {
+    display: inline-block;
+    margin-top: 4pt;
+    font-weight: 800;
+    font-size: 12pt;
+    color: #111827;
+  }
+
   /* ── Issue cards ── */
   .pl-issue-card {
     margin-bottom: 12pt;
@@ -5246,7 +5399,9 @@ a { color: inherit; }
     border: 1pt solid #e5e7eb;
     border-radius: 6pt;
     break-inside: avoid;
+    break-inside: avoid-page;
     page-break-inside: avoid;
+    page-break-after: auto;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -5361,7 +5516,7 @@ a { color: inherit; }
 
   /* ── Footer ── */
   .pl-footer {
-    margin-top: 20pt;
+    margin-top: 12pt;
     padding-top: 6pt;
     border-top: 1pt solid #e5e7eb;
     font-size: 8pt;
@@ -5369,6 +5524,8 @@ a { color: inherit; }
     text-align: center;
     break-after: avoid;
     page-break-after: avoid;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
 }
 
@@ -5381,3 +5538,6 @@ a { color: inherit; }
     font-family: system-ui, sans-serif;
   }
 }
+
+
+
