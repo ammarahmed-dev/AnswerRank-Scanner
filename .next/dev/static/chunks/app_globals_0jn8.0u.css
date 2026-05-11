@@ -21,7 +21,6 @@
       --tw-numeric-figure: initial;
       --tw-numeric-spacing: initial;
       --tw-numeric-fraction: initial;
-      --tw-outline-style: solid;
     }
   }
 }
@@ -381,10 +380,6 @@
 
   .start {
     inset-inline-start: var(--spacing);
-  }
-
-  .end {
-    inset-inline-end: var(--spacing);
   }
 
   .mx-auto {
@@ -857,11 +852,6 @@
 
   .opacity-40 {
     opacity: .4;
-  }
-
-  .outline {
-    outline-style: var(--tw-outline-style);
-    outline-width: 1px;
   }
 
   @media (hover: hover) {
@@ -6491,6 +6481,8 @@ a {
   }
 
   .report-inline-share {
+    break-after: avoid-page;
+    page-break-after: avoid;
     width: 100%;
   }
 
@@ -6654,6 +6646,8 @@ a {
   }
 
   .pro-roadmap-row > div {
+    break-after: avoid-page;
+    page-break-after: avoid;
     grid-column: 2;
     width: 100%;
     min-width: 0;
@@ -6695,6 +6689,8 @@ a {
   }
 
   .pro-report-header .btn {
+    break-after: avoid-page;
+    page-break-after: avoid;
     width: 100%;
   }
 
@@ -6888,6 +6884,8 @@ a {
   }
 
   .upgrade-choice-actions .btn {
+    break-after: avoid-page;
+    page-break-after: avoid;
     width: 100%;
   }
 
@@ -6896,6 +6894,8 @@ a {
   }
 
   .ai-snapshot-locked .btn {
+    break-after: avoid-page;
+    page-break-after: avoid;
     width: 100%;
   }
 
@@ -6909,6 +6909,8 @@ a {
   }
 
   .detailed-issues-lock-copy {
+    break-after: avoid-page;
+    page-break-after: avoid;
     width: 100%;
   }
 
@@ -6931,6 +6933,8 @@ a {
   }
 
   .issue-toggle-left {
+    break-after: avoid-page;
+    page-break-after: avoid;
     width: 100%;
   }
 
@@ -6964,6 +6968,8 @@ a {
   }
 
   .detailed-issues-lock-cta.btn, .detailed-issues-lock .detailed-issues-lock-cta {
+    break-after: avoid-page;
+    page-break-after: avoid;
     width: 100%;
     max-width: 100%;
   }
@@ -6975,6 +6981,8 @@ a {
   }
 
   .schema-code-head strong {
+    break-after: avoid-page;
+    page-break-after: avoid;
     width: 100%;
   }
 }
@@ -7003,7 +7011,7 @@ a {
     color-adjust: exact !important;
   }
 
-  .site-header, .site-footer, .report-action-row, .btn, .print-hidden, .locked-panel, .report-open-link, .issue-chevron, .score-ring svg, .score-ring canvas, .report-stack > section:last-of-type {
+  .site-header, .navbar, .site-footer, .report-action-row, .report-actions, .btn, .print-hidden, .locked-panel, .report-open-link, .issue-chevron, .score-ring svg, .score-ring canvas, .report-stack > section:last-of-type {
     display: none !important;
   }
 
@@ -7234,14 +7242,23 @@ a {
   }
 
   .print-layout {
+    display: block !important;
+  }
+
+  html, body {
+    background: #fff !important;
+  }
+
+  .print-layout {
     color: #111827;
-    background: #fff;
+    break-after: avoid-page;
+    page-break-after: avoid;
     width: 100%;
     margin: 0;
     padding: 0;
     font-family: Inter, -apple-system, sans-serif;
     font-size: 10.5pt;
-    display: block !important;
+    background: #fff !important;
   }
 
   .pl-cover {
@@ -7389,6 +7406,11 @@ a {
   .pl-last-page {
     break-after: avoid;
     page-break-after: avoid;
+  }
+
+  .pl-page:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   .pl-page-header {
@@ -7552,9 +7574,129 @@ a {
     color: #44403c;
   }
 
-  .pl-issue-card {
+  .pl-ai-snapshot-grid, .pl-schema-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8pt;
+    margin-bottom: 12pt;
+    display: grid;
+  }
+
+  .pl-ai-snapshot-card, .pl-schema-card, .pl-competitor-card, .pl-competitor-takeaway, .pl-meta-row {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  .pl-ai-snapshot-card, .pl-schema-card, .pl-competitor-card, .pl-competitor-takeaway {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: #fff;
+    border: 1pt solid #e5e7eb;
+    border-radius: 6pt;
+    padding: 8pt 10pt;
+  }
+
+  .pl-ai-snapshot-card strong, .pl-schema-card strong, .pl-competitor-card strong, .pl-competitor-takeaway strong {
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 4pt;
+    font-size: 8pt;
+    display: block;
+  }
+
+  .pl-ai-snapshot-card p, .pl-schema-card p, .pl-competitor-card p, .pl-competitor-takeaway p {
+    color: #374151;
+    margin: 0;
+    font-size: 9.2pt;
+    line-height: 1.5;
+  }
+
+  .pl-confidence-pill {
+    background: #e0f2fe;
+    border: 1pt solid #bae6fd;
+    border-radius: 999pt;
+    padding: 2pt 6pt;
+    font-weight: 700;
+    display: inline-block;
+    color: #0c4a6e !important;
+    margin-bottom: 4pt !important;
+    font-size: 8pt !important;
+  }
+
+  .pl-meta-grid {
+    gap: 7pt;
+    margin-bottom: 10pt;
+    display: grid;
+  }
+
+  .pl-meta-row {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: #fff;
+    border: 1pt solid #e5e7eb;
+    border-radius: 6pt;
+    grid-template-columns: 132pt 1fr 64pt;
+    align-items: start;
+    gap: 10pt;
+    padding: 8pt 10pt;
+    display: grid;
+  }
+
+  .pl-meta-label {
+    color: #111827;
+    font-size: 8.5pt;
+    font-weight: 700;
+  }
+
+  .pl-meta-value {
+    color: #374151;
+    word-break: break-word;
+    font-size: 9pt;
+  }
+
+  .pl-meta-value.is-missing {
+    color: #9ca3af;
+    font-style: italic;
+  }
+
+  .pl-meta-value.is-over, .pl-meta-count.is-over {
+    color: #b45309;
+  }
+
+  .pl-meta-count {
+    text-align: right;
+    color: #6b7280;
+    white-space: nowrap;
+    font-size: 8pt;
+  }
+
+  .pl-disclaimer {
+    color: #6b7280;
+    margin: 8pt 0 0;
+    font-size: 8.5pt;
+    font-style: italic;
+  }
+
+  .pl-competitor-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8pt;
+    margin-bottom: 8pt;
+    display: grid;
+  }
+
+  .pl-competitor-card span {
+    color: #111827;
+    margin-top: 4pt;
+    font-size: 12pt;
+    font-weight: 800;
+    display: inline-block;
+  }
+
+  .pl-issue-card {
+    break-inside: avoid;
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+    page-break-after: auto;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     border: 1pt solid #e5e7eb;
@@ -7721,9 +7863,11 @@ a {
     break-after: avoid;
     page-break-after: avoid;
     border-top: 1pt solid #e5e7eb;
-    margin-top: 20pt;
+    margin-top: 12pt;
     padding-top: 6pt;
     font-size: 8pt;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
 }
 
@@ -7839,12 +7983,6 @@ a {
 @property --tw-numeric-fraction {
   syntax: "*";
   inherits: false
-}
-
-@property --tw-outline-style {
-  syntax: "*";
-  inherits: false;
-  initial-value: solid;
 }
 
 @keyframes spin {
