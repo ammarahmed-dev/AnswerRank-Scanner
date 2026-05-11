@@ -4,10 +4,10 @@ import { CheckResult, CompetitorScanResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
 import { AlertCircle, CheckCircle2, ChevronDown, Copy, Download, ExternalLink, Lock, RotateCcw, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { flushSync } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import UpgradeButton from "./UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { canDownloadPdf, canViewFullReport, isMasterAdmin } from "@/lib/access";
+import { canViewFullReport, isMasterAdmin } from "@/lib/access";
 import PrintLayout from "./PrintLayout";
 
 interface Props {
@@ -59,12 +59,12 @@ function statusLabel(score: number) {
 }
 
 function categoryNote(category: Category, score: number) {
-  if (category === "schema") return score >= 70 ? "Structured data coverage is solid." : "Schema types are missing — AI systems have less context to work with.";
+  if (category === "schema") return score >= 70 ? "Structured data coverage is solid." : "Schema types are missing. AI systems have less context to work with.";
   if (category === "metadata") return score >= 70 ? "Title, description, and OG tags are well-optimised." : "Tighten titles and descriptions so AI systems can accurately label this page.";
   if (category === "content") return score >= 70 ? "Content depth gives AI enough to work with." : "Add use-case detail and concise answer blocks so AI can extract clear responses.";
-  if (category === "headings") return score >= 70 ? "Heading hierarchy is clear and well-structured." : "Restructure headings — a logical H1→H2→H3 hierarchy helps AI parse your content.";
-  if (category === "trust") return score >= 70 ? "Trust signals and crawl directives look good." : "Add trust signals — HTTPS, a valid robots.txt, and author or brand information.";
-  if (category === "performance") return score >= 70 ? "Page speed and Core Web Vitals are competitive." : "Speed improvements available — faster pages are indexed more reliably by AI crawlers.";
+  if (category === "headings") return score >= 70 ? "Heading hierarchy is clear and well-structured." : "Restructure headings. A logical H1-H2-H3 hierarchy helps AI parse your content.";
+  if (category === "trust") return score >= 70 ? "Trust signals and crawl directives look good." : "Add trust signals. Include HTTPS, a valid robots.txt, and author or brand information.";
+  if (category === "performance") return score >= 70 ? "Page speed and Core Web Vitals are competitive." : "Speed improvements are available. Faster pages are indexed more reliably by AI crawlers.";
   return score >= 70 ? "This page is well-structured for AI answer extraction." : "Improve content clarity so AI assistants can accurately summarize and cite this page.";
 }
 
@@ -99,21 +99,21 @@ function impactByPriority(priority: Priority): Impact {
 function whyItMattersById(id: string): string {
   const map: Record<string, string> = {
     title: "The page title is the primary label AI systems use when citing your page in answers. A vague or missing title means the page gets misidentified or skipped entirely.",
-    meta_desc: "Meta descriptions are the first summary AI systems and search engines read. Without one, they generate their own — often pulling the wrong text.",
+    meta_desc: "Meta descriptions are the first summary AI systems and search engines read. Without one, they generate their own, often pulling the wrong text.",
     h1: "The H1 is the most semantically important heading on the page. AI systems use it to determine what the page is about and whether it matches a user's query.",
-    heading_structure: "A logical heading hierarchy (H1 → H2 → H3) acts as a table of contents for AI crawlers. Without it, content blocks are harder to parse and cite accurately.",
+    heading_structure: "A logical heading hierarchy (H1-H2-H3) acts as a table of contents for AI crawlers. Without it, content blocks are harder to parse and cite accurately.",
     schema_present: "JSON-LD schema is the clearest way to tell AI systems what your page is, who it's for, and what it contains. Pages without schema rely entirely on AI guesswork.",
     faq_schema: "FAQPage schema surfaces Q&A content directly in AI answer results. It's one of the highest-impact schema types for answer engine visibility.",
-    article_schema: "Article or BlogPosting schema tells AI systems this is authoritative, dated content — increasing the likelihood it gets cited as a source.",
+    article_schema: "Article or BlogPosting schema tells AI systems this is authoritative, dated content, increasing the likelihood it gets cited as a source.",
     og_tags: "Open Graph tags control how your page appears when shared or cited. Missing OG tags mean AI-assisted tools and social platforms display incomplete or inaccurate previews.",
     og_image: "An OG image is pulled whenever your page is cited or previewed. Without one, platforms display a blank or auto-generated placeholder that reduces click-through.",
-    https: "HTTPS is a baseline trust signal. Pages served over HTTP are deprioritized by crawlers and flagged as insecure by browsers — reducing crawl frequency and citation confidence.",
+    https: "HTTPS is a baseline trust signal. Pages served over HTTP are deprioritized by crawlers and flagged as insecure by browsers, reducing crawl frequency and citation confidence.",
     robots: "A missing or misconfigured robots.txt can inadvertently block AI crawlers from indexing your page, making it invisible to systems that rely on crawl data.",
     sitemap: "A sitemap tells crawlers exactly which pages exist and when they were last updated. Without one, new or updated pages are discovered more slowly.",
     alt_text: "Alt text is how AI vision systems and crawlers understand your images. Missing alt text leaves image content invisible to indexing and answer systems.",
     word_count: "Thin content gives AI assistants very little to extract or cite. Pages with insufficient depth are rarely chosen as sources for detailed answers.",
     internal_links: "Internal links help AI crawlers discover related pages and understand your site structure. Few internal links means important pages get crawled less frequently.",
-    structured_density: "Pages with multiple relevant schema types give AI systems a richer, more confident picture of your content — increasing citation likelihood across more query types.",
+    structured_density: "Pages with multiple relevant schema types give AI systems a richer, more confident picture of your content, increasing citation likelihood across more query types.",
   };
   return map[id] ?? "Weak signals reduce how confidently AI assistants and search systems can understand and cite this page.";
 }
@@ -155,6 +155,49 @@ function normalizeIssues(checks: CheckResult[]): ReportIssue[] {
       example: issueExample(check),
     };
   });
+}
+
+function buildPageSpeedIssues(pagespeed: ScanResult["pagespeed"], existingIssues: ReportIssue[]): ReportIssue[] {
+  if (!pagespeed || typeof pagespeed.score !== "number") return [];
+
+  const hasPerformanceIssue = existingIssues.some((issue) =>
+    issue.category === "performance"
+    || issue.id === "pagespeed_low"
+    || issue.id === "pagespeed_moderate"
+    || issue.title.toLowerCase().includes("performance")
+    || issue.title.toLowerCase().includes("page speed")
+  );
+  if (hasPerformanceIssue) return [];
+
+  if (pagespeed.score < 50) {
+    return [{
+      id: "pagespeed_low",
+      title: "Poor mobile performance",
+      priority: "high",
+      impact: "high",
+      effort: "medium",
+      category: "performance",
+      problem: "The page has a low PageSpeed score, which may reduce user experience and crawl efficiency.",
+      whyItMatters: "Slow pages can reduce user engagement and make it harder for crawlers and AI systems to process page content efficiently.",
+      recommendedFix: "Review image sizes, render-blocking scripts, unused JavaScript, and server response time. Start with the largest assets and third-party scripts.",
+    }];
+  }
+
+  if (pagespeed.score < 75) {
+    return [{
+      id: "pagespeed_moderate",
+      title: "Performance needs improvement",
+      priority: "medium",
+      impact: "medium",
+      effort: "medium",
+      category: "performance",
+      problem: "The page has moderate performance issues based on the PageSpeed score.",
+      whyItMatters: "Moderate speed bottlenecks can still slow down user journeys and reduce crawl efficiency for content processing.",
+      recommendedFix: "Improve loading speed by optimizing images, reducing unused scripts, and reviewing third-party resources.",
+    }];
+  }
+
+  return [];
 }
 
 function badgeTone(value: Priority | Impact | Effort) {
@@ -207,6 +250,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const [copyOk, setCopyOk] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   useEffect(() => {
     const onBefore = () => flushSync(() => setIsPrinting(true));
@@ -218,6 +262,25 @@ export default function ReportSectionNew({ report, onReset }: Props) {
       window.removeEventListener("afterprint", onAfter);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isUpgradeModalOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsUpgradeModalOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isUpgradeModalOpen]);
 
   useEffect(() => {
     async function loadPlan() {
@@ -238,7 +301,10 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   }, []);
 
   const checks = report.checks;
-  const isPro = canViewFullReport(plan);
+  const isReportUnlocked = Boolean(report.unlocked || report.unlockedAt);
+  const hasFullReportAccess = isMasterAdmin(plan) || canViewFullReport(plan) || isReportUnlocked;
+  const hasPdfAccess = hasFullReportAccess;
+  const canUnlockSpecificReport = Boolean(report.reportId);
   const isAdmin = isMasterAdmin(plan);
   const host = useMemo(() => {
     try {
@@ -248,11 +314,12 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     }
   }, [report.url]);
 
-  const issues = useMemo(
-    () => normalizeIssues(checks).filter((issue) => checks.find((c) => c.id === issue.id)?.status !== "pass"),
-    [checks]
-  );
-  const visibleIssues = isPro ? issues : issues.slice(0, 3);
+  const issues = useMemo(() => {
+    const baseIssues = normalizeIssues(checks).filter((issue) => checks.find((c) => c.id === issue.id)?.status !== "pass");
+    const performanceIssues = buildPageSpeedIssues(report.pagespeed, baseIssues);
+    return [...baseIssues, ...performanceIssues];
+  }, [checks, report.pagespeed]);
+  const visibleIssues = hasFullReportAccess ? issues : issues.slice(0, 3);
   const hiddenCount = Math.max(0, issues.length - visibleIssues.length);
   const critical = issues.filter((i) => i.priority === "critical");
   const high = issues.filter((i) => i.priority === "high");
@@ -274,8 +341,8 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     {
       title: "Performance score",
       text: report.pagespeed?.score !== undefined
-        ? `${report.pagespeed.score}/100 — page speed and Core Web Vitals affect how reliably AI crawlers can index your content.`
-        : "PageSpeed score unavailable — the performance API did not return data for this page.",
+        ? `${report.pagespeed.score}/100. Page speed and Core Web Vitals affect how reliably AI crawlers can index your content.`
+        : "PageSpeed score unavailable. The performance API did not return data for this page.",
       icon: TrendingUp,
     },
   ];
@@ -363,6 +430,32 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const prioritySchema = report.aiInsights?.schemaRecommendations?.priority ?? null;
   const priorityReasoning = report.aiInsights?.schemaRecommendations?.reasoning ?? "";
   const otherSuggestedTypes = missingSchemaTypes.filter((t) => t !== prioritySchema);
+  const aiSummary = report.aiInsights?.summary?.trim()
+    || `This page appears to be about ${report.metadata?.title?.trim() || host}. The available metadata gives partial context, but the page may need clearer positioning for AI systems to summarize it confidently.`;
+  const confidenceLabel = report.score >= 80 ? "High" : report.score >= 60 ? "Medium" : "Low";
+  const confidenceBadge = `${confidenceLabel} confidence`;
+  const confidenceDetail = report.score >= 80
+    ? "The page gives AI systems enough clear signals to understand the core topic."
+    : report.score >= 60
+      ? "The page has useful signals, but some context or structure is missing."
+      : "The page needs clearer metadata, schema, and answer-ready content.";
+  const inferredMissingContext = useMemo(() => {
+    const findings: string[] = [];
+    const hasIssue = (ids: string[]) => checks.some((check) => ids.includes(check.id) && check.status !== "pass");
+    if (hasIssue(["schema_present", "faq_schema", "article_schema", "structured_density"])) findings.push("Structured data");
+    if (hasIssue(["title", "meta_desc", "og_tags", "og_image"])) findings.push("Clear page positioning");
+    if (hasIssue(["h1", "heading_structure"])) findings.push("Heading structure");
+    if (hasIssue(["word_count", "internal_links", "alt_text"])) findings.push("Use cases and audience clarity");
+    if (hasIssue(["https", "robots", "sitemap"])) findings.push("Proof and trust signals");
+    if (!findings.length) return "No major missing context detected.";
+    if (findings.length === 1) return `The page does not clearly surface ${findings[0].toLowerCase()}.`;
+    if (findings.length === 2) return `The page does not clearly surface ${findings[0].toLowerCase()} and ${findings[1].toLowerCase()}.`;
+    const head = findings.slice(0, -1).map((item) => item.toLowerCase()).join(", ");
+    const tail = findings[findings.length - 1].toLowerCase();
+    return `The page does not clearly surface ${head}, and ${tail}.`;
+  }, [checks]);
+  const missingContextText = report.aiInsights?.contentGap?.trim() || inferredMissingContext;
+  const nextBestImprovement = report.aiInsights?.quickWin?.trim() || issues[0]?.recommendedFix || "Keep improving the highest-priority issue from this audit.";
   const copyReport = async () => {
     const lines = [
       `AnswerRank Scanner - AI Visibility Readiness Report`,
@@ -382,7 +475,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   };
 
 const downloadPdf = () => {
-    if (!canDownloadPdf(plan)) return;
+    if (!hasPdfAccess) return;
     window.print();
   };
 
@@ -394,7 +487,7 @@ const downloadPdf = () => {
           <ScoreCircle score={report.score} />
           <div className="report-hero-copy">
             <div className="report-hero-badges">
-              <span className="badge">{isPro ? "Pro Report" : "Free Preview"}</span>
+              <span className="badge">{hasFullReportAccess ? "Full Report" : "Free Preview"}</span>
               {isAdmin && <span className="badge">Master Admin - Unlimited Access</span>}
               <span className="badge">{scoreStatus}</span>
               <span className="badge">AI Visibility Readiness Report</span>
@@ -508,6 +601,40 @@ const downloadPdf = () => {
         </section>
       )}
 
+      <section className="surface report-card print-section">
+        <h3 className="section-heading">AI Answer Snapshot</h3>
+        <p className="section-kicker mt-1">How an AI assistant may understand this page from the visible content.</p>
+        <div className="ai-snapshot-grid mt-4">
+          <article className="ai-snapshot-card">
+            <p className="ai-snapshot-label">If AI summarized this page</p>
+            <p className="ai-snapshot-value ai-snapshot-summary">{aiSummary}</p>
+          </article>
+          <article className="ai-snapshot-card">
+            <p className="ai-snapshot-label">Confidence</p>
+            <span className={`ai-confidence-badge ai-confidence-${confidenceLabel.toLowerCase()}`}>{confidenceBadge}</span>
+            <p className="muted-copy">{confidenceDetail}</p>
+          </article>
+          {hasFullReportAccess ? (
+            <>
+              <article className="ai-snapshot-card">
+                <p className="ai-snapshot-label">Missing context</p>
+                <p className="ai-snapshot-value">{missingContextText}</p>
+              </article>
+              <article className="ai-snapshot-card">
+                <p className="ai-snapshot-label">Next best improvement</p>
+                <p className="ai-snapshot-value">{nextBestImprovement}</p>
+              </article>
+            </>
+          ) : (
+            <article className="ai-snapshot-card ai-snapshot-locked">
+              <p className="ai-snapshot-label">Missing context and next best improvement</p>
+              <p className="ai-snapshot-value">Unlock detailed guidance to see missing context and the next best improvement for this page.</p>
+              <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Unlock Full Report</button>
+            </article>
+          )}
+        </div>
+      </section>
+
       {report.metadata && (
         <section className="surface report-card print-section">
           <h3 className="section-heading">Metadata Overview</h3>
@@ -577,7 +704,7 @@ const downloadPdf = () => {
                       <p className="issue-section-label">Recommended fix</p>
                       <p className="issue-section-text">{issue.recommendedFix}</p>
                     </div>
-                    {isPro && issue.example && (
+                    {hasFullReportAccess && issue.example && (
                       <pre className="report-code-block">{issue.example}</pre>
                     )}
                   </div>
@@ -586,11 +713,14 @@ const downloadPdf = () => {
             );
           })}
         </div>
-        {!isPro && hiddenCount > 0 && (
-          <div className="locked-panel">
-            <Lock className="h-4 w-4" />
-            <p>{hiddenCount} more issues are included in the Pro report.</p>
-            <UpgradeButton>Unlock Full Report</UpgradeButton>
+        {!hasFullReportAccess && hiddenCount > 0 && (
+          <div className="locked-panel detailed-issues-lock">
+            <div className="detailed-issues-lock-copy">
+              <p>Unlock the full issue breakdown</p>
+              <small>Get every issue with why it matters, priority, effort level, and the recommended fix.</small>
+              <small>Full Report is a one-time unlock for this scan.</small>
+            </div>
+            <button type="button" className="btn btn-primary detailed-issues-lock-cta" onClick={() => setIsUpgradeModalOpen(true)}>Unlock Full Report</button>
           </div>
         )}
       </section>
@@ -659,6 +789,18 @@ const downloadPdf = () => {
         </section>
       )}
 
+      <section className="surface report-card print-section report-notes-card">
+        <div className="report-notes-inline">
+          <span className="report-notes-icon" aria-hidden="true">
+            <AlertCircle className="h-4 w-4" />
+          </span>
+          <div className="report-notes-copy">
+            <h3 className="section-heading">Report notes</h3>
+            <p>This audit is generated from publicly available page content and automated analysis. Review recommendations before publishing changes, especially schema, metadata, and content updates.</p>
+          </div>
+        </div>
+      </section>
+
       <section className="surface report-card print-section">
         <h3 className="section-heading">PDF Export</h3>
         <div className="pdf-card-grid mt-4">
@@ -667,11 +809,11 @@ const downloadPdf = () => {
             <ul className="pdf-includes-list">
               <li>Executive summary</li>
               <li>Score breakdown</li>
-              <li>Priority action plan</li>
-              <li>Detailed issues</li>
+              <li>Priority fixes</li>
+              <li>Detailed issue breakdown</li>
               <li>Schema recommendations</li>
-              <li>FAQ schema guidance</li>
-              <li>Implementation roadmap</li>
+              <li>AI recommendations</li>
+              <li>Client-ready PDF export</li>
             </ul>
           </div>
           <div className="pdf-action-card">
@@ -682,13 +824,14 @@ const downloadPdf = () => {
               <em>{report.score}/100 - {scoreStatus}</em>
             </div>
             <strong>Client-shareable audit PDF</strong>
-            <p>A clean, professional report you can share directly with clients or your team — no formatting work needed.</p>
-            {canDownloadPdf(plan) ? (
+            <p>A clean, professional report you can share with clients or your team. No formatting work needed.</p>
+            {hasPdfAccess ? (
               <button className="btn btn-primary" onClick={downloadPdf}><Download className="h-4 w-4" /> Download PDF</button>
             ) : (
               <>
-                <div className="locked-inline"><Lock className="h-4 w-4" /> PDF export is available on Pro.</div>
-                <UpgradeButton>Unlock Full Report + PDF</UpgradeButton>
+                <div className="locked-inline"><Lock className="h-4 w-4" /> Export a client-ready PDF</div>
+                <p>Download a clean report with scores, priority fixes, detailed issues, schema recommendations, and AI insights.</p>
+                <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Unlock Full Report</button>
               </>
             )}
           </div>
@@ -699,12 +842,76 @@ const downloadPdf = () => {
         <button onClick={copyReport} className="btn btn-secondary">
           <Copy className="h-4 w-4" /> {copyOk ? "Copied" : "Copy report summary"}
         </button>
-        {!isPro && <UpgradeButton>Get all fixes + PDF</UpgradeButton>}
+        {hasPdfAccess && (
+          <button onClick={downloadPdf} className="btn btn-secondary">
+            <Download className="h-4 w-4" /> Download PDF
+          </button>
+        )}
+        {!hasFullReportAccess && <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Unlock Full Report</button>}
         <button onClick={onReset} className="btn btn-primary">
           <RotateCcw className="h-4 w-4" /> Scan another URL
         </button>
       </div>
     </div>
+    {!hasFullReportAccess && isUpgradeModalOpen && createPortal(
+      <div className="upgrade-choice-overlay" onClick={() => setIsUpgradeModalOpen(false)}>
+        <div className="upgrade-choice-modal" onClick={(event) => event.stopPropagation()}>
+          <div className="upgrade-choice-head">
+            <h3>Choose how to unlock this report</h3>
+            <p>Unlock this audit once, or upgrade for ongoing reports.</p>
+          </div>
+          <div className="upgrade-choice-grid">
+            <article className="upgrade-choice-card">
+              <span className="upgrade-choice-badge">One-time</span>
+              <strong className="upgrade-choice-title">Full Report</strong>
+              <span className="upgrade-choice-price">$14 one-time</span>
+              <p className="upgrade-choice-description">Unlock this report only.</p>
+              <ul className="upgrade-choice-features">
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Full issue breakdown</span></li>
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Fix recommendations</span></li>
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Schema recommendations</span></li>
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">AI Answer Snapshot</span></li>
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Client-ready PDF report</span></li>
+              </ul>
+              <UpgradeButton
+                checkoutType="full_report"
+                reportId={report.reportId}
+                reportUrl={report.url}
+                className="btn btn-secondary upgrade-choice-button"
+                disabled={!canUnlockSpecificReport}
+              >
+                Unlock this report
+              </UpgradeButton>
+              {!canUnlockSpecificReport && (
+                <small>Run a scan first to unlock a specific report.</small>
+              )}
+            </article>
+
+            <article className="upgrade-choice-card is-recommended">
+              <span className="upgrade-choice-badge upgrade-choice-badge-recommended">Recommended</span>
+              <strong className="upgrade-choice-title">Pro Monthly</strong>
+              <span className="upgrade-choice-price">$39/month</span>
+              <p className="upgrade-choice-description">Best if you scan websites regularly.</p>
+              <ul className="upgrade-choice-features">
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">30 full reports per month</span></li>
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Saved report history</span></li>
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Client-ready PDF reports</span></li>
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Competitor comparisons</span></li>
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Priority scan access</span></li>
+              </ul>
+              <UpgradeButton checkoutType="pro_plan" className="btn btn-primary upgrade-choice-button">
+                Start monthly plan
+              </UpgradeButton>
+            </article>
+          </div>
+          <p className="upgrade-choice-note">You can cancel the monthly plan anytime from Stripe billing.</p>
+          <div className="upgrade-choice-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => setIsUpgradeModalOpen(false)}>Cancel</button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    )}
     {isPrinting && <PrintLayout report={report} />}
     </>
   );

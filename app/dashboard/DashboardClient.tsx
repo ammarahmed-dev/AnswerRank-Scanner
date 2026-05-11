@@ -27,6 +27,7 @@ type AccountData = {
     url: string;
     score: number;
     created_at: string;
+    unlocked?: boolean;
   }>;
 };
 
@@ -101,13 +102,14 @@ export default function DashboardClient() {
 const paidPlan = account ? account.profile.plan === "pro" || account.profile.plan === "agency" : false;
 const shouldShowUpgradeCard = Boolean(account) && !masterAdmin && !paidPlan;
 const shouldShowPricingCta = shouldShowUpgradeCard;
+const hasUnlockedOneTimeReports = Boolean(account?.reports.some((report) => report.unlocked));
 
 const scanCountLabel = account && masterAdmin
   ? "Master Admin · Unlimited Access"
   : account?.usage.unlimited
   ? "Pro · Unlimited Access"
   : account
-    ? `${account.usage.remaining} free scans left`
+    ? `${account.usage.remaining} free scans left this month`
     : undefined;
 
   return (
@@ -187,8 +189,11 @@ const scanCountLabel = account && masterAdmin
                 <p className="dashboard-plan-copy">
                   {account.usage.unlimited
                     ? "Unlimited scans are active for this workspace."
-                    : "Free accounts include 10 saved scans per day."}
+                    : "Free accounts include 3 scans per month."}
                 </p>
+                {!account.usage.unlimited && hasUnlockedOneTimeReports && (
+                  <p className="dashboard-plan-copy">Free account. Some reports may be unlocked individually.</p>
+                )}
                 {shouldShowPricingCta && <a href="/#pricing" className="btn btn-secondary">View pricing</a>}
               </section>
 
@@ -196,21 +201,21 @@ const scanCountLabel = account && masterAdmin
                 <div className="dashboard-card-title">
                   <span className="icon-tile"><BarChart3 className="h-5 w-5" /></span>
                   <div>
-                    <h2>Daily scans</h2>
-                    <p>Resets every day.</p>
+                    <h2>Monthly scans</h2>
+                    <p>Resets at the start of each month.</p>
                   </div>
                 </div>
                 <div className="dashboard-usage-number">
                   <strong>{account.usage.count}</strong>
-                  <span>{account.usage.unlimited ? "used today" : `of ${account.usage.limit} used`}</span>
+                  <span>{account.usage.unlimited ? "used this month" : `of ${account.usage.limit} used`}</span>
                 </div>
                 <div className="dashboard-progress" aria-hidden="true">
                   <span style={{ width: `${usagePercent}%` }} />
                 </div>
                 <p className="muted-copy">
                   {account.usage.unlimited
-                    ? "Your plan is not capped by the free daily limit."
-                    : `${account.usage.remaining} scans remaining today.`}
+                    ? "Your plan is not capped by the free monthly limit."
+                    : `${account.usage.remaining} scans remaining this month.`}
                 </p>
               </section>              {shouldShowUpgradeCard && (
                 <section className="surface dashboard-card dashboard-upgrade-card">
@@ -226,7 +231,7 @@ const scanCountLabel = account && masterAdmin
                     <li>Saved report history</li>
                     <li>Shareable client report links</li>
                   </ul>
-                  <UpgradeButton>Upgrade plan</UpgradeButton>
+                  <UpgradeButton checkoutType="pro_plan">Upgrade plan</UpgradeButton>
                 </section>
               )}
             </div>
@@ -246,7 +251,10 @@ const scanCountLabel = account && masterAdmin
                     <a href={`/report?id=${report.id}`} className="dashboard-report-row" key={report.id}>
                       <div>
                         <strong>{report.url}</strong>
-                        <span>{formatDate(report.created_at)}</span>
+                        <span>
+                          {formatDate(report.created_at)}
+                          {report.unlocked ? " · Full Report" : ""}
+                        </span>
                       </div>
                       <em>{report.score}</em>
                       <ArrowUpRight className="h-4 w-4" />

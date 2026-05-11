@@ -46,20 +46,21 @@ type LoaderProgress = {
 };
 
 const CLIENT_STORAGE_KEY = "answerrank_client_id_v1";
+const GUEST_SCAN_STORAGE_KEY = "answerrank_guest_scans_month";
 const STEP_ANIMATION_MS = 140;
 
 const trustStats = [
   { value: "6", label: "Readiness categories", text: "Metadata, headings, schema, clarity, AI readiness, and performance." },
   { value: "3", label: "Priority fixes", text: "The free report focuses attention on the highest-impact work first." },
   { value: "0", label: "Setup required", text: "No signup and no onboarding steps. Paste a public page and scan immediately." },
-  { value: "$9", label: "Pro report", text: "One-time payment for a full AI visibility breakdown with schema recommendations and PDF export." },
+  { value: "$14", label: "Full Report", text: "One-time payment for a full AI visibility breakdown with schema recommendations and PDF export." },
 ];
 
 const auditSignals = [
-  { icon: FileSearch, title: "Metadata clarity", text: "Title tag, meta description, canonical URL, Open Graph tags, and heading hierarchy — every signal AI uses to understand a page." },
+  { icon: FileSearch, title: "Metadata clarity", text: "Title tag, meta description, canonical URL, Open Graph tags, and heading hierarchy. Every signal AI uses to understand a page." },
   { icon: Code2, title: "Structured data", text: "Detects existing JSON-LD schema, flags missing types, and surfaces the highest-impact markup your page is missing." },
   { icon: Sparkles, title: "Answer readiness", text: "Scores how well the page is structured for AI assistants to extract, summarize, and cite its content in answers." },
-  { icon: Gauge, title: "Priority scoring", text: "A weighted 0–100 visibility score broken down by category — so you know exactly where to focus first." },
+  { icon: Gauge, title: "Priority scoring", text: "A weighted 0-100 visibility score broken down by category, so you know exactly where to focus first." },
   { icon: FileDown, title: "PDF export", text: "A polished, client-ready audit PDF you can hand off to any team or stakeholder without extra formatting work." },
   { icon: FolderArchive, title: "Saved reports", text: "Every scan is stored in your account so you can revisit past audits and track improvement over time." },
 ];
@@ -67,15 +68,15 @@ const auditSignals = [
 const workflow = [
   { title: "Paste a public website URL", text: "Paste any public URL and the scanner fetches the page content, metadata, and structure signals instantly." },
   { title: "Read every page signal", text: "It reads metadata, headings, schema, internal links, and content depth across the full page." },
-  { title: "Score your AI visibility", text: "Every signal converts into a weighted 0–100 score with a plain-English verdict for each category." },
+  { title: "Score your AI visibility", text: "Every signal converts into a weighted 0-100 score with a plain-English verdict for each category." },
   { title: "Act on the highest-impact fixes", text: "Copy the recommendations, implement schema fixes, or unlock the full Pro report for detailed guidance." },
 ];
 
 const faqs = [
-  ["Does it work without signup?", "Yes. Paste any public URL and run a free scan instantly — no account required."],
+  ["Does it work without signup?", "Yes. Paste any public URL and run a free scan instantly. No account required."],
   ["What does the scanner check?", "It checks schema markup, metadata quality, heading structure, content depth, internal links, and how well the page is structured for AI answer extraction."],
   ["Is this the same as a traditional SEO audit?", "No. Traditional SEO audits focus on crawlability, keywords, and backlinks. This scanner focuses on whether answer engines like ChatGPT and Perplexity can accurately understand and cite your page."],
-  ["What payment methods do you accept?", "All major credit and debit cards via Stripe. Payment is one-time — no subscriptions or recurring charges."],
+  ["What payment methods do you accept?", "All major credit and debit cards via Stripe. Full Report is one-time, and Pro Monthly is a subscription."],
   ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; Pro accounts keep full report history."],
 ];
 
@@ -87,17 +88,32 @@ export default function Home() {
   const [report, setReport] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [account, setAccount] = useState<{ plan: "guest" | "free" | "pro" | "agency"; isAdmin: boolean; remaining: number | null; unlimited: boolean } | null>(null);
+  const [account, setAccount] = useState<{ plan: "guest" | "free" | "pro" | "agency"; isAdmin: boolean; remaining: number | null; unlimited: boolean } | null>({
+    plan: "guest",
+    isAdmin: false,
+    remaining: null,
+    unlimited: false,
+  });
   const [isClient, setIsClient] = useState(false);
   const [clientId, setClientId] = useState("");
   const [showCompetitors, setShowCompetitors] = useState(false);
   const [competitorUrls, setCompetitorUrls] = useState("");
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistState, setWaitlistState] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [waitlistSuccessMessage, setWaitlistSuccessMessage] = useState("You're on the list. We'll email you when Pro Monthly opens.");
+  const [waitlistError, setWaitlistError] = useState("");
+  const [guestScansLeft, setGuestScansLeft] = useState(1);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [limitModalType, setLimitModalType] = useState<"guest" | "free">("guest");
+  const [showScanFirstModal, setShowScanFirstModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastRenderedProgressRef = useRef<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
   const progressQueueRef = useRef<ScanProgressEvent[]>([]);
   const pendingResultRef = useRef<ScanResult | null>(null);
   const processingQueueRef = useRef(false);
   const finalStepCompleteRef = useRef(false);
+  const currentScanWasGuestRef = useRef(false);
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   const getMinimumStepDuration = (step: number, status: ProgressStatus) => {
     if (status === "error" || status === "skipped") return 500;
@@ -160,6 +176,20 @@ export default function Home() {
     const nextClientId = storedClientId || crypto.randomUUID();
     localStorage.setItem(CLIENT_STORAGE_KEY, nextClientId);
     setClientId(nextClientId);
+
+    const now = new Date();
+    const month = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+    const raw = localStorage.getItem(GUEST_SCAN_STORAGE_KEY);
+    let used = 0;
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw) as { month?: string; used?: number };
+        if (parsed.month === month) used = Math.max(0, parsed.used ?? 0);
+      } catch {
+        used = 0;
+      }
+    }
+    setGuestScansLeft(Math.max(0, 1 - used));
   }, []);
 
   useEffect(() => {
@@ -171,7 +201,19 @@ export default function Home() {
 
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (account && !canRunScan({ plan: account.plan, isAdmin: account.isAdmin }, account.remaining)) return setState("paywall");
+    if (account && !canRunScan({ plan: account.plan, isAdmin: account.isAdmin }, account.remaining)) {
+      if (account.plan === "free") {
+        setLimitModalType("free");
+        setShowLimitModal(true);
+        return;
+      }
+      return setState("paywall");
+    }
+    if (account?.plan === "guest" && guestScansLeft <= 0) {
+      setLimitModalType("guest");
+      setShowLimitModal(true);
+      return;
+    }
     const trimmed = url.trim();
     if (!trimmed) return inputRef.current?.focus();
     const competitors = competitorUrls
@@ -181,6 +223,7 @@ export default function Home() {
       .slice(0, 3);
 
     setState("loading");
+    currentScanWasGuestRef.current = account?.plan === "guest";
     const initialProgress: LoaderProgress = { step: 1, label: "Preparing scan", status: "started" };
     setLoaderProgress(initialProgress);
     lastRenderedProgressRef.current = initialProgress;
@@ -211,8 +254,13 @@ export default function Home() {
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         if (res.status === 429) {
-          setErrorMsg(data.error ?? "Free scan limit reached for today.");
-          setState("paywall");
+          if (account?.plan === "free") {
+            setLimitModalType("free");
+            setShowLimitModal(true);
+          } else {
+            setErrorMsg(data.error ?? "You've used your 3 free scans this month.");
+            setState("paywall");
+          }
           return;
         }
         setErrorMsg(data.error ?? "Something went wrong. Please try again.");
@@ -231,6 +279,23 @@ export default function Home() {
           sessionStorage.setItem(`answerrank_report:${result.reportId}`, JSON.stringify(result));
         }
         sessionStorage.setItem(`answerrank_report:${result.url}`, JSON.stringify(result));
+        if (currentScanWasGuestRef.current && typeof window !== "undefined") {
+          const now = new Date();
+          const month = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+          const raw = localStorage.getItem(GUEST_SCAN_STORAGE_KEY);
+          let used = 0;
+          if (raw) {
+            try {
+              const parsed = JSON.parse(raw) as { month?: string; used?: number };
+              if (parsed.month === month) used = Math.max(0, parsed.used ?? 0);
+            } catch {
+              used = 0;
+            }
+          }
+          const nextUsed = Math.min(1, used + 1);
+          localStorage.setItem(GUEST_SCAN_STORAGE_KEY, JSON.stringify({ month, used: nextUsed }));
+          setGuestScansLeft(Math.max(0, 1 - nextUsed));
+        }
         await refreshAccountUsage();
         setReport(result);
         setState("done");
@@ -310,7 +375,7 @@ export default function Home() {
       }
     } catch (err) {
       setErrorMsg(err instanceof DOMException && err.name === "AbortError"
-        ? "The scan took too long. Please try again — external AI or PageSpeed APIs may be slow."
+        ? "The scan took too long. Please try again. External AI or PageSpeed APIs may be slow."
         : "Network error. Please check your connection and try again.");
       setState("idle");
       setShowErrorModal(true);
@@ -328,12 +393,105 @@ export default function Home() {
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
+  const scrollToScanner = () => {
+    document.getElementById("scanner")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => inputRef.current?.focus(), 250);
+  };
+
+  const handleHomepageFullReportCta = () => {
+    if (account?.plan === "guest" && guestScansLeft <= 0) {
+      setLimitModalType("guest");
+      setShowLimitModal(true);
+      return;
+    }
+    setShowScanFirstModal(true);
+  };
+
+  const closeWaitlistModal = () => {
+    setShowWaitlistModal(false);
+    setWaitlistState("idle");
+    setWaitlistSuccessMessage("You're on the list. We'll email you when Pro Monthly opens.");
+    setWaitlistError("");
+    setWaitlistEmail("");
+  };
+
+  const handleWaitlistSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const email = waitlistEmail.trim().toLowerCase();
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isValidEmail) {
+      setWaitlistState("error");
+      setWaitlistError("Enter a valid email address.");
+      return;
+    }
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setWaitlistState("error");
+      setWaitlistError("Waitlist service is not configured. You can email hello@answerrank.com to join.");
+      return;
+    }
+
+    setWaitlistState("loading");
+    setWaitlistError("");
+
+    const { error } = await supabase
+      .from("waitlist")
+      .insert({ email, source: "pro_monthly_waitlist" });
+
+    if (error) {
+      const errorRecord = error as {
+        code?: string;
+        message?: string;
+        details?: string;
+        hint?: string;
+        status?: number;
+        statusCode?: number;
+      };
+      console.error("Waitlist insert error details:", {
+        message: errorRecord?.message,
+        code: errorRecord?.code,
+        details: errorRecord?.details,
+        hint: errorRecord?.hint,
+        status: errorRecord?.status ?? errorRecord?.statusCode,
+        raw: error,
+      });
+
+      if (errorRecord.code === "23505") {
+        setWaitlistSuccessMessage("You're already on the list.");
+        setWaitlistState("success");
+        return;
+      }
+      if (errorRecord.code === "42P01") {
+        setWaitlistState("error");
+        setWaitlistError("The waitlist table has not been created yet. Please run the Supabase SQL migration.");
+        return;
+      }
+      if (errorRecord.code === "42501" || /row-level security|permission denied/i.test(errorRecord.message ?? "")) {
+        setWaitlistState("error");
+        setWaitlistError("Waitlist permissions are not configured yet. Please check the Supabase insert policy.");
+        return;
+      }
+      setWaitlistState("error");
+      const devDetail = process.env.NODE_ENV !== "production"
+        ? ` (Supabase: ${errorRecord.code ?? "unknown"} - ${errorRecord.message || "no message"}${errorRecord.details ? ` | ${errorRecord.details}` : ""})`
+        : "";
+      setWaitlistError(`Could not join the waitlist right now. Please try again, or email hello@answerrank.com.${devDetail}`);
+      return;
+    }
+
+    setWaitlistSuccessMessage("You're on the list. We'll email you when Pro Monthly opens.");
+    setWaitlistState("success");
+  };
+
   const scanCountLabel = account && isMasterAdmin({ plan: account.plan, isAdmin: account.isAdmin })
     ? "Master Admin · Unlimited Access"
     : account && (account.unlimited || isProUser({ plan: account.plan, isAdmin: account.isAdmin }))
       ? "Pro · Unlimited Access"
       : account && typeof account.remaining === "number"
-        ? `${account.remaining} free scans left`
+        ? `${account.remaining} free scans left this month`
+        : account?.plan === "guest" && isClient
+          ? `${guestScansLeft} guest preview scan left`
         : undefined;
 
   return (
@@ -349,7 +507,7 @@ export default function Home() {
                 <p className="launch-eyebrow mb-4 ml-px"><ShieldCheck className="h-4 w-4" /> Free · No signup required</p>
                 <h1>See how ready your website is for AI search.</h1>
                 <p className="hero-lede">
-                  Paste any URL and get a scored AI visibility report in under 60 seconds — with every fix ranked by impact.
+                  Paste any URL and get a scored AI visibility report in under 60 seconds, with every fix ranked by impact.
                 </p>
                 <form onSubmit={handleScan} className="hero-scanner" aria-label="Scan a website">
                   <div className="hero-input-wrap">
@@ -517,21 +675,59 @@ export default function Home() {
           </section>
 
           <section className="pricing-section" id="pricing">
-            <div className="launch-container pricing-grid">
-              <div>
+            <div className="launch-container pricing-layout">
+              <div className="pricing-intro">
                 <p className="launch-eyebrow">Pricing</p>
-                <h2>Free scans with real findings. Pro unlocks the full report.</h2>
-                <p>The free report includes your overall score and top issues. Pro unlocks every fix, the full implementation roadmap, and PDF export. One payment, permanent access.</p>
+                <h2>Choose the report depth you need.</h2>
+                <p>Start with a free preview, then unlock a client-ready report when you need the full breakdown.</p>
               </div>
-              <div className="pricing-panel">
-                <span className="price">$9</span>
-                <strong>Pro Report</strong>
-                <ul>
-                  <li><CheckCircle2 className="h-4 w-4" /> Every issue, fix, and recommendation</li>
-                  <li><CheckCircle2 className="h-4 w-4" /> Step-by-step implementation roadmap</li>
-                  <li><CheckCircle2 className="h-4 w-4" /> Branded PDF to share with your team</li>
-                </ul>
-                <UpgradeButton>Upgrade to Pro</UpgradeButton>
+
+              <div className="pricing-cards">
+                <article className="pricing-panel">
+                  <span className="price">$0</span>
+                  <strong>Free Preview</strong>
+                  <p className="pricing-subline">For testing your AI visibility score.</p>
+                  <ul>
+                    <li><CheckCircle2 className="h-4 w-4" /> 1 guest preview scan</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> 3 free scans per month</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Overall AI Visibility Score</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Basic score breakdown</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Top 3 issues</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Limited report preview</li>
+                  </ul>
+                  <a href="#scanner" className="btn btn-secondary">Start free scan</a>
+                </article>
+
+                <article className="pricing-panel pricing-panel-featured">
+                  <span className="pricing-badge">Most popular</span>
+                  <span className="price">$14 <small>one-time</small></span>
+                  <strong>Full Report</strong>
+                  <p className="pricing-subline">Best for one website audit.</p>
+                  <ul>
+                    <li><CheckCircle2 className="h-4 w-4" /> 1 full report</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Full issue breakdown</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Fix recommendations for every issue</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Schema recommendations</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> AI Answer Snapshot</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Competitor takeaway</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Client-ready PDF report</li>
+                  </ul>
+                  <button type="button" className="btn btn-primary" onClick={handleHomepageFullReportCta}>Unlock full report</button>
+                </article>
+
+                <article className="pricing-panel pricing-panel-soon">
+                  <span className="pricing-badge pricing-badge-soon">Coming soon</span>
+                  <span className="price">$39 <small>/month</small></span>
+                  <strong>Pro Monthly</strong>
+                  <ul>
+                    <li><CheckCircle2 className="h-4 w-4" /> 30 full reports per month</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Saved report history</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Client-ready PDF reports</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Competitor comparisons</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Priority scan access</li>
+                  </ul>
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowWaitlistModal(true)}>Join Pro waitlist</button>
+                </article>
               </div>
             </div>
           </section>
@@ -566,16 +762,122 @@ export default function Home() {
       {state === "paywall" && (
         <section className="launch-container paywall-section">
           <div className="pricing-panel">
-            <span className="price">$9</span>
-            <strong>Daily scan limit reached</strong>
+            <span className="price">$14</span>
+            <strong>Scan limit reached</strong>
             <p>{errorMsg || "Upgrade to unlock the full report, schema recommendations, implementation checklist, and PDF export."}</p>
-            <UpgradeButton>Upgrade to Pro</UpgradeButton>
+            <UpgradeButton checkoutType="pro_plan">Upgrade to Pro</UpgradeButton>
             <button onClick={() => setState("idle")} className="btn btn-secondary">Back to scanner</button>
           </div>
         </section>
       )}
 
       <SiteFooter />
+
+      {isClient && showLimitModal && createPortal(
+        <div className="waitlist-modal-overlay" onClick={() => setShowLimitModal(false)}>
+          <div className="waitlist-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="waitlist-modal-head">
+              <h3>{limitModalType === "guest" ? "You've used your free preview scan" : "You've used your free scans this month"}</h3>
+              <p>
+                {limitModalType === "guest"
+                  ? "Create a free account to get 3 scans per month, then run a new scan and unlock the full report from your results."
+                  : "Unlock a full report or upgrade to continue scanning."}
+              </p>
+            </div>
+            <div className="waitlist-modal-form">
+              {limitModalType === "guest" ? (
+                <>
+                  <button type="button" className="btn btn-primary" onClick={() => router.push("/signup?next=/#scanner")}>Create free account</button>
+                  <button type="button" className="btn btn-secondary" onClick={() => { setShowLimitModal(false); document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }); }}>View pricing</button>
+                  <p className="waitlist-modal-note">Free accounts include 3 preview scans per month.</p>
+                </>
+              ) : (
+                <>
+                  <button type="button" className="btn btn-primary" onClick={() => { setShowLimitModal(false); document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }); }}>View plans</button>
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowLimitModal(false)}>Cancel</button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {isClient && showScanFirstModal && createPortal(
+        <div className="waitlist-modal-overlay" onClick={() => setShowScanFirstModal(false)}>
+          <div className="waitlist-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="waitlist-modal-head">
+              <h3>Run a scan first</h3>
+              <p>Full Report unlocks are attached to a specific scan. Run a website scan first, then unlock the full report from your results.</p>
+            </div>
+            <div className="waitlist-modal-form">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setShowScanFirstModal(false);
+                  scrollToScanner();
+                }}
+              >
+                Scan My Website
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={() => setShowScanFirstModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {isClient && showWaitlistModal && createPortal(
+        <div className="waitlist-modal-overlay" onClick={closeWaitlistModal}>
+          <div className="waitlist-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="waitlist-modal-head">
+              <h3>Join Pro waitlist</h3>
+              <p>Get notified when monthly plans and priority scan features are available.</p>
+            </div>
+
+            {waitlistState === "success" ? (
+              <div className="waitlist-modal-success">
+                <CheckCircle2 className="h-5 w-5" />
+                <p>{waitlistSuccessMessage}</p>
+              </div>
+            ) : (
+              <form className="waitlist-modal-form" onSubmit={handleWaitlistSubmit}>
+                <label htmlFor="waitlist-email">Email</label>
+                <input
+                  id="waitlist-email"
+                  type="email"
+                  value={waitlistEmail}
+                  onChange={(event) => setWaitlistEmail(event.target.value)}
+                  placeholder="you@company.com"
+                  autoComplete="email"
+                  disabled={waitlistState === "loading"}
+                  required
+                />
+                <input type="hidden" name="source" value="pro_monthly_waitlist" />
+                {waitlistState === "error" && (
+                  <p className="waitlist-modal-error">
+                    {waitlistError}{" "}
+                    <a href={`mailto:hello@answerrank.com?subject=Pro%20Monthly%20Waitlist&body=Please%20add%20${encodeURIComponent(waitlistEmail || "my email")}%20to%20the%20Pro%20Monthly%20waitlist.`}>Email us instead</a>.
+                  </p>
+                )}
+                <button type="submit" className="btn btn-primary" disabled={waitlistState === "loading"}>
+                  {waitlistState === "loading" ? "Joining..." : "Join waitlist"}
+                </button>
+              </form>
+            )}
+
+            <div className="waitlist-modal-actions">
+              <button type="button" className="btn btn-secondary" onClick={closeWaitlistModal}>
+                {waitlistState === "success" ? "Close" : "Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {isClient && showErrorModal && createPortal(
         <div className="error-modal-overlay" onClick={() => setShowErrorModal(false)} style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem", background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }}>

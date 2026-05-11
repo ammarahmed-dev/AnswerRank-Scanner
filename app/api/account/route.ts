@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
-import { getPlanLimit } from "@/lib/usage-limits";
+import { getPlanLimit, getUsageCount } from "@/lib/usage-limits";
 import { normalizeUserPlan } from "@/lib/access";
 
 export const runtime = "nodejs";
@@ -14,6 +14,11 @@ type RecentReport = {
   url: string;
   score: number;
   created_at: string;
+  unlocked?: boolean;
+  result?: {
+    unlocked?: boolean;
+    unlockedAt?: string;
+  };
 };
 
 function hasSupabaseConfig() {
@@ -28,37 +33,12 @@ function supabaseHeaders() {
   };
 }
 
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-async function getTodayUsage(userId: string) {
-  if (!hasSupabaseConfig()) return 0;
-
-  const params = new URLSearchParams({
-    client_key: `eq.user:${userId}`,
-    usage_date: `eq.${todayKey()}`,
-    select: "scan_count",
-    limit: "1",
-  });
-
-  const res = await fetch(`${supabaseUrl}/rest/v1/scan_usage?${params.toString()}`, {
-    headers: supabaseHeaders(),
-    cache: "no-store",
-  });
-
-  if (!res.ok) return 0;
-
-  const rows = (await res.json()) as Array<{ scan_count?: number }>;
-  return rows[0]?.scan_count ?? 0;
-}
-
 async function getRecentReports(userId: string) {
   if (!hasSupabaseConfig()) return [] as RecentReport[];
 
   const params = new URLSearchParams({
     user_id: `eq.${userId}`,
-    select: "id,url,score,created_at",
+    select: "id,url,score,created_at,result",
     order: "created_at.desc",
     limit: "6",
   });
@@ -70,7 +50,11 @@ async function getRecentReports(userId: string) {
 
   if (!res.ok) return [] as RecentReport[];
 
-  return (await res.json()) as RecentReport[];
+  const rows = (await res.json()) as RecentReport[];
+  return rows.map((row) => ({
+    ...row,
+    unlocked: Boolean(row.result?.unlocked || row.result?.unlockedAt),
+  }));
 }
 
 export async function GET(req: Request) {
@@ -81,7 +65,7 @@ export async function GET(req: Request) {
   }
 
   const [scanCount, reports] = await Promise.all([
-    getTodayUsage(auth.user.id),
+    getUsageCount(`user:${auth.user.id}`),
     getRecentReports(auth.user.id),
   ]);
   const isAdmin = isMasterAdmin(auth.user.email);

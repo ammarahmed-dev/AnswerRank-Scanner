@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { updateUserPlan } from "@/lib/supabase-admin";
+import { markReportUnlocked } from "@/lib/report-db";
 
 export const runtime = "nodejs";
 
@@ -41,6 +42,8 @@ export async function POST(req: Request) {
       object: {
         client_reference_id?: string;
         customer_email?: string;
+        id?: string;
+        payment_status?: string;
         metadata?: Record<string, string>;
       };
     };
@@ -48,8 +51,14 @@ export async function POST(req: Request) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
+    const reportId = session.metadata?.report_id;
+    if (reportId && session.payment_status === "paid") {
+      await markReportUnlocked(reportId, session.id ?? null);
+    }
+
     const userId = session.metadata?.user_id || session.client_reference_id;
-    if (userId) {
+    const shouldUpgradePlan = session.metadata?.plan === "pro";
+    if (userId && shouldUpgradePlan) {
       await updateUserPlan(userId, "pro", session.metadata?.email || session.customer_email || null);
     }
   }
