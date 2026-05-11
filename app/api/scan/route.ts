@@ -15,7 +15,7 @@ import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { checkAndIncrementUsage, getClientKey, getPlanLimit } from "@/lib/usage-limits";
 import { isMasterAdmin } from "@/lib/admin";
-import { ScrapedData, ScanResult, AIInsights, SchemaRecommendation } from "@/types/index";
+import { ScrapedData, ScanResult, AIInsights, CheckResult, CompetitorScanResult, ScanMetadata, SchemaRecommendation } from "@/types/index";
 
 export const runtime = "nodejs";
 
@@ -114,10 +114,121 @@ function parseAIInsights(raw: string, fallbackDetected: string[] = []): AIInsigh
   };
 }
 
-export async function POST(req: NextRequest) {
-  let body: { url?: string; includeAI?: boolean; clientId?: string };
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+type ProgressStatus = "started" | "complete" | "skipped" | "error";
+type ProgressEvent = {
+  type: "progress";
+  step: number;
+  label: string;
+  status: ProgressStatus;
+};
+type ResultEvent = {
+  type: "result";
+  result: ScanResult;
+};
+type ErrorEvent = {
+  type: "error";
+  message: string;
+};
+type ScanEvent = ProgressEvent | ResultEvent | ErrorEvent;
+
+type ScanRequestBody = { url?: string; includeAI?: boolean; clientId?: string; competitorUrls?: string[] | string };
+
+function checkScore(status: CheckResult["status"]): number {
+  if (status === "pass") return 100;
+  if (status === "warn") return 60;
+  return 25;
+}
+
+function categoryScoresFromChecks(checks: CheckResult[], pagespeed: { score: number } | null) {
+  const byCategory = {
+    metadata: checks.filter((c) => c.id === "title" || c.id === "meta_desc" || c.id.includes("og")),
+    headings: checks.filter((c) => c.id.includes("heading") || c.id === "h1"),
+    schema: checks.filter((c) => c.id.includes("schema")),
+    contentClarity: checks.filter((c) => c.id === "word_count" || c.id === "internal_links" || c.id === "alt_text"),
+    aiReadiness: checks.filter((c) => !["title", "meta_desc", "h1", "heading_structure", "https", "robots", "sitemap", "word_count", "internal_links", "alt_text"].includes(c.id) && !c.id.includes("schema") && !c.id.includes("og")),
+    trustSignals: checks.filter((c) => c.id === "https" || c.id === "robots" || c.id === "sitemap"),
+  };
+  const avg = (rows: CheckResult[]) => rows.length ? Math.round(rows.reduce((sum, row) => sum + checkScore(row.status), 0) / rows.length) : undefined;
+  return {
+    metadata: avg(byCategory.metadata),
+    headings: avg(byCategory.headings),
+    schema: avg(byCategory.schema),
+    contentClarity: avg(byCategory.contentClarity),
+    aiReadiness: avg(byCategory.aiReadiness),
+    performance: pagespeed?.score,
+    trustSignals: avg(byCategory.trustSignals),
+  };
+}
+
+function metadataFromScrapedData(scrapedData: ScrapedData): ScanMetadata {
+  const h1 = scrapedData.headings.find((h) => h.startsWith("H1:"))?.replace(/^H1:\s*/, "") ?? "";
+  return {
+    title: scrapedData.title,
+    metaDescription: scrapedData.metaDescription,
+    ogTitle: scrapedData.ogTitle,
+    ogDescription: scrapedData.ogDescription,
+    ogImage: scrapedData.ogImage,
+    canonical: scrapedData.canonical,
+    h1,
+  };
+}
+
+async function scrapeUrlWithFallback(url: string): Promise<ScrapedData> {
   try {
-    body = (await req.json()) as { url?: string; includeAI?: boolean; clientId?: string };
+    const html = await fetchHtml(url);
+    if (!html.trim()) throw new Error("Website returned empty HTML.");
+    return parseHtmlToScrapedData(html, url);
+  } catch {
+    const readerText = await fetchJinaReaderText(url);
+    return parseReaderTextToScrapedData(readerText, url);
+  }
+}
+
+async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
+  let normalizedUrl = rawUrl;
+  try {
+    normalizedUrl = normalizeUrl(rawUrl);
+    if (!validateUrl(normalizedUrl)) throw new Error("Invalid competitor URL");
+  } catch {
+    return { url: rawUrl, error: "Could not scan competitor URL" };
+  }
+
+  const timeoutMs = Number(process.env.COMPETITOR_SCAN_TIMEOUT_MS ?? 25000);
+  const timeout = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error("Competitor scan timed out")), timeoutMs);
+  });
+
+  const work = (async (): Promise<CompetitorScanResult> => {
+    const scrapedData = await scrapeUrlWithFallback(normalizedUrl);
+    const checks = runDeterministicChecks(scrapedData);
+    const score = calculateScore(checks);
+
+    return {
+      url: normalizedUrl,
+      score,
+      checks,
+      categoryScores: categoryScoresFromChecks(checks, null),
+      metadata: metadataFromScrapedData(scrapedData),
+      pagespeed: null,
+      summary: checks.find((check) => check.status !== "pass")?.detail ?? "Core visibility signals are in good shape.",
+    };
+  })();
+
+  try {
+    return await Promise.race([work, timeout]);
+  } catch {
+    return { url: normalizedUrl, error: "Could not scan competitor URL" };
+  }
+}
+
+export async function POST(req: NextRequest) {
+  let body: ScanRequestBody;
+  try {
+    body = (await req.json()) as ScanRequestBody;
   } catch {
     return errorResponse("Invalid request body.", 400);
   }
@@ -155,24 +266,40 @@ export async function POST(req: NextRequest) {
 
   const enableAI = process.env.NEXT_PUBLIC_ENABLE_AI_REPORT !== "false";
   const wantAI = !!(body.includeAI && enableAI);
+  const competitorUrlsRaw = Array.isArray(body.competitorUrls)
+    ? body.competitorUrls
+    : typeof body.competitorUrls === "string"
+      ? [body.competitorUrls]
+      : [];
+  const competitorUrls = [...new Set(competitorUrlsRaw.map((item) => item.trim()).filter(Boolean))].slice(0, 1);
   const userId = authContext.user?.id;
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     async start(controller) {
-      function emit(data: object) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      function emit(event: ScanEvent) {
+        controller.enqueue(encoder.encode(`event: ${event.type}\n`));
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+      }
+
+      function emitProgress(step: number, label: string, status: ProgressStatus) {
+        emit({ type: "progress", step, label, status });
+      }
+
+      function emitError(message: string) {
+        emit({ type: "error", message });
       }
 
       try {
-        // Step 0: Fetching website
-        emit({ step: 0 });
+        emitProgress(1, "Preparing scan", "started");
+        emitProgress(1, "Preparing scan", "complete");
+        emitProgress(2, "Fetching website", "started");
 
         let scrapedData: ScrapedData;
         try {
           const html = await fetchHtml(url);
           if (!html.trim()) {
-            emit({ error: "Website returned empty HTML. Try another page URL." });
+            emitError("Website returned empty HTML. Try another page URL.");
             controller.close();
             return;
           }
@@ -192,85 +319,96 @@ export async function POST(req: NextRequest) {
             } else if (message.toLowerCase().includes("blocked")) {
               errorMsg = "This website blocked the scanner and Jina Reader could not recover the content.";
             }
-            emit({ error: errorMsg });
+            emitError(errorMsg);
             controller.close();
             return;
           }
         }
+        emitProgress(2, "Fetching website", "complete");
 
-        // Step 1: Extracting metadata and schema
-        emit({ step: 1 });
+        emitProgress(3, "Reading metadata and schema", "started");
 
         if (!scrapedData.bodyText && !scrapedData.title && !scrapedData.metaDescription) {
-          emit({ error: "Could not extract meaningful content from this page." });
+          emitError("Could not extract meaningful content from this page.");
           controller.close();
           return;
         }
+        emitProgress(3, "Reading metadata and schema", "complete");
 
-        // Step 2: Running visibility checks
-        emit({ step: 2 });
         const checks = runDeterministicChecks(scrapedData);
         const score = calculateScore(checks);
 
-        // Step 3: PageSpeed analysis (starting both external calls)
-        emit({ step: 3 });
+        emitProgress(4, "Running PageSpeed check", "started");
+
+        let pagespeed: { score: number } | null = null;
+        try {
+          const psResult = await getPageSpeedScore(url);
+          if (psResult.score !== null) {
+            pagespeed = { score: psResult.score };
+            emitProgress(4, "Running PageSpeed check", "complete");
+          } else {
+            if (psResult.error) {
+              console.warn("PageSpeed unavailable:", psResult.error);
+            }
+            const isConfigIssue = (psResult.error ?? "").toLowerCase().includes("no google pagespeed api key configured");
+            emitProgress(4, "PageSpeed unavailable — continuing", isConfigIssue ? "skipped" : "error");
+          }
+        } catch (err: unknown) {
+          console.error("PageSpeed fetch failed:", err instanceof Error ? err.message : "Unknown error");
+          emitProgress(4, "PageSpeed unavailable — continuing", "error");
+        }
 
         const includeAIThisRequest = wantAI && checkAIRateLimit(url);
+        emitProgress(5, "Generating AI insights", "started");
 
-        // pagespeedWithStep4: when PageSpeed settles, advance to step 4 (AI insights active)
-        const pagespeedWithStep4 = (
-          process.env.GOOGLE_PAGESPEED_API_KEY
-            ? getPageSpeedScore(url)
-                .then((psResult) => psResult.score !== null ? { score: psResult.score } : null)
-                .catch((err) => {
-                  console.error("PageSpeed fetch failed:", err instanceof Error ? err.message : "Unknown error");
-                  return null;
-                })
-            : Promise.resolve(null)
-        ).then((result) => {
-          emit({ step: 4 });
-          return result;
-        });
+        let aiInsights: AIInsights | null = null;
+        if (!wantAI) {
+          emitProgress(5, "Using local recommendations", "skipped");
+        } else if (!includeAIThisRequest) {
+          emitProgress(5, "Using local recommendations", "skipped");
+        } else {
+          try {
+            aiInsights = await getAIInsightsWithBudget(scrapedData);
+            if (aiInsights) {
+              emitProgress(5, "Generating AI insights", "complete");
+            } else {
+              emitProgress(5, "Using local recommendations", "skipped");
+            }
+          } catch (err: unknown) {
+            console.error("AI insights failed:", err instanceof Error ? err.message : "Unknown error");
+            emitProgress(5, "Using local recommendations", "error");
+          }
+        }
 
-        const aiPromise = includeAIThisRequest
-          ? getAIInsightsWithBudget(scrapedData)
-          : Promise.resolve(null);
+        let competitors: CompetitorScanResult[] | undefined;
+        if (competitorUrls.length) {
+          emitProgress(6, "Scanning competitor", "started");
+          competitors = [await scanCompetitor(competitorUrls[0])];
+        }
 
-        const [psSettled, aiSettled] = await Promise.allSettled([pagespeedWithStep4, aiPromise]);
-        const pagespeed = psSettled.status === "fulfilled" ? psSettled.value : null;
-        const aiInsights = aiSettled.status === "fulfilled" ? aiSettled.value : null;
-
-        // Step 5: Preparing report
-        emit({ step: 5 });
-
-        const h1 = scrapedData.headings.find((h) => h.startsWith("H1:"))?.replace(/^H1:\s*/, "") ?? "";
+        emitProgress(6, "Preparing report", "started");
         const result: ScanResult = {
           url,
           score,
           checks,
           aiInsights,
           pagespeed,
-          metadata: {
-            title: scrapedData.title,
-            metaDescription: scrapedData.metaDescription,
-            ogTitle: scrapedData.ogTitle,
-            ogDescription: scrapedData.ogDescription,
-            ogImage: scrapedData.ogImage,
-            canonical: scrapedData.canonical,
-            h1,
-          },
+          metadata: metadataFromScrapedData(scrapedData),
+          competitorUrls: competitorUrls.length ? competitorUrls : undefined,
+          competitors,
           scannedAt: new Date().toISOString(),
         };
 
         const savedResult = await saveReportRecord(result, userId);
 
-        // Step 6: Complete — send result
-        emit({ step: 6, result: savedResult });
+        emitProgress(6, "Preparing report", "complete");
+        await sleep(220);
+        emit({ type: "result", result: savedResult });
         controller.close();
       } catch (err: unknown) {
         console.error("Stream error:", err);
         try {
-          emit({ error: "An unexpected error occurred. Please try again." });
+          emitError("An unexpected error occurred. Please try again.");
           controller.close();
         } catch {
           controller.error(err);

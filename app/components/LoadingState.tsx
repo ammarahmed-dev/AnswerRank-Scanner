@@ -3,23 +3,61 @@
 import { Check, Loader2, Radar } from "lucide-react";
 
 const STEPS = [
+  "Preparing scan",
   "Fetching website",
-  "Extracting metadata and schema",
-  "Running visibility checks",
+  "Reading metadata and schema",
   "Running PageSpeed analysis",
   "Generating AI insights",
   "Preparing report",
 ];
 
-interface Props {
+type ProgressStatus = "started" | "complete" | "skipped" | "error";
+type LoaderProgress = {
   step: number;
+  label: string;
+  status: ProgressStatus;
+};
+
+interface Props {
+  progress?: LoaderProgress;
+  progressByStepAndStatus?: Record<string, number>;
+  step?: number;
   mode?: "scan" | "report";
 }
 
-export default function LoadingState({ step, mode = "scan" }: Props) {
+const DEFAULT_PROGRESS_MAP: Record<string, number> = {
+  "1:started": 10,
+  "1:complete": 18,
+  "2:started": 25,
+  "2:complete": 33,
+  "3:started": 40,
+  "3:complete": 50,
+  "4:started": 58,
+  "4:complete": 66,
+  "4:skipped": 66,
+  "4:error": 66,
+  "5:started": 75,
+  "5:complete": 84,
+  "5:skipped": 84,
+  "5:error": 84,
+  "6:started": 92,
+  "6:complete": 100,
+};
+
+export default function LoadingState({ progress, progressByStepAndStatus, step, mode = "scan" }: Props) {
   const isReportLoad = mode === "report";
-  const currentStep = Math.min(step, STEPS.length - 1);
-  const progress = Math.min(92, Math.max(8, Math.round(((step + 0.25) / STEPS.length) * 100)));
+  const fallbackStep = typeof step === "number" ? Math.max(1, Math.min(6, step + 1)) : 1;
+  const activeProgress = progress ?? { step: fallbackStep, label: STEPS[fallbackStep - 1] ?? "Preparing scan", status: "started" as ProgressStatus };
+  const stepNumber = Math.max(1, Math.min(6, activeProgress.step));
+  const currentStep = stepNumber - 1;
+  const progressKey = `${stepNumber}:${activeProgress.status}`;
+  const map = progressByStepAndStatus ?? DEFAULT_PROGRESS_MAP;
+  const progressPercent = map[progressKey] ?? map[`${stepNumber}:started`] ?? 10;
+  const statusText = activeProgress.status === "error"
+    ? "Unavailable - continuing"
+    : activeProgress.status === "skipped"
+      ? "Skipped - continuing"
+      : activeProgress.label;
 
   return (
     <section className="surface loading-card mx-auto w-full max-w-[820px] animate-fade-in-up">
@@ -32,15 +70,15 @@ export default function LoadingState({ step, mode = "scan" }: Props) {
           <div className="min-w-0">
             <h3 className="section-heading">{isReportLoad ? "Loading report" : "Running AI visibility scan"}</h3>
             <p className="section-kicker mt-1">
-              {isReportLoad ? "Preparing your one-page audit view." : `Current step: ${STEPS[currentStep]}`}
+              {isReportLoad ? "Preparing your one-page audit view." : `Current step: ${statusText}`}
             </p>
           </div>
         </div>
-        <span className="badge">{isReportLoad ? "Report view" : `${progress}% complete`}</span>
+        <span className="badge">{isReportLoad ? "Report view" : `${progressPercent}% complete`}</span>
       </div>
 
       <div className="loading-progress">
-        <div className="score-bar-fill" style={{ width: `${isReportLoad ? 62 : progress}%` }} />
+        <div className="score-bar-fill" style={{ width: `${isReportLoad ? 62 : progressPercent}%` }} />
       </div>
 
       {isReportLoad ? (
@@ -49,7 +87,7 @@ export default function LoadingState({ step, mode = "scan" }: Props) {
         </div>
       ) : <div className="loading-step-grid">
         {STEPS.map((label, i) => {
-          const done = i < step;
+          const done = i < currentStep || (i === currentStep && activeProgress.status === "complete");
           const active = i === currentStep;
 
           return (
