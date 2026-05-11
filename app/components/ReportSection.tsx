@@ -220,7 +220,7 @@ export default function ReportSection({ report, onReset }: Props) {
             </div>
           </div>
           <div className="lg:w-64">
-            <button onClick={showUpgrade} className="btn btn-primary">Unlock Full Report - $9</button>
+              <button onClick={showUpgrade} className="btn btn-primary">Unlock Full Report - $14</button>
             <p className="muted-copy mt-3 text-center">One-time report purchase. No subscription yet.</p>
           </div>
         </div>

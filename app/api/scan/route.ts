@@ -13,7 +13,7 @@ import { generateAIInsights } from "@/lib/ai-provider";
 import { getPageSpeedScore } from "@/lib/pagespeed";
 import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
-import { checkAndIncrementUsage, getClientKey, getPlanLimit } from "@/lib/usage-limits";
+import { checkUsageLimit, getPlanLimit, incrementUsage } from "@/lib/usage-limits";
 import { isMasterAdmin } from "@/lib/admin";
 import { ScrapedData, ScanResult, AIInsights, CheckResult, CompetitorScanResult, ScanMetadata, SchemaRecommendation } from "@/types/index";
 
@@ -251,12 +251,13 @@ export async function POST(req: NextRequest) {
 
   const authContext = await getAuthContext(req);
   const effectivePlan = authContext.user && isMasterAdmin(authContext.user.email) ? "agency" : authContext.plan;
-  const usageKey = authContext.user ? `user:${authContext.user.id}` : `guest:${getClientKey(body.clientId, req)}`;
-  const usage = await checkAndIncrementUsage(usageKey, getPlanLimit(effectivePlan));
-  if (!usage.allowed) {
+  const usageKey = authContext.user ? `user:${authContext.user.id}` : null;
+  const usage = usageKey ? await checkUsageLimit(usageKey, getPlanLimit(effectivePlan)) : null;
+  if (usage && !usage.allowed) {
     return NextResponse.json(
       {
-        error: `Daily scan limit reached. Your ${effectivePlan} plan includes ${usage.limit} scans per day.`,
+        type: "limit_reached",
+        error: "You’ve used your 3 free scans this month.",
         limit: usage.limit,
         remaining: usage.remaining,
       },
@@ -400,6 +401,9 @@ export async function POST(req: NextRequest) {
         };
 
         const savedResult = await saveReportRecord(result, userId);
+        if (usageKey && usage) {
+          await incrementUsage(usageKey, usage.count + 1);
+        }
 
         emitProgress(6, "Preparing report", "complete");
         await sleep(220);

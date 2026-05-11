@@ -19,6 +19,7 @@ export default function ReportClient() {
   const searchParams = useSearchParams();
   const reportId = searchParams.get("id")?.trim() ?? "";
   const sharedUrl = searchParams.get("url")?.trim() ?? "";
+  const forceRefresh = searchParams.get("payment") === "1";
   const [state, setState] = useState<ReportState>("loading");
   const [loadingStep, setLoadingStep] = useState(0);
   const [report, setReport] = useState<ScanResult | null>(null);
@@ -40,8 +41,11 @@ export default function ReportClient() {
 
   useEffect(() => {
     if (reportId) {
+      if (forceRefresh) {
+        sessionStorage.removeItem(`answerrank_report:${reportId}`);
+      }
       const cachedById = sessionStorage.getItem(`answerrank_report:${reportId}`);
-      if (cachedById) {
+      if (cachedById && !forceRefresh) {
         try {
           setReport(JSON.parse(cachedById) as ScanResult);
           setState("done");
@@ -156,7 +160,7 @@ export default function ReportClient() {
 
     runScan();
     return () => controller.abort();
-  }, [reportId, sharedUrl]);
+  }, [forceRefresh, reportId, sharedUrl]);
 
   return (
     <main className="min-h-screen">

@@ -84,6 +84,10 @@ export interface CompetitorScanResult {
 
 export interface ScanResult {
   reportId?: string;
+  unlocked?: boolean;
+  unlockedAt?: string;
+  unlockSource?: "stripe_checkout" | "admin" | "manual";
+  stripeSessionId?: string;
   competitorUrls?: string[];
   competitors?: CompetitorScanResult[];
   url: string;

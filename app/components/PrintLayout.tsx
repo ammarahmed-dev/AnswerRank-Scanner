@@ -19,18 +19,18 @@ const CATEGORY_LABELS: Record<Category, string> = {
 const FIX_MAP: Record<string, { why: string; fix: string }> = {
   title: {
     why: "AI engines use the page title as the primary label when citing your page. A missing or oversized title reduces citation accuracy and click-through rates from AI-generated results.",
-    fix: "Write a descriptive title between 30–60 characters that leads with your primary keyword and includes your brand name. Avoid keyword stuffing or vague labels.",
+    fix: "Write a descriptive title between 30-60 characters that leads with your primary keyword and includes your brand name. Avoid keyword stuffing or vague labels.",
   },
   meta_desc: {
-    why: "AI assistants often pull the meta description verbatim when summarizing a page in answer results. A missing or truncated description forces AI to guess — and guess badly.",
-    fix: "Write a 120–160 character meta description that clearly states the page's value proposition. Use active voice, include the target keyword naturally, and end with a call to action.",
+    why: "AI assistants often pull the meta description verbatim when summarizing a page in answer results. A missing or truncated description forces AI to guess, and guess badly.",
+    fix: "Write a 120-160 character meta description that clearly states the page's value proposition. Use active voice, include the target keyword naturally, and end with a call to action.",
   },
   h1: {
     why: "The H1 is the most semantically important heading on the page. AI systems rely on it to identify the primary topic and match the page to user queries with precision.",
-    fix: "Add exactly one H1 per page that clearly states the page topic. Do not use H1 for decorative text or brand slogans — reserve it for the core topic statement.",
+    fix: "Add exactly one H1 per page that clearly states the page topic. Do not use H1 for decorative text or brand slogans. Reserve it for the core topic statement.",
   },
   heading_structure: {
-    why: "A clear H1 → H2 → H3 hierarchy lets AI parse your content into discrete topics. Broken hierarchy — such as H3 before H2 — creates ambiguity in how sections are understood.",
+    why: "A clear H1-H2-H3 hierarchy lets AI parse your content into discrete topics. Broken hierarchy, such as H3 before H2, creates ambiguity in how sections are understood.",
     fix: "Ensure H2 headings exist before using H3s. Structure headings like a document outline: H2 for major topics, H3 for sub-points within each major topic.",
   },
   schema_present: {
@@ -58,7 +58,7 @@ const FIX_MAP: Record<string, { why: string; fix: string }> = {
     fix: "Migrate your site to HTTPS using a valid SSL certificate. Most hosting platforms (Cloudflare, Netlify, Vercel) provide free SSL. Ensure all internal links and canonical URLs use https://.",
   },
   robots: {
-    why: "A robots.txt file controls which parts of your site can be crawled by bots and AI indexers. Without one, crawlers may index pages you would prefer to exclude — or block pages you want indexed.",
+    why: "A robots.txt file controls which parts of your site can be crawled by bots and AI indexers. Without one, crawlers may index pages you would prefer to exclude, or block pages you want indexed.",
     fix: "Create a robots.txt file at your domain root (yourdomain.com/robots.txt). Allow all for public content pages, and use Disallow to block admin, staging, or thin-content URLs.",
   },
   sitemap: {
@@ -66,16 +66,16 @@ const FIX_MAP: Record<string, { why: string; fix: string }> = {
     fix: "Generate an XML sitemap at /sitemap.xml and submit it to Google Search Console. Include all canonical URLs, set <changefreq> and <priority> values, and update it automatically when content changes.",
   },
   alt_text: {
-    why: "AI systems cannot interpret images visually — alt text is how they understand what an image depicts. Missing alt text means your images contribute zero semantic context to AI indexing.",
-    fix: "Add descriptive alt text to every meaningful image using 5–15 words that describe the image content. Leave alt empty (alt='') for purely decorative images — do not skip the attribute.",
+    why: "AI systems cannot interpret images visually. Alt text is how they understand what an image depicts. Missing alt text means your images contribute zero semantic context to AI indexing.",
+    fix: "Add descriptive alt text to every meaningful image using 5-15 words that describe the image content. Leave alt empty (alt='') for purely decorative images. Do not skip the attribute.",
   },
   word_count: {
     why: "Pages with under 300 words are treated as thin content by AI systems. Low word count signals that a page may not fully answer the query it targets, reducing its citation probability.",
-    fix: "Expand your content to at least 300–500 words. Focus on fully answering the primary question your page targets, covering related subtopics and common follow-up questions your audience has.",
+    fix: "Expand your content to at least 300-500 words. Focus on fully answering the primary question your page targets, covering related subtopics and common follow-up questions your audience has.",
   },
   internal_links: {
     why: "Internal links help AI crawlers discover related content and understand your site's topical structure. Isolated pages with no internal links are harder to index and carry less authority.",
-    fix: "Add at least 3–5 contextual internal links per page pointing to related content on your site. Use descriptive anchor text that reflects the linked page's primary topic.",
+    fix: "Add at least 3-5 contextual internal links per page pointing to related content on your site. Use descriptive anchor text that reflects the linked page's primary topic.",
   },
   structured_density: {
     why: "Multiple schema blocks signal a rich, well-organized page. A single block provides basic context; layered schema types allow AI to extract richer entity relationships and improve answer quality.",
@@ -282,10 +282,10 @@ export default function PrintLayout({ report }: Props) {
         )}
         <h2 className="pl-section-title" style={{ marginTop: "16pt" }}>Next Steps</h2>
         <ol className="pl-rec-list">
-          <li className="pl-rec-item"><strong>Fix critical issues first.</strong> Address any Schema and Metadata failures — they carry the highest weight in AI visibility scoring and are typically quick to implement.</li>
+          <li className="pl-rec-item"><strong>Fix critical issues first.</strong> Address any Schema and Metadata failures. They carry the highest weight in AI visibility scoring and are typically quick to implement.</li>
           <li className="pl-rec-item"><strong>Add FAQ schema for a quick win.</strong> FAQPage JSON-LD is one of the highest-impact additions for answer-engine visibility and can often be added in under an hour.</li>
-          <li className="pl-rec-item"><strong>Re-scan in 2–4 weeks.</strong> After implementing fixes, run a fresh scan to measure score improvement and confirm changes are being picked up correctly.</li>
-          <li className="pl-rec-item"><strong>Expand to other key pages.</strong> Run this audit on your pricing page, homepage, and top blog posts — each page needs its own AI visibility optimisation.</li>
+          <li className="pl-rec-item"><strong>Re-scan in 2-4 weeks.</strong> After implementing fixes, run a fresh scan to measure score improvement and confirm changes are being picked up correctly.</li>
+          <li className="pl-rec-item"><strong>Expand to other key pages.</strong> Run this audit on your pricing page, homepage, and top blog posts. Each page needs its own AI visibility optimisation.</li>
         </ol>
         <div className="pl-cta-box">
           <strong>Want help implementing these fixes?</strong>

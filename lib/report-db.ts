@@ -157,3 +157,76 @@ export async function getReportRecord(id: string): Promise<ScanResult | null> {
 
   return getReport(id);
 }
+
+export async function markReportUnlocked(reportId: string, stripeSessionId?: string | null): Promise<boolean> {
+  const unlockedAt = new Date().toISOString();
+
+  if (hasSupabaseConfig()) {
+    const params = new URLSearchParams({
+      id: `eq.${reportId}`,
+      select: "id,result",
+      limit: "1",
+    });
+
+    const readRes = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
+      headers: supabaseHeaders(),
+      cache: "no-store",
+    });
+
+    if (readRes.ok) {
+      const rows = (await readRes.json()) as Array<{ id: string; result?: ScanResult }>;
+      const row = rows[0];
+      if (row?.id) {
+        const current = row.result ?? ({} as ScanResult);
+        const nextResult: ScanResult = {
+          ...current,
+          reportId: current.reportId ?? reportId,
+          unlocked: true,
+          unlockedAt,
+          unlockSource: "stripe_checkout",
+          stripeSessionId: stripeSessionId ?? current.stripeSessionId,
+        };
+
+        const patchRes = await fetch(`${supabaseUrl}/rest/v1/reports?id=eq.${encodeURIComponent(reportId)}`, {
+          method: "PATCH",
+          headers: {
+            ...supabaseHeaders(),
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify({ result: nextResult }),
+        });
+
+        if (patchRes.ok) return true;
+        const details = await patchRes.text().catch(() => "");
+        console.error("Supabase report unlock patch failed:", details);
+      }
+    } else {
+      const details = await readRes.text().catch(() => "");
+      console.error("Supabase report unlock read failed:", details);
+    }
+  }
+
+  try {
+    const local = getReport(reportId);
+    if (!local) return false;
+    const next: ScanResult = {
+      ...local,
+      unlocked: true,
+      unlockedAt,
+      unlockSource: "stripe_checkout",
+      stripeSessionId: stripeSessionId ?? local.stripeSessionId,
+    };
+
+    getDb()
+      .prepare(`
+        INSERT OR REPLACE INTO reports (id, url, result_json, created_at)
+        VALUES (?, ?, ?, ?)
+      `)
+      .run(reportId, next.url, JSON.stringify(next), next.scannedAt || unlockedAt);
+
+    return true;
+  } catch (err: unknown) {
+    console.error("Local report unlock failed:", err instanceof Error ? err.message : "Unknown error");
+    return false;
+  }
+}
