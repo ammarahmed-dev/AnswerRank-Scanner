@@ -3696,6 +3696,7 @@ a { color: inherit; }
   .report-action-row {
     width: min(100% - 28px, 380px);
     margin-inline: auto;
+    margin-bottom: 0;
   }
   .loading-card-header { align-items: flex-start; flex-direction: column; gap: 16px; }
   .loading-card-header .badge { width: 100%; justify-content: center; }
@@ -4008,6 +4009,24 @@ a { color: inherit; }
   }
   .roadmap-item-row .issue-pill-row {
     justify-content: flex-start;
+  }
+
+  .report-page {
+    min-height: auto;
+    padding-bottom: 16px;
+  }
+
+  .report-shell,
+  .report-stack {
+    padding-bottom: 0;
+  }
+
+  .report-page .surface,
+  .report-page .report-card,
+  .report-page .report-hero {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: 0 12px 28px rgba(2, 6, 23, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.02);
   }
 }
 
