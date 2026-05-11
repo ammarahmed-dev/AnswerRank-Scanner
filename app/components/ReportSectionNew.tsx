@@ -167,28 +167,6 @@ function badgeTone(value: Priority | Impact | Effort) {
   return "badge-medium";
 }
 
-
-function inferChecklistGroups(items: string[]) {
-  const groups: Record<"Schema" | "Content" | "Metadata" | "Trust Signals" | "Technical", Array<{ text: string; effort: Effort; impact: Impact }>> = {
-    Schema: [],
-    Content: [],
-    Metadata: [],
-    "Trust Signals": [],
-    Technical: [],
-  };
-  for (const item of items) {
-    const lower = item.toLowerCase();
-    const effort: Effort = lower.includes("add") ? "easy" : lower.includes("improve") ? "medium" : "hard";
-    const impact: Impact = lower.includes("schema") || lower.includes("h1") ? "high" : "medium";
-    if (lower.includes("schema")) groups.Schema.push({ text: item, effort, impact });
-    else if (lower.includes("faq") || lower.includes("content") || lower.includes("use-case")) groups.Content.push({ text: item, effort, impact });
-    else if (lower.includes("title") || lower.includes("meta")) groups.Metadata.push({ text: item, effort, impact });
-    else if (lower.includes("trust") || lower.includes("proof")) groups["Trust Signals"].push({ text: item, effort, impact });
-    else groups.Technical.push({ text: item, effort, impact });
-  }
-  return groups;
-}
-
 function getSchemaRecommendation(report: ScanResult, issues: ReportIssue[], host: string): SchemaRecommendation {
   const checks = report.checks;
   const detectedTypes: string[] = [];
@@ -334,17 +312,6 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const prioritySchema = report.aiInsights?.schemaRecommendations?.priority ?? null;
   const priorityReasoning = report.aiInsights?.schemaRecommendations?.reasoning ?? "";
   const otherSuggestedTypes = missingSchemaTypes.filter((t) => t !== prioritySchema);
-  const checklist = [
-    "Add FAQ section to key landing pages",
-    "Add FAQPage schema using real customer questions",
-    "Add Organization + WebSite + WebPage schema",
-    "Improve H1 clarity for primary offer and audience",
-    "Expand page copy with use cases and proof",
-    "Add stronger trust signals above the fold",
-    "Improve internal links to product and FAQ pages",
-  ];
-  const checklistGroups = useMemo(() => inferChecklistGroups(checklist), []);
-
   const copyReport = async () => {
     const lines = [
       `AnswerRank Scanner - AI Visibility Readiness Report`,
@@ -577,40 +544,6 @@ const downloadPdf = () => {
           )}
         </section>
       )}
-
-      <section className="surface report-card print-section">
-        <h3 className="section-heading">Implementation Roadmap</h3>
-        <p className="section-kicker mt-1">Prioritized action list with effort estimates — start at the top and work down.</p>
-        {isPro ? (
-          <div className="roadmap-grid mt-4">
-            {Object.entries(checklistGroups).map(([group, items]) => (
-              <article key={group} className="roadmap-group-card">
-                <h4>{group}</h4>
-                <div className="roadmap-group-items">
-                  {items.length ? items.map((item) => (
-                    <div key={`${group}-${item.text}`} className="roadmap-item-row">
-                      <div className="roadmap-item-main">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <p>{item.text}</p>
-                      </div>
-                      <div className="issue-pill-row roadmap-pill-row">
-                        <span className={`mini-pill ${badgeTone(item.impact)}`}>impact {item.impact}</span>
-                        <span className={`mini-pill ${badgeTone(item.effort)}`}>effort {item.effort}</span>
-                      </div>
-                    </div>
-                  )) : <p className="muted-copy">Not detected from page content.</p>}
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="locked-panel">
-            <Lock className="h-4 w-4" />
-            <p>Unlock full roadmap with grouped checklist items and implementation sequencing.</p>
-            <UpgradeButton>Upgrade to Pro Report</UpgradeButton>
-          </div>
-        )}
-      </section>
 
       <section className="surface report-card print-section">
         <h3 className="section-heading">PDF Export</h3>

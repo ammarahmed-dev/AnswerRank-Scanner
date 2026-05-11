@@ -30,7 +30,6 @@ import {
 
 type AppState = "idle" | "loading" | "done" | "error" | "paywall";
 
-const LOADING_STEP_TIMES = [2000, 6000, 12000, 22000, 38000, 58000];
 const CLIENT_STORAGE_KEY = "answerrank_client_id_v1";
 
 const trustStats = [
@@ -119,13 +118,6 @@ export default function Home() {
     loadAccount();
   }, []);
 
-  useEffect(() => {
-    if (state !== "loading") return;
-    setLoadingStep(0);
-    const timers = LOADING_STEP_TIMES.map((ms, i) => setTimeout(() => setLoadingStep(i + 1), ms));
-    return () => timers.forEach(clearTimeout);
-  }, [state]);
-
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (account && !canRunScan({ plan: account.plan, isAdmin: account.isAdmin }, account.remaining)) return setState("paywall");
@@ -138,12 +130,14 @@ export default function Home() {
       .slice(0, 3);
 
     setState("loading");
+    setLoadingStep(0);
     setReport(null);
     setErrorMsg("");
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000);
+
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 120000);
       const supabase = getSupabaseBrowserClient();
       const token = (await getSafeSupabaseSession(supabase))?.access_token;
       const res = await fetch("/api/scan", {
@@ -155,35 +149,74 @@ export default function Home() {
         body: JSON.stringify({ url: trimmed, includeAI: true, clientId }),
         signal: controller.signal,
       });
-      clearTimeout(timeout);
-      const data = (await res.json()) as ScanResult & { error?: string };
-      if (!res.ok || data.error) {
+
+      // Non-streaming errors (429, 400, etc.)
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
         if (res.status === 429) {
           setErrorMsg(data.error ?? "Free scan limit reached for today.");
-          return setState("paywall");
+          setState("paywall");
+          return;
         }
         setErrorMsg(data.error ?? "Something went wrong. Please try again.");
         setState("idle");
         setShowErrorModal(true);
         return;
       }
-      if (competitors.length) {
-        data.competitorUrls = competitors;
+
+      // Read SSE stream
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      outer: while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line.startsWith("data: ")) continue;
+
+          const data = JSON.parse(line.slice(6)) as { step?: number; result?: ScanResult; error?: string };
+
+          if (data.error) {
+            setErrorMsg(data.error);
+            setState("idle");
+            setShowErrorModal(true);
+            return;
+          }
+
+          if (typeof data.step === "number") {
+            setLoadingStep(data.step);
+          }
+
+          if (data.result) {
+            const result = data.result;
+            if (competitors.length) result.competitorUrls = competitors;
+            if (result.reportId) {
+              sessionStorage.setItem(`answerrank_report:${result.reportId}`, JSON.stringify(result));
+            }
+            sessionStorage.setItem(`answerrank_report:${result.url}`, JSON.stringify(result));
+            await refreshAccountUsage();
+            setReport(result);
+            setState("done");
+            router.push(result.reportId ? `/report?id=${result.reportId}` : `/report?url=${encodeURIComponent(result.url)}`);
+            break outer;
+          }
+        }
       }
-      if (data.reportId) {
-        sessionStorage.setItem(`answerrank_report:${data.reportId}`, JSON.stringify(data));
-      }
-      sessionStorage.setItem(`answerrank_report:${data.url}`, JSON.stringify(data));
-      await refreshAccountUsage();
-      setReport(data);
-      setState("done");
-      router.push(data.reportId ? `/report?id=${data.reportId}` : `/report?url=${encodeURIComponent(data.url)}`);
     } catch (err) {
       setErrorMsg(err instanceof DOMException && err.name === "AbortError"
         ? "The scan took too long. Please try again — external AI or PageSpeed APIs may be slow."
         : "Network error. Please check your connection and try again.");
       setState("idle");
       setShowErrorModal(true);
+    } finally {
+      clearTimeout(timeout);
     }
   };
 
