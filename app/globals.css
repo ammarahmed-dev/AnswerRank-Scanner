@@ -30,11 +30,16 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  min-height: 100%;
+  background: #050812;
+}
 
 body {
   min-height: 100vh;
   overflow-x: hidden;
+  background-color: #050812;
   background:
     radial-gradient(circle at 18% 2%, rgba(56, 189, 248, 0.2), transparent 28rem),
     radial-gradient(circle at 82% 7%, rgba(139, 92, 246, 0.2), transparent 30rem),
@@ -60,7 +65,7 @@ body::before {
 button, input { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: 0.55; }
-main { position: relative; z-index: 1; }
+main { position: relative; z-index: 1; background: transparent; }
 a { color: inherit; }
 
 @keyframes fadeInUp {
@@ -3953,6 +3958,32 @@ a { color: inherit; }
   }
   .roadmap-item-row .issue-pill-row {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 1024px) {
+  body::before {
+    display: none;
+  }
+
+  .site-header,
+  .nav-mobile-menu,
+  .surface,
+  .panel-soft,
+  .hero-scanner,
+  .answer-card-preview,
+  .loading-overlay,
+  .error-modal-overlay {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .site-header {
+    background: rgba(5, 8, 18, 0.96);
+  }
+
+  .nav-mobile-menu {
+    background: rgba(5, 8, 18, 0.99);
   }
 }
 
