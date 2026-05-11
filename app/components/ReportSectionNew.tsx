@@ -699,11 +699,6 @@ const downloadPdf = () => {
         <button onClick={copyReport} className="btn btn-secondary">
           <Copy className="h-4 w-4" /> {copyOk ? "Copied" : "Copy report summary"}
         </button>
-        {canDownloadPdf(plan) && (
-          <button onClick={downloadPdf} className="btn btn-secondary">
-            <Download className="h-4 w-4" /> Download PDF
-          </button>
-        )}
         {!isPro && <UpgradeButton>Get all fixes + PDF</UpgradeButton>}
         <button onClick={onReset} className="btn btn-primary">
           <RotateCcw className="h-4 w-4" /> Scan another URL
