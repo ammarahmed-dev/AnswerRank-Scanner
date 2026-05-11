@@ -115,167 +115,176 @@ function parseAIInsights(raw: string, fallbackDetected: string[] = []): AIInsigh
 }
 
 export async function POST(req: NextRequest) {
+  let body: { url?: string; includeAI?: boolean; clientId?: string };
   try {
-    const body = (await req.json()) as {
-      url?: string;
-      includeAI?: boolean;
-      clientId?: string;
-    };
+    body = (await req.json()) as { url?: string; includeAI?: boolean; clientId?: string };
+  } catch {
+    return errorResponse("Invalid request body.", 400);
+  }
 
-    const rawUrl = body?.url;
-    if (!rawUrl || typeof rawUrl !== "string") {
-      return errorResponse("Please provide a valid URL.", 400);
-    }
+  const rawUrl = body?.url;
+  if (!rawUrl || typeof rawUrl !== "string") {
+    return errorResponse("Please provide a valid URL.", 400);
+  }
 
-    // Validate and normalize URL
-    let url = "";
-    try {
-      url = normalizeUrl(rawUrl);
-    } catch {
-      return errorResponse(
-        "Invalid URL. Enter a public website URL like https://example.com.",
-        400
-      );
-    }
+  let url = "";
+  try {
+    url = normalizeUrl(rawUrl);
+  } catch {
+    return errorResponse("Invalid URL. Enter a public website URL like https://example.com.", 400);
+  }
 
-    if (!validateUrl(url)) {
-      return errorResponse(
-        "Invalid URL. Only public http(s) URLs are supported.",
-        400
-      );
-    }
+  if (!validateUrl(url)) {
+    return errorResponse("Invalid URL. Only public http(s) URLs are supported.", 400);
+  }
 
-    const authContext = await getAuthContext(req);
-    const effectivePlan = authContext.user && isMasterAdmin(authContext.user.email) ? "agency" : authContext.plan;
-    const usageKey = authContext.user ? `user:${authContext.user.id}` : `guest:${getClientKey(body.clientId, req)}`;
-    const usage = await checkAndIncrementUsage(usageKey, getPlanLimit(effectivePlan));
-    if (!usage.allowed) {
-      return NextResponse.json(
-        {
-          error: `Daily scan limit reached. Your ${effectivePlan} plan includes ${usage.limit} scans per day.`,
-          limit: usage.limit,
-          remaining: usage.remaining,
-        },
-        { status: 429 }
-      );
-    }
-
-    // Fetch and parse page content. Jina Reader is a fallback for bot-blocked pages.
-    let scrapedData: ScrapedData;
-    try {
-      const html = await fetchHtml(url);
-      if (!html.trim()) {
-        return errorResponse(
-          "Website returned empty HTML. Try another page URL.",
-          422
-        );
-      }
-      scrapedData = parseHtmlToScrapedData(html, url);
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Unknown error";
-      console.warn(`Direct fetch failed for ${url}; trying Jina Reader. ${message}`);
-      try {
-        const readerText = await fetchJinaReaderText(url);
-        scrapedData = parseReaderTextToScrapedData(readerText, url);
-      } catch (readerErr: unknown) {
-        const readerMessage = readerErr instanceof Error ? readerErr.message : "Unknown error";
-        if (
-          message.toLowerCase().includes("timeout") ||
-          message.toLowerCase().includes("aborted")
-        ) {
-          return errorResponse(
-            "Request timed out while fetching this URL.",
-            408,
-            readerMessage
-          );
-        }
-        if (message.toLowerCase().includes("blocked")) {
-          return errorResponse(
-            "This website blocked the scanner and Jina Reader could not recover the content.",
-            422,
-            readerMessage
-          );
-        }
-        return errorResponse(
-          "Could not fetch this website directly or through Jina Reader.",
-          422,
-          readerMessage
-        );
-      }
-    }
-
-    if (
-      !scrapedData.bodyText &&
-      !scrapedData.title &&
-      !scrapedData.metaDescription
-    ) {
-      return errorResponse(
-        "Could not extract meaningful content from this page.",
-        422
-      );
-    }
-
-    // Run deterministic checks
-    const checks = runDeterministicChecks(scrapedData);
-    const score = calculateScore(checks);
-
-    // Handle AI analysis
-    let aiInsights: AIInsights | null = null;
-    const enableAI = process.env.NEXT_PUBLIC_ENABLE_AI_REPORT !== "false";
-    let includeAIReport = body.includeAI && enableAI;
-
-    if (includeAIReport && !checkAIRateLimit(url)) {
-      includeAIReport = false;
-    }
-
-    const aiPromise = includeAIReport
-      ? getAIInsightsWithBudget(scrapedData)
-      : Promise.resolve(null);
-
-    const pagespeedPromise = process.env.GOOGLE_PAGESPEED_API_KEY
-      ? getPageSpeedScore(url)
-          .then((psResult) => psResult.score !== null ? { score: psResult.score } : null)
-          .catch((err) => {
-            console.error(
-              "PageSpeed fetch failed:",
-              err instanceof Error ? err.message : "Unknown error"
-            );
-            return null;
-          })
-      : Promise.resolve(null);
-
-    const [aiResult, pagespeedResult] = await Promise.allSettled([aiPromise, pagespeedPromise]);
-
-    aiInsights = aiResult.status === "fulfilled" ? aiResult.value : null;
-    const pagespeed = pagespeedResult.status === "fulfilled" ? pagespeedResult.value : null;
-
-    // Build response
-    const h1 = scrapedData.headings.find((h) => h.startsWith("H1:"))?.replace(/^H1:\s*/, "") ?? "";
-    const result: ScanResult = {
-      url,
-      score,
-      checks,
-      aiInsights,
-      pagespeed,
-      metadata: {
-        title: scrapedData.title,
-        metaDescription: scrapedData.metaDescription,
-        ogTitle: scrapedData.ogTitle,
-        ogDescription: scrapedData.ogDescription,
-        ogImage: scrapedData.ogImage,
-        canonical: scrapedData.canonical,
-        h1,
+  const authContext = await getAuthContext(req);
+  const effectivePlan = authContext.user && isMasterAdmin(authContext.user.email) ? "agency" : authContext.plan;
+  const usageKey = authContext.user ? `user:${authContext.user.id}` : `guest:${getClientKey(body.clientId, req)}`;
+  const usage = await checkAndIncrementUsage(usageKey, getPlanLimit(effectivePlan));
+  if (!usage.allowed) {
+    return NextResponse.json(
+      {
+        error: `Daily scan limit reached. Your ${effectivePlan} plan includes ${usage.limit} scans per day.`,
+        limit: usage.limit,
+        remaining: usage.remaining,
       },
-      scannedAt: new Date().toISOString(),
-    };
-
-    return NextResponse.json(await saveReportRecord(result, authContext.user?.id), { status: 200 });
-  } catch (err: unknown) {
-    console.error("Scan route error:", err);
-    return errorResponse(
-      "An unexpected error occurred. Please try again.",
-      500
+      { status: 429 }
     );
   }
+
+  const enableAI = process.env.NEXT_PUBLIC_ENABLE_AI_REPORT !== "false";
+  const wantAI = !!(body.includeAI && enableAI);
+  const userId = authContext.user?.id;
+  const encoder = new TextEncoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      function emit(data: object) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      }
+
+      try {
+        // Step 0: Fetching website
+        emit({ step: 0 });
+
+        let scrapedData: ScrapedData;
+        try {
+          const html = await fetchHtml(url);
+          if (!html.trim()) {
+            emit({ error: "Website returned empty HTML. Try another page URL." });
+            controller.close();
+            return;
+          }
+          scrapedData = parseHtmlToScrapedData(html, url);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : "Unknown error";
+          console.warn(`Direct fetch failed for ${url}; trying Jina Reader. ${message}`);
+          try {
+            const readerText = await fetchJinaReaderText(url);
+            scrapedData = parseReaderTextToScrapedData(readerText, url);
+          } catch (readerErr: unknown) {
+            const readerMessage = readerErr instanceof Error ? readerErr.message : "Unknown error";
+            console.error("Jina Reader also failed:", readerMessage);
+            let errorMsg = "Could not fetch this website directly or through Jina Reader.";
+            if (message.toLowerCase().includes("timeout") || message.toLowerCase().includes("aborted")) {
+              errorMsg = "Request timed out while fetching this URL.";
+            } else if (message.toLowerCase().includes("blocked")) {
+              errorMsg = "This website blocked the scanner and Jina Reader could not recover the content.";
+            }
+            emit({ error: errorMsg });
+            controller.close();
+            return;
+          }
+        }
+
+        // Step 1: Extracting metadata and schema
+        emit({ step: 1 });
+
+        if (!scrapedData.bodyText && !scrapedData.title && !scrapedData.metaDescription) {
+          emit({ error: "Could not extract meaningful content from this page." });
+          controller.close();
+          return;
+        }
+
+        // Step 2: Running visibility checks
+        emit({ step: 2 });
+        const checks = runDeterministicChecks(scrapedData);
+        const score = calculateScore(checks);
+
+        // Step 3: PageSpeed analysis (starting both external calls)
+        emit({ step: 3 });
+
+        const includeAIThisRequest = wantAI && checkAIRateLimit(url);
+
+        // pagespeedWithStep4: when PageSpeed settles, advance to step 4 (AI insights active)
+        const pagespeedWithStep4 = (
+          process.env.GOOGLE_PAGESPEED_API_KEY
+            ? getPageSpeedScore(url)
+                .then((psResult) => psResult.score !== null ? { score: psResult.score } : null)
+                .catch((err) => {
+                  console.error("PageSpeed fetch failed:", err instanceof Error ? err.message : "Unknown error");
+                  return null;
+                })
+            : Promise.resolve(null)
+        ).then((result) => {
+          emit({ step: 4 });
+          return result;
+        });
+
+        const aiPromise = includeAIThisRequest
+          ? getAIInsightsWithBudget(scrapedData)
+          : Promise.resolve(null);
+
+        const [psSettled, aiSettled] = await Promise.allSettled([pagespeedWithStep4, aiPromise]);
+        const pagespeed = psSettled.status === "fulfilled" ? psSettled.value : null;
+        const aiInsights = aiSettled.status === "fulfilled" ? aiSettled.value : null;
+
+        // Step 5: Preparing report
+        emit({ step: 5 });
+
+        const h1 = scrapedData.headings.find((h) => h.startsWith("H1:"))?.replace(/^H1:\s*/, "") ?? "";
+        const result: ScanResult = {
+          url,
+          score,
+          checks,
+          aiInsights,
+          pagespeed,
+          metadata: {
+            title: scrapedData.title,
+            metaDescription: scrapedData.metaDescription,
+            ogTitle: scrapedData.ogTitle,
+            ogDescription: scrapedData.ogDescription,
+            ogImage: scrapedData.ogImage,
+            canonical: scrapedData.canonical,
+            h1,
+          },
+          scannedAt: new Date().toISOString(),
+        };
+
+        const savedResult = await saveReportRecord(result, userId);
+
+        // Step 6: Complete — send result
+        emit({ step: 6, result: savedResult });
+        controller.close();
+      } catch (err: unknown) {
+        console.error("Stream error:", err);
+        try {
+          emit({ error: "An unexpected error occurred. Please try again." });
+          controller.close();
+        } catch {
+          controller.error(err);
+        }
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      "Connection": "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }
