@@ -1,6 +1,7 @@
 "use client";
 
 import { CSSProperties, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import LoadingState from "./components/LoadingState";
 import SiteFooter from "./components/SiteFooter";
 import SiteHeader from "./components/SiteHeader";
@@ -12,18 +13,18 @@ import { canRunScan, isMasterAdmin, isProUser } from "@/lib/access";
 import {
   AlertCircle,
   ArrowRight,
-  BarChart3,
   CheckCircle2,
-  Download,
-  FileText,
+  XCircle,
+  Code2,
+  FileDown,
+  FileSearch,
+  FolderArchive,
+  Gauge,
   Globe,
-  History,
-  Layers3,
-  Lock,
   Plus,
   Search,
   ShieldCheck,
-  Target,
+  Sparkles,
   WandSparkles,
 } from "lucide-react";
 
@@ -40,27 +41,27 @@ const trustStats = [
 ];
 
 const auditSignals = [
-  { icon: FileText, title: "Metadata clarity", text: "Title, description, canonical, social metadata, and heading structure." },
-  { icon: Layers3, title: "Structured data", text: "JSON-LD detection, schema types, and missed markup opportunities." },
-  { icon: Target, title: "Answer readiness", text: "Checks if the page is easy for AI assistants to summarize and cite." },
-  { icon: BarChart3, title: "Priority scoring", text: "A weighted 0-100 score with category-level diagnostics." },
-  { icon: Download, title: "PDF Export", text: "Client-ready PDF report for sharing with teams or clients." },
-  { icon: History, title: "Saved Reports", text: "Access your past scans and track improvement over time." },
+  { icon: FileSearch, title: "Metadata clarity", text: "Title tag, meta description, canonical URL, Open Graph tags, and heading hierarchy — every signal AI uses to understand a page." },
+  { icon: Code2, title: "Structured data", text: "Detects existing JSON-LD schema, flags missing types, and surfaces the highest-impact markup your page is missing." },
+  { icon: Sparkles, title: "Answer readiness", text: "Scores how well the page is structured for AI assistants to extract, summarize, and cite its content in answers." },
+  { icon: Gauge, title: "Priority scoring", text: "A weighted 0–100 visibility score broken down by category — so you know exactly where to focus first." },
+  { icon: FileDown, title: "PDF export", text: "A polished, client-ready audit PDF you can hand off to any team or stakeholder without extra formatting work." },
+  { icon: FolderArchive, title: "Saved reports", text: "Every scan is stored in your account so you can revisit past audits and track improvement over time." },
 ];
 
 const workflow = [
   { title: "Paste a public website URL", text: "Paste any public URL and the scanner fetches the page content, metadata, and structure signals instantly." },
-  { title: "Extract the page signals", text: "It reads metadata, headings, schema, links, image alt coverage, and content depth." },
-  { title: "Score AI visibility readiness", text: "The report converts technical signals into a weighted score and plain-English verdict." },
+  { title: "Read every page signal", text: "It reads metadata, headings, schema, internal links, and content depth across the full page." },
+  { title: "Score your AI visibility", text: "Every signal converts into a weighted 0–100 score with a plain-English verdict for each category." },
   { title: "Act on the highest-impact fixes", text: "Copy the recommendations, implement schema fixes, or unlock the full Pro report for detailed guidance." },
 ];
 
 const faqs = [
-  ["Does it work without signup?", "Yes. You can run a free public-page scan instantly with no account required."],
-  ["What does the scanner check?", "It checks schema, metadata, heading structure, content clarity, entity signals, and answer-readiness gaps on a public page."],
-  ["Is this the same as a traditional SEO audit?", "Not exactly. This is a focused AI visibility audit designed for answer engines and AI-assisted discovery."],
-  ["Is Stripe connected?", "Yes. Stripe Checkout is connected and active. Payments are processed securely through Stripe."],
-  ["Does this store scanned URLs?", "Scan results are saved to your account when you are logged in. Free users can view recent scans. Pro users get full saved report history."],
+  ["Does it work without signup?", "Yes. Paste any public URL and run a free scan instantly — no account required."],
+  ["What does the scanner check?", "It checks schema markup, metadata quality, heading structure, content depth, internal links, and how well the page is structured for AI answer extraction."],
+  ["Is this the same as a traditional SEO audit?", "No. Traditional SEO audits focus on crawlability, keywords, and backlinks. This scanner focuses on whether answer engines like ChatGPT and Perplexity can accurately understand and cite your page."],
+  ["What payment methods do you accept?", "All major credit and debit cards via Stripe. Payment is one-time — no subscriptions or recurring charges."],
+  ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; Pro accounts keep full report history."],
 ];
 
 export default function Home() {
@@ -70,6 +71,7 @@ export default function Home() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [report, setReport] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const [account, setAccount] = useState<{ plan: "guest" | "free" | "pro" | "agency"; isAdmin: boolean; remaining: number | null; unlimited: boolean } | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [clientId, setClientId] = useState("");
@@ -161,7 +163,9 @@ export default function Home() {
           return setState("paywall");
         }
         setErrorMsg(data.error ?? "Something went wrong. Please try again.");
-        return setState("error");
+        setState("idle");
+        setShowErrorModal(true);
+        return;
       }
       if (competitors.length) {
         data.competitorUrls = competitors;
@@ -176,9 +180,10 @@ export default function Home() {
       router.push(data.reportId ? `/report?id=${data.reportId}` : `/report?url=${encodeURIComponent(data.url)}`);
     } catch (err) {
       setErrorMsg(err instanceof DOMException && err.name === "AbortError"
-        ? "The scan took too long. External AI or performance APIs may be slow. Please try again."
+        ? "The scan took too long. Please try again — external AI or PageSpeed APIs may be slow."
         : "Network error. Please check your connection and try again.");
-      setState("error");
+      setState("idle");
+      setShowErrorModal(true);
     }
   };
 
@@ -187,6 +192,7 @@ export default function Home() {
     setReport(null);
     setErrorMsg("");
     setUrl("");
+    setShowErrorModal(false);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -208,10 +214,10 @@ export default function Home() {
             <div className="hero-media" aria-hidden="true" />
             <div className="launch-container hero-content">
               <div className="hero-copy-block">
-                <p className="launch-eyebrow mb-4 ml-px"><ShieldCheck className="h-4 w-4" /> Free public-page audit</p>
+                <p className="launch-eyebrow mb-4 ml-px"><ShieldCheck className="h-4 w-4" /> Free · No signup required</p>
                 <h1>See how ready your website is for AI search.</h1>
                 <p className="hero-lede">
-                  Paste any public webpage and get a 60-second AI visibility audit covering schema, metadata, content clarity, entity signals, and answer-readiness gaps.
+                  Paste any URL and get a scored AI visibility report in under 60 seconds — with every fix ranked by impact.
                 </p>
                 <form onSubmit={handleScan} className="hero-scanner" aria-label="Scan a website">
                   <div className="hero-input-wrap">
@@ -248,9 +254,9 @@ export default function Home() {
                 </form>
                 <div className="hero-assurance">
                   <span><CheckCircle2 className="h-4 w-4" /> No signup</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> No setup required</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> 60-second audit</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> Free public-page scan</span>
+                  <span><CheckCircle2 className="h-4 w-4" /> No setup</span>
+                  <span><CheckCircle2 className="h-4 w-4" /> 60-second scan</span>
+                  <span><CheckCircle2 className="h-4 w-4" /> Always free for public pages</span>
                 </div>
               </div>
 
@@ -296,18 +302,6 @@ export default function Home() {
             </div>
           </section>
 
-          {state === "error" && (
-            <section className="launch-container">
-              <div className="error-banner">
-                <AlertCircle className="h-5 w-5" />
-                <div>
-                  <strong>Analysis failed</strong>
-                  <p>{errorMsg}</p>
-                </div>
-                <button onClick={handleReset} className="btn btn-danger">Try another URL</button>
-              </div>
-            </section>
-          )}
 
           <section className="image-story-section">
             <div className="launch-container image-story-grid">
@@ -341,7 +335,7 @@ export default function Home() {
                 <p className="launch-eyebrow">Why it matters</p>
                 <h2>Search is becoming answer-first. Your site needs machine-readable proof.</h2>
                 <p>
-                  Buyers increasingly discover brands through AI summaries, answer engines, and LLM-assisted workflows. AnswerRank helps you see whether your page gives those systems enough clear signals to understand, rank, and cite your business.
+                  Buyers increasingly discover brands through AI summaries and answer engines like ChatGPT and Perplexity. AnswerRank shows you whether your page gives those systems enough signal to understand, summarize, and cite your business.
                 </p>
                 <div className="story-checks">
                   <span><CheckCircle2 className="h-4 w-4" /> Brand and entity clarity</span>
@@ -394,16 +388,16 @@ export default function Home() {
             <div className="launch-container pricing-grid">
               <div>
                 <p className="launch-eyebrow">Pricing</p>
-                <h2>Useful free scans now. Pro upgrades when you need more volume.</h2>
-                <p>The free report includes core scoring and top findings. Pro unlocks full fixes, implementation guidance, and PDF export. Upgrade once and get permanent access to the full report.</p>
+                <h2>Free scans with real findings. Pro unlocks the full report.</h2>
+                <p>The free report includes your overall score and top issues. Pro unlocks every fix, the full implementation roadmap, and PDF export. One payment, permanent access.</p>
               </div>
               <div className="pricing-panel">
                 <span className="price">$9</span>
                 <strong>Pro Report</strong>
                 <ul>
-                  <li><Lock className="h-4 w-4" /> Full AI search breakdown</li>
-                  <li><Lock className="h-4 w-4" /> Implementation checklist</li>
-                  <li><Lock className="h-4 w-4" /> Exportable PDF report</li>
+                  <li><CheckCircle2 className="h-4 w-4" /> Every issue, fix, and recommendation</li>
+                  <li><CheckCircle2 className="h-4 w-4" /> Step-by-step implementation roadmap</li>
+                  <li><CheckCircle2 className="h-4 w-4" /> Branded PDF to share with your team</li>
                 </ul>
                 <UpgradeButton>Upgrade to Pro</UpgradeButton>
               </div>
@@ -414,7 +408,7 @@ export default function Home() {
             <div className="launch-container faq-grid">
               <div className="section-intro">
                 <p className="launch-eyebrow">FAQ</p>
-                <h2>Everything you need to know.</h2>
+                <h2>Common questions about the scan and report.</h2>
               </div>
               <div className="faq-rows">
                 {faqs.map(([question, answer]) => (
@@ -450,6 +444,40 @@ export default function Home() {
       )}
 
       <SiteFooter />
+
+      {isClient && showErrorModal && createPortal(
+        <div className="error-modal-overlay" onClick={() => setShowErrorModal(false)} style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem", background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }}>
+          <div className="error-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="error-modal-header">
+              <div className="error-icon-wrapper">
+                <XCircle className="h-7 w-7" />
+              </div>
+              <div className="error-header-text">
+                <h3>Couldn&apos;t scan this page</h3>
+                <p>The scanner couldn&apos;t access this URL</p>
+              </div>
+            </div>
+            <div className="error-modal-body">
+              <div className="error-detail">
+                <p className="error-main-message">{errorMsg || "This website blocked the scanner or the content is not publicly accessible."}</p>
+              </div>
+              <div className="error-suggestions">
+                <p className="error-suggestions-title">Try these instead</p>
+                <ul className="error-suggestions-list">
+                  <li>Check the URL is correct and the page is public</li>
+                  <li>Try a different page from the same website</li>
+                  <li>Make sure the page doesn&apos;t require a login</li>
+                </ul>
+              </div>
+            </div>
+            <div className="error-modal-footer">
+              <button className="error-modal-button error-modal-secondary" onClick={() => setShowErrorModal(false)}>Cancel</button>
+              <button className="error-modal-button error-modal-primary" onClick={() => { setShowErrorModal(false); setUrl(""); setTimeout(() => inputRef.current?.focus(), 50); }}>Try a Different URL</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </main>
   );
 }

@@ -59,13 +59,13 @@ function statusLabel(score: number) {
 }
 
 function categoryNote(category: Category, score: number) {
-  if (category === "schema") return score >= 70 ? "Structured data signal looks solid." : "Schema coverage can be expanded.";
-  if (category === "metadata") return score >= 70 ? "Metadata is mostly optimized." : "Titles and descriptions need tightening.";
-  if (category === "content") return score >= 70 ? "Content depth is healthy." : "Add clearer answer-focused blocks.";
-  if (category === "headings") return score >= 70 ? "Heading hierarchy is strong." : "Heading structure needs cleanup.";
-  if (category === "trust") return score >= 70 ? "Trust baseline is stable." : "Strengthen trust and crawl signals.";
-  if (category === "performance") return score >= 70 ? "Performance posture is competitive." : "Performance wins are available.";
-  return score >= 70 ? "AI readiness trend is positive." : "AI readability can be improved.";
+  if (category === "schema") return score >= 70 ? "Structured data coverage is solid." : "Schema types are missing — AI systems have less context to work with.";
+  if (category === "metadata") return score >= 70 ? "Title, description, and OG tags are well-optimised." : "Tighten titles and descriptions so AI systems can accurately label this page.";
+  if (category === "content") return score >= 70 ? "Content depth gives AI enough to work with." : "Add use-case detail and concise answer blocks so AI can extract clear responses.";
+  if (category === "headings") return score >= 70 ? "Heading hierarchy is clear and well-structured." : "Restructure headings — a logical H1→H2→H3 hierarchy helps AI parse your content.";
+  if (category === "trust") return score >= 70 ? "Trust signals and crawl directives look good." : "Add trust signals — HTTPS, a valid robots.txt, and author or brand information.";
+  if (category === "performance") return score >= 70 ? "Page speed and Core Web Vitals are competitive." : "Speed improvements available — faster pages are indexed more reliably by AI crawlers.";
+  return score >= 70 ? "This page is well-structured for AI answer extraction." : "Improve content clarity so AI assistants can accurately summarize and cite this page.";
 }
 
 function priorityFromWeight(weight: number): Priority {
@@ -94,6 +94,28 @@ function impactByPriority(priority: Priority): Impact {
   if (priority === "critical" || priority === "high") return "high";
   if (priority === "medium") return "medium";
   return "low";
+}
+
+function whyItMattersById(id: string): string {
+  const map: Record<string, string> = {
+    title: "The page title is the primary label AI systems use when citing your page in answers. A vague or missing title means the page gets misidentified or skipped entirely.",
+    meta_desc: "Meta descriptions are the first summary AI systems and search engines read. Without one, they generate their own — often pulling the wrong text.",
+    h1: "The H1 is the most semantically important heading on the page. AI systems use it to determine what the page is about and whether it matches a user's query.",
+    heading_structure: "A logical heading hierarchy (H1 → H2 → H3) acts as a table of contents for AI crawlers. Without it, content blocks are harder to parse and cite accurately.",
+    schema_present: "JSON-LD schema is the clearest way to tell AI systems what your page is, who it's for, and what it contains. Pages without schema rely entirely on AI guesswork.",
+    faq_schema: "FAQPage schema surfaces Q&A content directly in AI answer results. It's one of the highest-impact schema types for answer engine visibility.",
+    article_schema: "Article or BlogPosting schema tells AI systems this is authoritative, dated content — increasing the likelihood it gets cited as a source.",
+    og_tags: "Open Graph tags control how your page appears when shared or cited. Missing OG tags mean AI-assisted tools and social platforms display incomplete or inaccurate previews.",
+    og_image: "An OG image is pulled whenever your page is cited or previewed. Without one, platforms display a blank or auto-generated placeholder that reduces click-through.",
+    https: "HTTPS is a baseline trust signal. Pages served over HTTP are deprioritized by crawlers and flagged as insecure by browsers — reducing crawl frequency and citation confidence.",
+    robots: "A missing or misconfigured robots.txt can inadvertently block AI crawlers from indexing your page, making it invisible to systems that rely on crawl data.",
+    sitemap: "A sitemap tells crawlers exactly which pages exist and when they were last updated. Without one, new or updated pages are discovered more slowly.",
+    alt_text: "Alt text is how AI vision systems and crawlers understand your images. Missing alt text leaves image content invisible to indexing and answer systems.",
+    word_count: "Thin content gives AI assistants very little to extract or cite. Pages with insufficient depth are rarely chosen as sources for detailed answers.",
+    internal_links: "Internal links help AI crawlers discover related pages and understand your site structure. Few internal links means important pages get crawled less frequently.",
+    structured_density: "Pages with multiple relevant schema types give AI systems a richer, more confident picture of your content — increasing citation likelihood across more query types.",
+  };
+  return map[id] ?? "Weak signals reduce how confidently AI assistants and search systems can understand and cite this page.";
 }
 
 function recommendedFix(check: CheckResult) {
@@ -128,7 +150,7 @@ function normalizeIssues(checks: CheckResult[]): ReportIssue[] {
       effort: effortById(check.id),
       category,
       problem: check.detail,
-      whyItMatters: "Weak signals reduce how confidently AI assistants and search systems can understand and cite this page.",
+      whyItMatters: whyItMattersById(check.id),
       recommendedFix: recommendedFix(check),
       example: issueExample(check),
     };
@@ -145,15 +167,6 @@ function badgeTone(value: Priority | Impact | Effort) {
   return "badge-medium";
 }
 
-function getFaqs(host: string) {
-  return [
-    { q: `What does ${host} help teams do?`, a: `${host} helps teams improve AI visibility with structured, answer-ready page signals.` },
-    { q: `Who is ${host} best for?`, a: "It is best for SaaS teams, growth marketers, and founders optimizing discoverability." },
-    { q: `How is this different from a standard SEO audit?`, a: "It focuses on AI answer-readiness, schema clarity, and citation confidence." },
-    { q: "What should we fix first?", a: "Start with critical schema/metadata gaps, then improve content clarity and trust signals." },
-    { q: "How often should pages be rescanned?", a: "Rescan after major copy, schema, or structure updates to validate progress." },
-  ];
-}
 
 function inferChecklistGroups(items: string[]) {
   const groups: Record<"Schema" | "Content" | "Metadata" | "Trust Signals" | "Technical", Array<{ text: string; effort: Effort; impact: Impact }>> = {
@@ -281,10 +294,10 @@ export default function ReportSectionNew({ report, onReset }: Props) {
       icon: Zap,
     },
     {
-      title: "Estimated impact",
+      title: "Performance score",
       text: report.pagespeed?.score !== undefined
-        ? `Performance score is ${report.pagespeed.score}/100. Resolving priority issues should increase visibility confidence.`
-        : "Performance score was not detected from page content.",
+        ? `${report.pagespeed.score}/100 — page speed and Core Web Vitals affect how reliably AI crawlers can index your content.`
+        : "PageSpeed score unavailable — the performance API did not return data for this page.",
       icon: TrendingUp,
     },
   ];
@@ -321,7 +334,6 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const prioritySchema = report.aiInsights?.schemaRecommendations?.priority ?? null;
   const priorityReasoning = report.aiInsights?.schemaRecommendations?.reasoning ?? "";
   const otherSuggestedTypes = missingSchemaTypes.filter((t) => t !== prioritySchema);
-  const faqs = useMemo(() => getFaqs(host), [host]);
   const checklist = [
     "Add FAQ section to key landing pages",
     "Add FAQPage schema using real customer questions",
@@ -399,7 +411,7 @@ const downloadPdf = () => {
 
       <section className="surface report-card print-section">
         <h3 className="section-heading">Score Breakdown</h3>
-        <p className="section-kicker mt-1">Category-level readiness with status indicators.</p>
+        <p className="section-kicker mt-1">How each area of your page compares against the standard.</p>
         <div className="score-breakdown-grid mt-4">
           {categoryScores.map((item) => (
             <div key={item.category} className="score-breakdown-card">
@@ -418,7 +430,7 @@ const downloadPdf = () => {
       {report.metadata && (
         <section className="surface report-card print-section">
           <h3 className="section-heading">Metadata Overview</h3>
-          <p className="section-kicker mt-1">Raw metadata values extracted from the page.</p>
+          <p className="section-kicker mt-1">What AI and search engines see when they index this page.</p>
           <div className="metadata-grid mt-4">
             <MetaRow label="Title" value={report.metadata.title} charLimit={60} />
             <MetaRow label="Meta Description" value={report.metadata.metaDescription} charLimit={160} />
@@ -443,7 +455,7 @@ const downloadPdf = () => {
 
       <section className="surface report-card print-section">
         <h3 className="section-heading">Detailed Issues</h3>
-        <p className="section-kicker mt-1">Problem, impact, effort, and implementation guidance.</p>
+        <p className="section-kicker mt-1">Each issue with the problem, why it matters, and exactly how to fix it.</p>
         <div className="detailed-issues-list mt-4">
           {visibleIssues.map((issue) => {
             const isOpen = expanded === issue.id;
@@ -496,7 +508,7 @@ const downloadPdf = () => {
         {!isPro && hiddenCount > 0 && (
           <div className="locked-panel">
             <Lock className="h-4 w-4" />
-            <p>{hiddenCount} additional issues are locked in Free Preview.</p>
+            <p>{hiddenCount} more issues are included in the Pro report.</p>
             <UpgradeButton>Unlock Full Report</UpgradeButton>
           </div>
         )}
@@ -558,36 +570,17 @@ const downloadPdf = () => {
                   <span key={type} className="schema-tag schema-tag-missing">{type}</span>
                 ))}
               </div>
+              {otherSuggestedTypes.includes("FAQPage") && (
+                <p className="schema-note">Google deprecated FAQ rich results in May 2026, but FAQPage schema remains useful for AI answer engines like ChatGPT and Perplexity.</p>
+              )}
             </div>
           )}
         </section>
       )}
 
       <section className="surface report-card print-section">
-        <h3 className="section-heading">Recommended FAQs</h3>
-        <p className="section-kicker mt-1">Answer-focused FAQs for AI readability and citation coverage.</p>
-        <div className="faq-grid-premium mt-4">
-          {(isPro ? faqs : faqs.slice(0, 2)).map((item) => (
-            <article className="faq-card-premium" key={item.q}>
-              <span>Q</span>
-              <h4>{item.q}</h4>
-              <p>{isPro ? item.a : "Answer template unlocked in Pro report."}</p>
-            </article>
-          ))}
-          {!isPro && (
-            <article className="faq-card-premium faq-locked">
-              <Lock className="h-4 w-4" />
-              <h4>More FAQs are available in Pro</h4>
-              <p>Unlock complete answer templates and implementation guidance.</p>
-              <UpgradeButton>Unlock Full FAQ Set</UpgradeButton>
-            </article>
-          )}
-        </div>
-      </section>
-
-      <section className="surface report-card print-section">
         <h3 className="section-heading">Implementation Roadmap</h3>
-        <p className="section-kicker mt-1">Grouped execution plan by category, effort, and impact.</p>
+        <p className="section-kicker mt-1">Prioritized action list with effort estimates — start at the top and work down.</p>
         {isPro ? (
           <div className="roadmap-grid mt-4">
             {Object.entries(checklistGroups).map(([group, items]) => (
@@ -630,7 +623,7 @@ const downloadPdf = () => {
               <li>Priority action plan</li>
               <li>Detailed issues</li>
               <li>Schema recommendations</li>
-              <li>Recommended FAQs</li>
+              <li>FAQ schema guidance</li>
               <li>Implementation roadmap</li>
             </ul>
           </div>
@@ -642,7 +635,7 @@ const downloadPdf = () => {
               <em>{report.score}/100 - {scoreStatus}</em>
             </div>
             <strong>Client-shareable audit PDF</strong>
-            <p>Print-optimized white report style with clean section breaks and readable typography.</p>
+            <p>A clean, professional report you can share directly with clients or your team — no formatting work needed.</p>
             {canDownloadPdf(plan) ? (
               <button className="btn btn-primary" onClick={downloadPdf}><Download className="h-4 w-4" /> Download PDF</button>
             ) : (
