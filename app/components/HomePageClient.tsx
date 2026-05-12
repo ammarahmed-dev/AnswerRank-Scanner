@@ -6,6 +6,7 @@ import LoadingState from "./LoadingState";
 import SiteFooter from "./SiteFooter";
 import SiteHeader from "./SiteHeader";
 import UpgradeButton from "./UpgradeButton";
+import ContactForm from "./ContactForm";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 import { useRouter } from "next/navigation";
@@ -805,6 +806,17 @@ export default function Home() {
                   </details>
                 ))}
               </div>
+            </div>
+          </section>
+
+          <section className="launch-section contact-section" id="contact">
+            <div className="launch-container contact-grid">
+              <div className="section-intro contact-intro">
+                <p className="launch-eyebrow">Contact</p>
+                <h2>Get in touch</h2>
+                <p>Have a question about your report, billing, or the scanner? We&apos;ll get back to you within 24 hours.</p>
+              </div>
+              <ContactForm />
             </div>
           </section>
         </>
