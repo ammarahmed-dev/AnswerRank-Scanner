@@ -1027,7 +1027,7 @@ a {
 @keyframes pageFade {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(6px);
   }
 
   to {
@@ -1067,8 +1067,9 @@ a {
 }
 
 .page-transition {
+  will-change: opacity, transform;
   min-height: 100vh;
-  animation: .3s forwards pageFade;
+  animation: .25s forwards pageFade;
 }
 
 .launch-container, .app-container {
