@@ -234,3 +234,4 @@
 {"timestamp":"00:25:37.193","source":"Server","level":"LOG","message":"○ Compiling /_not-found/page ..."}
 {"timestamp":"00:25:41.556","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
 {"timestamp":"00:28:50.913","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:46:59.784","source":"Server","level":"LOG","message":"✓ Compiled in 485ms"}
