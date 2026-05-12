@@ -38,12 +38,34 @@ function errorResponse(error: string, status: number, details?: string) {
   return NextResponse.json({ error, details }, { status });
 }
 
+function normalizeSchemaType(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 function parseSchemaRecommendations(parsed: Record<string, unknown>, fallbackDetected: string[]): SchemaRecommendation {
   const sr = parsed.schemaRecommendations as Record<string, unknown> | undefined;
+  const detectedRaw = Array.isArray(sr?.detected)
+    ? (sr.detected as string[]).filter((s): s is string => typeof s === "string")
+    : fallbackDetected;
+  const detected = Array.from(new Set(detectedRaw));
+  const detectedSet = new Set(detected.map(normalizeSchemaType));
+
+  const missingRaw = Array.isArray(sr?.missing)
+    ? (sr.missing as string[]).filter((s): s is string => typeof s === "string")
+    : [];
+  const missing = Array.from(new Set(missingRaw)).filter(
+    (type) => !detectedSet.has(normalizeSchemaType(type))
+  );
+
+  const rawPriority = typeof sr?.priority === "string" ? sr.priority : "";
+  const priority = rawPriority && !detectedSet.has(normalizeSchemaType(rawPriority))
+    ? rawPriority
+    : (missing[0] ?? "");
+
   return {
-    detected: Array.isArray(sr?.detected) ? (sr.detected as string[]).filter((s): s is string => typeof s === "string") : fallbackDetected,
-    missing: Array.isArray(sr?.missing) ? (sr.missing as string[]).filter((s): s is string => typeof s === "string") : [],
-    priority: typeof sr?.priority === "string" ? sr.priority : "",
+    detected,
+    missing,
+    priority,
     reasoning: typeof sr?.reasoning === "string" ? sr.reasoning : "",
   };
 }

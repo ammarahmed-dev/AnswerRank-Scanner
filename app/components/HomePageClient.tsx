@@ -66,10 +66,22 @@ const auditSignals = [
 ];
 
 const workflow = [
-  { title: "Paste a public website URL", text: "Paste any public URL and the scanner fetches the page content, metadata, and structure signals instantly." },
-  { title: "Read every page signal", text: "It reads metadata, headings, schema, internal links, and content depth across the full page." },
-  { title: "Score your AI visibility", text: "Every signal converts into a weighted 0-100 score with a plain-English verdict for each category." },
-  { title: "Act on the highest-impact fixes", text: "Copy the recommendations, implement schema fixes, or unlock the full Pro report for detailed guidance." },
+  {
+    title: "Paste a public website URL",
+    text: "Enter any publicly accessible URL into the scanner. AEOCheck fetches the live page content, metadata, and HTML structure in real time. No browser extension or code installation required.",
+  },
+  {
+    title: "Read every page signal",
+    text: "The scanner reads your title tag, meta description, heading hierarchy, schema markup, internal link structure, and content depth. It checks over 20 individual signals that AI engines use to understand and cite pages.",
+  },
+  {
+    title: "Score your AI visibility",
+    text: "Every signal is converted into a weighted score across 6 categories: Metadata, Schema, Headings, Content Clarity, Trust Signals, and AI Readiness. Your overall score reflects how well AI engines can understand and cite your page.",
+  },
+  {
+    title: "Act on the highest-impact fixes",
+    text: "The report ranks every issue by impact so you know exactly what to fix first. Each issue includes a plain-English explanation of why it matters and a specific recommended fix you can implement immediately.",
+  },
 ];
 
 const faqs = [
