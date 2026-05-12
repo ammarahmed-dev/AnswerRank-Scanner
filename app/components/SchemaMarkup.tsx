@@ -130,6 +130,64 @@ export default function SchemaMarkup() {
         },
       ],
     },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://aeocheck.co/#webpage",
+      url: "https://aeocheck.co",
+      name: "AEOCheck - Free AEO & AI Search Readiness Scanner",
+      description:
+        "Free AEO scanner. Check if ChatGPT, Perplexity & Google AI can find your site. Get a scored readiness report in 60 seconds. No signup needed.",
+      isPartOf: {
+        "@type": "WebSite",
+        "@id": "https://aeocheck.co/#website",
+      },
+      about: {
+        "@type": "Thing",
+        name: "Answer Engine Optimization",
+      },
+      primaryImageOfPage: {
+        "@type": "ImageObject",
+        url: "https://aeocheck.co/api/og",
+      },
+      datePublished: "2026-05-01",
+      dateModified: "2026-05-12",
+      inLanguage: "en-US",
+      potentialAction: {
+        "@type": "ReadAction",
+        target: "https://aeocheck.co",
+      },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: "https://aeocheck.co",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Scanner",
+          item: "https://aeocheck.co/#scanner",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "Pricing",
+          item: "https://aeocheck.co/#pricing",
+        },
+        {
+          "@type": "ListItem",
+          position: 4,
+          name: "FAQ",
+          item: "https://aeocheck.co/#faq",
+        },
+      ],
+    },
   ];
 
   return (
