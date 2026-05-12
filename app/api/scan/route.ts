@@ -71,10 +71,22 @@ function parseSchemaRecommendations(parsed: Record<string, unknown>, fallbackDet
 }
 
 async function getAIInsightsWithBudget(
-  scrapedData: ScrapedData
+  scrapedData: ScrapedData,
+  context?: {
+    overallScore: number;
+    detectedSchemas: string[];
+    missingSchemas: string[];
+    scores: {
+      metadata?: number;
+      schema?: number;
+      headings?: number;
+      trustSignals?: number;
+    };
+    issues: string[];
+  }
 ): Promise<AIInsights | null> {
   try {
-    const prompt = buildAIPrompt(scrapedData);
+    const prompt = buildAIPrompt(scrapedData, context);
     const aiRawResponse = await generateAIInsights(prompt);
 
     if (!aiRawResponse) return null;
@@ -554,6 +566,15 @@ export async function POST(req: NextRequest) {
         const sitemapCheck = await checkSitemapXml(url, robotsCheck.body);
         const checks = applyTrustValidationChecks(baseChecks, robotsCheck, sitemapCheck);
         const score = calculateScore(checks);
+        const categoryScores = categoryScoresFromChecks(checks, null);
+        const detectedSchemas = scrapedData.schemaTypes;
+        const candidateSchemaTypes = ["Organization", "WebSite", "WebPage", "FAQPage", "Article", "HowTo", "BreadcrumbList", "Service", "Product", "SoftwareApplication"];
+        const missingSchemas = candidateSchemaTypes.filter(
+          (type) => !detectedSchemas.some((detected) => detected.toLowerCase() === type.toLowerCase())
+        );
+        const issueTitles = checks
+          .filter((check) => check.status !== "pass")
+          .map((check) => check.label);
 
         emitProgress(4, "Running PageSpeed check", "started");
 
@@ -585,7 +606,18 @@ export async function POST(req: NextRequest) {
           emitProgress(5, "Using local recommendations", "skipped");
         } else {
           try {
-            aiInsights = await getAIInsightsWithBudget(scrapedData);
+            aiInsights = await getAIInsightsWithBudget(scrapedData, {
+              overallScore: score,
+              detectedSchemas,
+              missingSchemas,
+              scores: {
+                metadata: categoryScores.metadata,
+                schema: categoryScores.schema,
+                headings: categoryScores.headings,
+                trustSignals: categoryScores.trustSignals,
+              },
+              issues: issueTitles,
+            });
             if (aiInsights) {
               emitProgress(5, "Generating AI insights", "complete");
             } else {
