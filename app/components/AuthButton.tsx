@@ -96,12 +96,12 @@ export default function AuthButton() {
 
   return (
     <div ref={wrapperRef}>
-      {/* ── Desktop auth items — hidden below md ── */}
+      {/* â”€â”€ Desktop auth items â€” hidden below md â”€â”€ */}
       {user ? (
         <div className="hidden md:inline-flex">
           <div className="auth-account">
             {masterAdmin && (
-              <a href="/admin" title="Master Admin · Unlimited Access">
+              <a href="/admin" title="Master Admin Â· Unlimited Access">
                 <ShieldCheck className="h-4 w-4" /> Admin
               </a>
             )}
@@ -125,7 +125,7 @@ export default function AuthButton() {
         </div>
       )}
 
-      {/* ── Hamburger button — hidden above md via CSS ── */}
+      {/* â”€â”€ Hamburger button â€” hidden above md via CSS â”€â”€ */}
       <button
         type="button"
         className="nav-hamburger"
@@ -136,7 +136,7 @@ export default function AuthButton() {
         {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
-      {/* ── Mobile dropdown — always rendered, toggled with is-open ── */}
+      {/* â”€â”€ Mobile dropdown â€” always rendered, toggled with is-open â”€â”€ */}
       <div className={`nav-mobile-menu${menuOpen ? " is-open" : ""}`}>
         <div className="nav-mobile-section">
           {NAV_LINKS.map((link) => (
@@ -179,3 +179,4 @@ export default function AuthButton() {
     </div>
   );
 }
+

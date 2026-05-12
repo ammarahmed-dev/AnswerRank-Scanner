@@ -103,3 +103,4 @@ export default function LoadingState({ progress, progressByStepAndStatus, step, 
     </section>
   );
 }
+

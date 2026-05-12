@@ -61,7 +61,7 @@ export default function AuthPageClient({ mode }: Props) {
         <div className="surface auth-page-card">
           <div className="auth-page-copy">
             <span className="launch-eyebrow">{isLogin ? "Welcome back" : "Free account"}</span>
-            <h1>{isLogin ? "Log in to continue scanning." : "Create your AnswerRank account."}</h1>
+            <h1>{isLogin ? "Log in to continue scanning." : "Create your AEOCheck account."}</h1>
             <p>{isLogin ? "Access your free account scans and save reports to your workspace." : "Free accounts get 3 scans per month and saved report links."}</p>
           </div>
 
@@ -91,3 +91,5 @@ export default function AuthPageClient({ mode }: Props) {
     </main>
   );
 }
+
+

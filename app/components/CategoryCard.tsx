@@ -25,3 +25,4 @@ export default function CategoryCard({ label, score, max }: Props) {
     </div>
   );
 }
+

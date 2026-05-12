@@ -458,7 +458,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const nextBestImprovement = report.aiInsights?.quickWin?.trim() || issues[0]?.recommendedFix || "Keep improving the highest-priority issue from this audit.";
   const copyReport = async () => {
     const lines = [
-      `AnswerRank Scanner - AI Visibility Readiness Report`,
+      `AEOCheck - AI Visibility Readiness Report`,
       `URL: ${report.url}`,
       `Score: ${report.score} (${scoreStatus})`,
       `Scanned: ${new Date(report.scannedAt).toLocaleString()}`,
@@ -684,7 +684,7 @@ const downloadPdf = () => {
                   <div className="issue-toggle-right">
                     <div className="issue-pill-row">
                       <span className={`mini-pill ${badgeTone(issue.priority)}`}>{issue.priority}</span>
-                      <span className={`mini-pill ${badgeTone(issue.impact)}`}>↑ {issue.impact}</span>
+                      <span className={`mini-pill ${badgeTone(issue.impact)}`}>â†‘ {issue.impact}</span>
                       <span className={`mini-pill ${badgeTone(issue.effort)}`}>{issue.effort}</span>
                     </div>
                     <ChevronDown className={`issue-chevron${isOpen ? " is-open" : ""}`} />
@@ -818,7 +818,7 @@ const downloadPdf = () => {
           </div>
           <div className="pdf-action-card">
             <div className="pdf-preview-mini" aria-hidden="true">
-              <span>AnswerRank Scanner</span>
+              <span>AEOCheck</span>
               <strong>AI Visibility Report</strong>
               <small>{host}</small>
               <em>{report.score}/100 - {scoreStatus}</em>
@@ -959,3 +959,5 @@ function PriorityColumn({ title, description, items, tone }: { title: string; de
     </article>
   );
 }
+
+

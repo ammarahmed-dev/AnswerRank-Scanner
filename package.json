@@ -1,5 +1,5 @@
 {
-  "name": "answerrank-scanner",
+  "name": "aeocheck-scanner",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,6 +10,7 @@
   "dependencies": {
     "@google/genai": "^1.51.0",
     "@supabase/supabase-js": "^2.105.1",
+    "@vercel/og": "^0.11.1",
     "cheerio": "^1.2.0",
     "lucide-react": "^1.14.0",
     "next": "^16.2.4",

@@ -12,7 +12,7 @@ type ReportRow = {
 };
 
 const dbDir = path.join(process.cwd(), "data");
-const dbPath = path.join(dbDir, "answerrank.sqlite");
+const dbPath = path.join(dbDir, "aeocheck.sqlite");
 const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -230,3 +230,5 @@ export async function markReportUnlocked(reportId: string, stripeSessionId?: str
     return false;
   }
 }
+
+

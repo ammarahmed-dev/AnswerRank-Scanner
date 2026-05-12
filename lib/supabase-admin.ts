@@ -32,3 +32,4 @@ export async function updateUserPlan(userId: string, plan: "free" | "pro" | "age
 
   return res.ok;
 }
+

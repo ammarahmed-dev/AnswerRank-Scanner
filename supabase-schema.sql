@@ -53,3 +53,4 @@ create index if not exists scan_usage_date_idx
 alter table public.scan_usage enable row level security;
 
 grant select, insert, update, delete on table public.scan_usage to service_role;
+

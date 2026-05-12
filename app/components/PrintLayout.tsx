@@ -184,7 +184,7 @@ function getNextBestImprovement(report: ScanResult) {
 function PageHeader({ url, date }: { url: string; date: string }) {
   return (
     <div className="pl-page-header">
-      <span className="pl-page-brand">AnswerRank Scanner</span>
+      <span className="pl-page-brand">AEOCheck</span>
       <span className="pl-page-url">{url}</span>
       <span className="pl-page-date">{date}</span>
     </div>
@@ -232,7 +232,7 @@ export default function PrintLayout({ report }: Props) {
       <div className="pl-cover">
         <div className="pl-cover-brand">
           <span className="pl-cover-logo">AR</span>
-          <span>AnswerRank Scanner</span>
+          <span>AEOCheck</span>
         </div>
         <h1 className="pl-cover-title">AI Visibility Report</h1>
         <p className="pl-cover-url">{report.url}</p>
@@ -444,9 +444,12 @@ export default function PrintLayout({ report }: Props) {
           <li className="pl-rec-item"><strong>Expand to additional pages.</strong> Audit your homepage, pricing page, and key service pages individually.</li>
         </ol>
         <div className="pl-footer">
-          AnswerRank Scanner - answerrank.com - AI Visibility Report - Generated {date}
+          AEOCheck - aeocheck.co - AI Visibility Report - Generated {date}
         </div>
       </div>
     </div>
   );
 }
+
+
+

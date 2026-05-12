@@ -219,3 +219,4 @@ export function getFallbackAnalysis(data: ExtractedData, scores: ScoreBreakdown)
     finalVerdict: `Your site scored ${scores.total}/100. ${scores.total >= 70 ? "Good foundation - focus on schema and FAQ content to boost AI visibility." : "Significant gaps in schema, metadata, or content clarity are limiting AI discoverability."}`,
   };
 }
+

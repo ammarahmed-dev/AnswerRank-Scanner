@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Get-Content \"C:\\\\Users\\\\ammar\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--AnswerRank-Scanner\\\\1a9d8b62-4b55-47f2-a2a7-da8fb06e574a\\\\tasks\\\\bwvioi23g.output\" -Tail 20)"
+      "Bash(Get-Content \"C:\\\\Users\\\\ammar\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\d--AEOCheck-Scanner\\\\1a9d8b62-4b55-47f2-a2a7-da8fb06e574a\\\\tasks\\\\bwvioi23g.output\" -Tail 20)"
     ]
   }
 }
+
+

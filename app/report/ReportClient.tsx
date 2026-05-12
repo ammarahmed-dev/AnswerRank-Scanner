@@ -11,7 +11,7 @@ import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase
 import { ScanResult } from "@/types/index";
 
 const LOADING_STEP_TIMES = [900, 1800, 3000, 4700, 6800, 8600];
-const CLIENT_STORAGE_KEY = "answerrank_client_id_v1";
+const CLIENT_STORAGE_KEY = "aeocheck_client_id_v1";
 
 type ReportState = "loading" | "done" | "error";
 
@@ -42,16 +42,16 @@ export default function ReportClient() {
   useEffect(() => {
     if (reportId) {
       if (forceRefresh) {
-        sessionStorage.removeItem(`answerrank_report:${reportId}`);
+        sessionStorage.removeItem(`aeocheck_report:${reportId}`);
       }
-      const cachedById = sessionStorage.getItem(`answerrank_report:${reportId}`);
+      const cachedById = sessionStorage.getItem(`aeocheck_report:${reportId}`);
       if (cachedById && !forceRefresh) {
         try {
           setReport(JSON.parse(cachedById) as ScanResult);
           setState("done");
           return;
         } catch {
-          sessionStorage.removeItem(`answerrank_report:${reportId}`);
+          sessionStorage.removeItem(`aeocheck_report:${reportId}`);
         }
       }
 
@@ -73,9 +73,9 @@ export default function ReportClient() {
             return;
           }
 
-          sessionStorage.setItem(`answerrank_report:${reportId}`, JSON.stringify(data));
-          sessionStorage.setItem(`answerrank_report:${data.url}`, JSON.stringify(data));
-          const cachedCompetitors = sessionStorage.getItem(`answerrank_competitors:${reportId}`);
+          sessionStorage.setItem(`aeocheck_report:${reportId}`, JSON.stringify(data));
+          sessionStorage.setItem(`aeocheck_report:${data.url}`, JSON.stringify(data));
+          const cachedCompetitors = sessionStorage.getItem(`aeocheck_competitors:${reportId}`);
           if (cachedCompetitors) {
             data.competitorUrls = JSON.parse(cachedCompetitors) as string[];
           }
@@ -98,14 +98,14 @@ export default function ReportClient() {
       return;
     }
 
-    const cached = sessionStorage.getItem(`answerrank_report:${sharedUrl}`);
+    const cached = sessionStorage.getItem(`aeocheck_report:${sharedUrl}`);
     if (cached) {
       try {
         setReport(JSON.parse(cached) as ScanResult);
         setState("done");
         return;
       } catch {
-        sessionStorage.removeItem(`answerrank_report:${sharedUrl}`);
+        sessionStorage.removeItem(`aeocheck_report:${sharedUrl}`);
       }
     }
 
@@ -137,13 +137,13 @@ export default function ReportClient() {
           return;
         }
 
-        const cachedCompetitors = sessionStorage.getItem(`answerrank_competitors:${sharedUrl}`);
+        const cachedCompetitors = sessionStorage.getItem(`aeocheck_competitors:${sharedUrl}`);
         if (cachedCompetitors) {
           data.competitorUrls = JSON.parse(cachedCompetitors) as string[];
         }
-        sessionStorage.setItem(`answerrank_report:${data.url}`, JSON.stringify(data));
+        sessionStorage.setItem(`aeocheck_report:${data.url}`, JSON.stringify(data));
         if (data.reportId) {
-          sessionStorage.setItem(`answerrank_report:${data.reportId}`, JSON.stringify(data));
+          sessionStorage.setItem(`aeocheck_report:${data.reportId}`, JSON.stringify(data));
           window.history.replaceState(null, "", `/report?id=${data.reportId}`);
         }
         setReport(data);
@@ -198,3 +198,5 @@ export default function ReportClient() {
     </main>
   );
 }
+
+

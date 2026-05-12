@@ -45,7 +45,7 @@ Based on the detected schema types above and the actual page content, determine:
    - Only suggest Person if author or team member information is present
    - Always consider: Organization, WebSite, WebPage, BreadcrumbList as baseline candidates
 2. Which single missing type should be added first (highest impact)?
-3. Write specific reasoning referencing actual content found on this page — not generic advice.
+3. Write specific reasoning referencing actual content found on this page â€” not generic advice.
 
 Return ONLY this exact JSON structure (no markdown, no preamble):
 {
@@ -63,3 +63,4 @@ Return ONLY this exact JSON structure (no markdown, no preamble):
 
   return prompt;
 }
+
