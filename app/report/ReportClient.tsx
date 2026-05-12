@@ -19,6 +19,7 @@ export default function ReportClient() {
   const searchParams = useSearchParams();
   const reportId = searchParams.get("id")?.trim() ?? "";
   const sharedUrl = searchParams.get("url")?.trim() ?? "";
+  const retestOfReportId = searchParams.get("retestOf")?.trim() ?? "";
   const forceRefresh = searchParams.get("payment") === "1";
   const [state, setState] = useState<ReportState>("loading");
   const [loadingStep, setLoadingStep] = useState(0);
@@ -99,7 +100,7 @@ export default function ReportClient() {
     }
 
     const cached = sessionStorage.getItem(`aeocheck_report:${sharedUrl}`);
-    if (cached) {
+    if (cached && !retestOfReportId) {
       try {
         setReport(JSON.parse(cached) as ScanResult);
         setState("done");
@@ -125,7 +126,7 @@ export default function ReportClient() {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ url: sharedUrl, includeAI: true, clientId: getClientId() }),
+          body: JSON.stringify({ url: sharedUrl, includeAI: true, clientId: getClientId(), retestOfReportId }),
           signal: controller.signal,
         });
         clearTimeout(timeout);
@@ -160,7 +161,7 @@ export default function ReportClient() {
 
     runScan();
     return () => controller.abort();
-  }, [forceRefresh, reportId, sharedUrl]);
+  }, [forceRefresh, reportId, retestOfReportId, sharedUrl]);
 
   return (
     <main className="min-h-screen">

@@ -2,7 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, BarChart3, CheckCircle2, CreditCard, ExternalLink, LayoutDashboard, Loader2, ShieldCheck, UserRound } from "lucide-react";
+import {
+  ArrowUpRight,
+  BarChart3,
+  CheckCircle2,
+  CreditCard,
+  ExternalLink,
+  LayoutDashboard,
+  Loader2,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
 import UpgradeButton from "../components/UpgradeButton";
@@ -27,6 +37,8 @@ type AccountData = {
     url: string;
     score: number;
     created_at: string;
+    retest_count?: number;
+    max_retests?: number;
     unlocked?: boolean;
   }>;
 };
@@ -99,18 +111,18 @@ export default function DashboardClient() {
   }, [account]);
 
   const masterAdmin = account ? isMasterAdmin({ plan: account.profile.plan, isAdmin: account.profile.isAdmin }) : false;
-const paidPlan = account ? account.profile.plan === "pro" || account.profile.plan === "agency" : false;
-const shouldShowUpgradeCard = Boolean(account) && !masterAdmin && !paidPlan;
-const shouldShowPricingCta = shouldShowUpgradeCard;
-const hasUnlockedOneTimeReports = Boolean(account?.reports.some((report) => report.unlocked));
+  const paidPlan = account ? account.profile.plan === "pro" || account.profile.plan === "agency" : false;
+  const shouldShowUpgradeCard = Boolean(account) && !masterAdmin && !paidPlan;
+  const shouldShowPricingCta = shouldShowUpgradeCard;
+  const hasUnlockedOneTimeReports = Boolean(account?.reports.some((report) => report.unlocked));
 
-const scanCountLabel = account && masterAdmin
-  ? "Master Admin · Unlimited Access"
-  : account?.usage.unlimited
-  ? "Pro · Unlimited Access"
-  : account
-    ? `${account.usage.remaining} free scans left this month`
-    : undefined;
+  const scanCountLabel = account && masterAdmin
+    ? "Master Admin · Unlimited Access"
+    : account?.usage.unlimited
+      ? "Pro · Unlimited Access"
+      : account
+        ? `${account.usage.remaining} free scans left this month`
+        : undefined;
 
   return (
     <main className="min-h-screen">
@@ -183,9 +195,7 @@ const scanCountLabel = account && masterAdmin
                   </div>
                 </div>
                 <strong className="dashboard-plan-name">{planLabel(account.profile.plan)}</strong>
-                {masterAdmin && (
-                  <p className="dashboard-plan-copy">Master Admin Â· Unlimited Access</p>
-                )}
+                {masterAdmin && <p className="dashboard-plan-copy">Master Admin · Unlimited Access</p>}
                 <p className="dashboard-plan-copy">
                   {account.usage.unlimited
                     ? "Unlimited scans are active for this workspace."
@@ -217,7 +227,9 @@ const scanCountLabel = account && masterAdmin
                     ? "Your plan is not capped by the free monthly limit."
                     : `${account.usage.remaining} scans remaining this month.`}
                 </p>
-              </section>              {shouldShowUpgradeCard && (
+              </section>
+
+              {shouldShowUpgradeCard && (
                 <section className="surface dashboard-card dashboard-upgrade-card">
                   <div className="dashboard-card-title">
                     <span className="icon-tile"><CheckCircle2 className="h-5 w-5" /></span>
@@ -248,17 +260,28 @@ const scanCountLabel = account && masterAdmin
               {account.reports.length ? (
                 <div className="dashboard-report-list">
                   {account.reports.map((report) => (
-                    <a href={`/report?id=${report.id}`} className="dashboard-report-row" key={report.id}>
-                      <div>
-                        <strong>{report.url}</strong>
-                        <span>
-                          {formatDate(report.created_at)}
-                          {report.unlocked ? " · Full Report" : ""}
-                        </span>
-                      </div>
-                      <em>{report.score}</em>
-                      <ArrowUpRight className="h-4 w-4" />
-                    </a>
+                    <div className="dashboard-report-row" key={report.id}>
+                      <a href={`/report?id=${report.id}`} className="dashboard-report-link">
+                        <div>
+                          <strong>{report.url}</strong>
+                          <span>
+                            {formatDate(report.created_at)}
+                            {report.unlocked ? " · Full Report" : ""}
+                          </span>
+                        </div>
+                        <em>{report.score}</em>
+                        <ArrowUpRight className="h-4 w-4" />
+                      </a>
+                      {report.unlocked && (
+                        <button
+                          type="button"
+                          className="btn btn-secondary dashboard-retest-btn"
+                          onClick={() => router.push(`/report?id=${encodeURIComponent(report.id)}`)}
+                        >
+                          Retest
+                        </button>
+                      )}
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -277,8 +300,3 @@ const scanCountLabel = account && masterAdmin
     </main>
   );
 }
-
-
-
-
-

@@ -14,6 +14,8 @@ type RecentReport = {
   url: string;
   score: number;
   created_at: string;
+  retest_count?: number;
+  max_retests?: number;
   unlocked?: boolean;
   result?: {
     unlocked?: boolean;
@@ -38,7 +40,7 @@ async function getRecentReports(userId: string) {
 
   const params = new URLSearchParams({
     user_id: `eq.${userId}`,
-    select: "id,url,score,created_at,result",
+    select: "id,url,score,created_at,result,retest_count,max_retests",
     order: "created_at.desc",
     limit: "6",
   });
@@ -54,6 +56,8 @@ async function getRecentReports(userId: string) {
   return rows.map((row) => ({
     ...row,
     unlocked: Boolean(row.result?.unlocked || row.result?.unlockedAt),
+    retest_count: typeof row.retest_count === "number" ? row.retest_count : 0,
+    max_retests: typeof row.max_retests === "number" ? row.max_retests : 3,
   }));
 }
 

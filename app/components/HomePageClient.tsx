@@ -5,8 +5,10 @@ import { createPortal } from "react-dom";
 import LoadingState from "./LoadingState";
 import SiteFooter from "./SiteFooter";
 import SiteHeader from "./SiteHeader";
+import TopBar from "./TopBar";
 import UpgradeButton from "./UpgradeButton";
 import ContactForm from "./ContactForm";
+import AiSnapshotSection from "./AiSnapshotSection";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 import { useRouter } from "next/navigation";
@@ -540,6 +542,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
+      <TopBar />
       <SiteHeader scanCountLabel={isClient ? scanCountLabel : undefined} />
 
       {state !== "done" && (
@@ -708,6 +711,8 @@ export default function Home() {
             </div>
           </section>
 
+          <AiSnapshotSection />
+
           <section className="launch-section muted-section">
             <div className="launch-container">
               <div className="section-intro">
@@ -738,6 +743,7 @@ export default function Home() {
 
               <div className="pricing-cards">
                 <article className="pricing-panel">
+                  <span className="pricing-badge pricing-badge-muted">Free forever</span>
                   <span className="price">$0</span>
                   <h3>Free Preview</h3>
                   <p className="pricing-subline">For testing your AI visibility score.</p>
@@ -752,8 +758,8 @@ export default function Home() {
                   <a href="#scanner" className="btn btn-secondary">Start free scan</a>
                 </article>
 
-                <article className="pricing-panel pricing-panel-featured">
-                  <span className="pricing-badge">Most popular</span>
+                <article className="pricing-panel">
+                  <span className="pricing-badge pricing-badge-blue">One-time</span>
                   <span className="price">$14 <small>one-time</small></span>
                   <h3>Full Report</h3>
                   <p className="pricing-subline">Best for one website audit.</p>
@@ -764,12 +770,14 @@ export default function Home() {
                     <li><CheckCircle2 className="h-4 w-4" /> Schema recommendations</li>
                     <li><CheckCircle2 className="h-4 w-4" /> AI Answer Snapshot</li>
                     <li><CheckCircle2 className="h-4 w-4" /> Competitor takeaway</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> 3 retests on same URL</li>
                     <li><CheckCircle2 className="h-4 w-4" /> Client-ready PDF report</li>
                   </ul>
-                  <button type="button" className="btn btn-primary" onClick={handleHomepageFullReportCta}>Unlock full report</button>
+                  <button type="button" className="btn btn-secondary" onClick={handleHomepageFullReportCta}>Unlock full report</button>
                 </article>
 
-                <article className="pricing-panel pricing-panel-soon">
+                <article className="pricing-panel pricing-panel-featured">
+                  <span className="pricing-badge pricing-badge-purple">Best value</span>
                   <span className="price">$39 <small>/month</small></span>
                   <h3>Pro Monthly</h3>
                   <ul>
@@ -778,6 +786,7 @@ export default function Home() {
                     <li><CheckCircle2 className="h-4 w-4" /> Client-ready PDF reports</li>
                     <li><CheckCircle2 className="h-4 w-4" /> Competitor comparisons</li>
                     <li><CheckCircle2 className="h-4 w-4" /> Priority scan access</li>
+                    <li><CheckCircle2 className="h-4 w-4" /> Unlimited retests on any URL</li>
                   </ul>
                   <button type="button" className="btn btn-primary" onClick={handleProMonthlyPricingCta}>Start Pro Monthly</button>
                 </article>

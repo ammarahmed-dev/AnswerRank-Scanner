@@ -84,6 +84,8 @@ export interface CompetitorScanResult {
 
 export interface ScanResult {
   reportId?: string;
+  retest_count?: number;
+  max_retests?: number;
   unlocked?: boolean;
   unlockedAt?: string;
   unlockSource?: "stripe_checkout" | "admin" | "manual";

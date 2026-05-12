@@ -90,6 +90,8 @@ export async function saveReportRecord(result: ScanResult, userId?: string | nul
       user_id: userId ?? null,
       url: report.url,
       score: report.score,
+      retest_count: typeof report.retest_count === "number" ? report.retest_count : 0,
+      max_retests: typeof report.max_retests === "number" ? report.max_retests : 3,
       result: report,
       created_at: createdAt,
     };
@@ -136,7 +138,7 @@ export async function getReportRecord(id: string): Promise<ScanResult | null> {
   if (hasSupabaseConfig()) {
     const params = new URLSearchParams({
       id: `eq.${id}`,
-      select: "result",
+      select: "result,retest_count,max_retests",
       limit: "1",
     });
 
@@ -151,8 +153,16 @@ export async function getReportRecord(id: string): Promise<ScanResult | null> {
       return null;
     }
 
-    const rows = (await res.json()) as Array<{ result?: ScanResult }>;
-    return rows[0]?.result ?? getReport(id);
+    const rows = (await res.json()) as Array<{ result?: ScanResult; retest_count?: number; max_retests?: number }>;
+    const row = rows[0];
+    if (row?.result) {
+      return {
+        ...row.result,
+        retest_count: typeof row.retest_count === "number" ? row.retest_count : row.result.retest_count ?? 0,
+        max_retests: typeof row.max_retests === "number" ? row.max_retests : row.result.max_retests ?? 3,
+      };
+    }
+    return getReport(id);
   }
 
   return getReport(id);
@@ -181,6 +191,8 @@ export async function markReportUnlocked(reportId: string, stripeSessionId?: str
         const nextResult: ScanResult = {
           ...current,
           reportId: current.reportId ?? reportId,
+          retest_count: typeof current.retest_count === "number" ? current.retest_count : 0,
+          max_retests: typeof current.max_retests === "number" ? current.max_retests : 3,
           unlocked: true,
           unlockedAt,
           unlockSource: "stripe_checkout",
@@ -193,7 +205,10 @@ export async function markReportUnlocked(reportId: string, stripeSessionId?: str
             ...supabaseHeaders(),
             Prefer: "return=minimal",
           },
-          body: JSON.stringify({ result: nextResult }),
+          body: JSON.stringify({
+            result: nextResult,
+            max_retests: typeof current.max_retests === "number" ? current.max_retests : 3,
+          }),
         });
 
         if (patchRes.ok) return true;

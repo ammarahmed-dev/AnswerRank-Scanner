@@ -357,7 +357,22 @@ type ErrorEvent = {
 };
 type ScanEvent = ProgressEvent | ResultEvent | ErrorEvent;
 
-type ScanRequestBody = { url?: string; includeAI?: boolean; clientId?: string; competitorUrls?: string[] | string };
+type ScanRequestBody = { url?: string; includeAI?: boolean; clientId?: string; competitorUrls?: string[] | string; retestOfReportId?: string };
+
+const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+function hasSupabaseConfig() {
+  return Boolean(supabaseUrl && supabaseServiceRoleKey);
+}
+
+function supabaseHeaders() {
+  return {
+    apikey: supabaseServiceRoleKey ?? "",
+    Authorization: `Bearer ${supabaseServiceRoleKey}`,
+    "Content-Type": "application/json",
+  };
+}
 
 function checkScore(status: CheckResult["status"]): number {
   if (status === "pass") return 100;
@@ -492,6 +507,7 @@ export async function POST(req: NextRequest) {
 
   const enableAI = process.env.NEXT_PUBLIC_ENABLE_AI_REPORT !== "false";
   const wantAI = !!(body.includeAI && enableAI);
+  const retestOfReportId = typeof body.retestOfReportId === "string" ? body.retestOfReportId.trim() : "";
   const competitorUrlsRaw = Array.isArray(body.competitorUrls)
     ? body.competitorUrls
     : typeof body.competitorUrls === "string"
@@ -499,6 +515,38 @@ export async function POST(req: NextRequest) {
       : [];
   const competitorUrls = [...new Set(competitorUrlsRaw.map((item) => item.trim()).filter(Boolean))].slice(0, 1);
   const userId = authContext.user?.id;
+  let retestSeed: { unlocked: boolean; retestCount: number; maxRetests: number } | null = null;
+  if (retestOfReportId && userId && hasSupabaseConfig()) {
+    const params = new URLSearchParams({
+      id: `eq.${retestOfReportId}`,
+      user_id: `eq.${userId}`,
+      select: "result,retest_count,max_retests",
+      limit: "1",
+    });
+    try {
+      const seedRes = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
+        headers: supabaseHeaders(),
+        cache: "no-store",
+      });
+      if (seedRes.ok) {
+        const rows = (await seedRes.json()) as Array<{
+          retest_count?: number;
+          max_retests?: number;
+          result?: { unlocked?: boolean; unlockedAt?: string };
+        }>;
+        const source = rows[0];
+        if (source) {
+          retestSeed = {
+            unlocked: Boolean(source.result?.unlocked || source.result?.unlockedAt),
+            retestCount: source.retest_count ?? 0,
+            maxRetests: source.max_retests ?? 3,
+          };
+        }
+      }
+    } catch {
+      retestSeed = null;
+    }
+  }
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -646,6 +694,9 @@ export async function POST(req: NextRequest) {
           competitorUrls: competitorUrls.length ? competitorUrls : undefined,
           competitors,
           scannedAt: new Date().toISOString(),
+          unlocked: Boolean(retestSeed?.unlocked),
+          retest_count: retestSeed?.retestCount ?? 0,
+          max_retests: retestSeed?.maxRetests ?? 3,
         };
 
         const savedResult = await saveReportRecord(result, userId);
