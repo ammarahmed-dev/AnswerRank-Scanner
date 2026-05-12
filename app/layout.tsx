@@ -3,7 +3,7 @@ import "./globals.css";
 
 const HOME_TITLE = "AEOCheck — Free AEO & AI Search Readiness Scanner";
 const HOME_DESCRIPTION =
-  "Check if your website is ready for AI search engines like ChatGPT, Perplexity, and Google AI Overviews. Get a free AEO readiness score in 60 seconds. No signup required.";
+  "Free AEO scanner. Check if ChatGPT, Perplexity & Google AI can find your site. Get a scored readiness report in 60 seconds. No signup needed.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://aeocheck.co"),

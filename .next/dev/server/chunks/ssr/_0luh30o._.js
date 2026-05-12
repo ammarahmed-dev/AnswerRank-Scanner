@@ -12,7 +12,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 ;
 ;
 const HOME_TITLE = "AEOCheck — Free AEO & AI Search Readiness Scanner";
-const HOME_DESCRIPTION = "Check if your website is ready for AI search engines like ChatGPT, Perplexity, and Google AI Overviews. Get a free AEO readiness score in 60 seconds. No signup required.";
+const HOME_DESCRIPTION = "Free AEO scanner. Check if ChatGPT, Perplexity & Google AI can find your site. Get a scored readiness report in 60 seconds. No signup needed.";
 const metadata = {
     metadataBase: new URL("https://aeocheck.co"),
     title: HOME_TITLE,
