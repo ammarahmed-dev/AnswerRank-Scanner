@@ -76,7 +76,7 @@ a { color: inherit; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 @keyframes pageFade {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -95,7 +95,8 @@ a { color: inherit; }
 
 .page-transition {
   min-height: 100vh;
-  animation: pageFade 0.3s ease forwards;
+  animation: pageFade 0.25s ease forwards;
+  will-change: opacity, transform;
 }
 
 .launch-container,

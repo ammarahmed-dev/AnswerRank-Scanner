@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import LoadingState from "./LoadingState";
 import SiteFooter from "./SiteFooter";
@@ -95,7 +95,11 @@ const faqs = [
   ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; Pro accounts keep full report history."],
 ];
 
-export default function Home() {
+type HomePageClientProps = {
+  heroContent?: ReactNode;
+};
+
+export default function Home({ heroContent }: HomePageClientProps) {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [state, setState] = useState<AppState>("idle");
@@ -553,17 +557,7 @@ export default function Home() {
             <div className="hero-media" aria-hidden="true" />
             <div className="launch-container hero-content">
               <div className="hero-copy-block">
-                <p className="launch-eyebrow hero-trust-pills mb-4 ml-px">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span>Free</span>
-                  <span>No signup</span>
-                  <span>60-second scan</span>
-                  <span>Works on any public URL</span>
-                </p>
-                <h1>Free AEO &amp; AI Search Readiness Scanner</h1>
-                <p className="hero-lede">
-                  Paste any URL and get a free AEO readiness score in 60 seconds &mdash; with every fix ranked by impact.
-                </p>
+                {heroContent}
                 <form onSubmit={handleScan} className="hero-scanner" aria-label="Scan a website">
                   <div className="hero-input-wrap">
                     <Globe className="h-5 w-5" />
