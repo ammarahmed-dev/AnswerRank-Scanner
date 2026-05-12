@@ -1,6 +1,13 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
+  "/admin/page": "app/admin/page.js",
   "/api/account/route": "app/api/account/route.js",
+  "/api/admin/summary/route": "app/api/admin/summary/route.js",
+  "/api/admin/users/route": "app/api/admin/users/route.js",
+  "/api/reports/[id]/route": "app/api/reports/[id]/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/login/page": "app/login/page.js",
   "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/report/page": "app/report/page.js"
 }

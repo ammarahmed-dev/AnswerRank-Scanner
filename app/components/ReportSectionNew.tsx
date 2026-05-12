@@ -51,6 +51,19 @@ const CATEGORY_LABELS: Record<Category, string> = {
   headings: "Headings",
 };
 
+const schemaWhyItMatters: Record<string, string> = {
+  BreadcrumbList: "BreadcrumbList schema helps AI engines understand your site's navigation structure and page hierarchy, improving how your content is categorized and cited.",
+  WebPage: "WebPage schema provides explicit page-level context including page type, description, and relationships that help AI engines classify your content accurately.",
+  FAQPage: "FAQPage schema gives AI systems a clear Q&A structure for direct answer extraction from your FAQ content.",
+  Article: "Article schema helps AI classify your content type and extract key information like author, publish date, and headline.",
+  Organization: "Organization schema defines your brand entity so AI systems can connect your content to a trusted source.",
+  WebSite: "WebSite schema helps AI engines understand your overall site identity and search context.",
+  HowTo: "HowTo schema structures step-by-step guidance so AI assistants can surface your instructions accurately.",
+  Product: "Product schema provides explicit details about offerings, helping AI engines extract and cite product information.",
+  Service: "Service schema clarifies what you offer and who it is for, improving AI interpretation of commercial pages.",
+  SoftwareApplication: "SoftwareApplication schema explains app-specific details like category and platform, improving AI understanding of software pages.",
+};
+
 function statusLabel(score: number) {
   if (score >= 85) return "Excellent";
   if (score >= 70) return "Strong";
@@ -430,6 +443,13 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const prioritySchema = report.aiInsights?.schemaRecommendations?.priority ?? null;
   const priorityReasoning = report.aiInsights?.schemaRecommendations?.reasoning ?? "";
   const otherSuggestedTypes = missingSchemaTypes.filter((t) => t !== prioritySchema);
+  const priorityWhyItMatters = prioritySchema
+    ? (schemaWhyItMatters[prioritySchema] ?? `${prioritySchema} schema helps AI systems understand and classify this page with higher confidence.`)
+    : "";
+  const otherSchemaExplanations = otherSuggestedTypes.map((type) => ({
+    type,
+    why: schemaWhyItMatters[type] ?? `${type} schema adds clearer structure so AI engines can interpret this page more accurately.`,
+  }));
   const aiSummary = report.aiInsights?.summary?.trim()
     || `This page appears to be about ${report.metadata?.title?.trim() || host}. The available metadata gives partial context, but the page may need clearer positioning for AI systems to summarize it confidently.`;
   const confidenceLabel = report.score >= 80 ? "High" : report.score >= 60 ? "Medium" : "Low";
@@ -751,7 +771,13 @@ const downloadPdf = () => {
                   {priorityReasoning && (
                     <div className="schema-reasoning-inline">
                       <strong className="schema-reasoning-title">Why this matters</strong>
-                      <p>{priorityReasoning}</p>
+                      <p>{priorityReasoning || priorityWhyItMatters}</p>
+                    </div>
+                  )}
+                  {!priorityReasoning && priorityWhyItMatters && (
+                    <div className="schema-reasoning-inline">
+                      <strong className="schema-reasoning-title">Why this matters</strong>
+                      <p>{priorityWhyItMatters}</p>
                     </div>
                   )}
                   <div className="schema-implementation">
@@ -779,6 +805,13 @@ const downloadPdf = () => {
               <div className="schema-tags mt-2">
                 {otherSuggestedTypes.map((type) => (
                   <span key={type} className="schema-tag schema-tag-missing">{type}</span>
+                ))}
+              </div>
+              <div className="schema-other-reasons">
+                {otherSchemaExplanations.map((entry) => (
+                  <p key={entry.type}>
+                    <strong>{entry.type}:</strong> {entry.why}
+                  </p>
                 ))}
               </div>
               {otherSuggestedTypes.includes("FAQPage") && (
