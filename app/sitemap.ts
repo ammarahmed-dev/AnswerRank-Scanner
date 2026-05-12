@@ -9,11 +9,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: "https://aeocheck.co/privacy-policy",
+      lastModified: new Date(),
       changeFrequency: "yearly",
       priority: 0.3,
     },
     {
       url: "https://aeocheck.co/terms-of-service",
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+    {
+      url: "https://aeocheck.co/refund-policy",
+      lastModified: new Date(),
       changeFrequency: "yearly",
       priority: 0.3,
     },

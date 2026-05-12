@@ -31,6 +31,7 @@ export default function SiteFooter() {
             <div className="footer-link-list">
               <a href="/privacy-policy">Privacy Policy</a>
               <a href="/terms-of-service">Terms of Service</a>
+              <a href="/refund-policy">Refund Policy</a>
             </div>
           </div>
         </div>
