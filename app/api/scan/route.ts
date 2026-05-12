@@ -118,6 +118,194 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+type TrustValidationStatus = "pass" | "warn" | "fail";
+type TrustValidationResult = {
+  status: TrustValidationStatus;
+  detail: string;
+};
+
+type RobotsValidationResult = TrustValidationResult & {
+  body?: string;
+  finalUrl?: string;
+};
+
+function getDomainCandidates(rawUrl: string): string[] {
+  try {
+    const parsed = new URL(rawUrl);
+    const host = parsed.hostname.toLowerCase();
+    const normalizedHost = host.startsWith("www.") ? host.slice(4) : host;
+    const withWww = normalizedHost.startsWith("www.") ? normalizedHost : `www.${normalizedHost}`;
+    const primary = `https://${normalizedHost}`;
+    const secondary = `https://${withWww}`;
+    return host.startsWith("www.") ? [secondary, primary] : [primary, secondary];
+  } catch {
+    return [];
+  }
+}
+
+function extractSitemapFromRobots(robotsBody?: string): string | null {
+  if (!robotsBody) return null;
+  const lines = robotsBody.split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const match = trimmed.match(/^sitemap:\s*(.+)$/i);
+    if (!match) continue;
+    const url = match[1].trim();
+    try {
+      return new URL(url).toString();
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+async function fetchWithTimeoutAndRedirects(
+  targetUrl: string,
+  timeoutMs = 5000,
+  maxRedirects = 2
+): Promise<{ response: Response; body: string; finalUrl: string }> {
+  let currentUrl = targetUrl;
+  for (let redirectCount = 0; redirectCount <= maxRedirects; redirectCount++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(currentUrl, {
+        method: "GET",
+        redirect: "manual",
+        signal: controller.signal,
+        headers: {
+          "User-Agent": "AEOCheckScanner/1.0 (+https://aeocheck.co)",
+          Accept: "text/plain, application/xml, text/xml;q=0.9, */*;q=0.8",
+        },
+      });
+
+      if (response.status >= 300 && response.status < 400) {
+        if (redirectCount === maxRedirects) {
+          throw new Error("Redirect limit reached");
+        }
+        const location = response.headers.get("location");
+        if (!location) throw new Error("Redirect response missing location");
+        currentUrl = new URL(location, currentUrl).toString();
+        continue;
+      }
+
+      const body = await response.text();
+      return { response, body, finalUrl: currentUrl };
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+  throw new Error("Unexpected redirect handling failure");
+}
+
+async function checkRobotsTxt(baseUrl: string): Promise<RobotsValidationResult> {
+  const candidates = getDomainCandidates(baseUrl);
+  if (!candidates.length) {
+    return { status: "warn", detail: "robots.txt could not be verified" };
+  }
+
+  let sawNotFound = false;
+  for (const candidate of candidates) {
+    const robotsUrl = `${candidate}/robots.txt`;
+    try {
+      const { response, body, finalUrl } = await fetchWithTimeoutAndRedirects(robotsUrl, 5000, 2);
+      if (response.status === 404) {
+        sawNotFound = true;
+        continue;
+      }
+      if (response.status !== 200) continue;
+
+      const contentType = (response.headers.get("content-type") || "").toLowerCase();
+      if (contentType.includes("text/plain") || /user-agent\s*:/i.test(body)) {
+        return {
+          status: "pass",
+          detail: "robots.txt found and accessible",
+          body,
+          finalUrl,
+        };
+      }
+      return {
+        status: "warn",
+        detail: "robots.txt could not be verified",
+        body,
+        finalUrl,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message.toLowerCase() : "";
+      if (message.includes("timeout") || message.includes("abort")) {
+        return { status: "warn", detail: "robots.txt could not be verified" };
+      }
+      continue;
+    }
+  }
+
+  if (sawNotFound) {
+    return { status: "fail", detail: "robots.txt not found" };
+  }
+  return { status: "warn", detail: "robots.txt could not be verified" };
+}
+
+async function checkSitemapXml(baseUrl: string, robotsBody?: string): Promise<TrustValidationResult> {
+  const robotsSitemapUrl = extractSitemapFromRobots(robotsBody);
+  const candidates: string[] = [];
+  if (robotsSitemapUrl) {
+    candidates.push(robotsSitemapUrl);
+  } else {
+    for (const domain of getDomainCandidates(baseUrl)) {
+      candidates.push(`${domain}/sitemap.xml`);
+    }
+  }
+  if (!candidates.length) {
+    return { status: "warn", detail: "sitemap.xml could not be verified" };
+  }
+
+  let sawNotFound = false;
+  for (const sitemapUrl of candidates) {
+    try {
+      const { response, body } = await fetchWithTimeoutAndRedirects(sitemapUrl, 5000, 2);
+      if (response.status === 404) {
+        sawNotFound = true;
+        continue;
+      }
+      if (response.status !== 200) continue;
+
+      if (/<urlset\b/i.test(body) || /<sitemapindex\b/i.test(body)) {
+        return { status: "pass", detail: "sitemap.xml found and valid" };
+      }
+      return { status: "warn", detail: "sitemap.xml could not be verified" };
+    } catch (error) {
+      const message = error instanceof Error ? error.message.toLowerCase() : "";
+      if (message.includes("timeout") || message.includes("abort")) {
+        return { status: "warn", detail: "sitemap.xml could not be verified" };
+      }
+      continue;
+    }
+  }
+
+  if (sawNotFound) {
+    return { status: "fail", detail: "sitemap.xml not found" };
+  }
+  return { status: "warn", detail: "sitemap.xml could not be verified" };
+}
+
+function applyTrustValidationChecks(
+  checks: CheckResult[],
+  robots: TrustValidationResult,
+  sitemap: TrustValidationResult
+): CheckResult[] {
+  return checks.map((check) => {
+    if (check.id === "robots") {
+      return { ...check, status: robots.status, detail: robots.detail };
+    }
+    if (check.id === "sitemap") {
+      return { ...check, status: sitemap.status, detail: sitemap.detail };
+    }
+    return check;
+  });
+}
+
 type ProgressStatus = "started" | "complete" | "skipped" | "error";
 type ProgressEvent = {
   type: "progress";
@@ -204,7 +392,10 @@ async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
 
   const work = (async (): Promise<CompetitorScanResult> => {
     const scrapedData = await scrapeUrlWithFallback(normalizedUrl);
-    const checks = runDeterministicChecks(scrapedData);
+    const baseChecks = runDeterministicChecks(scrapedData);
+    const robotsCheck = await checkRobotsTxt(normalizedUrl);
+    const sitemapCheck = await checkSitemapXml(normalizedUrl, robotsCheck.body);
+    const checks = applyTrustValidationChecks(baseChecks, robotsCheck, sitemapCheck);
     const score = calculateScore(checks);
 
     return {
@@ -336,7 +527,10 @@ export async function POST(req: NextRequest) {
         }
         emitProgress(3, "Reading metadata and schema", "complete");
 
-        const checks = runDeterministicChecks(scrapedData);
+        const baseChecks = runDeterministicChecks(scrapedData);
+        const robotsCheck = await checkRobotsTxt(url);
+        const sitemapCheck = await checkSitemapXml(url, robotsCheck.body);
+        const checks = applyTrustValidationChecks(baseChecks, robotsCheck, sitemapCheck);
         const score = calculateScore(checks);
 
         emitProgress(4, "Running PageSpeed check", "started");
