@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle2, ChevronDown, Copy, Download, ExternalLink, L
 import { useEffect, useMemo, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import UpgradeButton from "./UpgradeButton";
+import RetestButton from "./RetestButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { canViewFullReport, isMasterAdmin } from "@/lib/access";
 import PrintLayout from "./PrintLayout";
@@ -875,6 +876,17 @@ const downloadPdf = () => {
         <button onClick={copyReport} className="btn btn-secondary">
           <Copy className="h-4 w-4" /> {copyOk ? "Copied" : "Copy report summary"}
         </button>
+        {report.reportId && (
+          <RetestButton
+            reportId={report.reportId}
+            url={report.url}
+            retestCount={report.retest_count ?? 0}
+            maxRetests={report.max_retests ?? 3}
+            isUnlocked={hasFullReportAccess}
+            isProMonthly={canViewFullReport(plan)}
+            isMasterAdmin={isAdmin}
+          />
+        )}
         {hasPdfAccess && (
           <button onClick={downloadPdf} className="btn btn-secondary">
             <Download className="h-4 w-4" /> Download PDF

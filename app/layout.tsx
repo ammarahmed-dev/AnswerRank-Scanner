@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
 
@@ -40,6 +40,10 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#7c6aff",
+};
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
@@ -58,8 +62,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               "j.async=true;",
               "j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;",
               "f.parentNode.insertBefore(j,f);",
-              "})(window,document,'script','dataLayer','GTM-NJN4LTVJ');"
-            ].join("")
+              "})(window,document,'script','dataLayer','GTM-NJN4LTVJ');",
+            ].join(""),
           }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -72,7 +76,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             src="https://www.googletagmanager.com/ns.html?id=GTM-NJN4LTVJ"
             height="0"
             width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
+            style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
         {children}

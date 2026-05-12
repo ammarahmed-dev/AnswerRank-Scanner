@@ -5,7 +5,7 @@ export default function SchemaMarkup() {
       "@type": "Organization",
       name: "AEOCheck",
       url: "https://aeocheck.co",
-      logo: "https://aeocheck.co/logo.png",
+      logo: "https://aeocheck.co/api/logo",
       description:
         "AEOCheck is a free AEO and AI search readiness scanner that checks if your website can be found and cited by AI engines like ChatGPT and Perplexity.",
     },
