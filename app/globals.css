@@ -76,8 +76,8 @@ a { color: inherit; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 @keyframes pageFade {
-  from { opacity: 0; transform: translateY(8px); filter: blur(3px); }
-  to { opacity: 1; transform: none; filter: none; }
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes shimmer {
@@ -95,7 +95,7 @@ a { color: inherit; }
 
 .page-transition {
   min-height: 100vh;
-  animation: pageFade 260ms ease-out;
+  animation: pageFade 0.3s ease forwards;
 }
 
 .launch-container,
@@ -158,6 +158,8 @@ a { color: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  min-width: 220px;
+  justify-content: flex-end;
 }
 .auth-guest-actions {
   display: inline-flex;
@@ -651,6 +653,7 @@ a { color: inherit; }
 
 .top-bar {
   width: 100%;
+  min-height: 37px;
   background: rgba(124, 106, 255, 0.15) !important;
   border-bottom: 1px solid rgba(124, 106, 255, 0.25) !important;
   padding: 8px 20px;
@@ -701,6 +704,7 @@ a { color: inherit; }
 
 .hero-input-wrap {
   min-height: 62px;
+  height: 62px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -714,6 +718,7 @@ a { color: inherit; }
 .hero-input-wrap input { width: 100%; height: 30px; min-width: 0; color: var(--color-ink); outline: none; font-weight: 750; font-size: 1.02rem; background: transparent; }
 .hero-input-wrap input::placeholder { color: #64748b; }
 .hero-scan-button { min-height: 62px; font-size: 0.98rem; }
+.hero-scan-button { height: 62px; }
 .hero-competitor-toggle {
   grid-column: 2 / 3;
   width: 100%;
@@ -4714,6 +4719,7 @@ textarea.contact-control {
   .auth-open-button { display: inline-flex; }
   .auth-account { display: inline-flex; }
   .header-action-buttons { gap: 8px; }
+  .header-action-buttons { min-width: 0; }
   .brand-subtitle { display: none; }
   .header-cta { min-height: 40px; padding-inline: 14px; }
   .launch-container, .app-container { width: min(100% - 28px, var(--launch-container)); }
@@ -4746,8 +4752,8 @@ textarea.contact-control {
   .hero-copy-block h1 { max-width: 360px; font-size: clamp(2.55rem, 11vw, 3.45rem); line-height: 1; }
   .hero-lede { max-width: 350px; font-size: 1.02rem; }
   .hero-scanner { grid-template-columns: 1fr 1fr; margin-top: 22px; gap: 8px; }
-  .hero-input-wrap { grid-column: 1 / -1; min-height: 54px; }
-  .hero-scan-button { grid-column: 1 / -1; min-height: 54px; }
+  .hero-input-wrap { grid-column: 1 / -1; min-height: 54px; height: 54px; }
+  .hero-scan-button { grid-column: 1 / -1; min-height: 54px; height: 54px; }
   .hero-secondary-cta { font-size: 0.78rem; padding-inline: 10px; }
   .hero-competitor-toggle { font-size: 0.75rem; min-height: 48px; }
   .hero-assurance { gap: 7px 10px; font-size: 0.8rem; margin-top: 12px; }

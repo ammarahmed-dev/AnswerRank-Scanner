@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import LoadingState from "./LoadingState";
 import SiteFooter from "./SiteFooter";
@@ -542,7 +542,9 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
-      <TopBar />
+      <Suspense fallback={<div className="top-bar" style={{ minHeight: 37 }} />}>
+        <TopBar />
+      </Suspense>
       <SiteHeader scanCountLabel={isClient ? scanCountLabel : undefined} />
 
       {state !== "done" && (
