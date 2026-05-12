@@ -51,3 +51,4 @@ export async function getSafeSupabaseUser(supabase: SupabaseClient | null): Prom
     throw error;
   }
 }
+

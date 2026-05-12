@@ -133,7 +133,7 @@ export default function AdminClient() {
             <div className="dashboard-hero admin-hero">
               <div>
                 <span className="launch-eyebrow"><ShieldCheck className="h-4 w-4" /> Owner admin</span>
-                <h1>Monitor AnswerRank activity.</h1>
+                <h1>Monitor AEOCheck activity.</h1>
                 <p>Review usage, customers, scans, and recent reports from one private workspace.</p>
               </div>
               <a href="/dashboard" className="btn btn-secondary">Account dashboard</a>
@@ -240,3 +240,5 @@ export default function AdminClient() {
     </main>
   );
 }
+
+

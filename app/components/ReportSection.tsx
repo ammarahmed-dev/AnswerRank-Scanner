@@ -41,7 +41,7 @@ export default function ReportSection({ report, onReset }: Props) {
 
   const handleCopy = async () => {
     const text = [
-      `AnswerRank report for ${report.url}`,
+      `AEOCheck report for ${report.url}`,
       `Overall score: ${scores.total}/100`,
       "",
       "Top fixes:",
@@ -108,7 +108,7 @@ export default function ReportSection({ report, onReset }: Props) {
           </section>
 
           <section className="surface report-card">
-            <SectionHeader icon={<FileText className="h-4 w-4" />} title="Extracted metadata" text="The page signals AnswerRank found during the scan." />
+            <SectionHeader icon={<FileText className="h-4 w-4" />} title="Extracted metadata" text="The page signals AEOCheck found during the scan." />
             <div className="metadata-grid">
               {metadataRows.map(([label, value]) => (
                 <div key={label} className="metadata-item">
@@ -262,3 +262,5 @@ function ContextRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+

@@ -74,3 +74,4 @@ export async function getPageSpeedScore(url: string): Promise<PageSpeedResult> {
 
   return { score: null, error: lastError ?? "Google PageSpeed request failed." };
 }
+

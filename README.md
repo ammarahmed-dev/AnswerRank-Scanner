@@ -1,6 +1,6 @@
-# AnswerRank Scanner
+# AEOCheck
 
-AnswerRank Scanner is a one-page SaaS MVP that scans a public website URL and generates an AI Visibility Readiness Report. It is designed for demos: no auth, no database, and no Stripe integration yet.
+AEOCheck is a one-page SaaS MVP that scans a public website URL and generates an AI Visibility Readiness Report. It is designed for demos: no auth, no database, and no Stripe integration yet.
 
 ## What It Does
 
@@ -107,3 +107,5 @@ types/
 - Localhost and private-network URLs are blocked by validation.
 - Some sites may block server-side fetches; the API returns a clear blocked-site message in that case.
 - Stripe is not implemented yet by design.
+
+

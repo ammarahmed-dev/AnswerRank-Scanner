@@ -9,3 +9,4 @@ export function isMasterAdmin(email?: string | null) {
   if (!email) return false;
   return getAdminEmails().includes(email.trim().toLowerCase());
 }
+

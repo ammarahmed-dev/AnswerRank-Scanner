@@ -1,6 +1,6 @@
 /**
  * Deterministic Scoring Engine
- * Implements all SEO/AEO checks for AnswerRank Scanner
+ * Implements all SEO/AEO checks for AEOCheck
  */
 
 import { ScrapedData, CheckResult } from "@/types/index";
@@ -128,14 +128,14 @@ const CHECKS_CONFIG: CheckConfig[] = [
     check: (data: ScrapedData) => {
       if (data.schemaTypes.includes("FAQPage")) return "pass";
       if (hasFaqContent(data)) return "warn";
-      return "pass"; // no FAQ content — check not applicable
+      return "pass"; // no FAQ content â€” check not applicable
     },
     detail: (data: ScrapedData) => {
       if (data.schemaTypes.includes("FAQPage"))
         return "FAQPage schema present (excellent for AI)";
       if (hasFaqContent(data))
-        return "Page has Q&A content but no FAQPage schema — high-impact addition";
-      return "No FAQ content detected — FAQPage schema not required";
+        return "Page has Q&A content but no FAQPage schema â€” high-impact addition";
+      return "No FAQ content detected â€” FAQPage schema not required";
     },
   },
   {
@@ -150,7 +150,7 @@ const CHECKS_CONFIG: CheckConfig[] = [
         data.schemaTypes.includes("BlogPosting");
       if (hasArticleSchema) return "pass";
       if (hasArticleContent(data)) return "warn";
-      return "pass"; // no article structure — check not applicable
+      return "pass"; // no article structure â€” check not applicable
     },
     detail: (data: ScrapedData) => {
       const articleTypes = data.schemaTypes.filter((t) =>
@@ -160,7 +160,7 @@ const CHECKS_CONFIG: CheckConfig[] = [
         return `${articleTypes.join(", ")} schema present`;
       if (hasArticleContent(data))
         return "Page has article/blog structure but no Article-type schema";
-      return "No article/blog structure detected — Article schema not required";
+      return "No article/blog structure detected â€” Article schema not required";
     },
   },
   {
@@ -300,8 +300,8 @@ const CHECKS_CONFIG: CheckConfig[] = [
       if (hasArticleContent(data) && !data.schemaTypes.some((t) => ["Article", "HowTo", "NewsArticle", "BlogPosting"].includes(t))) suggestions.push("Article");
       if (data.headings.filter((h) => h.startsWith("H2:")).length > 4 && !data.schemaTypes.includes("BreadcrumbList")) suggestions.push("BreadcrumbList");
       const list = suggestions.length > 0 ? suggestions.join(", ") : "additional content-specific types";
-      if (data.schemaBlocks === 1) return `Single schema block — layer more types: ${list}`;
-      return `No schema markup — add: ${list}`;
+      if (data.schemaBlocks === 1) return `Single schema block â€” layer more types: ${list}`;
+      return `No schema markup â€” add: ${list}`;
     },
   },
 ];
@@ -339,3 +339,5 @@ export function calculateScore(checks: CheckResult[]): number {
   const score = Math.round((passedWeight / totalWeight) * 100);
   return Math.min(100, Math.max(0, score));
 }
+
+

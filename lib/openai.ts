@@ -140,3 +140,4 @@ function parseProviderResponse(raw: string, provider: "openai" | "gemini"): { an
   const parsed = JSON.parse(cleaned) as Partial<AIAnalysis>;
   return { analysis: normalizeAnalysis(parsed), provider };
 }
+

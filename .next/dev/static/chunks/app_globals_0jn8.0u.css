@@ -1719,9 +1719,9 @@ a {
   color: var(--color-ink);
   letter-spacing: 0;
   margin-top: 24px;
-  font-size: clamp(3.2rem, 6vw, 5.7rem);
+  font-size: 64px;
   font-weight: 900;
-  line-height: 1.08;
+  line-height: 1.1;
 }
 
 .hero-lede {
@@ -1766,6 +1766,7 @@ a {
 .hero-input-wrap input {
   width: 100%;
   min-width: 0;
+  height: 30px;
   color: var(--color-ink);
   background: none;
   outline: none;
@@ -1935,6 +1936,15 @@ a {
   font-size: .78rem;
   font-weight: 800;
   display: flex;
+}
+
+.visual-bar-label > span:first-child {
+  min-width: 0;
+}
+
+.visual-bar-score {
+  flex-shrink: 0;
+  margin-left: 12px;
 }
 
 .visual-bar, .score-bar {
@@ -2425,8 +2435,44 @@ a {
 .faq-rows summary {
   cursor: pointer;
   color: var(--color-ink);
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   font-size: 1.05rem;
   font-weight: 850;
+  list-style: none;
+  display: flex;
+}
+
+.faq-rows summary::marker {
+  display: none;
+}
+
+.faq-rows summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-rows summary:after {
+  content: "";
+  transform-origin: 50%;
+  opacity: .9;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  transition: transform .2s;
+  transform: rotate(-45deg);
+}
+
+.faq-rows details[open] summary:after {
+  transform: rotate(45deg);
+}
+
+.faq-rows summary h3 {
+  min-width: 0;
+  font: inherit;
+  margin: 0;
 }
 
 .faq-rows p {
@@ -2438,7 +2484,7 @@ a {
 .site-footer {
   border-top: 1px solid var(--color-line);
   background: #02061799;
-  padding: 46px 0;
+  padding: 48px 0;
 }
 
 .footer-grid {
@@ -2452,10 +2498,27 @@ a {
   margin-top: 14px;
 }
 
-.footer-grid > div:last-child {
-  align-items: center;
-  gap: 24px;
+.footer-links-wrap {
+  align-items: flex-start;
+  gap: 32px;
   display: flex;
+}
+
+.footer-link-group {
+  min-width: 160px;
+}
+
+.footer-group-label {
+  color: var(--color-ink-muted);
+  letter-spacing: .1em;
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.footer-link-list {
+  gap: 12px;
+  display: grid;
 }
 
 .error-banner {
@@ -2735,7 +2798,7 @@ a {
 }
 
 .error-suggestions-list li:before {
-  content: "→";
+  content: "â†’";
   color: var(--color-primary);
   font-weight: 700;
   position: absolute;
@@ -6257,7 +6320,7 @@ a {
     padding: 22px;
   }
 
-  .footer-grid, .footer-grid > div:last-child, .report-header-row {
+  .footer-grid, .footer-links-wrap, .report-header-row {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -6275,9 +6338,13 @@ a {
     max-width: 300px;
   }
 
-  .footer-grid > div:last-child {
+  .footer-links-wrap {
     align-items: center;
     gap: 16px;
+  }
+
+  .footer-link-group {
+    min-width: 0;
   }
 
   .error-banner {
@@ -7028,7 +7095,7 @@ a {
   }
 
   .print-cover:before {
-    content: "AnswerRank Scanner  ·  AI Visibility Readiness Report";
+    content: "AEOCheck | AI Visibility Readiness Report";
     letter-spacing: .1em;
     text-transform: uppercase;
     color: #06b6d4;
@@ -7875,10 +7942,62 @@ a {
   margin: 1.2cm 1.4cm 1.8cm;
 
   @bottom-center {
-    content: "AnswerRank Scanner  ·  answerrank.com  ·  AI Visibility Report";
+    content: "AEOCheck | aeocheck.co | AI Visibility Report";
     font-size: .65rem;
     color: #9ca3af;
     font-family: system-ui, sans-serif;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-copy-block h1 {
+    font-size: 44px;
+    line-height: 1.1;
+  }
+
+  .hero-trust-pills {
+    white-space: normal;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+  }
+
+  .hero-trust-pills > span {
+    white-space: normal;
+  }
+
+  .visual-bars, .visual-fixes {
+    padding-inline: 16px;
+  }
+
+  .visual-bar-label {
+    justify-content: space-between;
+    gap: 10px;
+    display: flex;
+    overflow: visible;
+  }
+
+  .visual-bar-label .visual-bar-score {
+    flex-shrink: 0;
+  }
+
+  .footer-grid {
+    text-align: left;
+    align-items: flex-start;
+  }
+
+  .footer-grid .brand-lockup {
+    justify-content: flex-start;
+  }
+
+  .footer-links-wrap {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    width: 100%;
+    display: grid;
+  }
+
+  .footer-link-group {
+    min-width: 0;
   }
 }
 

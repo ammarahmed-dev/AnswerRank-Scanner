@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -137,7 +137,7 @@ const scanCountLabel = account && masterAdmin
             <div className="dashboard-hero">
               <div>
                 <span className="launch-eyebrow"><LayoutDashboard className="h-4 w-4" /> Account dashboard</span>
-                <h1>Manage your AnswerRank workspace.</h1>
+                <h1>Manage your AEOCheck workspace.</h1>
                 <p>Track scan usage, review saved reports, and manage your plan from one place.</p>
               </div>
               <a href="/#scanner" className="btn btn-primary">Scan a URL</a>
@@ -277,6 +277,8 @@ const scanCountLabel = account && masterAdmin
     </main>
   );
 }
+
+
 
 
 

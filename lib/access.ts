@@ -34,3 +34,4 @@ export function canViewFullReport(profile: AccessProfile | UserPlan) {
 export function canDownloadPdf(profile: AccessProfile | UserPlan) {
   return isProUser(profile);
 }
+

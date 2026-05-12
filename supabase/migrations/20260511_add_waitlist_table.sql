@@ -20,3 +20,4 @@ create policy "waitlist_insert_anon_auth"
   for insert
   to anon, authenticated
   with check (true);
+

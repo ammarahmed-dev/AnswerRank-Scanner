@@ -98,3 +98,4 @@ export interface ScanResult {
   metadata?: ScanMetadata;
   scannedAt: string;
 }
+

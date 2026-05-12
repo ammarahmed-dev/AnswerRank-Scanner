@@ -1,6 +1,6 @@
 /**
  * AI Provider Module
- * Handles Gemini → OpenAI fallback chain
+ * Handles Gemini â†’ OpenAI fallback chain
  */
 
 export async function generateAIInsights(prompt: string): Promise<string | null> {
@@ -130,7 +130,7 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string | 
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
       "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:3000",
-      "X-Title": process.env.OPENROUTER_APP_NAME || "AnswerRank Scanner",
+      "X-Title": process.env.OPENROUTER_APP_NAME || "AEOCheck",
     },
     body: JSON.stringify({
       model,
@@ -240,3 +240,5 @@ async function callOpenAI(prompt: string, apiKey: string): Promise<string | null
 
   return text;
 }
+
+

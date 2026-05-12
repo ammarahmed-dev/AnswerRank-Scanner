@@ -2,6 +2,7 @@
 
 import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import Script from "next/script";
 import LoadingState from "./components/LoadingState";
 import SiteFooter from "./components/SiteFooter";
 import SiteHeader from "./components/SiteHeader";
@@ -45,8 +46,8 @@ type LoaderProgress = {
   status: ProgressStatus;
 };
 
-const CLIENT_STORAGE_KEY = "answerrank_client_id_v1";
-const GUEST_SCAN_STORAGE_KEY = "answerrank_guest_scans_month";
+const CLIENT_STORAGE_KEY = "aeocheck_client_id_v1";
+const GUEST_SCAN_STORAGE_KEY = "aeocheck_guest_scans_month";
 const STEP_ANIMATION_MS = 140;
 
 const trustStats = [
@@ -79,6 +80,65 @@ const faqs = [
   ["What payment methods do you accept?", "All major credit and debit cards via Stripe. Full Report is one-time, and Pro Monthly is a subscription."],
   ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; Pro accounts keep full report history."],
 ];
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "AEOCheck",
+  url: "https://aeocheck.co",
+  logo: "https://aeocheck.co/logo.png",
+  description:
+    "AEOCheck is a free AEO and AI search readiness scanner that checks if your website can be found and cited by AI search engines like ChatGPT and Perplexity.",
+  sameAs: [] as string[],
+};
+
+const softwareApplicationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "AEOCheck",
+  applicationCategory: "WebApplication",
+  operatingSystem: "Web",
+  url: "https://aeocheck.co",
+  description:
+    "Free AEO readiness scanner that audits your website for AI search visibility across ChatGPT, Perplexity, and Google AI Overviews.",
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Free Preview",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    {
+      "@type": "Offer",
+      name: "Full Report",
+      price: "14",
+      priceCurrency: "USD",
+    },
+    {
+      "@type": "Offer",
+      name: "Pro Monthly",
+      price: "39",
+      priceCurrency: "USD",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        billingDuration: "P1M",
+      },
+    },
+  ],
+};
+
+const faqPageJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map(([question, answer]) => ({
+    "@type": "Question",
+    name: question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: answer,
+    },
+  })),
+};
 
 export default function Home() {
   const router = useRouter();
@@ -276,9 +336,9 @@ export default function Home() {
         pendingResultRef.current = null;
         if (!result) return;
         if (result.reportId) {
-          sessionStorage.setItem(`answerrank_report:${result.reportId}`, JSON.stringify(result));
+          sessionStorage.setItem(`aeocheck_report:${result.reportId}`, JSON.stringify(result));
         }
-        sessionStorage.setItem(`answerrank_report:${result.url}`, JSON.stringify(result));
+        sessionStorage.setItem(`aeocheck_report:${result.url}`, JSON.stringify(result));
         if (currentScanWasGuestRef.current && typeof window !== "undefined") {
           const now = new Date();
           const month = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
@@ -407,6 +467,37 @@ export default function Home() {
     setShowScanFirstModal(true);
   };
 
+  const handleProMonthlyPricingCta = async () => {
+    const supabase = getSupabaseBrowserClient();
+    const token = (await getSafeSupabaseSession(supabase))?.access_token;
+
+    if (!token) {
+      window.location.href = "/signup?redirect=pricing&plan=pro";
+      return;
+    }
+
+    try {
+      const returnTo = `${window.location.pathname}${window.location.search}`;
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          checkoutType: "pro_plan",
+          returnTo,
+        }),
+      });
+
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !data.url) throw new Error(data.error ?? "Checkout failed.");
+      window.location.href = data.url;
+    } catch (error) {
+      console.error("Pro checkout start failed:", error);
+    }
+  };
+
   const closeWaitlistModal = () => {
     setShowWaitlistModal(false);
     setWaitlistState("idle");
@@ -428,7 +519,7 @@ export default function Home() {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
       setWaitlistState("error");
-      setWaitlistError("Waitlist service is not configured. You can email hello@answerrank.com to join.");
+      setWaitlistError("Waitlist service is not configured. You can email hello@aeocheck.co to join.");
       return;
     }
 
@@ -476,7 +567,7 @@ export default function Home() {
       const devDetail = process.env.NODE_ENV !== "production"
         ? ` (Supabase: ${errorRecord.code ?? "unknown"} - ${errorRecord.message || "no message"}${errorRecord.details ? ` | ${errorRecord.details}` : ""})`
         : "";
-      setWaitlistError(`Could not join the waitlist right now. Please try again, or email hello@answerrank.com.${devDetail}`);
+      setWaitlistError(`Could not join the waitlist right now. Please try again, or email hello@aeocheck.co.${devDetail}`);
       return;
     }
 
@@ -485,9 +576,9 @@ export default function Home() {
   };
 
   const scanCountLabel = account && isMasterAdmin({ plan: account.plan, isAdmin: account.isAdmin })
-    ? "Master Admin · Unlimited Access"
+    ? "Master Admin - Unlimited Access"
     : account && (account.unlimited || isProUser({ plan: account.plan, isAdmin: account.isAdmin }))
-      ? "Pro · Unlimited Access"
+      ? "Pro - Unlimited Access"
       : account && typeof account.remaining === "number"
         ? `${account.remaining} free scans left this month`
         : account?.plan === "guest" && isClient
@@ -496,6 +587,24 @@ export default function Home() {
 
   return (
     <main className="min-h-screen">
+      <Script
+        id="ld-json-organization"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <Script
+        id="ld-json-software-application"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationJsonLd) }}
+      />
+      <Script
+        id="ld-json-faq-page"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageJsonLd) }}
+      />
       <SiteHeader scanCountLabel={isClient ? scanCountLabel : undefined} />
 
       {state !== "done" && (
@@ -504,10 +613,16 @@ export default function Home() {
             <div className="hero-media" aria-hidden="true" />
             <div className="launch-container hero-content">
               <div className="hero-copy-block">
-                <p className="launch-eyebrow mb-4 ml-px"><ShieldCheck className="h-4 w-4" /> Free · No signup required</p>
-                <h1>See how ready your website is for AI search.</h1>
+                <p className="launch-eyebrow hero-trust-pills mb-4 ml-px">
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Free</span>
+                  <span>No signup</span>
+                  <span>60-second scan</span>
+                  <span>Works on any public URL</span>
+                </p>
+                <h1>Free AEO &amp; AI Search Readiness Scanner</h1>
                 <p className="hero-lede">
-                  Paste any URL and get a scored AI visibility report in under 60 seconds, with every fix ranked by impact.
+                  Paste any URL and get a free AEO readiness score in 60 seconds &mdash; with every fix ranked by impact.
                 </p>
                 <form onSubmit={handleScan} className="hero-scanner" aria-label="Scan a website">
                   <div className="hero-input-wrap">
@@ -543,10 +658,10 @@ export default function Home() {
                   )}
                 </form>
                 <div className="hero-assurance">
+                  <span><CheckCircle2 className="h-4 w-4" /> Free</span>
                   <span><CheckCircle2 className="h-4 w-4" /> No signup</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> No setup</span>
                   <span><CheckCircle2 className="h-4 w-4" /> 60-second scan</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> Always free for public pages</span>
+                  <span><CheckCircle2 className="h-4 w-4" /> Works on any public URL</span>
                 </div>
               </div>
 
@@ -567,7 +682,10 @@ export default function Home() {
                 <div className="visual-bars">
                   {["Metadata", "Schema", "Answer readiness", "Performance"].map((label, index) => (
                     <div key={label}>
-                      <div className="visual-bar-label"><span>{label}</span><span>{[15, 17, 10, 11][index]}/20</span></div>
+                      <div className="visual-bar-label">
+                        <span>{label}</span>
+                        <span className="visual-bar-score">{[15, 17, 10, 11][index]}/20</span>
+                      </div>
                       <div className="visual-bar"><span style={{ width: `${[92, 78, 58, 66][index]}%` }} /></div>
                     </div>
                   ))}
@@ -625,8 +743,9 @@ export default function Home() {
                 <p className="launch-eyebrow">Why it matters</p>
                 <h2>Search is becoming answer-first. Your site needs machine-readable proof.</h2>
                 <p>
-                  Buyers increasingly discover brands through AI summaries and answer engines like ChatGPT and Perplexity. AnswerRank shows you whether your page gives those systems enough signal to understand, summarize, and cite your business.
+                  Buyers increasingly discover brands through AI summaries and answer engines like ChatGPT and Perplexity. AEOCheck shows you whether your page gives those systems enough signal to understand, summarize, and cite your business.
                 </p>
+                <p>Learn how we score your AEO readiness in our <a href="#report">sample report ↓</a></p>
                 <div className="story-checks">
                   <span><CheckCircle2 className="h-4 w-4" /> Brand and entity clarity</span>
                   <span><CheckCircle2 className="h-4 w-4" /> Structured data coverage</span>
@@ -685,7 +804,7 @@ export default function Home() {
               <div className="pricing-cards">
                 <article className="pricing-panel">
                   <span className="price">$0</span>
-                  <strong>Free Preview</strong>
+                  <h3>Free Preview</h3>
                   <p className="pricing-subline">For testing your AI visibility score.</p>
                   <ul>
                     <li><CheckCircle2 className="h-4 w-4" /> 1 guest preview scan</li>
@@ -701,7 +820,7 @@ export default function Home() {
                 <article className="pricing-panel pricing-panel-featured">
                   <span className="pricing-badge">Most popular</span>
                   <span className="price">$14 <small>one-time</small></span>
-                  <strong>Full Report</strong>
+                  <h3>Full Report</h3>
                   <p className="pricing-subline">Best for one website audit.</p>
                   <ul>
                     <li><CheckCircle2 className="h-4 w-4" /> 1 full report</li>
@@ -716,9 +835,8 @@ export default function Home() {
                 </article>
 
                 <article className="pricing-panel pricing-panel-soon">
-                  <span className="pricing-badge pricing-badge-soon">Coming soon</span>
                   <span className="price">$39 <small>/month</small></span>
-                  <strong>Pro Monthly</strong>
+                  <h3>Pro Monthly</h3>
                   <ul>
                     <li><CheckCircle2 className="h-4 w-4" /> 30 full reports per month</li>
                     <li><CheckCircle2 className="h-4 w-4" /> Saved report history</li>
@@ -726,7 +844,7 @@ export default function Home() {
                     <li><CheckCircle2 className="h-4 w-4" /> Competitor comparisons</li>
                     <li><CheckCircle2 className="h-4 w-4" /> Priority scan access</li>
                   </ul>
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowWaitlistModal(true)}>Join Pro waitlist</button>
+                  <button type="button" className="btn btn-primary" onClick={handleProMonthlyPricingCta}>Start Pro Monthly</button>
                 </article>
               </div>
             </div>
@@ -741,8 +859,15 @@ export default function Home() {
               <div className="faq-rows">
                 {faqs.map(([question, answer]) => (
                   <details key={question}>
-                    <summary>{question}</summary>
-                    <p>{answer}</p>
+                    <summary><h3>{question}</h3></summary>
+                    <p>
+                      {answer}
+                      {question === "Is this the same as a traditional SEO audit?" && (
+                        <>
+                          {" "}You can <a href="#scanner">run a free scan here</a> to see the difference.
+                        </>
+                      )}
+                    </p>
                   </details>
                 ))}
               </div>
@@ -860,7 +985,7 @@ export default function Home() {
                 {waitlistState === "error" && (
                   <p className="waitlist-modal-error">
                     {waitlistError}{" "}
-                    <a href={`mailto:hello@answerrank.com?subject=Pro%20Monthly%20Waitlist&body=Please%20add%20${encodeURIComponent(waitlistEmail || "my email")}%20to%20the%20Pro%20Monthly%20waitlist.`}>Email us instead</a>.
+                    <a href={`mailto:hello@aeocheck.co?subject=Pro%20Monthly%20Waitlist&body=Please%20add%20${encodeURIComponent(waitlistEmail || "my email")}%20to%20the%20Pro%20Monthly%20waitlist.`}>Email us instead</a>.
                   </p>
                 )}
                 <button type="submit" className="btn btn-primary" disabled={waitlistState === "loading"}>
@@ -915,3 +1040,13 @@ export default function Home() {
     </main>
   );
 }
+
+
+
+
+
+
+
+
+
+

@@ -60,3 +60,4 @@ export interface AnalysisError {
   error: string;
   details?: string;
 }
+

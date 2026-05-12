@@ -79,3 +79,4 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
   const rows = (await profileRes.json()) as Array<{ plan?: string }>;
   return { user, plan: normalizePlan(rows[0]?.plan) };
 }
+

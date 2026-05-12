@@ -257,7 +257,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         type: "limit_reached",
-        error: "You’ve used your 3 free scans this month.",
+        error: "Youâ€™ve used your 3 free scans this month.",
         limit: usage.limit,
         remaining: usage.remaining,
       },
@@ -352,11 +352,11 @@ export async function POST(req: NextRequest) {
               console.warn("PageSpeed unavailable:", psResult.error);
             }
             const isConfigIssue = (psResult.error ?? "").toLowerCase().includes("no google pagespeed api key configured");
-            emitProgress(4, "PageSpeed unavailable — continuing", isConfigIssue ? "skipped" : "error");
+            emitProgress(4, "PageSpeed unavailable â€” continuing", isConfigIssue ? "skipped" : "error");
           }
         } catch (err: unknown) {
           console.error("PageSpeed fetch failed:", err instanceof Error ? err.message : "Unknown error");
-          emitProgress(4, "PageSpeed unavailable — continuing", "error");
+          emitProgress(4, "PageSpeed unavailable â€” continuing", "error");
         }
 
         const includeAIThisRequest = wantAI && checkAIRateLimit(url);
@@ -430,3 +430,4 @@ export async function POST(req: NextRequest) {
     },
   });
 }
+
