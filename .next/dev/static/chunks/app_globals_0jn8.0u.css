@@ -1027,14 +1027,12 @@ a {
 @keyframes pageFade {
   from {
     opacity: 0;
-    filter: blur(3px);
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
 
   to {
     opacity: 1;
-    filter: none;
-    transform: none;
+    transform: translateY(0);
   }
 }
 
@@ -1070,7 +1068,7 @@ a {
 
 .page-transition {
   min-height: 100vh;
-  animation: .26s ease-out pageFade;
+  animation: .3s forwards pageFade;
 }
 
 .launch-container, .app-container {
@@ -1145,8 +1143,10 @@ a {
 }
 
 .header-action-buttons {
+  justify-content: flex-end;
   align-items: center;
   gap: 10px;
+  min-width: 220px;
   display: inline-flex;
 }
 
@@ -1748,6 +1748,7 @@ a {
   align-items: center;
   gap: 8px;
   width: 100%;
+  min-height: 37px;
   padding: 8px 20px;
   font-size: 13px;
   position: relative;
@@ -1797,6 +1798,7 @@ a {
   border-radius: 16px;
   align-items: center;
   gap: 12px;
+  height: 62px;
   min-height: 62px;
   padding: 0 16px;
   display: flex;
@@ -1823,6 +1825,7 @@ a {
 }
 
 .hero-scan-button {
+  height: 62px;
   min-height: 62px;
   font-size: .98rem;
 }
@@ -6483,10 +6486,20 @@ textarea.contact-control {
 }
 
 .dashboard-retest-btn {
-  min-height: 38px;
-  padding-inline: 14px;
-  font-size: .8rem;
-  font-weight: 800;
+  color: #ffffff80;
+  cursor: pointer;
+  background: none;
+  border: 1px solid #ffffff1a;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  transition: all .2s;
+}
+
+.dashboard-retest-btn:hover {
+  color: #a78bfa;
+  border-color: #7c6aff4d;
 }
 
 .retest-wrapper {
@@ -6505,9 +6518,11 @@ textarea.contact-control {
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
+  font-family: inherit;
   font-size: 14px;
+  font-weight: 500;
   transition: all .2s;
-  display: flex;
+  display: inline-flex;
 }
 
 .retest-btn:hover:not(:disabled) {
@@ -6528,7 +6543,7 @@ textarea.contact-control {
 }
 
 .retest-count {
-  color: #fff6;
+  color: #ffffff59;
   font-family: monospace;
   font-size: 12px;
 }
@@ -6602,6 +6617,7 @@ textarea.contact-control {
 
   .header-action-buttons {
     gap: 8px;
+    min-width: 0;
   }
 
   .brand-subtitle {
@@ -6684,6 +6700,7 @@ textarea.contact-control {
 
   .hero-input-wrap, .hero-scan-button {
     grid-column: 1 / -1;
+    height: 54px;
     min-height: 54px;
   }
 

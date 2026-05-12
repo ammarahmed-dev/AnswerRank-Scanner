@@ -5,7 +5,6 @@ import "./globals.css";
 const HOME_TITLE = "AEOCheck - Free AEO & AI Search Readiness Scanner";
 const HOME_DESCRIPTION =
   "Free AEO scanner. Check if ChatGPT, Perplexity & Google AI can find your site. Get a scored readiness report in 60 seconds. No signup needed.";
-
 export const metadata: Metadata = {
   metadataBase: new URL("https://aeocheck.co"),
   title: HOME_TITLE,
@@ -41,6 +40,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
   themeColor: "#7c6aff",
 };
 
@@ -66,9 +68,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             ].join(""),
           }}
         />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://js.stripe.com" />
-        <link rel="preconnect" href="https://api.openai.com" />
       </head>
       <body className="antialiased" suppressHydrationWarning>
         <noscript>
