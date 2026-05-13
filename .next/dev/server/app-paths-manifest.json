@@ -1,9 +1,17 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/page": "app/admin/page.js",
   "/api/account/route": "app/api/account/route.js",
+  "/api/admin/summary/route": "app/api/admin/summary/route.js",
+  "/api/admin/users/route": "app/api/admin/users/route.js",
   "/api/reports/[id]/retest/route": "app/api/reports/[id]/retest/route.js",
   "/api/reports/[id]/route": "app/api/reports/[id]/route.js",
   "/api/scan/route": "app/api/scan/route.js",
+  "/api/stats/increment/route": "app/api/stats/increment/route.js",
+  "/api/stats/route": "app/api/stats/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
   "/icon/route": "app/icon/route.js",
   "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
+  "/page": "app/page.js",
   "/report/page": "app/report/page.js"
 }
