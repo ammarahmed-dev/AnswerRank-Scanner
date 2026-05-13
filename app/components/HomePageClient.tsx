@@ -9,6 +9,7 @@ import TopBar from "./TopBar";
 import UpgradeButton from "./UpgradeButton";
 import ContactForm from "./ContactForm";
 import AiSnapshotSection from "./AiSnapshotSection";
+import WhoUsesSection from "./WhoUsesSection";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 import { useRouter } from "next/navigation";
@@ -566,12 +567,12 @@ export default function Home({ heroContent }: HomePageClientProps) {
                       type="text"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
-                      placeholder="https://webflow.com"
+                      placeholder="https://yourwebsite.com"
                       disabled={state === "loading"}
                     />
                   </div>
                   <button type="submit" disabled={state === "loading" || !url.trim()} className="btn btn-primary hero-scan-button">
-                    {state === "loading" ? "Scanning" : "Scan My Website"}
+                    {state === "loading" ? "Scanning" : "Run Free Scan"}
                     <ArrowRight className="h-4 w-4" />
                   </button>
                   <a href="/report?id=bdb3a316-6889-4fa5-9045-cf317938597e" className="btn btn-secondary hero-secondary-cta">View Sample Report</a>
@@ -706,6 +707,8 @@ export default function Home({ heroContent }: HomePageClientProps) {
               </div>
             </div>
           </section>
+
+          <WhoUsesSection />
 
           <AiSnapshotSection />
 
