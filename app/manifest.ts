@@ -2,25 +2,28 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "AEOCheck",
+    name: "AEOCheck — AI Search Readiness Scanner",
     short_name: "AEOCheck",
-    description: "Free AEO & AI Search Readiness Scanner",
+    description: "Scan any URL in 60 seconds. Get your AI search readiness score for ChatGPT, Perplexity, and Google AI.",
     start_url: "/",
     display: "standalone",
+    orientation: "portrait",
     background_color: "#0a0a0f",
-    theme_color: "#7c6aff",
+    theme_color: "#0a0a0f",
+    categories: ["productivity", "utilities", "business"],
     icons: [
       {
-        src: "/icon.png",
-        sizes: "32x32",
+        src: "/icons/icon-192.png",
+        sizes: "192x192",
         type: "image/png",
+        purpose: "maskable",
       },
       {
-        src: "/apple-icon.png",
-        sizes: "180x180",
+        src: "/icons/icon-512.png",
+        sizes: "512x512",
         type: "image/png",
+        purpose: "any",
       },
     ],
   };
 }
-

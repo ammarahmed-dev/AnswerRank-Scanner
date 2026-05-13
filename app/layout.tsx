@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://aeocheck.co",
   },
+  icons: {
+    icon: "/icons/icon-512.png",
+    apple: "/icons/icon-192.png",
+  },
   openGraph: {
     title: HOME_TITLE,
     description: HOME_DESCRIPTION,
