@@ -90,6 +90,10 @@ a { color: inherit; }
   50% { transform: scale(1.16); opacity: 0.25; }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
 .animate-fade-in { animation: fadeIn 0.35s ease-out forwards; }
 
@@ -4713,6 +4717,11 @@ textarea.contact-control {
   min-height: 38px;
   padding: 8px 14px;
   font-size: 0.8rem;
+}
+
+.retest-spinner {
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
 }
 
 .retest-count {
