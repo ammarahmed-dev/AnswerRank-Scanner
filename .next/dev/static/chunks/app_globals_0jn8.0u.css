@@ -1058,6 +1058,12 @@ a {
   }
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .animate-fade-in-up {
   animation: .5s ease-out forwards fadeInUp;
 }
@@ -6593,6 +6599,31 @@ textarea.contact-control {
   font-size: .8rem;
 }
 
+.retest-spinner {
+  flex-shrink: 0;
+  animation: 1s linear infinite spin;
+}
+
+.retest-progress {
+  color: #fff6;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  font-family: monospace;
+  font-size: 12px;
+  display: flex;
+}
+
+.retest-progress-dot {
+  background: #7c6aff;
+  border-radius: 50%;
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  animation: 1.5s ease-in-out infinite scanPulse;
+}
+
 .retest-count {
   color: #ffffff59;
   font-family: monospace;
@@ -8682,12 +8713,6 @@ textarea.contact-control {
 @property --tw-numeric-fraction {
   syntax: "*";
   inherits: false
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /*# sourceMappingURL=app_globals_0jn8.0u.css.map*/

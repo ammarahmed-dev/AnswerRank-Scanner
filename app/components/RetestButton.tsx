@@ -1,9 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { RotateCcw } from "lucide-react";
+import LoadingState from "./LoadingState";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
+
+type ProgressStatus = "started" | "complete" | "skipped" | "error";
+type LoaderProgress = {
+  step: number;
+  label: string;
+  status: ProgressStatus;
+};
 
 type Props = {
   reportId: string;
@@ -29,9 +37,15 @@ export default function RetestButton({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [loaderProgress, setLoaderProgress] = useState<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
+  const [isClient, setIsClient] = useState(false);
 
   const remaining = Math.max(0, maxRetests - retestCount);
   const canRetest = isMasterAdmin || isProMonthly || (isUnlocked && remaining > 0);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   if (!isUnlocked && !isProMonthly && !isMasterAdmin) {
     return null;
@@ -40,14 +54,18 @@ export default function RetestButton({
   const handleRetest = async () => {
     setLoading(true);
     setError("");
+    setLoaderProgress({ step: 1, label: "Preparing scan", status: "started" });
+
     try {
       const supabase = getSupabaseBrowserClient();
       const token = (await getSafeSupabaseSession(supabase))?.access_token;
+
       const checkRes = await fetch(`/api/reports/${reportId}/retest`, {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       const checkData = (await checkRes.json()) as { error?: string; message?: string };
+
       if (!checkRes.ok) {
         setError(checkData.message || checkData.error || "Retest is unavailable.");
         setLoading(false);
@@ -78,7 +96,7 @@ export default function RetestButton({
       let buffer = "";
       let newReportId: string | null = null;
 
-      outer: while (true) {
+      while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
@@ -102,6 +120,9 @@ export default function RetestButton({
             const payload = JSON.parse(payloadRaw) as {
               type?: string;
               message?: string;
+              label?: string;
+              step?: number;
+              status?: ProgressStatus;
               result?: { reportId?: string; id?: string };
               reportId?: string;
               id?: string;
@@ -109,10 +130,13 @@ export default function RetestButton({
               data?: { id?: string };
             };
 
-            if (payload.type === "error") {
-              setError(payload.message || "Scan failed. Please try again.");
-              setLoading(false);
-              return;
+            if (payload.type === "progress") {
+              const nextLabel = payload.message || payload.label || "Running fresh scan...";
+              setLoaderProgress({
+                step: typeof payload.step === "number" ? payload.step : 1,
+                label: nextLabel,
+                status: payload.status || "started",
+              });
             }
 
             if (payload.type === "result") {
@@ -125,12 +149,20 @@ export default function RetestButton({
                 payload.data?.id ||
                 null;
 
-              if (newReportId) break outer;
+              if (newReportId) break;
+            }
+
+            if (payload.type === "error") {
+              setError(payload.message || "Scan failed. Please try again.");
+              setLoading(false);
+              return;
             }
           } catch {
             continue;
           }
         }
+
+        if (newReportId) break;
       }
 
       if (newReportId) {
@@ -139,7 +171,7 @@ export default function RetestButton({
       }
 
       console.error("[retest] no reportId found in SSE stream");
-      setError("Scan completed but could not load report. Please check your dashboard.");
+      setError("Scan completed but report could not be loaded. Please check your dashboard.");
       setLoading(false);
     } catch (err) {
       console.error("[retest] error:", err);
@@ -157,10 +189,26 @@ export default function RetestButton({
         className={`retest-btn${compact ? " retest-btn-compact" : ""}`}
       >
         {loading ? (
-          "Scanning..."
+          <>
+            <svg
+              className="retest-spinner"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+            Scanning...
+          </>
         ) : (
           <>
-            <RotateCcw className="h-4 w-4" />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M1 4v6h6" />
+              <path d="M3.51 15a9 9 0 1 0 .49-3" />
+            </svg>
             Retest this URL
           </>
         )}
@@ -174,6 +222,15 @@ export default function RetestButton({
 
       {isProMonthly && !compact && <span className="retest-count">Unlimited retests</span>}
       {error && <p className="retest-error">{error}</p>}
+
+      {isClient && loading && createPortal(
+        <div className="loading-overlay" role="dialog" aria-modal="true" aria-label="Running AI visibility scan">
+          <div className="loading-dialog">
+            <LoadingState progress={loaderProgress} />
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
