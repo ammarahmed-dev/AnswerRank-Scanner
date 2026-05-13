@@ -1,11 +1,1 @@
-{
-  "version": 4,
-  "routes": {},
-  "dynamicRoutes": {},
-  "notFoundRoutes": [],
-  "preview": {
-    "previewModeId": "e2ab168ef5ec1369a2f459643b3c76d1",
-    "previewModeSigningKey": "ebb4dcf20dae0422ea30adbea110aac13176068f24ccb9bcb5892fe22ac3de3f",
-    "previewModeEncryptionKey": "974b8d5303cb63bcbea1c701c14f79251acd1bc3b9841c877e039d464acf3d60"
-  }
-}
+{"version":4,"routes":{"/vs/otterly":{},"/vs/semrush-ai":{},"/vs/peec-ai":{},"/vs/profound":{}},"dynamicRoutes":{"/vs/[competitor]":{"dataRoute":null,"dataRouteRegex":null,"fallback":null,"fallbackRevalidate":false,"fallbackSourceRoute":"/vs/[competitor]","routeRegex":"^\\/vs\\/([^/]+?)(?:\\/)?$","allowHeader":[]}},"notFoundRoutes":[],"preview":{"previewModeId":"1f7465b537c2470247e821c341b9e9b7","previewModeSigningKey":"dde64b9974eaf5fadec502850d88b8e94adbda6c883ebeb10039174444f444ff","previewModeEncryptionKey":"db79583f0fd7a4d63a12af6b1b73cd9e6814f71785f5e53d84f409072384a7b9"}}

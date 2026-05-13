@@ -1,0 +1,15 @@
+
+> aeocheck-scanner@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.34.23.1:3000
+- Environments: .env.local
+✓ Ready in 750ms
+Creating turbopack project { dir: 'd:\\AnswerRank Scanner', testMode: true }
+- Experiments (use with caution):
+  ✓ optimizeCss
+  · optimizePackageImports
+
+○ Compiling /vs/[competitor] ...

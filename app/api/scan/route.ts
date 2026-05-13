@@ -513,7 +513,8 @@ export async function POST(req: NextRequest) {
     : typeof body.competitorUrls === "string"
       ? [body.competitorUrls]
       : [];
-  const competitorUrls = [...new Set(competitorUrlsRaw.map((item) => item.trim()).filter(Boolean))].slice(0, 1);
+  const competitorLimit = effectivePlan === "agency" || effectivePlan === "pro" ? 3 : 1;
+  const competitorUrls = [...new Set(competitorUrlsRaw.map((item) => item.trim()).filter(Boolean))].slice(0, competitorLimit);
   const userId = authContext.user?.id;
   let retestSeed: { unlocked: boolean; retestCount: number; maxRetests: number } | null = null;
   if (retestOfReportId && userId && hasSupabaseConfig()) {

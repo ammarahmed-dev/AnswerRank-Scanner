@@ -35,5 +35,6 @@
   "/sitemap.xml/route": "app/sitemap.xml/route.js",
   "/terms-of-service/page": "app/terms-of-service/page.js",
   "/upgrade/cancel/page": "app/upgrade/cancel/page.js",
-  "/upgrade/success/page": "app/upgrade/success/page.js"
+  "/upgrade/success/page": "app/upgrade/success/page.js",
+  "/vs/[competitor]/page": "app/vs/[competitor]/page.js"
 }

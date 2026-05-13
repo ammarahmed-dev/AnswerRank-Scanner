@@ -559,7 +559,7 @@ const downloadPdf = () => {
         </div>
       </section>
 
-      {(competitorRows.length > 0 || hasCompetitorUrlsOnly) && (
+      {hasFullReportAccess && (competitorRows.length > 0 || hasCompetitorUrlsOnly) && (
         <section className="surface report-card print-section">
           <h3 className="section-heading">Competitor Analysis</h3>
           <p className="section-kicker mt-1">Compare your page against the competitor URL included in this scan.</p>
@@ -838,17 +838,52 @@ const downloadPdf = () => {
       <section className="surface report-card print-section">
         <h3 className="section-heading">PDF Export</h3>
         <div className="pdf-card-grid mt-4">
-          <div>
-            <p className="section-kicker">Included sections:</p>
-            <ul className="pdf-includes-list">
-              <li>Executive summary</li>
-              <li>Score breakdown</li>
-              <li>Priority fixes</li>
-              <li>Detailed issue breakdown</li>
-              <li>Schema recommendations</li>
-              <li>AI recommendations</li>
-              <li>Client-ready PDF export</li>
-            </ul>
+          <div className="pdf-includes-block">
+            <p className="section-kicker">What&apos;s included in your PDF:</p>
+            <div className="pdf-includes-grid">
+              <div className="pdf-include-item">
+                <span className="pdf-include-icon">📋</span>
+                <div>
+                  <strong>Executive Summary</strong>
+                  <p>Main diagnosis, top opportunity, and performance score at a glance.</p>
+                </div>
+              </div>
+              <div className="pdf-include-item">
+                <span className="pdf-include-icon">📊</span>
+                <div>
+                  <strong>Score Breakdown</strong>
+                  <p>Category-by-category scores across all 7 readiness areas.</p>
+                </div>
+              </div>
+              <div className="pdf-include-item">
+                <span className="pdf-include-icon">🤖</span>
+                <div>
+                  <strong>AI Answer Snapshot</strong>
+                  <p>How AI assistants currently understand and summarize this page.</p>
+                </div>
+              </div>
+              <div className="pdf-include-item">
+                <span className="pdf-include-icon">⚡</span>
+                <div>
+                  <strong>Priority Action Plan</strong>
+                  <p>Critical, high impact, and passing checks grouped by urgency.</p>
+                </div>
+              </div>
+              <div className="pdf-include-item">
+                <span className="pdf-include-icon">🔍</span>
+                <div>
+                  <strong>Detailed Issue Breakdown</strong>
+                  <p>Every issue with why it matters and the exact recommended fix.</p>
+                </div>
+              </div>
+              <div className="pdf-include-item">
+                <span className="pdf-include-icon">🏷️</span>
+                <div>
+                  <strong>Schema Recommendations</strong>
+                  <p>Detected types, missing schema, and implementation guidance.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="pdf-action-card">
             <div className="pdf-preview-mini" aria-hidden="true">
@@ -858,7 +893,7 @@ const downloadPdf = () => {
               <em>{report.score}/100 - {scoreStatus}</em>
             </div>
             <strong>Client-shareable audit PDF</strong>
-            <p>A clean, professional report you can share with clients or your team. No formatting work needed.</p>
+            <p style={{ textDecoration: "none" }}>A clean, professional report you can share with clients or your team. No formatting work needed.</p>
             {hasPdfAccess ? (
               <button className="btn btn-primary" onClick={downloadPdf}><Download className="h-4 w-4" /> Download PDF</button>
             ) : (
@@ -886,11 +921,6 @@ const downloadPdf = () => {
             isProMonthly={canViewFullReport(plan)}
             isMasterAdmin={isAdmin}
           />
-        )}
-        {hasPdfAccess && (
-          <button onClick={downloadPdf} className="btn btn-secondary">
-            <Download className="h-4 w-4" /> Download PDF
-          </button>
         )}
         {!hasFullReportAccess && <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Unlock Full Report</button>}
         <button onClick={onReset} className="btn btn-primary">
