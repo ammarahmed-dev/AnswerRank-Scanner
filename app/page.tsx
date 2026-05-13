@@ -12,9 +12,9 @@ export default function HomePage() {
         <span>60-second scan</span>
         <span>Works on any public URL</span>
       </p>
-      <h1>Free AEO &amp; AI Search Readiness Scanner</h1>
+      <h1>Find out if AI search engines can understand and recommend your website</h1>
       <p className="hero-lede">
-        Paste any URL and get a free AEO readiness score in 60 seconds &mdash; with every fix ranked by impact.
+        Scan any URL in 60 seconds. Get an AI readiness score, missing schema issues, content clarity gaps, and prioritized fixes for ChatGPT, Perplexity, and Google AI results.
       </p>
     </>
   );
