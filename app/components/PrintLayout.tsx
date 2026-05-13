@@ -218,20 +218,23 @@ export default function PrintLayout({ report }: Props) {
   const criticals = issues.filter((c) => c.status === "fail");
   const warnings = issues.filter((c) => c.status === "warn");
   const passing = report.checks.length - issues.length;
+  const highPriority = criticals.length;
+  const mediumPriority = warnings.length;
 
   const aiSummary = getAiSummary(report);
   const confidence = getConfidence(report.score);
   const missingContext = getMissingContext(report);
   const nextBestImprovement = getNextBestImprovement(report);
 
-  const competitor = report.competitors?.find((row) => !row.error && typeof row.score === "number");
+  const competitors = (report.competitors ?? []).filter((row) => !row.error && typeof row.score === "number");
+  const competitor = competitors[0] ?? null;
   const competitorGap = competitor && typeof competitor.score === "number" ? report.score - competitor.score : null;
 
   return (
     <div className="print-layout">
       <div className="pl-cover">
         <div className="pl-cover-brand">
-          <span className="pl-cover-logo">AR</span>
+          <span className="pl-cover-logo">✦</span>
           <span>AEOCheck</span>
         </div>
         <h1 className="pl-cover-title">AI Visibility Report</h1>
@@ -246,16 +249,50 @@ export default function PrintLayout({ report }: Props) {
         </div>
         <div className="pl-cover-stats">
           <div className="pl-cover-stat pl-stat-critical">
-            <strong>{criticals.length}</strong>
-            <span>Critical issues</span>
+            <strong>{highPriority}</strong>
+            <span>Critical fixes</span>
           </div>
           <div className="pl-cover-stat pl-stat-warning">
-            <strong>{warnings.length}</strong>
-            <span>Warnings</span>
+            <strong>{mediumPriority}</strong>
+            <span>High impact</span>
           </div>
           <div className="pl-cover-stat pl-stat-pass">
             <strong>{passing}</strong>
             <span>Passing checks</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="pl-page pl-force-break">
+        <PageHeader url={report.url} date={date} />
+        <h2 className="pl-section-title">Executive Summary</h2>
+        <div className="pl-exec-grid">
+          <div className="pl-exec-card">
+            <strong>Main diagnosis</strong>
+            <p>{issues.find((c) => {
+              const cat = mapCategory(c.id);
+              return cat !== "performance" && c.id !== "pagespeed_low" && c.id !== "pagespeed_moderate";
+            })?.detail ?? issues[0]?.detail ?? "Core visibility signals are in good shape."}</p>
+          </div>
+          <div className="pl-exec-card">
+            <strong>Top opportunity</strong>
+            <p>{FIX_MAP[issues.find((c) => {
+              const cat = mapCategory(c.id);
+              return cat !== "performance" && c.id !== "pagespeed_low" && c.id !== "pagespeed_moderate";
+            })?.id ?? ""]?.fix ?? "Keep schema and answer blocks current as pages evolve."}</p>
+          </div>
+          <div className="pl-exec-card">
+            <strong>Biggest issue</strong>
+            <p>{issues.find((c) => {
+              const cat = mapCategory(c.id);
+              return cat !== "performance";
+            })?.label ?? "No critical blockers detected."}</p>
+          </div>
+          <div className="pl-exec-card">
+            <strong>Performance score</strong>
+            <p>{report.pagespeed?.score !== undefined
+              ? `${report.pagespeed.score}/100 — Page speed affects how reliably AI crawlers index your content.`
+              : "PageSpeed score unavailable for this scan."}</p>
           </div>
         </div>
       </div>
@@ -338,7 +375,11 @@ export default function PrintLayout({ report }: Props) {
             </div>
             <div className="pl-schema-card">
               <strong>Recommended schema types</strong>
-              <p>{report.aiInsights.schemaRecommendations.priority || "No priority schema recommendation available."}</p>
+              <p>
+                {report.aiInsights.schemaRecommendations.missing.length > 0
+                  ? report.aiInsights.schemaRecommendations.missing.join(", ")
+                  : report.aiInsights.schemaRecommendations.priority || "No additional schema needed."}
+              </p>
             </div>
             <div className="pl-schema-card">
               <strong>Why it matters</strong>
@@ -353,21 +394,35 @@ export default function PrintLayout({ report }: Props) {
         </div>
       )}
 
-      {competitor && (
+      {competitors.length > 0 && (
         <div className="pl-page pl-force-break">
           <PageHeader url={report.url} date={date} />
-          <h2 className="pl-section-title">Competitor Takeaway</h2>
+          <h2 className="pl-section-title">Competitor Analysis</h2>
           <div className="pl-competitor-grid">
             <div className="pl-competitor-card">
-              <strong>Your score</strong>
+              <strong>Your site</strong>
               <p>{report.url}</p>
               <span>{report.score}/100</span>
             </div>
-            <div className="pl-competitor-card">
-              <strong>Competitor score</strong>
-              <p>{competitor.url}</p>
-              <span>{competitor.score}/100</span>
-            </div>
+            {competitors.map((comp) => {
+              const gap = typeof comp.score === "number" ? report.score - comp.score : null;
+              return (
+                <div key={comp.url} className="pl-competitor-card">
+                  <strong>Competitor</strong>
+                  <p>{comp.url}</p>
+                  <span>{comp.score}/100</span>
+                  <small>
+                    {gap === null
+                      ? ""
+                      : gap > 0
+                        ? `You are ahead by ${gap} points`
+                        : gap < 0
+                          ? `Competitor ahead by ${Math.abs(gap)} points`
+                          : "Scores are tied"}
+                  </small>
+                </div>
+              );
+            })}
           </div>
           <div className="pl-competitor-takeaway">
             <strong>Competitive takeaway</strong>
@@ -375,14 +430,76 @@ export default function PrintLayout({ report }: Props) {
               {competitorGap === null
                 ? "Competitor comparison data is limited for this scan."
                 : competitorGap > 0
-                  ? `You are ahead by ${competitorGap} points. Keep improving high-priority fixes to maintain your lead.`
+                  ? `You are ahead by ${competitorGap} points on the primary competitor. Keep improving high-priority fixes to maintain your lead.`
                   : competitorGap < 0
-                    ? `Competitor is ahead by ${Math.abs(competitorGap)} points. Start with critical fixes to close the gap.`
-                    : "Scores are tied. Start with the highest-priority fixes to pull ahead."}
+                    ? `Primary competitor is ahead by ${Math.abs(competitorGap)} points. Start with critical fixes to close the gap.`
+                    : "Scores are tied with primary competitor. Start with the highest-priority fixes to pull ahead."}
             </p>
           </div>
         </div>
       )}
+
+      {issues.length > 0 && (() => {
+        const criticalItems = criticals;
+        const highItems = warnings;
+        return (
+          <div className="pl-page pl-force-break">
+            <PageHeader url={report.url} date={date} />
+            <h2 className="pl-section-title">Priority Action Plan</h2>
+            <div className="pl-action-grid">
+              <div className="pl-action-col pl-action-critical">
+                <div className="pl-action-head">
+                  <span>Critical</span>
+                  <strong>{criticals.length}</strong>
+                </div>
+                <p className="pl-action-desc">Fix immediately to avoid visibility loss.</p>
+                {criticalItems.length > 0 ? criticalItems.map((c) => (
+                  <div key={c.id} className="pl-action-item">
+                    <span>✦</span>
+                    <div>
+                      <p>{c.label}</p>
+                      <small>{c.detail}</small>
+                    </div>
+                  </div>
+                )) : <p className="pl-muted">No critical issues.</p>}
+              </div>
+              <div className="pl-action-col pl-action-high">
+                <div className="pl-action-head">
+                  <span>High Impact</span>
+                  <strong>{warnings.length}</strong>
+                </div>
+                <p className="pl-action-desc">Strong lift with manageable effort.</p>
+                {highItems.length > 0 ? highItems.map((c) => (
+                  <div key={c.id} className="pl-action-item">
+                    <span>✦</span>
+                    <div>
+                      <p>{c.label}</p>
+                      <small>{c.detail}</small>
+                    </div>
+                  </div>
+                )) : <p className="pl-muted">No high impact warnings.</p>}
+              </div>
+              <div className="pl-action-col pl-action-pass">
+                <div className="pl-action-head">
+                  <span>Passing</span>
+                  <strong>{passing}</strong>
+                </div>
+                <p className="pl-action-desc">Signals already in good shape.</p>
+                {report.checks
+                  .filter((c) => c.status === "pass")
+                  .map((c) => (
+                    <div key={c.id} className="pl-action-item">
+                      <span>✓</span>
+                      <div>
+                        <p>{c.label}</p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {issues.length > 0 && (
         <div className="pl-page">

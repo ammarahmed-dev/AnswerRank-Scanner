@@ -125,7 +125,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
   const [waitlistError, setWaitlistError] = useState("");
   const [guestScansLeft, setGuestScansLeft] = useState(1);
   const [showLimitModal, setShowLimitModal] = useState(false);
-  const [limitModalType, setLimitModalType] = useState<"guest" | "free">("guest");
+  const [limitModalType, setLimitModalType] = useState<"guest" | "free" | "competitor">("guest");
   const [showScanFirstModal, setShowScanFirstModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastRenderedProgressRef = useRef<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
@@ -243,6 +243,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
       .slice(0, 3);
 
     setState("loading");
+    document.body.style.overflow = "hidden";
     currentScanWasGuestRef.current = account?.plan === "guest";
     const initialProgress: LoaderProgress = { step: 1, label: "Preparing scan", status: "started" };
     setLoaderProgress(initialProgress);
@@ -279,11 +280,13 @@ export default function Home({ heroContent }: HomePageClientProps) {
             setShowLimitModal(true);
           } else {
             setErrorMsg(data.error ?? "You've used your 3 free scans this month.");
+            document.body.style.overflow = "";
             setState("paywall");
           }
           return;
         }
         setErrorMsg(data.error ?? "Something went wrong. Please try again.");
+        document.body.style.overflow = "";
         setState("idle");
         setShowErrorModal(true);
         return;
@@ -318,6 +321,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
         }
         await refreshAccountUsage();
         setReport(result);
+        document.body.style.overflow = "";
         setState("done");
         router.push(result.reportId ? `/report?id=${result.reportId}` : `/report?url=${encodeURIComponent(result.url)}`);
       };
@@ -375,6 +379,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
 
           if (data.type === "error") {
             setErrorMsg(data.message);
+            document.body.style.overflow = "";
             setState("idle");
             setShowErrorModal(true);
             return;
@@ -397,6 +402,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
       setErrorMsg(err instanceof DOMException && err.name === "AbortError"
         ? "The scan took too long. Please try again. External AI or PageSpeed APIs may be slow."
         : "Network error. Please check your connection and try again.");
+      document.body.style.overflow = "";
       setState("idle");
       setShowErrorModal(true);
     } finally {
@@ -576,7 +582,22 @@ export default function Home({ heroContent }: HomePageClientProps) {
                     <ArrowRight className="h-4 w-4" />
                   </button>
                   <a href="/report?id=bdb3a316-6889-4fa5-9045-cf317938597e" className="btn btn-secondary hero-secondary-cta">View Sample Report</a>
-                  <button type="button" onClick={() => setShowCompetitors(!showCompetitors)} className="hero-competitor-toggle">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const isPaid =
+                        account?.plan === "pro" ||
+                        account?.plan === "agency" ||
+                        account?.isAdmin;
+                      if (!isPaid) {
+                        setLimitModalType("competitor");
+                        setShowLimitModal(true);
+                        return;
+                      }
+                      setShowCompetitors(!showCompetitors);
+                    }}
+                    className="hero-competitor-toggle"
+                  >
                     <Plus className="h-4 w-4" />
                     {showCompetitors ? "Hide Competitor Compare" : "Compare a Competitor"}
                   </button>
@@ -830,12 +851,13 @@ export default function Home({ heroContent }: HomePageClientProps) {
         </>
       )}
 
-      {state === "loading" && (
+      {isClient && state === "loading" && createPortal(
         <div className="loading-overlay" role="dialog" aria-modal="true" aria-label="Running AI visibility scan">
           <div className="loading-dialog">
             <LoadingState progress={loaderProgress} progressByStepAndStatus={progressByStepAndStatus} />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {state === "paywall" && (
@@ -856,11 +878,19 @@ export default function Home({ heroContent }: HomePageClientProps) {
         <div className="waitlist-modal-overlay" onClick={() => setShowLimitModal(false)}>
           <div className="waitlist-modal" onClick={(e) => e.stopPropagation()}>
             <div className="waitlist-modal-head">
-              <h3>{limitModalType === "guest" ? "You've used your free preview scan" : "You've used your free scans this month"}</h3>
+              <h3>
+                {limitModalType === "guest"
+                  ? "You've used your free preview scan"
+                  : limitModalType === "competitor"
+                    ? "Competitor comparison is a paid feature"
+                    : "You've used your free scans this month"}
+              </h3>
               <p>
                 {limitModalType === "guest"
                   ? "Create a free account to get 3 scans per month, then run a new scan and unlock the full report from your results."
-                  : "Unlock a full report or upgrade to continue scanning."}
+                  : limitModalType === "competitor"
+                    ? "Upgrade to a Full Report or Pro Monthly to compare your site against competitors."
+                    : "Unlock a full report or upgrade to continue scanning."}
               </p>
             </div>
             <div className="waitlist-modal-form">
@@ -869,6 +899,11 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   <button type="button" className="btn btn-primary" onClick={() => router.push("/signup?next=/#scanner")}>Create free account</button>
                   <button type="button" className="btn btn-secondary" onClick={() => { setShowLimitModal(false); document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }); }}>View pricing</button>
                   <p className="waitlist-modal-note">Free accounts include 3 preview scans per month.</p>
+                </>
+              ) : limitModalType === "competitor" ? (
+                <>
+                  <button type="button" className="btn btn-primary" onClick={() => { setShowLimitModal(false); document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" }); }}>View pricing</button>
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowLimitModal(false)}>Cancel</button>
                 </>
               ) : (
                 <>

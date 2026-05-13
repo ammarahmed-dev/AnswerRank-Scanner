@@ -27,6 +27,15 @@ export default function SiteFooter() {
             </div>
           </div>
           <div className="footer-link-group">
+            <p className="footer-group-label">COMPARE</p>
+            <div className="footer-link-list">
+              <a href="/vs/otterly">vs Otterly</a>
+              <a href="/vs/semrush-ai">vs Semrush AI</a>
+              <a href="/vs/peec-ai">vs Peec AI</a>
+              <a href="/vs/profound">vs Profound</a>
+            </div>
+          </div>
+          <div className="footer-link-group">
             <p className="footer-group-label">LEGAL</p>
             <div className="footer-link-list">
               <a href="/privacy-policy">Privacy Policy</a>
