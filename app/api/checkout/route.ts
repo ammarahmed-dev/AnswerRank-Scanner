@@ -1,160 +1,79 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { POLAR_BASE_URL } from "@/lib/polar";
 import { getAuthContext } from "@/lib/auth-server";
 
-export const runtime = "nodejs";
-
-type CheckoutBody = {
-  checkoutType?: "full_report" | "pro_plan";
-  reportId?: string;
-  reportUrl?: string;
-  returnTo?: string;
-};
-
-function appUrl(req: Request) {
-  const normalizeOrigin = (value: string | undefined | null) => {
-    if (!value) return null;
-    try {
-      return new URL(value).origin.replace(/\/$/, "");
-    } catch {
-      return null;
-    }
-  };
-
-  const reqOriginHeader = normalizeOrigin(req.headers.get("origin"));
-  const reqOrigin = normalizeOrigin(new URL(req.url).origin);
-  const envPrimary = normalizeOrigin(process.env.APP_URL) || normalizeOrigin(process.env.NEXT_PUBLIC_APP_URL);
-  const envAlt = normalizeOrigin(process.env.NEXT_PUBLIC_SITE_URL);
-  const vercelUrl = process.env.VERCEL_URL ? normalizeOrigin(`https://${process.env.VERCEL_URL}`) : null;
-
-  const allowedOrigins = new Set(
-    [
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-      "http://localhost:3001",
-      "http://127.0.0.1:3001",
-      envPrimary,
-      envAlt,
-      vercelUrl,
-    ].filter((value): value is string => Boolean(value))
-  );
-
-  if (reqOriginHeader && allowedOrigins.has(reqOriginHeader)) return reqOriginHeader;
-  if (reqOrigin && allowedOrigins.has(reqOrigin)) return reqOrigin;
-  if (envPrimary) return envPrimary;
-  if (envAlt) return envAlt;
-  if (vercelUrl) return vercelUrl;
-  return new URL(req.url).origin.replace(/\/$/, "");
-}
-
-function withPaymentRefresh(path: string) {
-  const [base, query = ""] = path.split("?");
-  const params = new URLSearchParams(query);
-  params.set("payment", "1");
-  const next = params.toString();
-  return next ? `${base}?${next}` : base;
-}
-
-export async function POST(req: Request) {
-  console.log("Polar config check:", {
+export async function POST(req: NextRequest) {
+  console.log("Polar config:", {
     hasToken: !!process.env.POLAR_ACCESS_TOKEN,
-    hasFullReportId: !!process.env.POLAR_FULL_REPORT_PRODUCT_ID,
-    hasProId: !!process.env.POLAR_PRO_MONTHLY_PRODUCT_ID,
-    server: process.env.NODE_ENV,
+    baseUrl: POLAR_BASE_URL,
+    fullReportId: process.env.POLAR_FULL_REPORT_PRODUCT_ID,
+    proId: process.env.POLAR_PRO_MONTHLY_PRODUCT_ID,
   });
 
-  let body: CheckoutBody = {};
   try {
-    body = (await req.json()) as CheckoutBody;
-  } catch {
-    body = {};
-  }
+    const body = await req.json() as {
+      checkoutType: "full_report" | "pro_plan";
+      reportId?: string;
+      returnTo?: string;
+    };
 
-  const auth = await getAuthContext(req);
+    const authContext = await getAuthContext(req);
+    const userEmail = authContext.user?.email;
 
-  if (!auth.user) {
-    return NextResponse.json({ error: "Log in to upgrade your plan." }, { status: 401 });
-  }
+    const productId = body.checkoutType === "full_report"
+      ? process.env.POLAR_FULL_REPORT_PRODUCT_ID!
+      : process.env.POLAR_PRO_MONTHLY_PRODUCT_ID!;
 
-  if (!process.env.POLAR_ACCESS_TOKEN) {
-    return NextResponse.json({ error: "Polar checkout is not configured." }, { status: 500 });
-  }
+    const successUrl = body.checkoutType === "full_report" && body.reportId
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/report?id=${body.reportId}&payment=1`
+      : `${process.env.NEXT_PUBLIC_APP_URL}/?payment=1`;
 
-  const checkoutType = body.checkoutType === "pro_plan" ? "pro_plan" : "full_report";
-  const productId = checkoutType === "full_report"
-    ? process.env.POLAR_FULL_REPORT_PRODUCT_ID
-    : process.env.POLAR_PRO_MONTHLY_PRODUCT_ID;
-
-  if (!productId) {
-    return NextResponse.json({ error: "Polar product is not configured." }, { status: 500 });
-  }
-
-  if (checkoutType === "full_report" && !body.reportId) {
-    return NextResponse.json({ error: "Run a scan first, then unlock that report." }, { status: 400 });
-  }
-
-  const origin = appUrl(req);
-  const safeReturnTo = typeof body.returnTo === "string" && body.returnTo.startsWith("/")
-    ? body.returnTo
-    : body.reportId
-      ? `/report?id=${encodeURIComponent(body.reportId)}`
-      : "/report";
-  const returnToWithRefresh = withPaymentRefresh(safeReturnTo);
-  const successUrl = checkoutType === "full_report" && body.reportId
-    ? `${origin}/report?id=${encodeURIComponent(body.reportId)}&payment=1`
-    : `${origin}/?payment=1`;
-
-  try {
-    const polarResponse = await fetch(
-      "https://api.polar.sh/v1/checkouts/",
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.POLAR_ACCESS_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          product_id: productId,
-          success_url: successUrl,
-          customer_email: auth.user.email ?? undefined,
-          metadata: {
-            checkoutType: body.checkoutType,
-            reportId: body.reportId ?? "",
-            userId: auth.user.id,
-          },
-        }),
+    const requestBody = {
+      product_id: productId,
+      success_url: successUrl,
+      ...(userEmail ? { customer_email: userEmail } : {}),
+      metadata: {
+        checkoutType: body.checkoutType,
+        reportId: body.reportId ?? "",
+        userId: authContext.user?.id ?? "",
       },
-    );
+    };
 
-    if (!polarResponse.ok) {
-      const errorText = await polarResponse.text();
-      console.error("Polar API error:", polarResponse.status, errorText);
+    console.log("Polar request:", {
+      url: `${POLAR_BASE_URL}/v1/checkouts/`,
+      productId,
+      successUrl,
+    });
+
+    const response = await fetch(`${POLAR_BASE_URL}/v1/checkouts/`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.POLAR_ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    const responseText = await response.text();
+    console.log("Polar response:", response.status, responseText);
+
+    if (!response.ok) {
       return NextResponse.json(
-        { error: "Failed to create checkout", detail: errorText },
+        { error: "Failed to create checkout", detail: responseText },
         { status: 500 }
       );
     }
 
-    const checkoutData = await polarResponse.json() as { url: string };
-    return NextResponse.json({ url: checkoutData.url });
+    const data = JSON.parse(responseText) as { url: string };
+    return NextResponse.json({ url: data.url });
+
   } catch (error) {
-    const err = error as {
-      message?: string;
-      status?: number;
-      body?: unknown;
-    };
-    console.error("Polar checkout error:", {
-      message: err?.message,
-      status: err?.status,
-      body: err?.body,
-      full: error,
-    });
+    const err = error as { message?: string };
+    console.error("Checkout error:", err?.message, error);
     return NextResponse.json(
-      {
-        error: "Failed to create checkout",
-        detail: err?.message ?? "Unknown error"
-      },
+      { error: "Failed to create checkout", detail: err?.message },
       { status: 500 }
     );
   }
 }
-

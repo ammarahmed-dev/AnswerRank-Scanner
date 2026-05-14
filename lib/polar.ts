@@ -1,9 +1,8 @@
-import { Polar } from "@polar-sh/sdk";
+// Polar client - May 2026
+export const POLAR_SERVER = process.env.POLAR_SERVER === "production"
+  ? "production"
+  : "sandbox";
 
-export const polar = new Polar({
-  accessToken: process.env.POLAR_ACCESS_TOKEN!,
-  server: process.env.POLAR_SERVER === "production"
-    ? "production"
-    : "sandbox",
-  timeoutMs: 30000,
-});
+export const POLAR_BASE_URL = POLAR_SERVER === "production"
+  ? "https://api.polar.sh"
+  : "https://sandbox-api.polar.sh";
