@@ -4,12 +4,16 @@
   "/api/account/route": "app/api/account/route.js",
   "/api/admin/summary/route": "app/api/admin/summary/route.js",
   "/api/admin/users/route": "app/api/admin/users/route.js",
+  "/api/reports/[id]/retest/route": "app/api/reports/[id]/retest/route.js",
   "/api/reports/[id]/route": "app/api/reports/[id]/route.js",
   "/api/scan/route": "app/api/scan/route.js",
   "/api/stats/increment/route": "app/api/stats/increment/route.js",
   "/api/stats/route": "app/api/stats/route.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/forgot-password/page": "app/forgot-password/page.js",
+  "/login/page": "app/login/page.js",
   "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
   "/page": "app/page.js",
-  "/report/page": "app/report/page.js"
+  "/report/page": "app/report/page.js",
+  "/signup/page": "app/signup/page.js"
 }
