@@ -333,9 +333,9 @@ const CHECKS_CONFIG: CheckConfig[] = [
       return "pass"; // not applicable for thin pages
     },
     detail: (data: ScrapedData) => {
-      if (data.hasAuthor) return "Author attribution detected — good E-E-A-T signal";
-      if ((data.wordCount ?? 0) > 300) return "No author attribution found — add byline or Person schema for E-E-A-T";
-      return "No author attribution — consider adding for content credibility";
+      if (data.hasAuthor) return "Author attribution detected - good E-E-A-T signal";
+      if ((data.wordCount ?? 0) > 300) return "No author attribution found - add byline or Person schema for E-E-A-T";
+      return "No author attribution - consider adding for content credibility";
     },
   },
   {
@@ -348,10 +348,10 @@ const CHECKS_CONFIG: CheckConfig[] = [
       return "warn";
     },
     detail: (data: ScrapedData) => {
-      if (data.hasAboutPage && data.hasContactPage) return "About and Contact pages linked — strong trust signals";
+      if (data.hasAboutPage && data.hasContactPage) return "About and Contact pages linked - strong trust signals";
       if (data.hasAboutPage) return "About page found but no Contact page linked";
       if (data.hasContactPage) return "Contact page found but no About page linked";
-      return "No About or Contact page linked — add both for E-E-A-T";
+      return "No About or Contact page linked - add both for E-E-A-T";
     },
   },
   {
@@ -373,16 +373,16 @@ const CHECKS_CONFIG: CheckConfig[] = [
     },
     detail: (data: ScrapedData) => {
       if (!data.datePublished && !data.dateModified)
-        return "No publish or modified date found — add datePublished/dateModified schema";
+        return "No publish or modified date found - add datePublished/dateModified schema";
       const dateStr = data.dateModified || data.datePublished || "";
       try {
         const date = new Date(dateStr);
         const ageMonths = Math.round((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 30));
         if (ageMonths <= 12) return `Content is fresh (updated ${ageMonths} months ago)`;
-        if (ageMonths <= 24) return `Content is ${ageMonths} months old — consider updating`;
-        return `Content is ${ageMonths} months old — AI engines deprioritize stale content`;
+        if (ageMonths <= 24) return `Content is ${ageMonths} months old - consider updating`;
+        return `Content is ${ageMonths} months old - AI engines deprioritize stale content`;
       } catch {
-        return "Date format unrecognized — use ISO 8601 format (YYYY-MM-DD)";
+        return "Date format unrecognized - use ISO 8601 format (YYYY-MM-DD)";
       }
     },
   },
