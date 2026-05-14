@@ -431,37 +431,6 @@ export default function Home({ heroContent }: HomePageClientProps) {
     setShowScanFirstModal(true);
   };
 
-  const handleProMonthlyPricingCta = async () => {
-    const supabase = getSupabaseBrowserClient();
-    const token = (await getSafeSupabaseSession(supabase))?.access_token;
-
-    if (!token) {
-      window.location.href = "/signup?redirect=pricing&plan=pro";
-      return;
-    }
-
-    try {
-      const returnTo = `${window.location.pathname}${window.location.search}`;
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          checkoutType: "pro_plan",
-          returnTo,
-        }),
-      });
-
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (!res.ok || !data.url) throw new Error(data.error ?? "Checkout failed.");
-      window.location.href = data.url;
-    } catch (error) {
-      console.error("Pro checkout start failed:", error);
-    }
-  };
-
   const closeWaitlistModal = () => {
     setShowWaitlistModal(false);
     setWaitlistState("idle");
@@ -808,7 +777,9 @@ export default function Home({ heroContent }: HomePageClientProps) {
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Priority scan access</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited retests on any URL</li>
                   </ul>
-                  <button type="button" className="btn btn-primary" onClick={handleProMonthlyPricingCta}>Start Pro Monthly</button>
+                  <UpgradeButton checkoutType="pro_plan" className="btn btn-primary">
+                    Start Pro Monthly
+                  </UpgradeButton>
                 </article>
               </div>
             </div>

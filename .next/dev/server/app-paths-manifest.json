@@ -1,13 +1,8 @@
 {
   "/api/account/route": "app/api/account/route.js",
   "/api/checkout/route": "app/api/checkout/route.js",
-  "/api/reports/[id]/route": "app/api/reports/[id]/route.js",
   "/api/stats/increment/route": "app/api/stats/increment/route.js",
   "/api/stats/route": "app/api/stats/route.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/login/page": "app/login/page.js",
   "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
-  "/page": "app/page.js",
-  "/report/page": "app/report/page.js",
-  "/signup/page": "app/signup/page.js"
+  "/page": "app/page.js"
 }
