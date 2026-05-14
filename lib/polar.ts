@@ -5,5 +5,5 @@ export const polar = new Polar({
   server: process.env.POLAR_SERVER === "production"
     ? "production"
     : "sandbox",
-  timeout: 30000,
+  timeoutMs: 30000,
 });
