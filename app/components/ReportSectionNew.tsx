@@ -143,11 +143,15 @@ function recommendedFix(check: CheckResult) {
   if (check.id === "meta_desc") return "Add a clear 120-160 character meta description with problem, solution, and proof.";
   if (check.id === "h1") return "Use one H1 that states exactly what the page offers and who it is for.";
   if (check.id === "heading_structure") return "Restructure sections with H2 and H3 hierarchy to improve crawl and comprehension.";
-  if (check.id.includes("schema")) return "Add JSON-LD for Organization, WebSite, WebPage, FAQPage, and page-relevant entities.";
+  if (check.id === "schema_present") return "Add at least one JSON-LD block to your page head. Start with Organization and WebSite schema — these establish your brand entity for AI engines. Use schema.org or a generator like technicalseo.com/tools/schema-markup-generator/";
+  if (check.id === "faq_schema") return "Wrap your Q&A content in FAQPage JSON-LD schema. Each question needs a Question and acceptedAnswer pair. Validate at validator.schema.org before publishing.";
+  if (check.id === "article_schema") return "Add Article or BlogPosting JSON-LD to this page. Include headline, author, datePublished, and dateModified fields. This tells AI engines your content is authoritative and dated.";
+  if (check.id === "structured_density") return "Layer additional schema types relevant to this page. If it has navigation, add BreadcrumbList. If it has a FAQ section, add FAQPage. If it represents your brand, add Organization and WebSite.";
+  if (check.id.includes("schema")) return "Add JSON-LD schema relevant to this page type. Visit schema.org to find the right type for your content.";
   if (check.id === "https") return "Serve the page on HTTPS and redirect all HTTP requests.";
-  if (check.id === "robots") return "Publish a crawl-safe robots.txt and validate it in search tools.";
+  if (check.id === "robots") return "Create a robots.txt at yourdomain.com/robots.txt. Make sure it does not block important pages. Validate it at search.google.com/search-console and ensure AI crawlers (GPTBot, ClaudeBot) are not blocked.";
   if (check.id === "ai_bot_access") return "Check your robots.txt and ensure GPTBot, ClaudeBot, and PerplexityBot are not blocked. Add explicit allow rules for AI crawlers.";
-  if (check.id === "sitemap") return "Create sitemap.xml and submit it to search indexing tools.";
+  if (check.id === "sitemap") return "Create a sitemap.xml listing all important pages and submit it in Google Search Console under Sitemaps. Most CMS platforms (Webflow, WordPress) generate this automatically - check your settings.";
   if (check.id === "llms_txt") return "Create a /llms.txt file at your domain root. Visit llmstxt.org for the standard format and generator tools.";
   if (check.id === "eeat_author") return "Add an author byline with a link to an author bio page. Implement Person schema with name, url, and jobTitle fields.";
   if (check.id === "eeat_about") return "Add visible links to an About page and Contact page in your navigation or footer. These are fundamental E-E-A-T trust signals.";
@@ -159,9 +163,9 @@ function recommendedFix(check: CheckResult) {
     if (scoreNum < 50) return "Sentences are too long or complex for AI extraction. Break paragraphs into 2-3 sentence chunks. Use bullet points for lists. Lead each section with a direct answer statement.";
     return "Simplify sentence structure and use everyday language. Aim for a 7th-8th grade reading level (Flesch score 60-70) for optimal AI citation.";
   }
-  if (check.id === "word_count") return "Add use-case detail, proof points, and concise FAQ blocks.";
-  if (check.id === "internal_links") return "Add contextual internal links to product, proof, and FAQ pages.";
-  return "Improve this signal to increase answer-engine confidence and citation readiness.";
+  if (check.id === "word_count") return "Expand content to at least 300 words. Add a clear problem statement, how your solution works, who it is for, and 3-5 FAQ questions with direct answers. Each FAQ answer should be 40-60 words - the ideal length for AI extraction.";
+  if (check.id === "internal_links") return "Add at least 3-5 internal links to related pages. Link to your About page, key product or service pages, and any FAQ or blog content. Use descriptive anchor text that includes the topic of the linked page.";
+  return `Review the ${check.label} signal and apply the recommended fix. Even small improvements to this signal can increase how confidently AI engines cite this page.`;
 }
 
 function issueExample(check: CheckResult) {
