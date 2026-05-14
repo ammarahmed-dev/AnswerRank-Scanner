@@ -10,27 +10,25 @@ import UpgradeButton from "./UpgradeButton";
 import ContactForm from "./ContactForm";
 import AiSnapshotSection from "./AiSnapshotSection";
 import WhoUsesSection from "./WhoUsesSection";
+import TestimonialsSection from "./TestimonialsSection";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 import { useRouter } from "next/navigation";
 import { canRunScan, isMasterAdmin, isProUser } from "@/lib/access";
 import {
-  AlertCircle,
-  ArrowRight,
-  CheckCircle2,
-  XCircle,
-  Code2,
-  FileDown,
-  FileSearch,
-  FolderArchive,
-  Gauge,
   Globe,
+  ArrowRight,
+  MagnifyingGlass,
+  CheckCircle,
+  Sparkle,
   Plus,
-  Search,
-  ShieldCheck,
-  Sparkles,
-  WandSparkles,
-} from "lucide-react";
+  XCircle,
+  Code,
+  FileArrowDown,
+  FileMagnifyingGlass,
+  FileArchive,
+  Gauge,
+} from "@phosphor-icons/react";
 
 type AppState = "idle" | "loading" | "done" | "error" | "paywall";
 type ProgressStatus = "started" | "complete" | "skipped" | "error";
@@ -61,12 +59,12 @@ const trustStats = [
 ];
 
 const auditSignals = [
-  { icon: FileSearch, title: "Metadata clarity", text: "Title tag, meta description, canonical URL, Open Graph tags, and heading hierarchy. Every signal AI uses to understand a page." },
-  { icon: Code2, title: "Structured data", text: "Detects existing JSON-LD schema, flags missing types, and surfaces the highest-impact markup your page is missing." },
-  { icon: Sparkles, title: "Answer readiness", text: "Scores how well the page is structured for AI assistants to extract, summarize, and cite its content in answers." },
+  { icon: FileMagnifyingGlass, title: "Metadata clarity", text: "Title tag, meta description, canonical URL, Open Graph tags, and heading hierarchy. Every signal AI uses to understand a page." },
+  { icon: Code, title: "Structured data", text: "Detects existing JSON-LD schema, flags missing types, and surfaces the highest-impact markup your page is missing." },
+  { icon: Sparkle, title: "Answer readiness", text: "Scores how well the page is structured for AI assistants to extract, summarize, and cite its content in answers." },
   { icon: Gauge, title: "Priority scoring", text: "A weighted 0-100 visibility score broken down by category, so you know exactly where to focus first." },
-  { icon: FileDown, title: "PDF export", text: "A polished, client-ready audit PDF you can hand off to any team or stakeholder without extra formatting work." },
-  { icon: FolderArchive, title: "Saved reports", text: "Every scan is stored in your account so you can revisit past audits and track improvement over time." },
+  { icon: FileArrowDown, title: "PDF export", text: "A polished, client-ready audit PDF you can hand off to any team or stakeholder without extra formatting work." },
+  { icon: FileArchive, title: "Saved reports", text: "Every scan is stored in your account so you can revisit past audits and track improvement over time." },
 ];
 
 const workflow = [
@@ -567,7 +565,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 {heroContent}
                 <form onSubmit={handleScan} className="hero-scanner" aria-label="Scan a website">
                   <div className="hero-input-wrap">
-                    <Globe className="h-5 w-5" />
+                    <Globe weight="duotone" className="h-5 w-5" />
                     <input
                       ref={inputRef}
                       type="text"
@@ -579,7 +577,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   </div>
                   <button type="submit" disabled={state === "loading" || !url.trim()} className="btn btn-primary hero-scan-button">
                     {state === "loading" ? "Scanning" : "Run Free Scan"}
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight weight="bold" className="h-4 w-4" />
                   </button>
                   <a href="/report?id=bdb3a316-6889-4fa5-9045-cf317938597e" className="btn btn-secondary hero-secondary-cta">View Sample Report</a>
                   <button
@@ -598,7 +596,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                     }}
                     className="hero-competitor-toggle"
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus weight="bold" className="h-4 w-4" />
                     {showCompetitors ? "Hide Competitor Compare" : "Compare a Competitor"}
                   </button>
                   {showCompetitors && (
@@ -614,10 +612,10 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   )}
                 </form>
                 <div className="hero-assurance">
-                  <span><CheckCircle2 className="h-4 w-4" /> Free</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> No signup</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> 60-second scan</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> Works on any public URL</span>
+                  <span><CheckCircle weight="fill" className="h-4 w-4" /> Free</span>
+                  <span><CheckCircle weight="fill" className="h-4 w-4" /> No signup</span>
+                  <span><CheckCircle weight="fill" className="h-4 w-4" /> 60-second scan</span>
+                  <span><CheckCircle weight="fill" className="h-4 w-4" /> Works on any public URL</span>
                 </div>
               </div>
 
@@ -647,8 +645,8 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   ))}
                 </div>
                 <div className="visual-fixes">
-                  <p><WandSparkles className="h-4 w-4" /> Add FAQPage schema for answer extraction.</p>
-                  <p><WandSparkles className="h-4 w-4" /> Clarify primary entity and audience language.</p>
+                  <p><Sparkle weight="duotone" className="h-4 w-4" /> Add FAQPage schema for answer extraction.</p>
+                  <p><Sparkle weight="duotone" className="h-4 w-4" /> Clarify primary entity and audience language.</p>
                 </div>
               </div>
             </div>
@@ -677,7 +675,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   <line x1="50%" y1="44%" x2="74%" y2="66%" stroke="rgba(6,182,212,0.3)" strokeWidth="1" />
                 </svg>
                 <div className="answer-node answer-node-primary">
-                  <Search className="h-5 w-5" />
+                  <MagnifyingGlass weight="duotone" className="h-5 w-5" />
                   <strong>AI Search</strong>
                 </div>
                 <div className="signal-orbit">
@@ -703,9 +701,9 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 </p>
                 <p>Learn how we score your AEO readiness in our <a href="#report">sample report ↓</a></p>
                 <div className="story-checks">
-                  <span><CheckCircle2 className="h-4 w-4" /> Brand and entity clarity</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> Structured data coverage</span>
-                  <span><CheckCircle2 className="h-4 w-4" /> Recommended answer blocks</span>
+                  <span><CheckCircle weight="fill" className="h-4 w-4" /> Brand and entity clarity</span>
+                  <span><CheckCircle weight="fill" className="h-4 w-4" /> Structured data coverage</span>
+                  <span><CheckCircle weight="fill" className="h-4 w-4" /> Recommended answer blocks</span>
                 </div>
               </div>
             </div>
@@ -742,7 +740,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
               <div className="signal-grid">
                 {auditSignals.map(({ icon: Icon, title, text }) => (
                   <article key={title} className="signal-row">
-                    <Icon className="h-5 w-5" />
+                    <Icon weight="duotone" className="h-5 w-5" />
                     <div>
                       <h3>{title}</h3>
                       <p>{text}</p>
@@ -752,6 +750,8 @@ export default function Home({ heroContent }: HomePageClientProps) {
               </div>
             </div>
           </section>
+
+          <TestimonialsSection />
 
           <section className="pricing-section" id="pricing">
             <div className="launch-container pricing-layout">
@@ -768,12 +768,12 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   <h3>Free Preview</h3>
                   <p className="pricing-subline">For testing your AI visibility score.</p>
                   <ul>
-                    <li><CheckCircle2 className="h-4 w-4" /> 1 guest preview scan</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> 3 free scans per month</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Overall AI Visibility Score</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Basic score breakdown</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Top 3 issues</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Limited report preview</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 guest preview scan</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 3 free scans per month</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Overall AI Visibility Score</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Basic score breakdown</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Top 3 issues</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Limited report preview</li>
                   </ul>
                   <a href="#scanner" className="btn btn-secondary">Start free scan</a>
                 </article>
@@ -784,14 +784,14 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   <h3>Full Report</h3>
                   <p className="pricing-subline">Best for one website audit.</p>
                   <ul>
-                    <li><CheckCircle2 className="h-4 w-4" /> 1 full report</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Full issue breakdown</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Fix recommendations for every issue</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Schema recommendations</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> AI Answer Snapshot</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Competitor takeaway</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> 3 retests on same URL</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Client-ready PDF report</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 full report</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Full issue breakdown</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Fix recommendations for every issue</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Schema recommendations</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> AI Answer Snapshot</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Competitor takeaway</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 3 retests on same URL</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Client-ready PDF report</li>
                   </ul>
                   <button type="button" className="btn btn-secondary" onClick={handleHomepageFullReportCta}>Unlock full report</button>
                 </article>
@@ -801,12 +801,12 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   <span className="price">$39 <small>/month</small></span>
                   <h3>Pro Monthly</h3>
                   <ul>
-                    <li><CheckCircle2 className="h-4 w-4" /> 30 full reports per month</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Saved report history</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Client-ready PDF reports</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Competitor comparisons</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Priority scan access</li>
-                    <li><CheckCircle2 className="h-4 w-4" /> Unlimited retests on any URL</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 30 full reports per month</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Saved report history</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Client-ready PDF reports</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Competitor comparisons</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Priority scan access</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited retests on any URL</li>
                   </ul>
                   <button type="button" className="btn btn-primary" onClick={handleProMonthlyPricingCta}>Start Pro Monthly</button>
                 </article>
@@ -954,7 +954,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
 
             {waitlistState === "success" ? (
               <div className="waitlist-modal-success">
-                <CheckCircle2 className="h-5 w-5" />
+                <CheckCircle weight="fill" className="h-5 w-5" />
                 <p>{waitlistSuccessMessage}</p>
               </div>
             ) : (
@@ -998,7 +998,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
           <div className="error-modal" onClick={(e) => e.stopPropagation()}>
             <div className="error-modal-header">
               <div className="error-icon-wrapper">
-                <XCircle className="h-7 w-7" />
+                <XCircle weight="fill" className="h-7 w-7" />
               </div>
               <div className="error-header-text">
                 <h3>Couldn&apos;t scan this page</h3>
