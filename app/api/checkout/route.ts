@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     const requestBody = body.checkoutType === "pro_plan"
       ? {
-          products: [{ product_id: productId }],
+          products: [productId],
           success_url: successUrl,
           ...(userEmail ? { customer_email: userEmail } : {}),
           metadata,
