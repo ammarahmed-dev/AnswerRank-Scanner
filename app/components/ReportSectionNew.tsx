@@ -94,12 +94,14 @@ function mapCategory(id: string): Category {
   if (id === "title" || id === "meta_desc" || id.includes("og")) return "metadata";
   if (id.includes("heading") || id === "h1") return "headings";
   if (id === "https" || id === "robots" || id === "sitemap") return "trust";
+  if (id === "core_web_vitals" || id.startsWith("cwv_")) return "performance";
   if (id === "word_count" || id === "internal_links" || id === "alt_text") return "content";
   return "ai-readiness";
 }
 
 function effortById(id: string): Effort {
   if (id.includes("schema")) return "medium";
+  if (id.startsWith("cwv_")) return "medium";
   if (id === "word_count" || id === "heading_structure") return "hard";
   return "easy";
 }
@@ -135,6 +137,9 @@ function whyItMattersById(id: string): string {
     eeat_freshness: "AI engines prioritize fresh, recently updated content. Stale pages without dateModified schema are deprioritized in AI-generated answers, even if they rank well in traditional search.",
     readability: "AI engines like ChatGPT and Perplexity prefer content that is easy to parse and extract. Research shows readability (Flesch score) positively correlates with AI citation frequency - simpler, clearer writing gets cited more.",
     core_web_vitals: "Core Web Vitals directly affect how reliably AI crawlers can index your content. Slow LCP means AI bots may time out before reading your page. High CLS indicates unstable layouts that confuse both users and crawlers.",
+    cwv_lcp: "Largest Contentful Paint affects how quickly the main content becomes available to users and crawlers. Slow LCP can cause visitors and bots to abandon the page before the content is fully usable.",
+    cwv_cls: "Cumulative Layout Shift measures visual stability. High CLS makes the page feel unstable and can make content harder for users and crawlers to interpret reliably.",
+    cwv_tbt: "Total Blocking Time shows how much JavaScript blocks the page from responding. High TBT can delay interaction and make crawled content slower to process.",
   };
   return map[id] ?? "Weak signals reduce how confidently AI assistants and search systems can understand and cite this page.";
 }
@@ -173,6 +178,9 @@ function recommendedFix(check: CheckResult) {
     if (detail.includes("tbt") || detail.includes("fid")) return "Reduce TBT by deferring non-critical JavaScript, removing unused scripts, and breaking up long tasks. Target TBT under 200ms.";
     return "Run a full PageSpeed audit at pagespeed.web.dev for your URL. Focus on the top 3 opportunities listed - typically image optimization, unused JavaScript, and render-blocking resources.";
   }
+  if (check.id === "cwv_lcp") return "Improve LCP by optimizing your largest image or text block - compress images, use modern formats (WebP), and preload key assets. Target LCP under 2.5 seconds.";
+  if (check.id === "cwv_cls") return "Fix CLS by adding explicit width and height to images and embeds. Avoid inserting content above existing content. Target CLS under 0.1.";
+  if (check.id === "cwv_tbt") return "Reduce TBT by deferring non-critical JavaScript, removing unused scripts, and breaking up long tasks. Target TBT under 200ms.";
   return `Review the ${check.label} signal and apply the recommended fix. Even small improvements to this signal can increase how confidently AI engines cite this page.`;
 }
 
@@ -199,6 +207,41 @@ function normalizeIssues(checks: CheckResult[]): ReportIssue[] {
       example: issueExample(check),
     };
   });
+}
+
+function buildCoreWebVitalsIssues(pagespeed: ScanResult["pagespeed"], fallbackIssue: ReportIssue): ReportIssue[] {
+  if (!pagespeed) return [fallbackIssue];
+
+  const checks: CheckResult[] = [];
+  if (typeof pagespeed.lcp === "number" && pagespeed.lcp >= 2.5) {
+    checks.push({
+      id: "cwv_lcp",
+      label: "Largest Contentful Paint",
+      status: pagespeed.lcp >= 4 ? "fail" : "warn",
+      detail: `LCP is ${pagespeed.lcp}s. Target under 2.5s.`,
+      weight: fallbackIssue.priority === "critical" ? 10 : 7,
+    });
+  }
+  if (typeof pagespeed.cls === "number" && pagespeed.cls >= 0.1) {
+    checks.push({
+      id: "cwv_cls",
+      label: "Cumulative Layout Shift",
+      status: pagespeed.cls >= 0.25 ? "fail" : "warn",
+      detail: `CLS is ${pagespeed.cls}. Target under 0.1.`,
+      weight: fallbackIssue.priority === "critical" ? 10 : 7,
+    });
+  }
+  if (typeof pagespeed.fid === "number" && pagespeed.fid >= 200) {
+    checks.push({
+      id: "cwv_tbt",
+      label: "Total Blocking Time",
+      status: pagespeed.fid >= 600 ? "fail" : "warn",
+      detail: `TBT is ${pagespeed.fid}ms. Target under 200ms.`,
+      weight: fallbackIssue.priority === "critical" ? 10 : 7,
+    });
+  }
+
+  return checks.length ? normalizeIssues(checks) : [fallbackIssue];
 }
 
 function buildPageSpeedIssues(pagespeed: ScanResult["pagespeed"], existingIssues: ReportIssue[]): ReportIssue[] {
@@ -359,7 +402,9 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   }, [report.url]);
 
   const issues = useMemo(() => {
-    const baseIssues = normalizeIssues(checks).filter((issue) => checks.find((c) => c.id === issue.id)?.status !== "pass");
+    const baseIssues = normalizeIssues(checks)
+      .filter((issue) => checks.find((c) => c.id === issue.id)?.status !== "pass")
+      .flatMap((issue) => issue.id === "core_web_vitals" ? buildCoreWebVitalsIssues(report.pagespeed, issue) : [issue]);
     const performanceIssues = buildPageSpeedIssues(report.pagespeed, baseIssues);
     return [...baseIssues, ...performanceIssues];
   }, [checks, report.pagespeed]);
@@ -735,7 +780,7 @@ const downloadPdf = () => {
                   <div className="issue-toggle-right">
                     <div className="issue-pill-row">
                       <span className={`mini-pill ${badgeTone(issue.priority)}`}>{issue.priority}</span>
-                      <span className={`mini-pill ${badgeTone(issue.impact)}`}>â†‘ {issue.impact}</span>
+                      <span className={`mini-pill ${badgeTone(issue.impact)}`}>AI {issue.impact}</span>
                       <span className={`mini-pill ${badgeTone(issue.effort)}`}>{issue.effort}</span>
                     </div>
                     <ChevronDown className={`issue-chevron${isOpen ? " is-open" : ""}`} />

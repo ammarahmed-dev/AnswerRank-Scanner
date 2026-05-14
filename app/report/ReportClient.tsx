@@ -63,7 +63,10 @@ export default function ReportClient() {
         setErrorMsg("");
 
         try {
+          const supabase = getSupabaseBrowserClient();
+          const token = (await getSafeSupabaseSession(supabase))?.access_token;
           const res = await fetch(`/api/reports/${encodeURIComponent(reportId)}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
             signal: controller.signal,
           });
           const data = (await res.json()) as ScanResult & { error?: string };

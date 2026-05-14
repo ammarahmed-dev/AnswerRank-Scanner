@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import LoadingState from "./LoadingState";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { ScanResult } from "@/types/index";
 
 type ProgressStatus = "started" | "complete" | "skipped" | "error";
 type LoaderProgress = {
@@ -34,7 +34,6 @@ export default function RetestButton({
   isMasterAdmin = false,
   compact = false,
 }: Props) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [loaderProgress, setLoaderProgress] = useState<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
@@ -95,6 +94,7 @@ export default function RetestButton({
       const decoder = new TextDecoder();
       let buffer = "";
       let newReportId: string | null = null;
+      let newReport: ScanResult | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -123,7 +123,7 @@ export default function RetestButton({
               label?: string;
               step?: number;
               status?: ProgressStatus;
-              result?: { reportId?: string; id?: string };
+              result?: ScanResult & { id?: string };
               reportId?: string;
               id?: string;
               report?: { id?: string };
@@ -140,6 +140,13 @@ export default function RetestButton({
             }
 
             if (payload.type === "result") {
+              newReport = payload.result ?? null;
+              if (!newReport) {
+                setError("Scan completed, but the saved report was missing from the response.");
+                setLoading(false);
+                return;
+              }
+
               newReportId =
                 payload.result?.reportId ||
                 payload.result?.id ||
@@ -148,6 +155,12 @@ export default function RetestButton({
                 payload.report?.id ||
                 payload.data?.id ||
                 null;
+
+              if (!newReportId) {
+                setError("Scan completed, but the saved report ID was missing from the response.");
+                setLoading(false);
+                return;
+              }
 
               if (newReportId) break;
             }
@@ -166,7 +179,18 @@ export default function RetestButton({
       }
 
       if (newReportId) {
-        router.push(`/report?id=${newReportId}`);
+        try {
+          if (!newReport) {
+            throw new Error("Missing saved report payload.");
+          }
+          sessionStorage.setItem(`aeocheck_report:${newReportId}`, JSON.stringify(newReport));
+          sessionStorage.setItem(`aeocheck_report:${newReport.url}`, JSON.stringify(newReport));
+          window.location.assign(`/report?id=${encodeURIComponent(newReportId)}`);
+        } catch (err) {
+          console.error("[retest] save or redirect failed:", err);
+          setError("Scan completed, but the new report could not be opened. Please check your dashboard.");
+          setLoading(false);
+        }
         return;
       }
 

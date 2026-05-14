@@ -85,6 +85,7 @@ export default function AuthButton() {
   const handleLogout = async () => {
     setMenuOpen(false);
     await supabase.auth.signOut();
+    sessionStorage.clear();
     setUser(null);
     setIsAdmin(false);
     setPlan("guest");
