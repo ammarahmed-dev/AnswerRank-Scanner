@@ -152,7 +152,13 @@ function recommendedFix(check: CheckResult) {
   if (check.id === "eeat_author") return "Add an author byline with a link to an author bio page. Implement Person schema with name, url, and jobTitle fields.";
   if (check.id === "eeat_about") return "Add visible links to an About page and Contact page in your navigation or footer. These are fundamental E-E-A-T trust signals.";
   if (check.id === "eeat_freshness") return "Add datePublished and dateModified fields to your page schema. Update the dateModified value whenever you meaningfully update content.";
-  if (check.id === "readability") return "Shorten sentences to 15-20 words average. Use common words instead of jargon. Break complex paragraphs into shorter ones. Aim for a 7th-8th grade reading level (Flesch score 60-70).";
+  if (check.id === "readability") {
+    const score = check.detail.match(/Flesch score: (\d+)/)?.[1];
+    const scoreNum = score ? parseInt(score) : 0;
+    if (scoreNum < 30) return "Content is very difficult to read. Start key sections with a 1-2 sentence direct answer. Replace technical jargon with plain language. Target sentences under 20 words. Aim for Flesch score above 60.";
+    if (scoreNum < 50) return "Sentences are too long or complex for AI extraction. Break paragraphs into 2-3 sentence chunks. Use bullet points for lists. Lead each section with a direct answer statement.";
+    return "Simplify sentence structure and use everyday language. Aim for a 7th-8th grade reading level (Flesch score 60-70) for optimal AI citation.";
+  }
   if (check.id === "word_count") return "Add use-case detail, proof points, and concise FAQ blocks.";
   if (check.id === "internal_links") return "Add contextual internal links to product, proof, and FAQ pages.";
   return "Improve this signal to increase answer-engine confidence and citation readiness.";
