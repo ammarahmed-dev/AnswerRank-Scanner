@@ -413,6 +413,17 @@ const CHECKS_CONFIG: CheckConfig[] = [
       return `Poor readability (Flesch score: ${score}/100) - content is too complex for AI engines to cite effectively`;
     },
   },
+  {
+    id: "core_web_vitals",
+    label: "Core Web Vitals",
+    weight: 6,
+    check: (_data: ScrapedData) => {
+      // Status is overridden in scan/route.ts
+      // using actual PageSpeed data
+      return "warn";
+    },
+    detail: () => "Core Web Vitals require PageSpeed API data",
+  },
 ];
 
 export function runDeterministicChecks(

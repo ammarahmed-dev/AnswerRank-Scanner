@@ -329,7 +329,8 @@ function applyTrustValidationChecks(
   robots: TrustValidationResult,
   sitemap: TrustValidationResult,
   aiBotResult?: { status: "pass" | "warn" | "fail"; detail: string },
-  llmsTxtResult?: { status: "pass" | "warn" | "fail"; detail: string }
+  llmsTxtResult?: { status: "pass" | "warn" | "fail"; detail: string },
+  cwvResult?: { status: "pass" | "warn" | "fail"; detail: string }
 ): CheckResult[] {
   return checks.map((check) => {
     if (check.id === "robots") {
@@ -343,6 +344,9 @@ function applyTrustValidationChecks(
     }
     if (check.id === "llms_txt" && llmsTxtResult) {
       return { ...check, status: llmsTxtResult.status, detail: llmsTxtResult.detail };
+    }
+    if (check.id === "core_web_vitals" && cwvResult) {
+      return { ...check, status: cwvResult.status, detail: cwvResult.detail };
     }
     return check;
   });
@@ -687,31 +691,26 @@ export async function POST(req: NextRequest) {
           // llms.txt not found or timeout, keep warn
         }
 
-        const checks = applyTrustValidationChecks(
-          baseChecks,
-          robotsCheck,
-          sitemapCheck,
-          { status: aiBotStatus, detail: aiBotDetail },
-          { status: llmsTxtStatus, detail: llmsTxtDetail }
-        );
-        const score = calculateScore(checks);
-        const categoryScores = categoryScoresFromChecks(checks, null);
         const detectedSchemas = scrapedData.schemaTypes;
         const candidateSchemaTypes = ["Organization", "WebSite", "WebPage", "FAQPage", "Article", "HowTo", "BreadcrumbList", "Service", "Product", "SoftwareApplication"];
         const missingSchemas = candidateSchemaTypes.filter(
           (type) => !detectedSchemas.some((detected) => detected.toLowerCase() === type.toLowerCase())
         );
-        const issueTitles = checks
-          .filter((check) => check.status !== "pass")
-          .map((check) => check.label);
 
         emitProgress(4, "Running PageSpeed check", "started");
 
-        let pagespeed: { score: number } | null = null;
+        let pagespeed: ScanResult["pagespeed"] = null;
+        let pagespeedResult: Awaited<ReturnType<typeof getPageSpeedScore>> | null = null;
         try {
           const psResult = await getPageSpeedScore(url);
+          pagespeedResult = psResult;
           if (psResult.score !== null) {
-            pagespeed = { score: psResult.score };
+            pagespeed = {
+              score: psResult.score,
+              lcp: psResult.lcp ?? null,
+              cls: psResult.cls ?? null,
+              fid: psResult.fid ?? null,
+            };
             emitProgress(4, "Running PageSpeed check", "complete");
           } else {
             if (psResult.error) {
@@ -724,6 +723,72 @@ export async function POST(req: NextRequest) {
           console.error("PageSpeed fetch failed:", err instanceof Error ? err.message : "Unknown error");
           emitProgress(4, "PageSpeed unavailable, continuing", "error");
         }
+
+        // Core Web Vitals check
+        let cwvStatus: "pass" | "warn" | "fail" = "warn";
+        let cwvDetail = "PageSpeed data unavailable - Core Web Vitals could not be checked";
+
+        if (pagespeedResult && typeof pagespeedResult.score === "number") {
+          const { lcp, cls, fid, score } = pagespeedResult;
+          const parts: string[] = [];
+
+          // LCP: Good < 2.5s, Needs Improvement < 4s, Poor >= 4s
+          if (typeof lcp === "number") {
+            parts.push(`LCP ${lcp}s`);
+          }
+          // CLS: Good < 0.1, Needs Improvement < 0.25, Poor >= 0.25
+          if (typeof cls === "number") {
+            parts.push(`CLS ${cls}`);
+          }
+          // FID/TBT: Good < 200ms
+          if (typeof fid === "number") {
+            parts.push(`TBT ${fid}ms`);
+          }
+
+          const lcpOk = typeof lcp !== "number" || lcp < 2.5;
+          const clsOk = typeof cls !== "number" || cls < 0.1;
+          const fidOk = typeof fid !== "number" || fid < 200;
+          const scoreOk = score >= 75;
+
+          if (scoreOk && lcpOk && clsOk && fidOk) {
+            cwvStatus = "pass";
+            cwvDetail = parts.length
+              ? `Good Core Web Vitals: ${parts.join(", ")} - PageSpeed ${score}/100`
+              : `Good performance score (${score}/100)`;
+          } else if (score >= 50) {
+            cwvStatus = "warn";
+            const issues: string[] = [];
+            if (!lcpOk && typeof lcp === "number") issues.push(`LCP ${lcp}s (target <2.5s)`);
+            if (!clsOk && typeof cls === "number") issues.push(`CLS ${cls} (target <0.1)`);
+            if (!fidOk && typeof fid === "number") issues.push(`TBT ${fid}ms (target <200ms)`);
+            cwvDetail = issues.length
+              ? `CWV needs work: ${issues.join(", ")} - PageSpeed ${score}/100`
+              : `Performance needs improvement (${score}/100)`;
+          } else {
+            cwvStatus = "fail";
+            const issues: string[] = [];
+            if (!lcpOk && typeof lcp === "number") issues.push(`LCP ${lcp}s (target <2.5s)`);
+            if (!clsOk && typeof cls === "number") issues.push(`CLS ${cls} (target <0.1)`);
+            if (!fidOk && typeof fid === "number") issues.push(`TBT ${fid}ms (target <200ms)`);
+            cwvDetail = issues.length
+              ? `Poor CWV: ${issues.join(", ")} - PageSpeed ${score}/100`
+              : `Poor performance score (${score}/100) - needs significant improvement`;
+          }
+        }
+
+        const checks = applyTrustValidationChecks(
+          baseChecks,
+          robotsCheck,
+          sitemapCheck,
+          { status: aiBotStatus, detail: aiBotDetail },
+          { status: llmsTxtStatus, detail: llmsTxtDetail },
+          { status: cwvStatus, detail: cwvDetail }
+        );
+        const score = calculateScore(checks);
+        const categoryScores = categoryScoresFromChecks(checks, pagespeed);
+        const issueTitles = checks
+          .filter((check) => check.status !== "pass")
+          .map((check) => check.label);
 
         const includeAIThisRequest = wantAI && checkAIRateLimit(url);
         emitProgress(5, "Generating AI insights", "started");

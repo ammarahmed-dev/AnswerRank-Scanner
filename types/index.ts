@@ -57,9 +57,9 @@ export interface AIInsights {
 
 export interface PageSpeedData {
   score: number;
-  lcp?: number;
-  cls?: number;
-  fid?: number;
+  lcp?: number | null;
+  cls?: number | null;
+  fid?: number | null;
 }
 
 export interface CompetitorScanMetrics {
