@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
-import { polar } from "@/lib/polar";
 
 export const runtime = "nodejs";
 
@@ -105,25 +104,38 @@ export async function POST(req: Request) {
     : `${origin}/?payment=1`;
 
   try {
-    const checkout = await polar.checkouts.create({
-      products: [productId],
-      successUrl,
-      returnUrl: `${origin}${returnToWithRefresh}`,
-      customerEmail: auth.user.email ?? undefined,
-      externalCustomerId: auth.user.id,
-      metadata: {
-        checkoutType,
-        reportId: body.reportId ?? "",
-        reportUrl: body.reportUrl?.slice(0, 500) ?? "",
-        userId: auth.user.id,
-        email: auth.user.email ?? "",
+    const polarResponse = await fetch(
+      "https://api.polar.sh/v1/checkouts/",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.POLAR_ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          success_url: successUrl,
+          customer_email: auth.user.email ?? undefined,
+          metadata: {
+            checkoutType: body.checkoutType,
+            reportId: body.reportId ?? "",
+            userId: auth.user.id,
+          },
+        }),
       },
-      customerMetadata: {
-        userId: auth.user.id,
-      },
-    });
+    );
 
-    return NextResponse.json({ url: checkout.url });
+    if (!polarResponse.ok) {
+      const errorText = await polarResponse.text();
+      console.error("Polar API error:", polarResponse.status, errorText);
+      return NextResponse.json(
+        { error: "Failed to create checkout", detail: errorText },
+        { status: 500 }
+      );
+    }
+
+    const checkoutData = await polarResponse.json() as { url: string };
+    return NextResponse.json({ url: checkoutData.url });
   } catch (error) {
     const err = error as {
       message?: string;
