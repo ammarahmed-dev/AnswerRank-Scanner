@@ -83,6 +83,7 @@ export async function POST(req: Request) {
     }
   } catch (error) {
     console.error("Polar webhook handler error:", error);
+    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

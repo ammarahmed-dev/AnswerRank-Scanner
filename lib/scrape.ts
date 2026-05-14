@@ -10,18 +10,22 @@ export function normalizeUrl(input: string): string {
   return parsed.toString();
 }
 
+function isPublicHttpUrl(parsed: URL): boolean {
+  const validProtocol = parsed.protocol === "http:" || parsed.protocol === "https:";
+  const host = parsed.hostname.toLowerCase();
+  const blockedHosts = ["localhost", "127.0.0.1", "0.0.0.0", "::1"];
+  const isPrivateIp =
+    /^10\./.test(host) ||
+    /^192\.168\./.test(host) ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(host) ||
+    /^169\.254\./.test(host);
+  return validProtocol && Boolean(parsed.hostname) && !blockedHosts.includes(host) && !isPrivateIp;
+}
+
 export function validateUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    const validProtocol = parsed.protocol === "http:" || parsed.protocol === "https:";
-    const host = parsed.hostname.toLowerCase();
-    const blockedHosts = ["localhost", "127.0.0.1", "0.0.0.0", "::1"];
-    const isPrivateIp =
-      /^10\./.test(host) ||
-      /^192\.168\./.test(host) ||
-      /^172\.(1[6-9]|2\d|3[0-1])\./.test(host) ||
-      /^169\.254\./.test(host);
-    return validProtocol && Boolean(parsed.hostname) && !blockedHosts.includes(host) && !isPrivateIp;
+    return isPublicHttpUrl(parsed);
   } catch {
     return false;
   }
@@ -43,6 +47,10 @@ export async function fetchHtml(url: string): Promise<string> {
         "Accept-Language": "en-US,en;q=0.5",
       },
     });
+
+    if (!validateUrl(res.url || url)) {
+      throw new Error("Invalid URL. Only public http(s) URLs are supported.");
+    }
 
     if (!res.ok) {
       if (res.status === 403 || res.status === 401) throw new Error("Blocked by target website");

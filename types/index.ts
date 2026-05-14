@@ -95,8 +95,8 @@ export interface ScanResult {
   max_retests?: number;
   unlocked?: boolean;
   unlockedAt?: string;
-  unlockSource?: "stripe_checkout" | "admin" | "manual";
-  stripeSessionId?: string;
+  unlockSource?: "polar_checkout" | "admin" | "manual";
+  polarOrderId?: string;
   competitorUrls?: string[];
   competitors?: CompetitorScanResult[];
   url: string;

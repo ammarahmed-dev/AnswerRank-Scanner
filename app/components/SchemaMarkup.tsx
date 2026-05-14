@@ -56,7 +56,7 @@ export default function SchemaMarkup() {
           name: "What payment methods do you accept?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "All major credit and debit cards via Stripe. Full Report is one-time, and Pro Monthly is a subscription.",
+            text: "All major credit and debit cards via Polar. Full Report is one-time, and Pro Monthly is a subscription.",
           },
         },
         {

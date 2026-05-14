@@ -1,16 +1,17 @@
-{"timestamp":"00:00:05.059","source":"Server","level":"LOG","message":"- Experiments (use with caution):"}
-{"timestamp":"00:00:05.060","source":"Server","level":"LOG","message":"  ✓ optimizeCss"}
-{"timestamp":"00:00:05.061","source":"Server","level":"LOG","message":"  · optimizePackageImports"}
-{"timestamp":"00:00:05.062","source":"Server","level":"LOG","message":""}
-{"timestamp":"00:00:10.138","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
-{"timestamp":"00:00:18.388","source":"Server","level":"LOG","message":"Polar config: {}"}
-{"timestamp":"00:00:19.628","source":"Server","level":"LOG","message":"Polar request: {}"}
-{"timestamp":"00:00:21.747","source":"Server","level":"LOG","message":"Polar response: 401 \"{\\\"error\\\": \\\"invalid_token\\\", \\\"error_description\\\": \\\"The access token provided is expired, revoked, malformed, or invalid for other reasons.\\\"}\""}
-{"timestamp":"00:00:21.768","source":"Browser","level":"ERROR","message":"Checkout start failed: {}"}
-{"timestamp":"00:00:22.070","source":"Server","level":"ERROR","message":"[browser] \"Checkout start failed:\" \"\\u001b[31mError: Failed to create checkout\\u001b[39m\\n\\u001b[31m    at handleUpgrade (file://D:/AnswerRank Scanner/.next/dev/static/chunks/_0umx0g9._.js:1415:45)\\u001b[39m\" \"\\u001b[2m(file://D:/AnswerRank Scanner/.next/dev/static/chunks/_0umx0g9._.js:1418:21)\\u001b[22m\""}
-{"timestamp":"00:00:22.071","source":"Browser","level":"ERROR","message":"Checkout start failed: \"\\u001b[31mError: Failed to create checkout\\u001b[39m\\n\\u001b[31m    at handleUpgrade (file://D:/AnswerRank Scanner/.next/dev/static/chunks/_0umx0g9._.js:1415:45)\\u001b[39m\" \"\\u001b[2m(file://D:/AnswerRank Scanner/.next/dev/static/chunks/_0umx0g9._.js:1418:21)\\u001b[22m\""}
-{"timestamp":"00:09:07.468","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
-{"timestamp":"00:10:33.974","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
-{"timestamp":"00:11:22.778","source":"Browser","level":"WARN","message":"Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior=\"smooth\"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior"}
-{"timestamp":"03:20:44.171","source":"Server","level":"WARN","message":"[browser] \"\\u001b[33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior=\\\"smooth\\\"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior\\u001b[39m\" \"\\u001b[2m(file://D:/AnswerRank Scanner/.next/dev/static/chunks/node_modules_next_dist_115brz8._.js:2431:13)\\u001b[22m\""}
-{"timestamp":"03:20:44.173","source":"Browser","level":"WARN","message":"\u001b[33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior=\"smooth\"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior\u001b[39m"}
+{"timestamp":"00:00:06.994","source":"Server","level":"LOG","message":"- Experiments (use with caution):"}
+{"timestamp":"00:00:07.000","source":"Server","level":"LOG","message":"  ✓ optimizeCss"}
+{"timestamp":"00:00:07.003","source":"Server","level":"LOG","message":"  · optimizePackageImports"}
+{"timestamp":"00:00:07.005","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:01:09.398","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:21:22.725","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:22:16.298","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:22:30.040","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:26:05.841","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:26:15.252","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:26:18.735","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:26:40.603","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:26:47.770","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:28:30.178","source":"Server","level":"LOG","message":"✓ Compiled in 1724ms"}
+{"timestamp":"00:28:41.194","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:32:30.917","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:33:15.188","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}

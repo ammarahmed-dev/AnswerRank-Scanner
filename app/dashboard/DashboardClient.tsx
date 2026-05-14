@@ -241,7 +241,6 @@ export default function DashboardClient() {
                   <ul>
                     <li>Unlimited scan allowance</li>
                     <li>Saved report history</li>
-                    <li>Shareable client report links</li>
                   </ul>
                   <UpgradeButton checkoutType="pro_plan">Upgrade plan</UpgradeButton>
                 </section>
