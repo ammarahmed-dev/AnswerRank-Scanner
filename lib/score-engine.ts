@@ -128,7 +128,7 @@ const CHECKS_CONFIG: CheckConfig[] = [
     check: (data: ScrapedData) => {
       if (data.schemaTypes.includes("FAQPage")) return "pass";
       if (hasFaqContent(data)) return "warn";
-      return "pass"; // no FAQ content - check not applicable
+      return "warn"; // no FAQ content detected - neutral signal
     },
     detail: (data: ScrapedData) => {
       if (data.schemaTypes.includes("FAQPage"))
@@ -150,7 +150,7 @@ const CHECKS_CONFIG: CheckConfig[] = [
         data.schemaTypes.includes("BlogPosting");
       if (hasArticleSchema) return "pass";
       if (hasArticleContent(data)) return "warn";
-      return "pass"; // no article structure - check not applicable
+      return "warn"; // no article structure - neutral signal
     },
     detail: (data: ScrapedData) => {
       const articleTypes = data.schemaTypes.filter((t) =>
