@@ -19,6 +19,7 @@ export interface ScrapedData {
   datePublished?: string;
   dateModified?: string;
   hasPersonSchema?: boolean;
+  readabilityScore?: number;
 }
 
 export interface ScanMetadata {
