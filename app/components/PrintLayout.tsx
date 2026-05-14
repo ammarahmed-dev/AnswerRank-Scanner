@@ -291,7 +291,7 @@ export default function PrintLayout({ report }: Props) {
           <div className="pl-exec-card">
             <strong>Performance score</strong>
             <p>{report.pagespeed?.score !== undefined
-              ? `${report.pagespeed.score}/100 — Page speed affects how reliably AI crawlers index your content.`
+              ? `${report.pagespeed.score}/100. Page speed affects how reliably AI crawlers index your content.`
               : "PageSpeed score unavailable for this scan."}</p>
           </div>
         </div>

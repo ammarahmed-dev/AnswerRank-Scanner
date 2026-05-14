@@ -96,7 +96,7 @@ export default function AuthButton() {
 
   return (
     <div ref={wrapperRef}>
-      {/* â”€â”€ Desktop auth items â€” hidden below md â”€â”€ */}
+      {/* Desktop auth items, hidden below md */}
       {user ? (
         <div className="hidden md:inline-flex">
           <div className="auth-account">
@@ -125,7 +125,7 @@ export default function AuthButton() {
         </div>
       )}
 
-      {/* â”€â”€ Hamburger button â€” hidden above md via CSS â”€â”€ */}
+      {/* Hamburger button, hidden above md via CSS */}
       <button
         type="button"
         className="nav-hamburger"
@@ -136,7 +136,7 @@ export default function AuthButton() {
         {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
-      {/* â”€â”€ Mobile dropdown â€” always rendered, toggled with is-open â”€â”€ */}
+      {/* Mobile dropdown, always rendered and toggled with is-open */}
       <div className={`nav-mobile-menu${menuOpen ? " is-open" : ""}`}>
         <div className="nav-mobile-section">
           {NAV_LINKS.map((link) => (

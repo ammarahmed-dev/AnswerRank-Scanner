@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "AEOCheck — AI Search Readiness Scanner",
+    name: "AEOCheck: AI Search Readiness Scanner",
     short_name: "AEOCheck",
     description: "Scan any URL in 60 seconds. Get your AI search readiness score for ChatGPT, Perplexity, and Google AI.",
     start_url: "/",

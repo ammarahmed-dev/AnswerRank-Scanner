@@ -126,7 +126,7 @@ export default function ComparisonPageClient({ data }: Props) {
       </section>
 
       {/* CTA */}
-      <section className="launch-section">
+      <section className="launch-section vs-cta-section">
         <div className="launch-container vs-cta-block">
           <p className="launch-eyebrow">Try it free</p>
           <h2>Run a free AEO scan in 60 seconds</h2>

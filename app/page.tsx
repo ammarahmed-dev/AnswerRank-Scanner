@@ -12,7 +12,13 @@ export default function HomePage() {
         <span>60-second scan</span>
         <span>Works on any public URL</span>
       </p>
-      <h1>Find out if AI search engines can understand and recommend your website</h1>
+      <h1>
+        Find out if{" "}
+        <span className="gradient-text-purple">
+          AI search engines
+        </span>{" "}
+        can understand and recommend your website
+      </h1>
       <p className="hero-lede">
         Scan any URL in 60 seconds. Get an AI readiness score, missing schema issues, content clarity gaps, and prioritized fixes for ChatGPT, Perplexity, and Google AI results.
       </p>
