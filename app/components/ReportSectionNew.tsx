@@ -130,6 +130,9 @@ function whyItMattersById(id: string): string {
     word_count: "Thin content gives AI assistants very little to extract or cite. Pages with insufficient depth are rarely chosen as sources for detailed answers.",
     internal_links: "Internal links help AI crawlers discover related pages and understand your site structure. Few internal links means important pages get crawled less frequently.",
     structured_density: "Pages with multiple relevant schema types give AI systems a richer, more confident picture of your content, increasing citation likelihood across more query types.",
+    eeat_author: "AI engines use author attribution as a trust signal. Pages with clear author bylines, Person schema, or expert attribution are significantly more likely to be cited as credible sources.",
+    eeat_about: "About and Contact pages signal that a real organization stands behind the content. AI engines like ChatGPT and Perplexity factor in entity clarity and organizational trust when deciding which sources to cite.",
+    eeat_freshness: "AI engines prioritize fresh, recently updated content. Stale pages without dateModified schema are deprioritized in AI-generated answers, even if they rank well in traditional search.",
   };
   return map[id] ?? "Weak signals reduce how confidently AI assistants and search systems can understand and cite this page.";
 }
@@ -145,6 +148,9 @@ function recommendedFix(check: CheckResult) {
   if (check.id === "ai_bot_access") return "Check your robots.txt and ensure GPTBot, ClaudeBot, and PerplexityBot are not blocked. Add explicit allow rules for AI crawlers.";
   if (check.id === "sitemap") return "Create sitemap.xml and submit it to search indexing tools.";
   if (check.id === "llms_txt") return "Create a /llms.txt file at your domain root. Visit llmstxt.org for the standard format and generator tools.";
+  if (check.id === "eeat_author") return "Add an author byline with a link to an author bio page. Implement Person schema with name, url, and jobTitle fields.";
+  if (check.id === "eeat_about") return "Add visible links to an About page and Contact page in your navigation or footer. These are fundamental E-E-A-T trust signals.";
+  if (check.id === "eeat_freshness") return "Add datePublished and dateModified fields to your page schema. Update the dateModified value whenever you meaningfully update content.";
   if (check.id === "word_count") return "Add use-case detail, proof points, and concise FAQ blocks.";
   if (check.id === "internal_links") return "Add contextual internal links to product, proof, and FAQ pages.";
   return "Improve this signal to increase answer-engine confidence and citation readiness.";

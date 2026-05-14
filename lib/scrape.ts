@@ -355,6 +355,86 @@ export function parseHtmlToScrapedData(
     .split(/\s+/)
     .filter((word) => word.length > 0).length;
 
+  // E-E-A-T signals
+
+  // 1. Author detection
+  const authorSelectors = [
+    '[rel="author"]',
+    '[class*="author"]',
+    '[class*="byline"]',
+    '[itemprop="author"]',
+    "[data-author]",
+    ".post-author",
+    ".article-author",
+  ];
+  let hasAuthor = false;
+  for (const selector of authorSelectors) {
+    if ($(selector).length > 0) {
+      hasAuthor = true;
+      break;
+    }
+  }
+  // Also check schema for author
+  const hasPersonSchema = schemaTypes.some((t) =>
+    ["Person", "author"].includes(t)
+  );
+  if (hasPersonSchema) hasAuthor = true;
+
+  // 2. About/Contact page detection from links
+  let hasAboutPage = false;
+  let hasContactPage = false;
+  $("a[href]").each((_, el) => {
+    const href = ($(el).attr("href") || "").toLowerCase();
+    const text = ($(el).text() || "").toLowerCase().trim();
+    if (
+      href.includes("/about") ||
+      text === "about" ||
+      text === "about us" ||
+      text === "our team" ||
+      text === "who we are"
+    ) hasAboutPage = true;
+    if (
+      href.includes("/contact") ||
+      text === "contact" ||
+      text === "contact us" ||
+      text === "get in touch"
+    ) hasContactPage = true;
+  });
+
+  // 3. Date signals
+  let datePublished = "";
+  let dateModified = "";
+
+  // Check meta tags
+  datePublished = $('meta[property="article:published_time"]').attr("content")?.trim()
+    || $('meta[name="date"]').attr("content")?.trim()
+    || $('meta[name="publish-date"]').attr("content")?.trim()
+    || "";
+
+  dateModified = $('meta[property="article:modified_time"]').attr("content")?.trim()
+    || $('meta[name="last-modified"]').attr("content")?.trim()
+    || "";
+
+  // Check schema for dates
+  $('script[type="application/ld+json"]').each((_, el) => {
+    try {
+      const parsed = JSON.parse($(el).html() || "");
+      const items = Array.isArray(parsed) ? parsed : [parsed];
+      items.forEach((item: Record<string, string>) => {
+        if (item.datePublished && !datePublished) datePublished = item.datePublished;
+        if (item.dateModified && !dateModified) dateModified = item.dateModified;
+      });
+    } catch {
+      // ignore
+    }
+  });
+
+  // Check time elements
+  if (!datePublished) {
+    const timeEl = $("time[datetime]").first();
+    if (timeEl.length) datePublished = timeEl.attr("datetime") || "";
+  }
+
   return {
     url: baseUrl,
     title,
@@ -370,6 +450,12 @@ export function parseHtmlToScrapedData(
     ogTitle,
     ogDescription,
     ogImage,
+    hasAuthor,
+    hasAboutPage,
+    hasContactPage,
+    datePublished,
+    dateModified,
+    hasPersonSchema,
   };
 }
 

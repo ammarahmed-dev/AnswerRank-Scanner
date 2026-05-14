@@ -322,6 +322,70 @@ const CHECKS_CONFIG: CheckConfig[] = [
       return `No schema markup - add: ${list}`;
     },
   },
+  {
+    id: "eeat_author",
+    label: "Author / Attribution",
+    weight: 7,
+    check: (data: ScrapedData) => {
+      if (data.hasAuthor) return "pass";
+      // Only warn for content-heavy pages
+      if ((data.wordCount ?? 0) > 300) return "warn";
+      return "pass"; // not applicable for thin pages
+    },
+    detail: (data: ScrapedData) => {
+      if (data.hasAuthor) return "Author attribution detected — good E-E-A-T signal";
+      if ((data.wordCount ?? 0) > 300) return "No author attribution found — add byline or Person schema for E-E-A-T";
+      return "No author attribution — consider adding for content credibility";
+    },
+  },
+  {
+    id: "eeat_about",
+    label: "About / Contact Page",
+    weight: 8,
+    check: (data: ScrapedData) => {
+      if (data.hasAboutPage && data.hasContactPage) return "pass";
+      if (data.hasAboutPage || data.hasContactPage) return "warn";
+      return "warn";
+    },
+    detail: (data: ScrapedData) => {
+      if (data.hasAboutPage && data.hasContactPage) return "About and Contact pages linked — strong trust signals";
+      if (data.hasAboutPage) return "About page found but no Contact page linked";
+      if (data.hasContactPage) return "Contact page found but no About page linked";
+      return "No About or Contact page linked — add both for E-E-A-T";
+    },
+  },
+  {
+    id: "eeat_freshness",
+    label: "Content Freshness",
+    weight: 5,
+    check: (data: ScrapedData) => {
+      if (!data.datePublished && !data.dateModified) return "warn";
+      const dateStr = data.dateModified || data.datePublished || "";
+      try {
+        const date = new Date(dateStr);
+        const ageMonths = (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 30);
+        if (ageMonths <= 12) return "pass";
+        if (ageMonths <= 24) return "warn";
+        return "fail";
+      } catch {
+        return "warn";
+      }
+    },
+    detail: (data: ScrapedData) => {
+      if (!data.datePublished && !data.dateModified)
+        return "No publish or modified date found — add datePublished/dateModified schema";
+      const dateStr = data.dateModified || data.datePublished || "";
+      try {
+        const date = new Date(dateStr);
+        const ageMonths = Math.round((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24 * 30));
+        if (ageMonths <= 12) return `Content is fresh (updated ${ageMonths} months ago)`;
+        if (ageMonths <= 24) return `Content is ${ageMonths} months old — consider updating`;
+        return `Content is ${ageMonths} months old — AI engines deprioritize stale content`;
+      } catch {
+        return "Date format unrecognized — use ISO 8601 format (YYYY-MM-DD)";
+      }
+    },
+  },
 ];
 
 export function runDeterministicChecks(

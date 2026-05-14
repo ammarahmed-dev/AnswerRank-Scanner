@@ -13,6 +13,12 @@ export interface ScrapedData {
   ogTitle: string;
   ogDescription: string;
   ogImage: string;
+  hasAuthor?: boolean;
+  hasAboutPage?: boolean;
+  hasContactPage?: boolean;
+  datePublished?: string;
+  dateModified?: string;
+  hasPersonSchema?: boolean;
 }
 
 export interface ScanMetadata {
