@@ -4470,6 +4470,7 @@ textarea.contact-control {
   border: 1px solid var(--color-line);
   background: #050c1b94;
   border-radius: 14px;
+  flex-wrap: nowrap;
   justify-content: space-between;
   align-items: flex-start;
   gap: 10px;
@@ -4499,13 +4500,23 @@ textarea.contact-control {
 
 .action-plan-item-text small {
   color: var(--color-ink-muted);
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   margin-top: 4px;
   font-size: .78rem;
   line-height: 1.4;
-  display: -webkit-box;
-  overflow: hidden;
+  display: block;
+}
+
+.action-plan-item-text {
+  word-break: break-word;
+  min-width: 0;
+  overflow: visible;
+}
+
+.action-plan-item-text small {
+  white-space: normal;
+  word-wrap: break-word;
+  display: block;
+  overflow: visible;
 }
 
 .action-plan-item:hover {

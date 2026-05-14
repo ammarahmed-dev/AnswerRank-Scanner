@@ -2890,6 +2890,7 @@ textarea.contact-control {
 }
 .action-plan-item {
   display: flex;
+  flex-wrap: nowrap;
   justify-content: space-between;
   gap: 10px;
   align-items: flex-start;
@@ -2922,10 +2923,17 @@ textarea.contact-control {
   color: var(--color-ink-muted);
   font-size: 0.78rem;
   line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+}
+.action-plan-item-text {
+  overflow: visible;
+  word-break: break-word;
+  min-width: 0;
+}
+.action-plan-item-text small {
+  white-space: normal;
+  overflow: visible;
+  display: block;
+  word-wrap: break-word;
 }
 .action-plan-item:hover {
   border-color: rgba(148, 163, 184, 0.32);
