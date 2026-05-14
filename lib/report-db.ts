@@ -169,7 +169,7 @@ export async function getReportRecord(id: string): Promise<ScanResult | null> {
   return getReport(id);
 }
 
-export async function markReportUnlocked(reportId: string, stripeSessionId?: string | null): Promise<boolean> {
+export async function markReportUnlocked(reportId: string, polarOrderId?: string | null): Promise<boolean> {
   const unlockedAt = new Date().toISOString();
 
   if (hasSupabaseConfig()) {
@@ -196,8 +196,8 @@ export async function markReportUnlocked(reportId: string, stripeSessionId?: str
           max_retests: typeof current.max_retests === "number" ? current.max_retests : 3,
           unlocked: true,
           unlockedAt,
-          unlockSource: "stripe_checkout",
-          stripeSessionId: stripeSessionId ?? current.stripeSessionId,
+          unlockSource: "polar_checkout",
+          polarOrderId: polarOrderId ?? current.polarOrderId,
         };
 
         const patchRes = await fetch(`${supabaseUrl}/rest/v1/reports?id=eq.${encodeURIComponent(reportId)}`, {
@@ -229,8 +229,8 @@ export async function markReportUnlocked(reportId: string, stripeSessionId?: str
       ...local,
       unlocked: true,
       unlockedAt,
-      unlockSource: "stripe_checkout",
-      stripeSessionId: stripeSessionId ?? local.stripeSessionId,
+      unlockSource: "polar_checkout",
+      polarOrderId: polarOrderId ?? local.polarOrderId,
     };
 
     getDb()

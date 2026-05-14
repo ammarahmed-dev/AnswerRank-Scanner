@@ -81,7 +81,7 @@ export default function PrivacyPolicyPage() {
           <li>OpenAI / Google Gemini: AI analysis of scanned page content</li>
           <li>Google PageSpeed API: performance scoring</li>
           <li>Google Analytics / GTM: anonymized usage analytics</li>
-          <li>Stripe / Lemon Squeezy: payment processing</li>
+          <li>Polar: payment processing</li>
         </ul>
         <p>Each third party has their own privacy policy governing their data practices.</p>
 

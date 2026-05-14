@@ -1009,7 +1009,7 @@ const downloadPdf = () => {
               </UpgradeButton>
             </article>
           </div>
-          <p className="upgrade-choice-note">You can cancel the monthly plan anytime from Stripe billing.</p>
+          <p className="upgrade-choice-note">You can cancel the monthly plan anytime from Polar billing.</p>
           <div className="upgrade-choice-actions">
             <button type="button" className="btn btn-secondary" onClick={() => setIsUpgradeModalOpen(false)}>Cancel</button>
           </div>

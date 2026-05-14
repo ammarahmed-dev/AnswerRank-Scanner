@@ -3,13 +3,6 @@ import { POLAR_BASE_URL } from "@/lib/polar";
 import { getAuthContext } from "@/lib/auth-server";
 
 export async function POST(req: NextRequest) {
-  console.log("Polar config:", {
-    hasToken: !!process.env.POLAR_ACCESS_TOKEN,
-    baseUrl: POLAR_BASE_URL,
-    fullReportId: process.env.POLAR_FULL_REPORT_PRODUCT_ID,
-    proId: process.env.POLAR_PRO_MONTHLY_PRODUCT_ID,
-  });
-
   try {
     const body = await req.json() as {
       checkoutType: "full_report" | "pro_plan";
@@ -18,6 +11,10 @@ export async function POST(req: NextRequest) {
     };
 
     const authContext = await getAuthContext(req);
+    if (!authContext.user) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 400 });
+    }
+
     const userEmail = authContext.user?.email;
 
     const productId = body.checkoutType === "full_report"
@@ -66,8 +63,6 @@ export async function POST(req: NextRequest) {
     });
 
     const responseText = await response.text();
-    console.log("Polar response:", response.status, responseText);
-
     if (!response.ok) {
       return NextResponse.json(
         { error: "Failed to create checkout", detail: responseText },

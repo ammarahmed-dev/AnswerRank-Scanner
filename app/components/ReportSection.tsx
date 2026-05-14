@@ -64,7 +64,7 @@ export default function ReportSection({ report, onReset }: Props) {
   };
 
   const showUpgrade = () => {
-    setNotice("Use the Pro upgrade button to open Stripe Checkout.");
+    setNotice("Use the Pro upgrade button to open checkout.");
     setTimeout(() => setNotice(""), 2800);
   };
 
@@ -202,7 +202,7 @@ export default function ReportSection({ report, onReset }: Props) {
       <section className="surface pro-card">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
           <div className="flex-1">
-            <SectionHeader icon={<Crown className="h-4 w-4" />} title="Pro Report locked" text="A clear paid upgrade path for the next Stripe step." />
+            <SectionHeader icon={<Crown className="h-4 w-4" />} title="Pro Report locked" text="A clear paid upgrade path for the next checkout step." />
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 "Full AI search breakdown",

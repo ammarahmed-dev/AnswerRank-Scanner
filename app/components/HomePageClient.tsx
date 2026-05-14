@@ -90,7 +90,7 @@ const faqs = [
   ["Does it work without signup?", "Yes. Paste any public URL and run a free scan instantly. No account required."],
   ["What does the scanner check?", "It checks schema markup, metadata quality, heading structure, content depth, internal links, and how well the page is structured for AI answer extraction."],
   ["Is this the same as a traditional SEO audit?", "No. Traditional SEO audits focus on crawlability, keywords, and backlinks. This scanner focuses on whether answer engines like ChatGPT and Perplexity can accurately understand and cite your page."],
-  ["What payment methods do you accept?", "All major credit and debit cards via Stripe. Full Report is one-time, and Pro Monthly is a subscription."],
+  ["What payment methods do you accept?", "All major credit and debit cards via Polar. Full Report is one-time, and Pro Monthly is a subscription."],
   ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; Pro accounts keep full report history."],
 ];
 
