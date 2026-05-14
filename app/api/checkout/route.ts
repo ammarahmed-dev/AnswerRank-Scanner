@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
+import { polar } from "@/lib/polar";
 
 export const runtime = "nodejs";
-
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-const stripeFullReportPriceId = process.env.STRIPE_FULL_REPORT_PRICE_ID;
-const stripeProMonthlyPriceId = process.env.STRIPE_PRO_MONTHLY_PRICE_ID;
 
 type CheckoutBody = {
   checkoutType?: "full_report" | "pro_plan";
@@ -59,6 +56,13 @@ function withPaymentRefresh(path: string) {
 }
 
 export async function POST(req: Request) {
+  console.log("Polar config check:", {
+    hasToken: !!process.env.POLAR_ACCESS_TOKEN,
+    hasFullReportId: !!process.env.POLAR_FULL_REPORT_PRODUCT_ID,
+    hasProId: !!process.env.POLAR_PRO_MONTHLY_PRODUCT_ID,
+    server: process.env.NODE_ENV,
+  });
+
   let body: CheckoutBody = {};
   try {
     body = (await req.json()) as CheckoutBody;
@@ -72,11 +76,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Log in to upgrade your plan." }, { status: 401 });
   }
 
-  if (!stripeSecretKey) {
-    return NextResponse.json({ error: "Stripe checkout is not configured." }, { status: 500 });
+  if (!process.env.POLAR_ACCESS_TOKEN) {
+    return NextResponse.json({ error: "Polar checkout is not configured." }, { status: 500 });
   }
 
   const checkoutType = body.checkoutType === "pro_plan" ? "pro_plan" : "full_report";
+  const productId = checkoutType === "full_report"
+    ? process.env.POLAR_FULL_REPORT_PRODUCT_ID
+    : process.env.POLAR_PRO_MONTHLY_PRODUCT_ID;
+
+  if (!productId) {
+    return NextResponse.json({ error: "Polar product is not configured." }, { status: 500 });
+  }
+
+  if (checkoutType === "full_report" && !body.reportId) {
+    return NextResponse.json({ error: "Run a scan first, then unlock that report." }, { status: 400 });
+  }
 
   const origin = appUrl(req);
   const safeReturnTo = typeof body.returnTo === "string" && body.returnTo.startsWith("/")
@@ -85,58 +100,49 @@ export async function POST(req: Request) {
       ? `/report?id=${encodeURIComponent(body.reportId)}`
       : "/report";
   const returnToWithRefresh = withPaymentRefresh(safeReturnTo);
-  const successUrl = `${origin}/upgrade/success?session_id={CHECKOUT_SESSION_ID}&return_to=${encodeURIComponent(returnToWithRefresh)}${body.reportId ? `&report_id=${encodeURIComponent(body.reportId)}` : ""}`;
-  const cancelUrl = `${origin}/upgrade/cancel?return_to=${encodeURIComponent(returnToWithRefresh)}`;
+  const successUrl = checkoutType === "full_report" && body.reportId
+    ? `${origin}/report?id=${encodeURIComponent(body.reportId)}&payment=1`
+    : `${origin}/?payment=1`;
 
-  const params = new URLSearchParams();
-  params.set("success_url", successUrl);
-  params.set("cancel_url", cancelUrl);
-  params.set("client_reference_id", auth.user.id);
-  params.set("customer_email", auth.user.email ?? "");
-  params.set("line_items[0][quantity]", "1");
-  params.set("metadata[user_id]", auth.user.id);
-  params.set("metadata[email]", auth.user.email ?? "");
+  try {
+    const checkout = await polar.checkouts.create({
+      products: [productId],
+      successUrl,
+      returnUrl: `${origin}${returnToWithRefresh}`,
+      customerEmail: auth.user.email ?? undefined,
+      externalCustomerId: auth.user.id,
+      metadata: {
+        checkoutType,
+        reportId: body.reportId ?? "",
+        reportUrl: body.reportUrl?.slice(0, 500) ?? "",
+        userId: auth.user.id,
+        email: auth.user.email ?? "",
+      },
+      customerMetadata: {
+        userId: auth.user.id,
+      },
+    });
 
-  if (checkoutType === "full_report") {
-    if (!stripeFullReportPriceId) {
-      return NextResponse.json({ error: "Full Report checkout is not configured." }, { status: 500 });
-    }
-    if (!body.reportId) {
-      return NextResponse.json({ error: "Run a scan first, then unlock that report." }, { status: 400 });
-    }
-    params.set("mode", "payment");
-    params.set("line_items[0][price]", stripeFullReportPriceId);
-    params.set("metadata[unlock_type]", "full_report");
-    params.set("metadata[plan]", "free");
-    params.set("metadata[report_id]", body.reportId);
-    if (body.reportUrl) params.set("metadata[report_url]", body.reportUrl.slice(0, 500));
-  } else {
-    if (!stripeProMonthlyPriceId) {
-      return NextResponse.json({ error: "Pro plan checkout is not configured." }, { status: 500 });
-    }
-    params.set("mode", "subscription");
-    params.set("line_items[0][price]", stripeProMonthlyPriceId);
-    params.set("metadata[plan]", "pro");
-    params.set("metadata[unlock_type]", "plan_upgrade");
-    params.set("subscription_data[metadata][user_id]", auth.user.id);
-    params.set("subscription_data[metadata][plan]", "pro");
+    return NextResponse.json({ url: checkout.url });
+  } catch (error) {
+    const err = error as {
+      message?: string;
+      status?: number;
+      body?: unknown;
+    };
+    console.error("Polar checkout error:", {
+      message: err?.message,
+      status: err?.status,
+      body: err?.body,
+      full: error,
+    });
+    return NextResponse.json(
+      {
+        error: "Failed to create checkout",
+        detail: err?.message ?? "Unknown error"
+      },
+      { status: 500 }
+    );
   }
-
-  const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${stripeSecretKey}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: params.toString(),
-  });
-
-  const data = (await res.json()) as { url?: string; error?: { message?: string } };
-
-  if (!res.ok || !data.url) {
-    return NextResponse.json({ error: data.error?.message ?? "Could not start checkout." }, { status: 502 });
-  }
-
-  return NextResponse.json({ url: data.url });
 }
 
