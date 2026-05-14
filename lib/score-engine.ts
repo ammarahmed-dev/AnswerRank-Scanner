@@ -221,6 +221,15 @@ const CHECKS_CONFIG: CheckConfig[] = [
     detail: () => "Robots.txt validation requires separate HTTP check",
   },
   {
+    id: "ai_bot_access",
+    label: "AI Bot Access",
+    weight: 8,
+    check: (_data: ScrapedData) => {
+      return "warn";
+    },
+    detail: () => "AI bot access requires robots.txt analysis",
+  },
+  {
     id: "sitemap",
     label: "Sitemap.xml",
     weight: 5,
@@ -229,6 +238,15 @@ const CHECKS_CONFIG: CheckConfig[] = [
       return "warn";
     },
     detail: () => "Sitemap validation requires separate HTTP check",
+  },
+  {
+    id: "llms_txt",
+    label: "llms.txt File",
+    weight: 9,
+    check: (_data: ScrapedData) => {
+      return "warn";
+    },
+    detail: () => "llms.txt validation requires separate HTTP check",
   },
   {
     id: "alt_text",

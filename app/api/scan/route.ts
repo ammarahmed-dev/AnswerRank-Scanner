@@ -327,7 +327,9 @@ async function checkSitemapXml(baseUrl: string, robotsBody?: string): Promise<Tr
 function applyTrustValidationChecks(
   checks: CheckResult[],
   robots: TrustValidationResult,
-  sitemap: TrustValidationResult
+  sitemap: TrustValidationResult,
+  aiBotResult?: { status: "pass" | "warn" | "fail"; detail: string },
+  llmsTxtResult?: { status: "pass" | "warn" | "fail"; detail: string }
 ): CheckResult[] {
   return checks.map((check) => {
     if (check.id === "robots") {
@@ -335,6 +337,12 @@ function applyTrustValidationChecks(
     }
     if (check.id === "sitemap") {
       return { ...check, status: sitemap.status, detail: sitemap.detail };
+    }
+    if (check.id === "ai_bot_access" && aiBotResult) {
+      return { ...check, status: aiBotResult.status, detail: aiBotResult.detail };
+    }
+    if (check.id === "llms_txt" && llmsTxtResult) {
+      return { ...check, status: llmsTxtResult.status, detail: llmsTxtResult.detail };
     }
     return check;
   });
@@ -613,7 +621,79 @@ export async function POST(req: NextRequest) {
         const baseChecks = runDeterministicChecks(scrapedData);
         const robotsCheck = await checkRobotsTxt(url);
         const sitemapCheck = await checkSitemapXml(url, robotsCheck.body);
-        const checks = applyTrustValidationChecks(baseChecks, robotsCheck, sitemapCheck);
+
+        // Check AI bot access from robots.txt body
+        const robotsBody = robotsCheck.body ?? "";
+        const robotsLower = robotsBody.toLowerCase();
+
+        // Check if major AI bots are explicitly blocked
+        const aiBots = ["gptbot", "claudebot", "perplexitybot", "googlebot-extended", "anthropic-ai", "cohere-ai"];
+
+        // Parse disallow rules for each bot
+        let currentAgent = "";
+        const blockedBots: string[] = [];
+        let allAgentBlocked = false;
+
+        for (const line of robotsBody.split(/\r?\n/)) {
+          const trimmed = line.trim().toLowerCase();
+          if (trimmed.startsWith("user-agent:")) {
+            currentAgent = trimmed.replace("user-agent:", "").trim();
+          } else if (trimmed.startsWith("disallow:")) {
+            const path = trimmed.replace("disallow:", "").trim();
+            if (path === "/" || path === "/*") {
+              if (currentAgent === "*") allAgentBlocked = true;
+              if (aiBots.includes(currentAgent)) blockedBots.push(currentAgent);
+            }
+          }
+        }
+
+        // Determine AI bot access status
+        let aiBotStatus: "pass" | "warn" | "fail" = "pass";
+        let aiBotDetail = "AI crawlers have access to this page";
+
+        if (blockedBots.length > 0) {
+          aiBotStatus = "fail";
+          aiBotDetail = `AI bots blocked: ${blockedBots.join(", ")} - invisible to these AI search engines`;
+        } else if (allAgentBlocked) {
+          aiBotStatus = "warn";
+          aiBotDetail = "All bots blocked by default - verify AI crawlers are explicitly allowed";
+        } else if (!robotsBody) {
+          aiBotStatus = "warn";
+          aiBotDetail = "robots.txt not found - AI bot access cannot be verified";
+        } else if (robotsLower.includes("gptbot") && !robotsLower.includes("disallow")) {
+          aiBotStatus = "pass";
+          aiBotDetail = "GPTBot explicitly allowed in robots.txt";
+        }
+
+        // Check llms.txt
+        let llmsTxtStatus: "pass" | "warn" | "fail" = "warn";
+        let llmsTxtDetail = "No llms.txt file found - add one to guide AI crawlers";
+
+        try {
+          const llmsUrl = new URL("/llms.txt", robotsCheck.finalUrl ?? url).toString();
+          const llmsRes = await fetch(llmsUrl, {
+            method: "GET",
+            signal: AbortSignal.timeout(5000),
+            headers: { "User-Agent": "AEOCheckScanner/1.0 (+https://aeocheck.co)" }
+          });
+          if (llmsRes.ok) {
+            const llmsBody = await llmsRes.text();
+            if (llmsBody.trim().length > 0) {
+              llmsTxtStatus = "pass";
+              llmsTxtDetail = "llms.txt found - AI crawlers have structured guidance";
+            }
+          }
+        } catch {
+          // llms.txt not found or timeout, keep warn
+        }
+
+        const checks = applyTrustValidationChecks(
+          baseChecks,
+          robotsCheck,
+          sitemapCheck,
+          { status: aiBotStatus, detail: aiBotDetail },
+          { status: llmsTxtStatus, detail: llmsTxtDetail }
+        );
         const score = calculateScore(checks);
         const categoryScores = categoryScoresFromChecks(checks, null);
         const detectedSchemas = scrapedData.schemaTypes;

@@ -123,7 +123,9 @@ function whyItMattersById(id: string): string {
     og_image: "An OG image is pulled whenever your page is cited or previewed. Without one, platforms display a blank or auto-generated placeholder that reduces click-through.",
     https: "HTTPS is a baseline trust signal. Pages served over HTTP are deprioritized by crawlers and flagged as insecure by browsers, reducing crawl frequency and citation confidence.",
     robots: "A missing or misconfigured robots.txt can inadvertently block AI crawlers from indexing your page, making it invisible to systems that rely on crawl data.",
+    ai_bot_access: "If GPTBot, ClaudeBot, or PerplexityBot are blocked in your robots.txt, those AI engines cannot crawl or cite your pages, no matter how well-optimized your content is.",
     sitemap: "A sitemap tells crawlers exactly which pages exist and when they were last updated. Without one, new or updated pages are discovered more slowly.",
+    llms_txt: "llms.txt is the new standard for AI crawler guidance. Without it, AI engines like ChatGPT and Perplexity must guess what your site is about. Sites with llms.txt get significantly more accurate AI citations and better representation in AI-generated answers.",
     alt_text: "Alt text is how AI vision systems and crawlers understand your images. Missing alt text leaves image content invisible to indexing and answer systems.",
     word_count: "Thin content gives AI assistants very little to extract or cite. Pages with insufficient depth are rarely chosen as sources for detailed answers.",
     internal_links: "Internal links help AI crawlers discover related pages and understand your site structure. Few internal links means important pages get crawled less frequently.",
@@ -140,7 +142,9 @@ function recommendedFix(check: CheckResult) {
   if (check.id.includes("schema")) return "Add JSON-LD for Organization, WebSite, WebPage, FAQPage, and page-relevant entities.";
   if (check.id === "https") return "Serve the page on HTTPS and redirect all HTTP requests.";
   if (check.id === "robots") return "Publish a crawl-safe robots.txt and validate it in search tools.";
+  if (check.id === "ai_bot_access") return "Check your robots.txt and ensure GPTBot, ClaudeBot, and PerplexityBot are not blocked. Add explicit allow rules for AI crawlers.";
   if (check.id === "sitemap") return "Create sitemap.xml and submit it to search indexing tools.";
+  if (check.id === "llms_txt") return "Create a /llms.txt file at your domain root. Visit llmstxt.org for the standard format and generator tools.";
   if (check.id === "word_count") return "Add use-case detail, proof points, and concise FAQ blocks.";
   if (check.id === "internal_links") return "Add contextual internal links to product, proof, and FAQ pages.";
   return "Improve this signal to increase answer-engine confidence and citation readiness.";
