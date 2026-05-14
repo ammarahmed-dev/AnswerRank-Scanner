@@ -1,5 +1,8 @@
 export interface PageSpeedResult {
   score: number | null;
+  lcp?: number | null;  // Largest Contentful Paint in seconds
+  cls?: number | null;  // Cumulative Layout Shift score
+  fid?: number | null;  // First Input Delay in ms (or INP)
   error?: string;
 }
 
@@ -49,11 +52,28 @@ export async function getPageSpeedScore(url: string): Promise<PageSpeedResult> {
           categories?: {
             performance?: { score?: number };
           };
+          audits?: {
+            "largest-contentful-paint"?: { numericValue?: number };
+            "cumulative-layout-shift"?: { numericValue?: number };
+            "total-blocking-time"?: { numericValue?: number };
+            "interactive"?: { numericValue?: number };
+          };
         };
       };
       const score = data?.lighthouseResult?.categories?.performance?.score;
       if (typeof score === "number") {
-        return { score: Math.round(score * 100) };
+        const audits = data.lighthouseResult?.audits;
+        const lcpMs = audits?.["largest-contentful-paint"]?.numericValue;
+        const cls = audits?.["cumulative-layout-shift"]?.numericValue;
+        const fidMs = audits?.["total-blocking-time"]?.numericValue
+          ?? audits?.["interactive"]?.numericValue;
+
+        return {
+          score: Math.round(score * 100),
+          lcp: typeof lcpMs === "number" ? Math.round(lcpMs / 100) / 10 : null,
+          cls: typeof cls === "number" ? Math.round(cls * 100) / 100 : null,
+          fid: typeof fidMs === "number" ? Math.round(fidMs) : null,
+        };
       }
       lastError = "Google PageSpeed response did not include a performance score.";
       if (attempt >= maxAttempts) {

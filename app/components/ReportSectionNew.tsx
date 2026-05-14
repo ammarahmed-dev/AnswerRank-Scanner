@@ -134,6 +134,7 @@ function whyItMattersById(id: string): string {
     eeat_about: "About and Contact pages signal that a real organization stands behind the content. AI engines like ChatGPT and Perplexity factor in entity clarity and organizational trust when deciding which sources to cite.",
     eeat_freshness: "AI engines prioritize fresh, recently updated content. Stale pages without dateModified schema are deprioritized in AI-generated answers, even if they rank well in traditional search.",
     readability: "AI engines like ChatGPT and Perplexity prefer content that is easy to parse and extract. Research shows readability (Flesch score) positively correlates with AI citation frequency - simpler, clearer writing gets cited more.",
+    core_web_vitals: "Core Web Vitals directly affect how reliably AI crawlers can index your content. Slow LCP means AI bots may time out before reading your page. High CLS indicates unstable layouts that confuse both users and crawlers.",
   };
   return map[id] ?? "Weak signals reduce how confidently AI assistants and search systems can understand and cite this page.";
 }
@@ -165,6 +166,13 @@ function recommendedFix(check: CheckResult) {
   }
   if (check.id === "word_count") return "Expand content to at least 300 words. Add a clear problem statement, how your solution works, who it is for, and 3-5 FAQ questions with direct answers. Each FAQ answer should be 40-60 words - the ideal length for AI extraction.";
   if (check.id === "internal_links") return "Add at least 3-5 internal links to related pages. Link to your About page, key product or service pages, and any FAQ or blog content. Use descriptive anchor text that includes the topic of the linked page.";
+  if (check.id === "core_web_vitals") {
+    const detail = check.detail.toLowerCase();
+    if (detail.includes("lcp")) return "Improve LCP by optimizing your largest image or text block - compress images, use modern formats (WebP), and preload key assets. Target LCP under 2.5 seconds.";
+    if (detail.includes("cls")) return "Fix CLS by adding explicit width and height to images and embeds. Avoid inserting content above existing content. Target CLS under 0.1.";
+    if (detail.includes("tbt") || detail.includes("fid")) return "Reduce TBT by deferring non-critical JavaScript, removing unused scripts, and breaking up long tasks. Target TBT under 200ms.";
+    return "Run a full PageSpeed audit at pagespeed.web.dev for your URL. Focus on the top 3 opportunities listed - typically image optimization, unused JavaScript, and render-blocking resources.";
+  }
   return `Review the ${check.label} signal and apply the recommended fix. Even small improvements to this signal can increase how confidently AI engines cite this page.`;
 }
 
