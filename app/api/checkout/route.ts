@@ -24,20 +24,30 @@ export async function POST(req: NextRequest) {
       ? process.env.POLAR_FULL_REPORT_PRODUCT_ID!
       : process.env.POLAR_PRO_MONTHLY_PRODUCT_ID!;
 
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://aeocheck.co").replace(/\/$/, "");
     const successUrl = body.checkoutType === "full_report" && body.reportId
-      ? `${process.env.NEXT_PUBLIC_APP_URL}/report?id=${body.reportId}&payment=1`
-      : `${process.env.NEXT_PUBLIC_APP_URL}/?payment=1`;
+      ? `${baseUrl}/report?id=${body.reportId}&payment=1`
+      : `${baseUrl}/?payment=1`;
 
-    const requestBody = {
-      product_id: productId,
-      success_url: successUrl,
-      ...(userEmail ? { customer_email: userEmail } : {}),
-      metadata: {
-        checkoutType: body.checkoutType,
-        reportId: body.reportId ?? "",
-        userId: authContext.user?.id ?? "",
-      },
+    const metadata = {
+      checkoutType: body.checkoutType,
+      ...(body.reportId ? { reportId: body.reportId } : {}),
+      ...(authContext.user?.id ? { userId: authContext.user.id } : {}),
     };
+
+    const requestBody = body.checkoutType === "pro_plan"
+      ? {
+          products: [{ product_id: productId }],
+          success_url: successUrl,
+          ...(userEmail ? { customer_email: userEmail } : {}),
+          metadata,
+        }
+      : {
+          product_id: productId,
+          success_url: successUrl,
+          ...(userEmail ? { customer_email: userEmail } : {}),
+          metadata,
+        };
 
     console.log("Polar request:", {
       url: `${POLAR_BASE_URL}/v1/checkouts/`,
