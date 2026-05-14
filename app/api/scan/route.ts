@@ -13,7 +13,7 @@ import { generateAIInsights } from "@/lib/ai-provider";
 import { getPageSpeedScore } from "@/lib/pagespeed";
 import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
-import { checkUsageLimit, getPlanLimit, incrementUsage } from "@/lib/usage-limits";
+import { checkUsageLimit, getClientKey, getPlanLimit, incrementUsage } from "@/lib/usage-limits";
 import { isMasterAdmin } from "@/lib/admin";
 import { ScrapedData, ScanResult, AIInsights, CheckResult, CompetitorScanResult, ScanMetadata, SchemaRecommendation } from "@/types/index";
 
@@ -503,8 +503,8 @@ export async function POST(req: NextRequest) {
 
   const authContext = await getAuthContext(req);
   const effectivePlan = authContext.user && isMasterAdmin(authContext.user.email) ? "agency" : authContext.plan;
-  const usageKey = authContext.user ? `user:${authContext.user.id}` : null;
-  const usage = usageKey ? await checkUsageLimit(usageKey, getPlanLimit(effectivePlan)) : null;
+  const usageKey = authContext.user ? `user:${authContext.user.id}` : getClientKey(body.clientId, req);
+  const usage = await checkUsageLimit(usageKey, getPlanLimit(effectivePlan));
   if (usage && !usage.allowed) {
     return NextResponse.json(
       {

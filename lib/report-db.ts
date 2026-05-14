@@ -138,7 +138,7 @@ export async function getReportRecord(id: string): Promise<ScanResult | null> {
   if (hasSupabaseConfig()) {
     const params = new URLSearchParams({
       id: `eq.${id}`,
-      select: "result,retest_count,max_retests",
+      select: "result,user_id,retest_count,max_retests",
       limit: "1",
     });
 
@@ -153,14 +153,15 @@ export async function getReportRecord(id: string): Promise<ScanResult | null> {
       return null;
     }
 
-    const rows = (await res.json()) as Array<{ result?: ScanResult; retest_count?: number; max_retests?: number }>;
+    const rows = (await res.json()) as Array<{ result?: ScanResult; user_id?: string | null; retest_count?: number; max_retests?: number }>;
     const row = rows[0];
     if (row?.result) {
       return {
         ...row.result,
+        user_id: row.user_id ?? null,
         retest_count: typeof row.retest_count === "number" ? row.retest_count : row.result.retest_count ?? 0,
         max_retests: typeof row.max_retests === "number" ? row.max_retests : row.result.max_retests ?? 3,
-      };
+      } as ScanResult;
     }
     return getReport(id);
   }
