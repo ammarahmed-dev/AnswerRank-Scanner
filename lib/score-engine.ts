@@ -386,6 +386,33 @@ const CHECKS_CONFIG: CheckConfig[] = [
       }
     },
   },
+  {
+    id: "readability",
+    label: "Content Readability",
+    weight: 6,
+    check: (data: ScrapedData) => {
+      const score = data.readabilityScore ?? -1;
+      if (score < 0) return "warn";
+      // Flesch scale:
+      // 90-100: Very easy (5th grade)
+      // 70-90: Easy (6th grade)
+      // 60-70: Standard (7th-8th grade) - IDEAL for AEO
+      // 50-60: Fairly difficult
+      // 30-50: Difficult
+      // 0-30: Very difficult
+      if (score >= 60) return "pass";
+      if (score >= 40) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      const score = data.readabilityScore ?? -1;
+      if (score < 0) return "Readability could not be calculated";
+      if (score >= 70) return `Excellent readability (Flesch score: ${score}/100) - AI engines can easily extract answers`;
+      if (score >= 60) return `Good readability (Flesch score: ${score}/100) - content is clear for AI extraction`;
+      if (score >= 40) return `Moderate readability (Flesch score: ${score}/100) - simplify sentences for better AI citation`;
+      return `Poor readability (Flesch score: ${score}/100) - content is too complex for AI engines to cite effectively`;
+    },
+  },
 ];
 
 export function runDeterministicChecks(

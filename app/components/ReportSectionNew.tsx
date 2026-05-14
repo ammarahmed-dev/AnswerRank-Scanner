@@ -133,6 +133,7 @@ function whyItMattersById(id: string): string {
     eeat_author: "AI engines use author attribution as a trust signal. Pages with clear author bylines, Person schema, or expert attribution are significantly more likely to be cited as credible sources.",
     eeat_about: "About and Contact pages signal that a real organization stands behind the content. AI engines like ChatGPT and Perplexity factor in entity clarity and organizational trust when deciding which sources to cite.",
     eeat_freshness: "AI engines prioritize fresh, recently updated content. Stale pages without dateModified schema are deprioritized in AI-generated answers, even if they rank well in traditional search.",
+    readability: "AI engines like ChatGPT and Perplexity prefer content that is easy to parse and extract. Research shows readability (Flesch score) positively correlates with AI citation frequency - simpler, clearer writing gets cited more.",
   };
   return map[id] ?? "Weak signals reduce how confidently AI assistants and search systems can understand and cite this page.";
 }
@@ -151,6 +152,7 @@ function recommendedFix(check: CheckResult) {
   if (check.id === "eeat_author") return "Add an author byline with a link to an author bio page. Implement Person schema with name, url, and jobTitle fields.";
   if (check.id === "eeat_about") return "Add visible links to an About page and Contact page in your navigation or footer. These are fundamental E-E-A-T trust signals.";
   if (check.id === "eeat_freshness") return "Add datePublished and dateModified fields to your page schema. Update the dateModified value whenever you meaningfully update content.";
+  if (check.id === "readability") return "Shorten sentences to 15-20 words average. Use common words instead of jargon. Break complex paragraphs into shorter ones. Aim for a 7th-8th grade reading level (Flesch score 60-70).";
   if (check.id === "word_count") return "Add use-case detail, proof points, and concise FAQ blocks.";
   if (check.id === "internal_links") return "Add contextual internal links to product, proof, and FAQ pages.";
   return "Improve this signal to increase answer-engine confidence and citation readiness.";

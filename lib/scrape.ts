@@ -248,6 +248,48 @@ export function parseHtml(html: string, baseUrl: string): ExtractedData {
   };
 }
 
+function calculateFleschScore(text: string): number {
+  // Clean text - remove special chars, extra spaces
+  const cleaned = text
+    .replace(/[^a-zA-Z\s.!?]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!cleaned) return 0;
+
+  // Count sentences
+  const sentences = cleaned
+    .split(/[.!?]+/)
+    .filter((s) => s.trim().length > 3);
+  const sentenceCount = Math.max(sentences.length, 1);
+
+  // Count words
+  const words = cleaned.split(/\s+/).filter((w) => w.length > 0);
+  const wordCount = Math.max(words.length, 1);
+
+  // Count syllables
+  function countSyllables(word: string): number {
+    word = word.toLowerCase().replace(/[^a-z]/g, "");
+    if (word.length <= 3) return 1;
+    word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "");
+    word = word.replace(/^y/, "");
+    const matches = word.match(/[aeiouy]{1,2}/g);
+    return matches ? matches.length : 1;
+  }
+
+  const syllableCount = words.reduce(
+    (sum, word) => sum + countSyllables(word), 0
+  );
+
+  // Flesch Reading Ease formula
+  const score = 206.835
+    - 1.015 * (wordCount / sentenceCount)
+    - 84.6 * (syllableCount / wordCount);
+
+  // Clamp between 0-100
+  return Math.round(Math.min(100, Math.max(0, score)));
+}
+
 export function parseHtmlToScrapedData(
   html: string,
   baseUrl: string
@@ -435,6 +477,9 @@ export function parseHtmlToScrapedData(
     if (timeEl.length) datePublished = timeEl.attr("datetime") || "";
   }
 
+  // Readability score
+  const readabilityScore = calculateFleschScore(bodyText);
+
   return {
     url: baseUrl,
     title,
@@ -456,6 +501,7 @@ export function parseHtmlToScrapedData(
     datePublished,
     dateModified,
     hasPersonSchema,
+    readabilityScore,
   };
 }
 
