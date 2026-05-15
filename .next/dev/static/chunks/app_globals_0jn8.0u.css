@@ -3789,8 +3789,9 @@ textarea.contact-control {
 .blog-index-card-image {
   object-fit: cover;
   border-radius: calc(var(--radius-lg) - 2px) calc(var(--radius-lg) - 2px) 0 0;
-  width: 100%;
+  width: calc(100% + 44px);
   height: 200px;
+  margin: -22px -22px 0;
 }
 
 .blog-index-card time {
