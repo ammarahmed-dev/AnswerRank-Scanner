@@ -1,1 +1,11 @@
-{"version":4,"routes":{"/vs/otterly":{},"/vs/semrush-ai":{},"/vs/peec-ai":{},"/vs/profound":{},"/blog/aeo-checklist-for-webflow-developers":{},"/blog/aeo-checklist-webflow-developers":{}},"dynamicRoutes":{"/vs/[competitor]":{"dataRoute":null,"dataRouteRegex":null,"fallback":null,"fallbackRevalidate":false,"fallbackSourceRoute":"/vs/[competitor]","routeRegex":"^\\/vs\\/([^/]+?)(?:\\/)?$","allowHeader":[]},"/blog/[slug]":{"dataRoute":null,"dataRouteRegex":null,"fallback":null,"fallbackRevalidate":false,"fallbackSourceRoute":"/blog/[slug]","routeRegex":"^\\/blog\\/([^/]+?)(?:\\/)?$","allowHeader":[]}},"notFoundRoutes":[],"preview":{"previewModeId":"59864e132cb75d617c664d3b2403acd1","previewModeSigningKey":"66a29b01bdfc7bc8989497712f0acdf301fef2ece421910a1ba11227f5e320e1","previewModeEncryptionKey":"e0489f6b368ccf2c73cde1cb47e55748777562dd519b9c1db4af521e5b6467d9"}}
+{
+  "version": 4,
+  "routes": {},
+  "dynamicRoutes": {},
+  "notFoundRoutes": [],
+  "preview": {
+    "previewModeId": "b46285faee0fa472d542d32e1b0b6849",
+    "previewModeSigningKey": "c6d9167f558c0f0c706aaca370b9cccbf64eea1a72ac3e266b973cc109e4ab71",
+    "previewModeEncryptionKey": "5e4200d64fba3a8f0ca254a5d92cd0c7df7a4de98d44500246b2ff2eddfaa0e1"
+  }
+}
