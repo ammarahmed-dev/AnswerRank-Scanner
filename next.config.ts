@@ -1,10 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   experimental: {
     optimizeCss: true,
     optimizePackageImports: [
       "lucide-react",
+      "@phosphor-icons/react",
       "@radix-ui/react-icons",
     ],
   },

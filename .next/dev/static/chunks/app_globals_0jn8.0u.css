@@ -2,6 +2,11 @@
 @layer properties {
   @supports (((-webkit-hyphens: none)) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
     *, :before, :after, ::backdrop {
+      --tw-rotate-x: initial;
+      --tw-rotate-y: initial;
+      --tw-rotate-z: initial;
+      --tw-skew-x: initial;
+      --tw-skew-y: initial;
       --tw-space-y-reverse: 0;
       --tw-border-style: solid;
       --tw-gradient-position: initial;
@@ -73,6 +78,8 @@
     --shadow-md: 0 4px 6px -1px #0000001a, 0 2px 4px -2px #0000001a;
     --shadow-lg: 0 10px 15px -3px #0000001a, 0 4px 6px -4px #0000001a;
     --animate-spin: spin 1s linear infinite;
+    --default-transition-duration: .15s;
+    --default-transition-timing-function: cubic-bezier(.4, 0, .2, 1);
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
   }
@@ -378,6 +385,10 @@
     position: relative;
   }
 
+  .static {
+    position: static;
+  }
+
   .start {
     inset-inline-start: var(--spacing);
   }
@@ -532,6 +543,10 @@
 
   .flex-shrink-0 {
     flex-shrink: 0;
+  }
+
+  .transform {
+    transform: var(--tw-rotate-x, ) var(--tw-rotate-y, ) var(--tw-rotate-z, ) var(--tw-skew-x, ) var(--tw-skew-y, );
   }
 
   .animate-spin {
@@ -860,6 +875,12 @@
 
   .opacity-40 {
     opacity: .4;
+  }
+
+  .transition {
+    transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from, --tw-gradient-via, --tw-gradient-to, opacity, box-shadow, transform, translate, scale, rotate, filter, -webkit-backdrop-filter, backdrop-filter, display, content-visibility, overlay, pointer-events;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
 
   @media (hover: hover) {
@@ -3719,6 +3740,92 @@ textarea.contact-control {
   color: var(--color-primary);
   font-weight: 900;
   text-decoration: none;
+}
+
+.blog-index-page {
+  padding-top: 56px;
+  padding-bottom: 80px;
+}
+
+.blog-index-page .section-intro {
+  max-width: 760px;
+}
+
+.blog-index-page .section-intro h1 {
+  color: #fff;
+  letter-spacing: 0;
+  font-size: clamp(2.4rem, 6vw, 4.8rem);
+  font-weight: 950;
+  line-height: .98;
+}
+
+.blog-index-page .section-intro p:not(.launch-eyebrow) {
+  color: var(--color-ink-soft);
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.blog-index-list {
+  gap: 18px;
+  margin-top: 34px;
+  display: grid;
+}
+
+.blog-index-card {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: #0f172a94;
+  overflow: hidden;
+}
+
+.blog-index-card a {
+  color: inherit;
+  gap: 12px;
+  padding: 22px;
+  text-decoration: none;
+  display: grid;
+}
+
+.blog-index-card-image {
+  object-fit: cover;
+  border-radius: calc(var(--radius-lg) - 2px) calc(var(--radius-lg) - 2px) 0 0;
+  width: 100%;
+  height: 200px;
+}
+
+.blog-index-card time {
+  color: var(--color-ink-muted);
+  font-size: .88rem;
+  font-weight: 800;
+}
+
+.blog-index-card h2 {
+  color: #fff;
+  letter-spacing: 0;
+  font-size: 1.45rem;
+  font-weight: 950;
+}
+
+.blog-index-card p {
+  max-width: 680px;
+  color: var(--color-ink-soft);
+  line-height: 1.65;
+}
+
+.blog-tag-row {
+  flex-wrap: wrap;
+  gap: 8px;
+  display: flex;
+}
+
+.blog-tag-row span {
+  border: 1px solid var(--color-line);
+  color: var(--color-ink-soft);
+  background: #7c6aff1f;
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: .78rem;
+  font-weight: 850;
 }
 
 .report-shell {
@@ -9168,6 +9275,31 @@ textarea.contact-control {
   .vs-wins-grid {
     grid-template-columns: 1fr;
   }
+}
+
+@property --tw-rotate-x {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-rotate-y {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-rotate-z {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-skew-x {
+  syntax: "*";
+  inherits: false
+}
+
+@property --tw-skew-y {
+  syntax: "*";
+  inherits: false
 }
 
 @property --tw-space-y-reverse {
