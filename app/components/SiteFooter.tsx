@@ -19,6 +19,7 @@ export default function SiteFooter() {
             <p className="footer-group-label">PRODUCT</p>
             <div className="footer-link-list">
               <a href="/">Home</a>
+              <a href="/blog">Blog</a>
               <a href="/#scanner">Scanner</a>
               <a href="/#how">How It Works</a>
               <a href="/#pricing">Pricing</a>

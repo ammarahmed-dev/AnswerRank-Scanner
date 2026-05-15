@@ -1,11 +1,1 @@
-{
-  "version": 4,
-  "routes": {},
-  "dynamicRoutes": {},
-  "notFoundRoutes": [],
-  "preview": {
-    "previewModeId": "cb0f10fe5d49af7ea9b43a0a19a78973",
-    "previewModeSigningKey": "98bb1a4f008f068b45a04355750d7a5d9a4b822071c829619052d5f06db9f760",
-    "previewModeEncryptionKey": "6ec7a98c40c519d3963043302128cd5f96dfdb05c2168b7f7ce38c2d094fb78f"
-  }
-}
+{"version":4,"routes":{"/vs/otterly":{},"/vs/semrush-ai":{},"/vs/peec-ai":{},"/vs/profound":{},"/blog/aeo-checklist-for-webflow-developers":{},"/blog/aeo-checklist-webflow-developers":{}},"dynamicRoutes":{"/vs/[competitor]":{"dataRoute":null,"dataRouteRegex":null,"fallback":null,"fallbackRevalidate":false,"fallbackSourceRoute":"/vs/[competitor]","routeRegex":"^\\/vs\\/([^/]+?)(?:\\/)?$","allowHeader":[]},"/blog/[slug]":{"dataRoute":null,"dataRouteRegex":null,"fallback":null,"fallbackRevalidate":false,"fallbackSourceRoute":"/blog/[slug]","routeRegex":"^\\/blog\\/([^/]+?)(?:\\/)?$","allowHeader":[]}},"notFoundRoutes":[],"preview":{"previewModeId":"59864e132cb75d617c664d3b2403acd1","previewModeSigningKey":"66a29b01bdfc7bc8989497712f0acdf301fef2ece421910a1ba11227f5e320e1","previewModeEncryptionKey":"e0489f6b368ccf2c73cde1cb47e55748777562dd519b9c1db4af521e5b6467d9"}}

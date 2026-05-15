@@ -5,11 +5,13 @@ import ScoreCircle from "./ScoreCircle";
 import { AlertCircle, CheckCircle2, ChevronDown, Copy, Download, ExternalLink, Lock, RotateCcw, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
+import dynamic from "next/dynamic";
 import UpgradeButton from "./UpgradeButton";
-import RetestButton from "./RetestButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { canViewFullReport, isMasterAdmin } from "@/lib/access";
-import PrintLayout from "./PrintLayout";
+
+const RetestButton = dynamic(() => import("./RetestButton"), { ssr: false });
+const PrintLayout = dynamic(() => import("./PrintLayout"), { ssr: false });
 
 interface Props {
   report: ScanResult;

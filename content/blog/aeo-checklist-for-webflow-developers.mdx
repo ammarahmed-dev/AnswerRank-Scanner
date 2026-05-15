@@ -1,0 +1,283 @@
+---
+title: AEO Checklist for Webflow Developers
+description: A practical checklist to make any Webflow site visible to ChatGPT, Perplexity, and other AI search engines. Covers robots.txt, schema, llms.txt, content structure, and Core Web Vitals.
+date: 2026-05-15
+slug: aeo-checklist-webflow-developers
+tags: [aeo, webflow, checklist, ai-search]
+author: AEOCheck
+coverImage: /images/blog/aeo-checklist-webflow-cover.jpg
+---
+
+Search has changed. When someone asks ChatGPT "best tool for X" or asks Perplexity "how do I fix Y," they get a direct answer - not a list of links. If your Webflow site is not optimized for how AI engines read and cite content, you are invisible in the fastest-growing discovery channel on the web.
+
+This checklist covers every technical and content change a Webflow developer can make today to improve AI visibility. No fluff, no theory - just the actual fixes.
+
+Want to know your current AI visibility score before you start? [Run a free scan on AEOCheck](https://aeocheck.co) and get a full report in under 60 seconds.
+
+---
+
+## 1. Fix Your robots.txt - Stop Blocking AI Crawlers
+
+This is the most common mistake. Many Webflow sites accidentally block GPTBot, ClaudeBot, and PerplexityBot - the crawlers that power AI search results.
+
+**Check your robots.txt at `yourdomain.com/robots.txt`**
+
+You want to allow AI retrieval bots while optionally blocking training bots:
+
+```txt
+# Allow AI retrieval bots (these cite you in answers)
+User-agent: ChatGPT-User
+User-agent: PerplexityBot
+User-agent: Applebot-Extended
+Allow: /
+
+# Optional: block training crawlers
+User-agent: GPTBot
+User-agent: CCBot
+Disallow: /
+
+Sitemap: https://yourdomain.com/sitemap.xml
+```
+
+In Webflow, go to **Site Settings > SEO > Custom robots.txt** and paste your updated rules.
+
+**What to check:**
+
+- [ ] PerplexityBot is not blocked
+- [ ] ChatGPT-User is not blocked
+- [ ] ClaudeBot is not blocked (unless you want to block training)
+- [ ] Sitemap URL is included
+
+---
+
+## 2. Add an llms.txt File
+
+`llms.txt` is a plain text file at your domain root that tells AI systems what your site does, who it is for, and where to find key pages. Think of it as a `robots.txt` for large language models.
+
+Create a file at `yourdomain.com/llms.txt` with content like this:
+
+```txt
+# YourBrand
+
+> One sentence describing what you do and who you help.
+
+## What we do
+2-3 sentences in plain English. No marketing speak.
+
+## Who this is for
+Specific user type - not a vague persona.
+
+## Key pages
+- https://yourdomain.com
+- https://yourdomain.com/about
+- https://yourdomain.com/pricing
+- https://yourdomain.com/blog
+```
+
+In Webflow, upload this as a static file via **Assets** or use a **Custom Code** embed at the root level. The simplest approach: host it on your server or CDN and point a redirect from `/llms.txt` to it.
+
+**What to check:**
+
+- [ ] `/llms.txt` exists and returns 200
+- [ ] Description is plain English, not marketing copy
+- [ ] Key pages are listed with full URLs
+
+---
+
+## 3. Add JSON-LD Schema Markup
+
+AI engines use structured data to understand what your page is, who wrote it, and what it is about. Without schema, they are guessing - and guessing wrong hurts your citation chances.
+
+**Priority schema types for Webflow sites:**
+
+| Page type | Schema to add |
+|---|---|
+| Homepage | `Organization`, `WebSite` |
+| Blog post | `Article`, `BreadcrumbList` |
+| Service/product page | `WebPage`, `FAQPage` |
+| About page | `Person` or `Organization` |
+
+**How to add in Webflow:**
+Go to **Page Settings > Custom Code > Head Code** and paste a `<script type="application/ld+json">` block.
+
+Example for a homepage:
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Your Brand",
+  "url": "https://yourdomain.com",
+  "description": "What you do in one sentence.",
+  "logo": "https://yourdomain.com/logo.png"
+}
+</script>
+```
+
+**What to check:**
+
+- [ ] Organization or WebSite schema on homepage
+- [ ] Article schema on all blog posts (with `datePublished` and `dateModified`)
+- [ ] FAQPage schema on any page with Q&A content
+- [ ] Validate using [Google's Rich Results Test](https://search.google.com/test/rich-results)
+
+---
+
+## 4. Fix Your Meta Title and Description
+
+AI engines read your meta title and description to understand what a page is about before crawling its full content. Short, vague titles hurt your AI visibility score significantly.
+
+**Targets:**
+
+- Title: 30-60 characters, describes the page clearly
+- Description: 120-160 characters, answers "what will I find here?"
+
+**In Webflow:** Page Settings > SEO Settings > Title Tag and Meta Description.
+
+**What to check:**
+
+- [ ] Every page has a unique title
+- [ ] Title is 30-60 characters
+- [ ] Meta description is set (not left blank)
+- [ ] Description answers the page's core question
+
+---
+
+## 5. Add One H1 Tag Per Page
+
+AI systems use heading structure to understand content hierarchy. Multiple H1s confuse the hierarchy. Missing H1s mean the page has no declared topic.
+
+Webflow sometimes generates extra H1s when you use heading elements in multiple sections. Check your published page source.
+
+**What to check:**
+
+- [ ] Exactly one H1 per page
+- [ ] H1 includes your primary topic keyword
+- [ ] H2s and H3s follow a logical hierarchy
+
+---
+
+## 6. Structure Content for Answer Extraction
+
+AI engines extract 40-75 word chunks from pages to use as answers. If your content is written in long unbroken paragraphs, AI systems struggle to cite it accurately.
+
+**Answer-first format:**
+
+- Open each section with a direct one-sentence answer
+- Follow with supporting detail
+- Use H2/H3 questions as section headers (e.g. "What is AEO?")
+- Add FAQ sections to any page that answers common questions
+
+**What to check:**
+
+- [ ] Key pages open sections with direct answers
+- [ ] FAQ content exists on relevant pages
+- [ ] Content uses question-format headings where appropriate
+
+---
+
+## 7. Set Up Author and About Signals (E-E-A-T)
+
+ChatGPT and Perplexity weigh trust signals heavily. Named authorship, About pages, and Contact pages all signal that a real entity stands behind the content.
+
+**What to check:**
+
+- [ ] Blog posts have a named author with a bio
+- [ ] An About page exists and links from the main nav
+- [ ] A Contact page exists
+- [ ] Author pages include credentials or experience signals
+- [ ] `datePublished` and `dateModified` are set in Article schema
+
+---
+
+## 8. Add Open Graph Tags
+
+OG tags are not just for social sharing - AI systems use them to extract page identity, images, and descriptions when structured data is missing.
+
+In Webflow: **Page Settings > Open Graph** - set OG Title, OG Description, and OG Image for every key page.
+
+**What to check:**
+
+- [ ] OG Title is set
+- [ ] OG Description is set
+- [ ] OG Image is set (1200x630px recommended)
+
+---
+
+## 9. Submit Your Sitemap
+
+AI crawlers use your sitemap to discover pages efficiently. Webflow generates a sitemap automatically at `yourdomain.com/sitemap.xml` - but you need to make sure it is submitted and up to date.
+
+**What to check:**
+
+- [ ] Sitemap exists at `/sitemap.xml`
+- [ ] Sitemap is referenced in `robots.txt`
+- [ ] Sitemap is submitted to Google Search Console
+- [ ] Sitemap is submitted to Bing Webmaster Tools (ChatGPT Search uses Bing's index)
+
+---
+
+## 10. Improve Core Web Vitals
+
+AI engines and Google AI Overviews deprioritize slow pages. Page speed is a trust signal - if your site loads slowly, AI systems are less likely to cite it.
+
+**Targets:**
+
+- LCP (Largest Contentful Paint): under 2.5s
+- CLS (Cumulative Layout Shift): under 0.1
+- TBT (Total Blocking Time): under 200ms
+
+**Common Webflow fixes:**
+
+- Replace heavy Lottie animations with CSS or lightweight SVG
+- Use Webflow's built-in lazy loading on images
+- Avoid loading large third-party scripts in the `<head>`
+- Use system fonts or preload custom fonts
+
+**What to check:**
+
+- [ ] LCP under 2.5s (test with PageSpeed Insights)
+- [ ] CLS under 0.1
+- [ ] No render-blocking scripts in `<head>`
+
+---
+
+## Check Everything at Once
+
+Going through this checklist manually takes hours. AEOCheck scans your Webflow site against all 25 AEO checks in under 60 seconds - including robots.txt, llms.txt, schema markup, meta tags, heading structure, E-E-A-T signals, and Core Web Vitals.
+
+You get a prioritized action plan showing exactly what to fix first for the fastest improvement in AI visibility.
+
+**[Scan your Webflow site free on AEOCheck](https://aeocheck.co)**
+
+---
+
+## Quick Reference Checklist
+
+**Technical (do these first)**
+
+- [ ] robots.txt allows PerplexityBot and ChatGPT-User
+- [ ] llms.txt exists at domain root
+- [ ] JSON-LD schema on all key pages
+- [ ] Sitemap submitted to Google and Bing
+
+**On-page**
+
+- [ ] Meta title 30-60 characters on every page
+- [ ] Meta description set on every page
+- [ ] Exactly one H1 per page
+- [ ] OG tags set on key pages
+
+**Content**
+
+- [ ] Answer-first section structure
+- [ ] FAQ content on relevant pages
+- [ ] Named author with bio on blog posts
+- [ ] About and Contact pages exist
+
+**Performance**
+
+- [ ] LCP under 2.5s
+- [ ] CLS under 0.1
+- [ ] No render-blocking scripts
