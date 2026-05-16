@@ -24,9 +24,11 @@ export default function ComparisonPageClient({ data }: Props) {
             <a href="/#scanner" className="btn btn-primary">
               Run Free Scan <ArrowRight className="h-4 w-4" />
             </a>
-            <a href={data.url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
-              Visit {data.name}
-            </a>
+            {data.url && (
+              <a href={data.url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+                Visit {data.name}
+              </a>
+            )}
           </div>
         </div>
       </section>

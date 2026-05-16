@@ -165,6 +165,7 @@ export default function AuthPageClient({ mode }: Props) {
             </p>
           </form>
         </div>
+        <p className="auth-back-link"><a href="/">Back to home</a></p>
       </section>
       <SiteFooter />
     </main>
