@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import AuthPageClient from "../components/AuthPageClient";
 
 export const metadata: Metadata = {
-  title: "Log In | AEOCheck",
+  title: "Log In to AEOCheck",
+  description: "Log in to your AEOCheck account to view your AI visibility reports and manage your plan.",
   robots: {
     index: false,
     follow: false,
