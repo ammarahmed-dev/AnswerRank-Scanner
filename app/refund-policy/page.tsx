@@ -12,6 +12,12 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  openGraph: {
+    url: "https://www.aeocheck.co/refund-policy",
+    siteName: "AEOCheck",
+    type: "website",
+    images: [{ url: "https://www.aeocheck.co/api/og" }],
+  },
 };
 
 export default function RefundPolicyPage() {

@@ -8,6 +8,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.aeocheck.co/terms-of-service",
   },
+  openGraph: {
+    url: "https://www.aeocheck.co/terms-of-service",
+    siteName: "AEOCheck",
+    type: "website",
+    images: [{ url: "https://www.aeocheck.co/api/og" }],
+  },
 };
 
 export default function TermsOfServicePage() {
