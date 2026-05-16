@@ -6,7 +6,7 @@ const HOME_TITLE = "AEOCheck - Free AEO & AI Search Readiness Scanner";
 const HOME_DESCRIPTION =
   "Free AEO scanner. Check if ChatGPT, Perplexity & Google AI can find your site. Get a scored readiness report in 60 seconds. No signup needed.";
 export const metadata: Metadata = {
-  metadataBase: new URL("https://aeocheck.co"),
+  metadataBase: new URL("https://www.aeocheck.co"),
   title: HOME_TITLE,
   description: HOME_DESCRIPTION,
   other: {
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
       "AEO checker, AI search readiness, answer engine optimization tool, LLM visibility scanner, AEO audit, GEO checker, AI SEO tool",
   },
   alternates: {
-    canonical: "https://aeocheck.co",
+    canonical: "https://www.aeocheck.co",
   },
   icons: {
     icon: "/icons/icon-512.png",
@@ -23,15 +23,15 @@ export const metadata: Metadata = {
   openGraph: {
     title: HOME_TITLE,
     description: HOME_DESCRIPTION,
-    url: "https://aeocheck.co",
+    url: "https://www.aeocheck.co",
     siteName: "AEOCheck",
     type: "website",
     images: [
       {
-        url: "https://aeocheck.co/api/og",
+        url: "https://www.aeocheck.co/api/og",
       },
       {
-        url: "https://aeocheck.co/og-image.png",
+        url: "https://www.aeocheck.co/og-image.png",
       },
     ],
   },
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     title: HOME_TITLE,
     description: HOME_DESCRIPTION,
     card: "summary_large_image",
-    images: ["https://aeocheck.co/api/og", "https://aeocheck.co/og-image.png"],
+    images: ["https://www.aeocheck.co/api/og", "https://www.aeocheck.co/og-image.png"],
   },
 };
 
