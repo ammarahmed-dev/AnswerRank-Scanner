@@ -2288,10 +2288,12 @@ textarea.contact-control {
 .blog-index-page {
   padding-top: 56px;
   padding-bottom: 80px;
+  outline: none;
 }
 
 .blog-index-page .section-intro {
-  max-width: 760px;
+  max-width: 600px;
+  padding-left: 0;
 }
 
 .blog-index-page .section-intro h1 {
@@ -2300,12 +2302,14 @@ textarea.contact-control {
   font-weight: 950;
   letter-spacing: 0;
   line-height: 0.98;
+  margin-bottom: 18px;
 }
 
 .blog-index-page .section-intro p:not(.launch-eyebrow) {
   color: var(--color-ink-soft);
   font-size: 1.08rem;
   line-height: 1.7;
+  margin-bottom: 8px;
 }
 
 .blog-index-list {
@@ -6973,6 +6977,20 @@ textarea.contact-control {
   font-weight: 600;
 }
 .team-card-links a:hover { text-decoration: underline; }
+
+/* Hero credibility */
+.hero-trust-claim {
+  font-size: 0.78rem;
+  color: var(--color-ink-muted);
+  margin: 10px 0 0;
+  line-height: 1.5;
+}
+.hero-last-updated {
+  font-size: 0.72rem;
+  color: var(--color-ink-muted);
+  margin: 4px 0 0;
+  opacity: 0.7;
+}
 
 /* Footer contact email */
 .footer-contact-email {

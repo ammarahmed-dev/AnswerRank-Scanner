@@ -71,6 +71,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <header className="blog-post-header">
           <a href="/blog" className="blog-back-link">Blog</a>
           <time dateTime={post.date}>{formatDate(post.date)}</time>
+          <p className="blog-post-author">By Ummar Ahmed</p>
           <h1>{post.title}</h1>
           <p>{post.description}</p>
           {post.tags.length > 0 && (

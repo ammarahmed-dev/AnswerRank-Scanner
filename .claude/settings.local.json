@@ -5,7 +5,9 @@
       "Bash(npx tsc *)",
       "Bash(node -e ' *)",
       "Bash(curl -s -o /dev/null -w \"%{http_code} %{redirect_url}\" --max-time 10 -L \"https://profound.co\")",
-      "PowerShell(try { $r = Invoke-WebRequest -Uri \"https://profound.co\" -MaximumRedirection 5 -TimeoutSec 10 -UseBasicParsing -ErrorAction Stop; \"$\\($r.StatusCode\\) $\\($r.BaseResponse.ResponseUri\\)\" } catch { $_.Exception.Message })"
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"https://profound.co\" -MaximumRedirection 5 -TimeoutSec 10 -UseBasicParsing -ErrorAction Stop; \"$\\($r.StatusCode\\) $\\($r.BaseResponse.ResponseUri\\)\" } catch { $_.Exception.Message })",
+      "Bash(Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue)",
+      "Bash(Write-Output \"Done\")"
     ]
   }
 }
