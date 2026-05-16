@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  trailingSlash: false,
+  async redirects() {
+    return [
+      { source: "/index.php", destination: "/", permanent: true },
+    ];
+  },
   outputFileTracingIncludes: {
     "/*": ["./content/blog/**/*"],
   },

@@ -4,8 +4,8 @@ export default function SchemaMarkup() {
       "@context": "https://schema.org",
       "@type": "Organization",
       name: "AEOCheck",
-      url: "https://aeocheck.co",
-      logo: "https://aeocheck.co/api/logo",
+      url: "https://www.aeocheck.co",
+      logo: "https://www.aeocheck.co/api/logo",
       description:
         "AEOCheck is a free AEO and AI search readiness scanner that checks if your website can be found and cited by AI engines like ChatGPT and Perplexity.",
     },
@@ -13,12 +13,12 @@ export default function SchemaMarkup() {
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: "AEOCheck",
-      url: "https://aeocheck.co",
+      url: "https://www.aeocheck.co",
       potentialAction: {
         "@type": "SearchAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: "https://aeocheck.co/?url={search_term_string}",
+          urlTemplate: "https://www.aeocheck.co/?url={search_term_string}",
         },
         "query-input": "required name=search_term_string",
       },
@@ -107,7 +107,7 @@ export default function SchemaMarkup() {
       name: "AEOCheck",
       applicationCategory: "WebApplication",
       operatingSystem: "Web",
-      url: "https://aeocheck.co",
+      url: "https://www.aeocheck.co",
       description: "Free AEO readiness scanner that audits your website for AI search visibility.",
       offers: [
         {
@@ -133,14 +133,14 @@ export default function SchemaMarkup() {
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "@id": "https://aeocheck.co/#webpage",
-      url: "https://aeocheck.co",
+      "@id": "https://www.aeocheck.co/#webpage",
+      url: "https://www.aeocheck.co",
       name: "AEOCheck - Free AEO & AI Search Readiness Scanner",
       description:
         "Free AEO scanner. Check if ChatGPT, Perplexity & Google AI can find your site. Get a scored readiness report in 60 seconds. No signup needed.",
       isPartOf: {
         "@type": "WebSite",
-        "@id": "https://aeocheck.co/#website",
+        "@id": "https://www.aeocheck.co/#website",
       },
       about: {
         "@type": "Thing",
@@ -148,15 +148,29 @@ export default function SchemaMarkup() {
       },
       primaryImageOfPage: {
         "@type": "ImageObject",
-        url: "https://aeocheck.co/api/og",
+        url: "https://www.aeocheck.co/api/og",
       },
       datePublished: "2026-05-01",
       dateModified: "2026-05-12",
       inLanguage: "en-US",
       potentialAction: {
         "@type": "ReadAction",
-        target: "https://aeocheck.co",
+        target: "https://www.aeocheck.co",
       },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Site Navigation",
+      itemListElement: [
+        { "@type": "SiteNavigationElement", position: 1, name: "Home", url: "https://www.aeocheck.co/" },
+        { "@type": "SiteNavigationElement", position: 2, name: "Blog", url: "https://www.aeocheck.co/blog" },
+        { "@type": "SiteNavigationElement", position: 3, name: "Pricing", url: "https://www.aeocheck.co/#pricing" },
+        { "@type": "SiteNavigationElement", position: 4, name: "Sample Report", url: "https://www.aeocheck.co/sample-report" },
+        { "@type": "SiteNavigationElement", position: 5, name: "About", url: "https://www.aeocheck.co/about" },
+        { "@type": "SiteNavigationElement", position: 6, name: "Login", url: "https://www.aeocheck.co/login" },
+        { "@type": "SiteNavigationElement", position: 7, name: "Sign Up", url: "https://www.aeocheck.co/signup" },
+      ],
     },
     {
       "@context": "https://schema.org",
@@ -166,25 +180,25 @@ export default function SchemaMarkup() {
           "@type": "ListItem",
           position: 1,
           name: "Home",
-          item: "https://aeocheck.co",
+          item: "https://www.aeocheck.co",
         },
         {
           "@type": "ListItem",
           position: 2,
           name: "Scanner",
-          item: "https://aeocheck.co/#scanner",
+          item: "https://www.aeocheck.co/#scanner",
         },
         {
           "@type": "ListItem",
           position: 3,
           name: "Pricing",
-          item: "https://aeocheck.co/#pricing",
+          item: "https://www.aeocheck.co/#pricing",
         },
         {
           "@type": "ListItem",
           position: 4,
           name: "FAQ",
-          item: "https://aeocheck.co/#faq",
+          item: "https://www.aeocheck.co/#faq",
         },
       ],
     },

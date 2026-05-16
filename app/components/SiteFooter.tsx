@@ -13,6 +13,9 @@ export default function SiteFooter() {
             </span>
           </div>
           <p>&copy; 2025 AEOCheck. All rights reserved.</p>
+          <p className="footer-contact-email">
+            <a href="mailto:hello@aeocheck.co">hello@aeocheck.co</a>
+          </p>
         </div>
         <div className="footer-links-wrap">
           <div className="footer-link-group">
@@ -25,6 +28,15 @@ export default function SiteFooter() {
               <a href="/#pricing">Pricing</a>
               <a href="/#faq">FAQ</a>
               <a href="/#contact">Contact</a>
+            </div>
+          </div>
+          <div className="footer-link-group">
+            <p className="footer-group-label">COMPANY</p>
+            <div className="footer-link-list">
+              <a href="/about">About</a>
+              <a href="/team">Team</a>
+              <a href="/sample-report">Sample Report</a>
+              <a href="/sitemap-html">Sitemap</a>
             </div>
           </div>
           <div className="footer-link-group">

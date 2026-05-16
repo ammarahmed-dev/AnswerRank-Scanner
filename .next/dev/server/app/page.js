@@ -9,7 +9,7 @@ R.c("server/chunks/ssr/[externals]_next_dist_compiled_@vercel_og_index_node_0_is
 R.c("server/chunks/ssr/node_modules_0c5-q2w._.js")
 R.c("server/chunks/ssr/app_0y931ms._.js")
 R.c("server/chunks/ssr/app_0.rwrtg._.js")
-R.c("server/chunks/ssr/_0bsikkt._.js")
+R.c("server/chunks/ssr/_10kmsag._.js")
 R.c("server/chunks/ssr/app_template_tsx_03.z-nv._.js")
 R.c("server/chunks/ssr/node_modules_next_dist_client_components_0inhx6q._.js")
 R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_forbidden_0ghu-f7.js")

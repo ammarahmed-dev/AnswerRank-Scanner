@@ -633,6 +633,28 @@ export default function Home({ heroContent }: HomePageClientProps) {
             </div>
           </section>
 
+          <section className="what-we-do-section launch-section muted-section">
+            <div className="launch-container">
+              <div className="section-intro">
+                <p className="launch-eyebrow">What we do</p>
+                <h2>We tell you exactly how AI engines see your website.</h2>
+              </div>
+              <div className="what-we-do-grid">
+                <div className="what-we-do-card">
+                  <h3>AI visibility scanning</h3>
+                  <p>Paste any public URL and AEOCheck fetches the live page, reads every signal AI engines rely on, and returns a scored report in under 60 seconds.</p>
+                </div>
+                <div className="what-we-do-card">
+                  <h3>25-point readiness checks</h3>
+                  <p>Every scan runs over 25 individual checks across metadata, schema markup, heading structure, content depth, trust signals, and AI readiness - giving you a complete picture in one place.</p>
+                </div>
+                <div className="what-we-do-card">
+                  <h3>Actionable recommendations</h3>
+                  <p>Each issue comes with a plain-English explanation and a specific fix you can implement right away, ranked by impact so you always know what to tackle first.</p>
+                </div>
+              </div>
+            </div>
+          </section>
 
           <section className="image-story-section">
             <div className="launch-container image-story-grid">
