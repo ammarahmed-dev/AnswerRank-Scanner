@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import AuthPageClient from "../components/AuthPageClient";
 
 export const metadata: Metadata = {
-  title: "Sign Up for AEOCheck",
+  title: "Sign Up Free for AEOCheck AI Scanner",
   description: "Create a free AEOCheck account to scan your website for AI search readiness and get your visibility score.",
   robots: {
     index: false,

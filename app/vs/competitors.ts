@@ -2,7 +2,7 @@ export type Competitor = {
   slug: string;
   name: string;
   tagline: string;
-  url: string;
+  url?: string;
   price: string;
   priceNote: string;
   targetUser: string;
@@ -145,7 +145,6 @@ export const COMPETITORS: Record<string, Competitor> = {
     slug: "profound",
     name: "Profound",
     tagline: "Enterprise AI search visibility platform",
-    url: "https://profound.co",
     price: "Custom pricing",
     priceNote: "Enterprise only, no self-serve",
     targetUser: "Large enterprise brands",
