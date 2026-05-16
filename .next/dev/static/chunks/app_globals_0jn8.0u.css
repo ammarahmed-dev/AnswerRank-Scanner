@@ -8385,6 +8385,21 @@ textarea.contact-control {
     background: #f0fdf4;
   }
 
+  .pl-cover-summary {
+    border-top: .5pt solid #e5e7eb;
+    margin-top: 18pt;
+    padding-top: 12pt;
+  }
+
+  .pl-cover-summary-title {
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #6b7280;
+    margin: 0 0 8pt;
+    font-size: 9pt;
+    font-weight: 700;
+  }
+
   .pl-page {
     padding-top: 4pt;
   }

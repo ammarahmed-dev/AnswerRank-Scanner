@@ -1,9 +1,8 @@
 {
-  "/api/reports/[id]/route": "app/api/reports/[id]/route.js",
-  "/api/stats/increment/route": "app/api/stats/increment/route.js",
+  "/about/page": "app/about/page.js",
   "/api/stats/route": "app/api/stats/route.js",
   "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
   "/page": "app/page.js",
-  "/report/page": "app/report/page.js",
-  "/sample-report/page": "app/sample-report/page.js"
+  "/sitemap-html/page": "app/sitemap-html/page.js",
+  "/team/page": "app/team/page.js"
 }

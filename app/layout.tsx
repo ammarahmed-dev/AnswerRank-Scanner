@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import BackToTop from "@/app/components/BackToTop";
 import "./globals.css";
 
 const HOME_TITLE = "AEOCheck - Free AEO & AI Search Readiness Scanner";
@@ -56,7 +57,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <Script
           id="gtm-script"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: [
               "(function(w,d,s,l,i){",
@@ -83,6 +84,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           />
         </noscript>
         {children}
+        <BackToTop />
       </body>
     </html>
   );
