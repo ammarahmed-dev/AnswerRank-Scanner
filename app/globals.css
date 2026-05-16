@@ -6021,11 +6021,10 @@ textarea.contact-control {
 
   /* â”€â”€ Cover page â”€â”€ */
   .pl-cover {
-    min-height: 680pt;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding: 48pt 0 36pt;
+    justify-content: flex-start;
+    padding: 32pt 0 24pt;
     border-bottom: 3pt solid #0ea5e9;
     break-after: page;
     page-break-after: always;
@@ -6039,7 +6038,7 @@ textarea.contact-control {
     color: #0ea5e9;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin-bottom: 32pt;
+    margin-bottom: 16pt;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -6073,12 +6072,12 @@ textarea.contact-control {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .pl-cover-date { font-size: 9pt; color: #6b7280; margin: 0 0 24pt; }
+  .pl-cover-date { font-size: 9pt; color: #6b7280; margin: 0 0 16pt; }
   .pl-cover-score {
     display: flex;
     align-items: center;
     gap: 12pt;
-    margin-bottom: 28pt;
+    margin-bottom: 16pt;
   }
   .pl-cover-score-num {
     font-size: 52pt;
@@ -6111,6 +6110,19 @@ textarea.contact-control {
   .pl-stat-critical { background: #fef2f2; color: #dc2626; }
   .pl-stat-warning  { background: #fffbeb; color: #d97706; }
   .pl-stat-pass     { background: #f0fdf4; color: #16a34a; }
+  .pl-cover-summary {
+    margin-top: 18pt;
+    padding-top: 12pt;
+    border-top: 0.5pt solid #e5e7eb;
+  }
+  .pl-cover-summary-title {
+    font-size: 9pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    margin: 0 0 8pt;
+  }
 
   /* â”€â”€ Page sections â”€â”€ */
   .pl-page { padding-top: 4pt; }
@@ -6827,4 +6839,34 @@ textarea.contact-control {
   .vs-wins-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Sample report banner */
+.sample-report-banner {
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 12px 24px;
+  text-align: center;
+}
+.sample-report-banner a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sample-report-banner a:hover {
+  opacity: 0.85;
+}
+.pricing-sample-link {
+  font-size: 0.875rem;
+  color: var(--color-ink-muted);
+  margin-top: -4px;
+}
+.pricing-sample-link a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
