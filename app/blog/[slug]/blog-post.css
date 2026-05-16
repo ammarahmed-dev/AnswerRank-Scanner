@@ -127,3 +127,11 @@
   color: var(--color-ink-soft);
   padding-left: 18px;
 }
+
+.blog-post-header .blog-post-author {
+  font-size: 0.85rem;
+  color: var(--color-ink-muted);
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+}

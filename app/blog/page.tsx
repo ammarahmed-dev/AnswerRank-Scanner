@@ -66,6 +66,7 @@ export default function BlogPage() {
                   )}
                   <div className="blog-index-card-body">
                     <time dateTime={post.date}>{formatDate(post.date)}</time>
+                    <p className="blog-card-author">By Ummar Ahmed</p>
                     <h2>{post.title}</h2>
                     <p>{post.description}</p>
                     {post.tags.length > 0 && (
@@ -145,6 +146,13 @@ export default function BlogPage() {
           color: var(--color-ink-muted);
           font-size: 0.82rem;
           font-weight: 800;
+        }
+
+        .blog-card-author {
+          color: var(--color-ink-muted);
+          font-size: 0.78rem;
+          font-weight: 600;
+          margin: -4px 0 0;
         }
 
         .blog-index-card-body h2 {

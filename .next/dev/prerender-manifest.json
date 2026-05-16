@@ -1,11 +1,1 @@
-{
-  "version": 4,
-  "routes": {},
-  "dynamicRoutes": {},
-  "notFoundRoutes": [],
-  "preview": {
-    "previewModeId": "7d1bbb59a63534baaf858d5f58f6c6b1",
-    "previewModeSigningKey": "4b2baea686f9dd7d98eb5c2a9170e1b8f381af1632f5bb96066b39f36af3c6a3",
-    "previewModeEncryptionKey": "7faad03ae3acfa6de4d3894029cf9cbd88da1afde756cb44c0dce368c236c789"
-  }
-}
+{"version":4,"routes":{"/blog/aeo-checklist-webflow-developers":{}},"dynamicRoutes":{"/blog/[slug]":{"dataRoute":null,"dataRouteRegex":null,"fallback":null,"fallbackRevalidate":false,"fallbackSourceRoute":"/blog/[slug]","routeRegex":"^\\/blog\\/([^/]+?)(?:\\/)?$","allowHeader":[]}},"notFoundRoutes":[],"preview":{"previewModeId":"67571526358ebb00f36b3a6f4a649748","previewModeSigningKey":"998edb1fc37e8bd321de39597c4ccce07439162c6b41d326fbe6b75f8c1febf9","previewModeEncryptionKey":"5ad516d03fee7a8b1acdfea94c4bd5704dabe4f66463e7bb5bf216eb5288fe52"}}

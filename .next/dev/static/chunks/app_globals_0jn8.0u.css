@@ -3743,17 +3743,20 @@ textarea.contact-control {
 }
 
 .blog-index-page {
+  outline: none;
   padding-top: 56px;
   padding-bottom: 80px;
 }
 
 .blog-index-page .section-intro {
-  max-width: 760px;
+  max-width: 600px;
+  padding-left: 0;
 }
 
 .blog-index-page .section-intro h1 {
   color: #fff;
   letter-spacing: 0;
+  margin-bottom: 18px;
   font-size: clamp(2.4rem, 6vw, 4.8rem);
   font-weight: 950;
   line-height: .98;
@@ -3761,6 +3764,7 @@ textarea.contact-control {
 
 .blog-index-page .section-intro p:not(.launch-eyebrow) {
   color: var(--color-ink-soft);
+  margin-bottom: 8px;
   font-size: 1.08rem;
   line-height: 1.7;
 }
@@ -9447,6 +9451,20 @@ textarea.contact-control {
 
 .team-card-links a:hover {
   text-decoration: underline;
+}
+
+.hero-trust-claim {
+  color: var(--color-ink-muted);
+  margin: 10px 0 0;
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.hero-last-updated {
+  color: var(--color-ink-muted);
+  opacity: .7;
+  margin: 4px 0 0;
+  font-size: .72rem;
 }
 
 .footer-contact-email {

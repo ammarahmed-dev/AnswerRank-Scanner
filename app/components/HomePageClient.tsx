@@ -586,6 +586,8 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   <span><CheckCircle weight="fill" className="h-4 w-4" /> 60-second scan</span>
                   <span><CheckCircle weight="fill" className="h-4 w-4" /> Works on any public URL</span>
                 </div>
+                {isClient && <p className="hero-trust-claim">25-point AEO checklist based on how ChatGPT, Perplexity, and Claude index web content</p>}
+                {isClient && <p className="hero-last-updated">Updated May 2026</p>}
               </div>
 
               <div className="product-visual" id="report">

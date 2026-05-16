@@ -12,7 +12,7 @@ export default function SiteFooter() {
               <span className="brand-subtitle">Free AEO & AI search readiness scanner.</span>
             </span>
           </div>
-          <p>&copy; 2025 AEOCheck. All rights reserved.</p>
+          <p>&copy; 2026 AEOCheck. All rights reserved.</p>
           <p className="footer-contact-email">
             <a href="mailto:hello@aeocheck.co">hello@aeocheck.co</a>
           </p>
