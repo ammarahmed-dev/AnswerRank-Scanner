@@ -1,38 +1,32 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
+  const sharedAllow = [
+    "/",
+    "/blog",
+    "/about",
+    "/team",
+    "/sample-report",
+    "/sitemap-html",
+    "/pricing",
+    "/privacy-policy",
+    "/terms-of-service",
+  ];
+
   return {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/pricing", "/privacy-policy", "/terms-of-service"],
+        allow: sharedAllow,
         disallow: ["/dashboard", "/report", "/login", "/signup", "/api"],
       },
-      {
-        userAgent: "GPTBot",
-        allow: ["/", "/pricing", "/privacy-policy", "/terms-of-service"],
-      },
-      {
-        userAgent: "ChatGPT-User",
-        allow: ["/", "/pricing", "/privacy-policy", "/terms-of-service"],
-      },
-      {
-        userAgent: "Google-Extended",
-        allow: ["/", "/pricing", "/privacy-policy", "/terms-of-service"],
-      },
-      {
-        userAgent: "PerplexityBot",
-        allow: ["/", "/pricing", "/privacy-policy", "/terms-of-service"],
-      },
-      {
-        userAgent: "ClaudeBot",
-        allow: ["/", "/pricing", "/privacy-policy", "/terms-of-service"],
-      },
-      {
-        userAgent: "anthropic-ai",
-        allow: ["/", "/pricing", "/privacy-policy", "/terms-of-service"],
-      },
+      { userAgent: "GPTBot",         allow: sharedAllow },
+      { userAgent: "ChatGPT-User",   allow: sharedAllow },
+      { userAgent: "Google-Extended", allow: sharedAllow },
+      { userAgent: "PerplexityBot",  allow: sharedAllow },
+      { userAgent: "ClaudeBot",      allow: sharedAllow },
+      { userAgent: "anthropic-ai",   allow: sharedAllow },
     ],
-    sitemap: "https://aeocheck.co/sitemap.xml",
+    sitemap: "https://www.aeocheck.co/sitemap.xml",
   };
 }

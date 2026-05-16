@@ -55,6 +55,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <head>
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
         <Script
           id="gtm-script"
           strategy="beforeInteractive"
