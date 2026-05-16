@@ -394,6 +394,16 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const hasFullReportAccess = isMasterAdmin(plan) || canViewFullReport(plan) || isReportUnlocked;
   const hasPdfAccess = hasFullReportAccess;
   const canUnlockSpecificReport = Boolean(report.reportId);
+
+  // Preload the PrintLayout chunk as soon as PDF access is confirmed so it is
+  // ready when window.print() fires. dynamic() with ssr:false defers loading
+  // until the component first renders; without this, the chunk may not be
+  // fetched yet when beforeprint fires synchronously inside flushSync.
+  useEffect(() => {
+    if (hasPdfAccess) {
+      void import("./PrintLayout");
+    }
+  }, [hasPdfAccess]);
   const isAdmin = isMasterAdmin(plan);
   const host = useMemo(() => {
     try {
@@ -574,7 +584,8 @@ export default function ReportSectionNew({ report, onReset }: Props) {
 
 const downloadPdf = () => {
     if (!hasPdfAccess) return;
-    window.print();
+    flushSync(() => setIsPrinting(true));
+    setTimeout(() => window.print(), 500);
   };
 
   return (

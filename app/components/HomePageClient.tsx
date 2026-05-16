@@ -548,7 +548,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                     {state === "loading" ? "Scanning" : "Run Free Scan"}
                     <ArrowRight weight="bold" className="h-4 w-4" />
                   </button>
-                  <a href="/report?id=bdb3a316-6889-4fa5-9045-cf317938597e" className="btn btn-secondary hero-secondary-cta">View Sample Report</a>
+                  <a href="/sample-report" className="btn btn-secondary hero-secondary-cta">View Sample Report</a>
                   <button
                     type="button"
                     onClick={() => {
@@ -728,6 +728,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 <p className="launch-eyebrow">Pricing</p>
                 <h2>Choose the report depth you need.</h2>
                 <p>Start with a free preview, then unlock a client-ready report when you need the full breakdown.</p>
+                <p className="pricing-sample-link">Not sure what to expect? <a href="/sample-report">View a sample full report.</a></p>
               </div>
 
               <div className="pricing-cards">

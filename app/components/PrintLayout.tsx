@@ -261,38 +261,36 @@ export default function PrintLayout({ report }: Props) {
             <span>Passing checks</span>
           </div>
         </div>
-      </div>
-
-      <div className="pl-page pl-force-break">
-        <PageHeader url={report.url} date={date} />
-        <h2 className="pl-section-title">Executive Summary</h2>
-        <div className="pl-exec-grid">
-          <div className="pl-exec-card">
-            <strong>Main diagnosis</strong>
-            <p>{issues.find((c) => {
-              const cat = mapCategory(c.id);
-              return cat !== "performance" && c.id !== "pagespeed_low" && c.id !== "pagespeed_moderate";
-            })?.detail ?? issues[0]?.detail ?? "Core visibility signals are in good shape."}</p>
-          </div>
-          <div className="pl-exec-card">
-            <strong>Top opportunity</strong>
-            <p>{FIX_MAP[issues.find((c) => {
-              const cat = mapCategory(c.id);
-              return cat !== "performance" && c.id !== "pagespeed_low" && c.id !== "pagespeed_moderate";
-            })?.id ?? ""]?.fix ?? "Keep schema and answer blocks current as pages evolve."}</p>
-          </div>
-          <div className="pl-exec-card">
-            <strong>Biggest issue</strong>
-            <p>{issues.find((c) => {
-              const cat = mapCategory(c.id);
-              return cat !== "performance";
-            })?.label ?? "No critical blockers detected."}</p>
-          </div>
-          <div className="pl-exec-card">
-            <strong>Performance score</strong>
-            <p>{report.pagespeed?.score !== undefined
-              ? `${report.pagespeed.score}/100. Page speed affects how reliably AI crawlers index your content.`
-              : "PageSpeed score unavailable for this scan."}</p>
+        <div className="pl-cover-summary">
+          <p className="pl-cover-summary-title">Executive Summary</p>
+          <div className="pl-exec-grid">
+            <div className="pl-exec-card">
+              <strong>Main diagnosis</strong>
+              <p>{issues.find((c) => {
+                const cat = mapCategory(c.id);
+                return cat !== "performance" && c.id !== "pagespeed_low" && c.id !== "pagespeed_moderate";
+              })?.detail ?? issues[0]?.detail ?? "Core visibility signals are in good shape."}</p>
+            </div>
+            <div className="pl-exec-card">
+              <strong>Top opportunity</strong>
+              <p>{FIX_MAP[issues.find((c) => {
+                const cat = mapCategory(c.id);
+                return cat !== "performance" && c.id !== "pagespeed_low" && c.id !== "pagespeed_moderate";
+              })?.id ?? ""]?.fix ?? "Keep schema and answer blocks current as pages evolve."}</p>
+            </div>
+            <div className="pl-exec-card">
+              <strong>Biggest issue</strong>
+              <p>{issues.find((c) => {
+                const cat = mapCategory(c.id);
+                return cat !== "performance";
+              })?.label ?? "No critical blockers detected."}</p>
+            </div>
+            <div className="pl-exec-card">
+              <strong>Performance score</strong>
+              <p>{report.pagespeed?.score !== undefined
+                ? `${report.pagespeed.score}/100. Page speed affects how reliably AI crawlers index your content.`
+                : "PageSpeed score unavailable for this scan."}</p>
+            </div>
           </div>
         </div>
       </div>

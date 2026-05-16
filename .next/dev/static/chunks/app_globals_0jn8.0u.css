@@ -8258,9 +8258,8 @@ textarea.contact-control {
     page-break-after: always;
     border-bottom: 3pt solid #0ea5e9;
     flex-direction: column;
-    justify-content: center;
-    min-height: 680pt;
-    padding: 48pt 0 36pt;
+    justify-content: flex-start;
+    padding: 32pt 0 24pt;
     display: flex;
   }
 
@@ -8272,7 +8271,7 @@ textarea.contact-control {
     print-color-adjust: exact;
     align-items: center;
     gap: 8pt;
-    margin-bottom: 32pt;
+    margin-bottom: 16pt;
     font-size: 9pt;
     font-weight: 700;
     display: flex;
@@ -8313,14 +8312,14 @@ textarea.contact-control {
 
   .pl-cover-date {
     color: #6b7280;
-    margin: 0 0 24pt;
+    margin: 0 0 16pt;
     font-size: 9pt;
   }
 
   .pl-cover-score {
     align-items: center;
     gap: 12pt;
-    margin-bottom: 28pt;
+    margin-bottom: 16pt;
     display: flex;
   }
 
@@ -9276,6 +9275,39 @@ textarea.contact-control {
   .vs-wins-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.sample-report-banner {
+  background: var(--color-accent);
+  color: #fff;
+  letter-spacing: .01em;
+  text-align: center;
+  padding: 12px 24px;
+  font-size: .875rem;
+  font-weight: 500;
+}
+
+.sample-report-banner a {
+  color: #fff;
+  text-underline-offset: 3px;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.sample-report-banner a:hover {
+  opacity: .85;
+}
+
+.pricing-sample-link {
+  color: var(--color-ink-muted);
+  margin-top: -4px;
+  font-size: .875rem;
+}
+
+.pricing-sample-link a {
+  color: var(--color-accent);
+  text-underline-offset: 2px;
+  text-decoration: underline;
 }
 
 @property --tw-rotate-x {
