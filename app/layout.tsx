@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   other: {
     keywords:
       "AEO checker, AI search readiness, answer engine optimization tool, LLM visibility scanner, AEO audit, GEO checker, AI SEO tool",
+    "msvalidate.01": "9B4C2F424809ACD0BE84EEB08CB2B2BD",
   },
   alternates: {
     canonical: "https://www.aeocheck.co",
