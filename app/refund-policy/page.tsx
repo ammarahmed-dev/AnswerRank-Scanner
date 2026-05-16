@@ -3,9 +3,10 @@ import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 
 export const metadata: Metadata = {
-  title: "Refund Policy | AEOCheck",
+  title: "Refund Policy | AEOCheck AI Scanner",
+  description: "Read AEOCheck's refund policy. We offer a fair refund process for Full Report purchases and Pro Monthly subscriptions.",
   alternates: {
-    canonical: "https://aeocheck.co/refund-policy",
+    canonical: "https://www.aeocheck.co/refund-policy",
   },
   robots: {
     index: true,

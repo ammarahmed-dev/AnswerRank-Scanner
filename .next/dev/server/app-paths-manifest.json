@@ -1,4 +1,6 @@
 {
-  "/blog/page": "app/blog/page.js",
-  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js"
+  "/api/stats/increment/route": "app/api/stats/increment/route.js",
+  "/api/stats/route": "app/api/stats/route.js",
+  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
+  "/page": "app/page.js"
 }

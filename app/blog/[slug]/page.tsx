@@ -34,19 +34,26 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     };
   }
 
+  const ogImage = post.coverImage
+    ? post.coverImage.startsWith("http")
+      ? post.coverImage
+      : `https://www.aeocheck.co${post.coverImage}`
+    : "https://www.aeocheck.co/api/og";
+
   return {
     title: `${post.title} - AEOCheck`,
     description: post.description,
     alternates: {
-      canonical: `https://aeocheck.co/blog/${post.slug}`,
+      canonical: `https://www.aeocheck.co/blog/${post.slug}`,
     },
     openGraph: {
       title: post.title,
       description: post.description,
       type: "article",
-      url: `https://aeocheck.co/blog/${post.slug}`,
+      url: `https://www.aeocheck.co/blog/${post.slug}`,
       publishedTime: post.date,
       tags: post.tags,
+      images: [{ url: ogImage }],
     },
   };
 }

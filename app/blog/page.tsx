@@ -9,7 +9,15 @@ export const metadata: Metadata = {
   title: "AEOCheck Blog - AI Search and AEO Guides",
   description: "Practical guides for improving AI search visibility, answer engine optimization, schema, and technical content readiness.",
   alternates: {
-    canonical: "https://aeocheck.co/blog",
+    canonical: "https://www.aeocheck.co/blog",
+  },
+  openGraph: {
+    title: "AEOCheck Blog - AI Search and AEO Guides",
+    description: "Practical guides for improving AI search visibility, answer engine optimization, schema, and technical content readiness.",
+    url: "https://www.aeocheck.co/blog",
+    siteName: "AEOCheck",
+    type: "website",
+    images: [{ url: "https://www.aeocheck.co/api/og" }],
   },
 };
 

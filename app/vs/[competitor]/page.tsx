@@ -19,14 +19,15 @@ export async function generateMetadata({
     title: data.metaTitle,
     description: data.metaDescription,
     alternates: {
-      canonical: `https://aeocheck.co/vs/${slug}`,
+      canonical: `https://www.aeocheck.co/vs/${slug}`,
     },
     openGraph: {
       title: data.metaTitle,
       description: data.metaDescription,
-      url: `https://aeocheck.co/vs/${slug}`,
+      url: `https://www.aeocheck.co/vs/${slug}`,
       siteName: "AEOCheck",
       type: "website",
+      images: [{ url: "https://www.aeocheck.co/api/og" }],
     },
   };
 }

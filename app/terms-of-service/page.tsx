@@ -3,7 +3,11 @@ import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | AEOCheck",
+  title: "Terms of Service | AEOCheck AI Scanner",
+  description: "Read AEOCheck's terms of service. Understand the rules and conditions for using our AI visibility and AEO readiness scanning tool.",
+  alternates: {
+    canonical: "https://www.aeocheck.co/terms-of-service",
+  },
 };
 
 export default function TermsOfServicePage() {

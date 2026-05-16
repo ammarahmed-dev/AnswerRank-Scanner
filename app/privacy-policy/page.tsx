@@ -3,7 +3,11 @@ import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | AEOCheck",
+  title: "Privacy Policy | AEOCheck AI Scanner",
+  description: "Read AEOCheck's privacy policy. Learn how we collect, use, and protect your data when you use our AI search readiness scanner.",
+  alternates: {
+    canonical: "https://www.aeocheck.co/privacy-policy",
+  },
 };
 
 export default function PrivacyPolicyPage() {

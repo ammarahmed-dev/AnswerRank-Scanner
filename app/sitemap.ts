@@ -5,22 +5,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = getAllBlogPosts();
 
   const blogPosts = posts.map((post) => ({
-    url: `https://aeocheck.co/blog/${post.slug}`,
+    url: `https://www.aeocheck.co/blog/${post.slug}`,
     lastModified: new Date(post.date),
     changeFrequency: "monthly" as const,
     priority: 0.8,
   }));
 
   return [
-    { url: "https://aeocheck.co/", changeFrequency: "weekly" as const, priority: 1.0 },
-    { url: "https://aeocheck.co/blog", changeFrequency: "weekly" as const, priority: 0.8 },
-    { url: "https://aeocheck.co/privacy-policy", lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
-    { url: "https://aeocheck.co/terms-of-service", lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
-    { url: "https://aeocheck.co/refund-policy", lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
-    { url: "https://aeocheck.co/vs/otterly", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: "https://aeocheck.co/vs/semrush-ai", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: "https://aeocheck.co/vs/peec-ai", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: "https://aeocheck.co/vs/profound", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: "https://www.aeocheck.co/", changeFrequency: "weekly" as const, priority: 1.0 },
+    { url: "https://www.aeocheck.co/blog", changeFrequency: "weekly" as const, priority: 0.8 },
+    { url: "https://www.aeocheck.co/privacy-policy", lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
+    { url: "https://www.aeocheck.co/terms-of-service", lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
+    { url: "https://www.aeocheck.co/refund-policy", lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
+    { url: "https://www.aeocheck.co/vs/otterly", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: "https://www.aeocheck.co/vs/semrush-ai", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: "https://www.aeocheck.co/vs/peec-ai", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: "https://www.aeocheck.co/vs/profound", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
     ...blogPosts,
   ];
 }
