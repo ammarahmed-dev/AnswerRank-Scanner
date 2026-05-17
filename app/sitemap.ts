@@ -14,6 +14,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: "https://www.aeocheck.co/", changeFrequency: "weekly" as const, priority: 1.0 },
     { url: "https://www.aeocheck.co/blog", changeFrequency: "weekly" as const, priority: 0.8 },
+    { url: "https://www.aeocheck.co/about", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7 },
+    { url: "https://www.aeocheck.co/team", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7 },
+    { url: "https://www.aeocheck.co/contact", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.6 },
+    { url: "https://www.aeocheck.co/sample-report", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: "https://www.aeocheck.co/sitemap", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.4 },
+    { url: "https://www.aeocheck.co/pricing", lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.9 },
     { url: "https://www.aeocheck.co/privacy-policy", lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
     { url: "https://www.aeocheck.co/terms-of-service", lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
     { url: "https://www.aeocheck.co/refund-policy", lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
