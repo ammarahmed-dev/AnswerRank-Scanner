@@ -16,9 +16,24 @@ export const metadata: Metadata = {
   },
 };
 
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Ummar Ahmed",
+  jobTitle: "Founder and Developer",
+  worksFor: {
+    "@type": "Organization",
+    name: "AEOCheck",
+    url: "https://www.aeocheck.co",
+  },
+  url: "https://www.aeocheck.co/team",
+  sameAs: ["https://www.linkedin.com/in/ummar-ahmed/"],
+};
+
 export default function TeamPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
       <SiteHeader />
       <main className="legal-page">
         <div className="legal-page-inner">

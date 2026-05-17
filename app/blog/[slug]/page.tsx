@@ -63,8 +63,56 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   if (!post) notFound();
 
+  const postUrl = `https://www.aeocheck.co/blog/${slug}`;
+  const imageUrl = post.coverImage
+    ? post.coverImage.startsWith("http")
+      ? post.coverImage
+      : `https://www.aeocheck.co${post.coverImage}`
+    : "https://www.aeocheck.co/api/og";
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        headline: post.title,
+        description: post.description,
+        image: imageUrl,
+        datePublished: post.date,
+        dateModified: post.date,
+        author: {
+          "@type": "Person",
+          name: "Ummar Ahmed",
+          url: "https://www.linkedin.com/in/ummar-ahmed/",
+          sameAs: ["https://www.linkedin.com/in/ummar-ahmed/"],
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "AEOCheck",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://www.aeocheck.co/icons/icon-512.png",
+          },
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": postUrl,
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://www.aeocheck.co" },
+          { "@type": "ListItem", position: 2, name: "Blog", item: "https://www.aeocheck.co/blog" },
+          { "@type": "ListItem", position: 3, name: post.title, item: postUrl },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <SiteHeader />
       <article className="launch-container blog-post-page">
         <header className="blog-post-header">
