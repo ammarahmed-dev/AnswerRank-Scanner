@@ -27,7 +27,7 @@ export default function SiteFooter() {
               <a href="/#how">How It Works</a>
               <a href="/#pricing">Pricing</a>
               <a href="/#faq">FAQ</a>
-              <a href="/#contact">Contact</a>
+              <a href="/contact">Contact</a>
             </div>
           </div>
           <div className="footer-link-group">

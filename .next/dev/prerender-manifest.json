@@ -1,11 +1,1 @@
-{
-  "version": 4,
-  "routes": {},
-  "dynamicRoutes": {},
-  "notFoundRoutes": [],
-  "preview": {
-    "previewModeId": "b687a7f6679b8134a5de921dab069f83",
-    "previewModeSigningKey": "f008f1beaa356f116a78008b0346f276e970d883b2f8560c2785d682a2108d8f",
-    "previewModeEncryptionKey": "8e70f0ad3dff1651f97c538b05eeacab9faef776f505f8ba7a18a3487a7e0675"
-  }
-}
+{"version":4,"routes":{"/blog/aeo-checklist-webflow-developers":{},"/blog/how-to-check-website-visible-chatgpt-perplexity":{},"/blog/what-is-aeo-answer-engine-optimization":{}},"dynamicRoutes":{"/blog/[slug]":{"dataRoute":null,"dataRouteRegex":null,"fallback":null,"fallbackRevalidate":false,"fallbackSourceRoute":"/blog/[slug]","routeRegex":"^\\/blog\\/([^/]+?)(?:\\/)?$","allowHeader":[]}},"notFoundRoutes":[],"preview":{"previewModeId":"ebbb6d0d37bd80724aae97fd874b391f","previewModeSigningKey":"3a623e285edbe178324a54bdbdc9c8e2969f2f0e66af315f7688bad42ba5b120","previewModeEncryptionKey":"da98fc2125ffc4c62c939ab50f27b4479b3bac7949cab56f1ce4b5595fa4787a"}}
