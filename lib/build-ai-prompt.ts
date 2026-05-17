@@ -9,6 +9,7 @@ type AIPromptContext = {
   overallScore: number;
   detectedSchemas: string[];
   missingSchemas: string[];
+  passingChecks: string[];
   scores: {
     metadata?: number;
     schema?: number;
@@ -35,7 +36,13 @@ export function buildAIPrompt(data: ScrapedData, context?: AIPromptContext): str
   const contextBlock = context
     ? `You are analyzing the AEO readiness of a webpage.
 
-Here are the ACTUAL scan results already computed:
+ALREADY PASSING CHECKS - DO NOT RECOMMEND FIXING THESE:
+${context.passingChecks.join(", ") || "None"}
+
+SCHEMA TYPES ALREADY ON THIS PAGE - DO NOT MENTION THESE AS MISSING:
+${context.detectedSchemas.join(", ") || "None"}
+
+ACTUAL SCAN RESULTS:
 - Overall score: ${context.overallScore}
 - Detected schema types: ${context.detectedSchemas.join(", ") || "None"}
 - Missing schema types: ${context.missingSchemas.join(", ") || "None"}
@@ -43,17 +50,14 @@ Here are the ACTUAL scan results already computed:
 - Schema score: ${context.scores.schema ?? "N/A"}
 - Headings score: ${context.scores.headings ?? "N/A"}
 - Trust signals score: ${context.scores.trustSignals ?? "N/A"}
-- Issues found: ${context.issues.join(", ") || "None"}
+- Failing/warning checks: ${context.issues.join(", ") || "None"}
 
-Based ONLY on the data above (do not invent new issues):
-1. Write a 2-sentence summary of what AI engines will see when they scan this page.
-2. Identify ONE specific missing context item based on actual missing schema or low scores only.
-3. Suggest ONE next best improvement based on the highest-impact missing item.
-
-Rules:
-- NEVER mention a schema type as missing if it appears in detectedSchemas.
-- Base missingContext on actual low scores or real missing items only.
-- Keep each field under 2 sentences.
+STRICT RULES - VIOLATIONS BREAK THE REPORT:
+1. NEVER list a schema type in "missing" that appears in detectedSchemas above.
+2. NEVER recommend fixing a check that appears in passing checks above.
+3. Do NOT mention FAQPage, Organization, or any other schema type as missing unless it is absent from detectedSchemas.
+4. Base ALL recommendations only on failing/warning checks and missing schema types listed above.
+5. Keep each field under 2 sentences.
 `
     : "";
 

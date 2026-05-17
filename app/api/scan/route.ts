@@ -47,7 +47,8 @@ function parseSchemaRecommendations(parsed: Record<string, unknown>, fallbackDet
   const detectedRaw = Array.isArray(sr?.detected)
     ? (sr.detected as string[]).filter((s): s is string => typeof s === "string")
     : fallbackDetected;
-  const detected = Array.from(new Set(detectedRaw));
+  // Always merge with scraped schema types - the scraper is ground truth
+  const detected = Array.from(new Set([...detectedRaw, ...fallbackDetected]));
   const detectedSet = new Set(detected.map(normalizeSchemaType));
 
   const missingRaw = Array.isArray(sr?.missing)
@@ -76,6 +77,7 @@ async function getAIInsightsWithBudget(
     overallScore: number;
     detectedSchemas: string[];
     missingSchemas: string[];
+    passingChecks: string[];
     scores: {
       metadata?: number;
       schema?: number;
@@ -140,11 +142,12 @@ function parseAIInsights(raw: string, fallbackDetected: string[] = []): AIInsigh
     recommendations: [
       "Add clear FAQ-style answer blocks for the most important buyer questions.",
       "Strengthen page metadata so the primary entity, offer, and audience are explicit.",
-      "Add or expand structured data for Organization, WebPage, FAQPage, and relevant article/service types.",
+      "Add or expand structured data relevant to your page type.",
     ],
-    quickWin: "Add a concise FAQ section with matching FAQPage schema.",
-    contentGap: "The page needs more explicit, answer-ready content that maps brand, category, audience, use cases, proof, FAQs, and schema.",
+    quickWin: "Improve the clearest missing AI visibility signal first.",
+    contentGap: "The page needs more explicit, answer-ready content that maps brand, category, audience, use cases, and proof.",
     summary: cleaned.slice(0, 500) || "AI analysis completed, but the provider returned an empty response.",
+    schemaRecommendations: parseSchemaRecommendations({}, fallbackDetected),
   };
 }
 
@@ -794,6 +797,9 @@ export async function POST(req: NextRequest) {
         const issueTitles = checks
           .filter((check) => check.status !== "pass")
           .map((check) => check.label);
+        const passingCheckLabels = checks
+          .filter((check) => check.status === "pass")
+          .map((check) => check.label);
 
         const includeAIThisRequest = wantAI && checkAIRateLimit(url);
         emitProgress(5, "Generating AI insights", "started");
@@ -809,6 +815,7 @@ export async function POST(req: NextRequest) {
               overallScore: score,
               detectedSchemas,
               missingSchemas,
+              passingChecks: passingCheckLabels,
               scores: {
                 metadata: categoryScores.metadata,
                 schema: categoryScores.schema,
