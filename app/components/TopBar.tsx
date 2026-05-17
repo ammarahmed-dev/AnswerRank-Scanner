@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 export default function TopBar() {
-  const [displayCount, setDisplayCount] = useState("500+");
+  const [displayCount, setDisplayCount] = useState("2,800+");
   const [targetCount, setTargetCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function TopBar() {
     const duration = 1500;
     const steps = 40;
     const stepMs = duration / steps;
-    const startCount = Math.max(0, targetCount - 200);
+    const startCount = Math.max(0, targetCount - 80);
     let current = startCount;
     const increment = (targetCount - startCount) / steps;
     let tickTimeout: ReturnType<typeof setTimeout> | null = null;
