@@ -16,24 +16,35 @@ export const metadata: Metadata = {
   },
 };
 
-const personSchema = {
+const teamSchema = {
   "@context": "https://schema.org",
-  "@type": "Person",
-  name: "Ummar Ahmed",
-  jobTitle: "Founder and Developer",
-  worksFor: {
-    "@type": "Organization",
-    name: "AEOCheck",
-    url: "https://www.aeocheck.co",
-  },
-  url: "https://www.aeocheck.co/team",
-  sameAs: ["https://www.linkedin.com/in/ummar-ahmed/"],
+  "@graph": [
+    {
+      "@type": "Person",
+      name: "Ummar Ahmed",
+      jobTitle: "Founder and Developer",
+      worksFor: {
+        "@type": "Organization",
+        name: "AEOCheck",
+        url: "https://www.aeocheck.co",
+      },
+      url: "https://www.aeocheck.co/team",
+      sameAs: ["https://www.linkedin.com/in/ummar-ahmed/"],
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://www.aeocheck.co" },
+        { "@type": "ListItem", position: 2, name: "Team", item: "https://www.aeocheck.co/team" },
+      ],
+    },
+  ],
 };
 
 export default function TeamPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(teamSchema) }} />
       <SiteHeader />
       <main className="legal-page">
         <div className="legal-page-inner">
