@@ -691,6 +691,11 @@ export async function POST(req: NextRequest) {
           // llms.txt not found or timeout, keep warn
         }
 
+        scrapedData.hasRobotsTxt = robotsCheck.status !== "fail";
+        scrapedData.hasSitemap = sitemapCheck.status !== "fail";
+        scrapedData.allowsAiBots = aiBotStatus === "pass";
+        scrapedData.hasLlmsTxt = llmsTxtStatus === "pass";
+
         const detectedSchemas = scrapedData.schemaTypes;
         const candidateSchemaTypes = ["Organization", "WebSite", "WebPage", "FAQPage", "Article", "HowTo", "BreadcrumbList", "Service", "Product", "SoftwareApplication"];
         const missingSchemas = candidateSchemaTypes.filter(

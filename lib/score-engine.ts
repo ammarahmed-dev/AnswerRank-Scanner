@@ -213,40 +213,60 @@ const CHECKS_CONFIG: CheckConfig[] = [
     id: "robots",
     label: "Robots.txt",
     weight: 5,
-    check: (_data: ScrapedData) => {
-      // This would require a separate check during scraping
-      // For now, we'll make it optional/warn
+    check: (data: ScrapedData) => {
+      if (data.hasRobotsTxt === true) return "pass";
+      if (data.hasRobotsTxt === false) return "fail";
       return "warn";
     },
-    detail: () => "Robots.txt validation requires separate HTTP check",
+    detail: (data: ScrapedData) => {
+      if (data.hasRobotsTxt === true) return "robots.txt found and accessible";
+      if (data.hasRobotsTxt === false) return "No robots.txt found";
+      return "robots.txt could not be verified";
+    },
   },
   {
     id: "ai_bot_access",
-    label: "AI Bot Access",
+    label: "AI Crawler Access (GEO)",
     weight: 8,
-    check: (_data: ScrapedData) => {
+    check: (data: ScrapedData) => {
+      if (data.allowsAiBots === true) return "pass";
+      if (data.allowsAiBots === false) return "fail";
       return "warn";
     },
-    detail: () => "AI bot access requires robots.txt analysis",
+    detail: (data: ScrapedData) => {
+      if (data.allowsAiBots === true) return "Major AI crawlers (GPTBot, ClaudeBot, PerplexityBot) are allowed";
+      if (data.allowsAiBots === false) return "One or more AI crawlers blocked in robots.txt - this prevents AI indexing";
+      return "AI bot access could not be verified";
+    },
   },
   {
     id: "sitemap",
     label: "Sitemap.xml",
     weight: 5,
-    check: (_data: ScrapedData) => {
-      // This would require a separate check during scraping
+    check: (data: ScrapedData) => {
+      if (data.hasSitemap === true) return "pass";
+      if (data.hasSitemap === false) return "warn";
       return "warn";
     },
-    detail: () => "Sitemap validation requires separate HTTP check",
+    detail: (data: ScrapedData) => {
+      if (data.hasSitemap === true) return "sitemap.xml found - helps AI crawlers discover all pages";
+      return "No sitemap.xml found at /sitemap.xml";
+    },
   },
   {
     id: "llms_txt",
-    label: "llms.txt File",
+    label: "llms.txt File (GEO)",
     weight: 9,
-    check: (_data: ScrapedData) => {
+    check: (data: ScrapedData) => {
+      if (data.hasLlmsTxt === true) return "pass";
+      if (data.hasLlmsTxt === false) return "fail";
       return "warn";
     },
-    detail: () => "llms.txt validation requires separate HTTP check",
+    detail: (data: ScrapedData) => {
+      if (data.hasLlmsTxt === true) return "llms.txt found - AI engines can read your site structure";
+      if (data.hasLlmsTxt === false) return "No llms.txt file - add one to help AI engines understand your site";
+      return "llms.txt could not be verified";
+    },
   },
   {
     id: "alt_text",

@@ -51,44 +51,44 @@ const GUEST_SCAN_STORAGE_KEY = "aeocheck_guest_scans_month";
 const STEP_ANIMATION_MS = 140;
 
 const trustStats = [
-  { value: "6", label: "Readiness categories", text: "Metadata, headings, schema, clarity, AI readiness, and performance." },
+  { value: "6", label: "Readiness categories", text: "Covers metadata, schema, headings, and AI readiness." },
   { value: "3", label: "Priority fixes", text: "The free report focuses attention on the highest-impact work first." },
   { value: "0", label: "Setup required", text: "No signup and no onboarding steps. Paste a public page and scan immediately." },
   { value: "$14", label: "Full Report", text: "One-time payment for a full AI visibility breakdown with schema recommendations and PDF export." },
 ];
 
 const auditSignals = [
-  { icon: FileMagnifyingGlass, title: "Metadata clarity", text: "Title tag, meta description, canonical URL, Open Graph tags, and heading hierarchy. Every signal AI uses to understand a page." },
-  { icon: Code, title: "Structured data", text: "Detects existing JSON-LD schema, flags missing types, and surfaces the highest-impact markup your page is missing." },
-  { icon: Sparkle, title: "Answer readiness", text: "Scores how well the page is structured for AI assistants to extract, summarize, and cite its content in answers." },
-  { icon: Gauge, title: "Priority scoring", text: "A weighted 0-100 visibility score broken down by category, so you know exactly where to focus first." },
-  { icon: FileArrowDown, title: "PDF export", text: "A polished, client-ready audit PDF you can hand off to any team or stakeholder without extra formatting work." },
-  { icon: FileArchive, title: "Saved reports", text: "Every scan is stored in your account so you can revisit past audits and track improvement over time." },
+  { icon: FileMagnifyingGlass, title: "Metadata clarity", text: "Checks your title, description, Open Graph tags, and heading structure. These are the signals AI uses to understand a page." },
+  { icon: Code, title: "Structured data", text: "Finds existing JSON-LD schema and flags missing types. Shows you the markup that will have the biggest impact on AI visibility." },
+  { icon: Sparkle, title: "Answer readiness", text: "Scores how well your page is set up for AI tools to read, summarize, and cite its content in answers." },
+  { icon: Gauge, title: "Priority scoring", text: "A weighted 0-100 score broken down by category. You know exactly where to focus first." },
+  { icon: FileArrowDown, title: "PDF export", text: "A clean, client-ready PDF you can share with any team without extra formatting work." },
+  { icon: FileArchive, title: "Saved reports", text: "Every scan is stored in your account so you can revisit past reports and track improvement over time." },
 ];
 
 const workflow = [
   {
     title: "Paste a public website URL",
-    text: "Enter any publicly accessible URL into the scanner. AEOCheck fetches the live page content, metadata, and HTML structure in real time. No browser extension or code installation required.",
+    text: "Enter any public URL. AEOCheck fetches the live page content, metadata, and HTML structure in real time. No browser extension or installation needed.",
   },
   {
     title: "Read every page signal",
-    text: "The scanner reads your title tag, meta description, heading hierarchy, schema markup, internal link structure, and content depth. It checks over 20 individual signals that AI engines use to understand and cite pages.",
+    text: "The scanner reads your metadata, schema markup, and content structure. It checks over 20 signals that AI engines use to cite your page.",
   },
   {
     title: "Score your AI visibility",
-    text: "Every signal is converted into a weighted score across 6 categories: Metadata, Schema, Headings, Content Clarity, Trust Signals, and AI Readiness. Your overall score reflects how well AI engines can understand and cite your page.",
+    text: "Each signal gets a score in one of six areas: Metadata, Schema, Headings, Clarity, Trust, and Performance. Your total score shows how well AI engines can read and cite your page.",
   },
   {
     title: "Act on the highest-impact fixes",
-    text: "The report ranks every issue by impact so you know exactly what to fix first. Each issue includes a plain-English explanation of why it matters and a specific recommended fix you can implement immediately.",
+    text: "The report ranks every issue by impact so you know what to fix first. Each issue includes a plain-English explanation and a specific fix you can use right away.",
   },
 ];
 
 const faqs = [
   ["Does it work without signup?", "Yes. Paste any public URL and run a free scan instantly. No account required."],
-  ["What does the scanner check?", "It checks schema markup, metadata quality, heading structure, content depth, internal links, and how well the page is structured for AI answer extraction."],
-  ["Is this the same as a traditional SEO audit?", "No. Traditional SEO audits focus on crawlability, keywords, and backlinks. This scanner focuses on whether answer engines like ChatGPT and Perplexity can accurately understand and cite your page."],
+  ["What does the scanner check?", "It checks over 25 signals including schema, metadata, and heading structure. It scores how well your page is set up for AI answer extraction."],
+  ["Is this the same as a traditional SEO audit?", "No. Traditional SEO audits focus on keywords and backlinks. This scanner checks whether answer engines like ChatGPT and Perplexity can understand and cite your page."],
   ["What payment methods do you accept?", "All major credit and debit cards via Polar. Full Report is one-time, and Pro Monthly is a subscription."],
   ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; Pro accounts keep full report history."],
 ];
@@ -643,15 +643,15 @@ export default function Home({ heroContent }: HomePageClientProps) {
               <div className="what-we-do-grid">
                 <div className="what-we-do-card">
                   <h3>AI visibility scanning</h3>
-                  <p>Paste any public URL and AEOCheck fetches the live page, reads every signal AI engines rely on, and returns a scored report in under 60 seconds.</p>
+                  <p>Paste any public URL. AEOCheck fetches the live page, reads every signal AI engines rely on, and returns a scored report in under 60 seconds.</p>
                 </div>
                 <div className="what-we-do-card">
                   <h3>25-point readiness checks</h3>
-                  <p>Every scan runs over 25 individual checks across metadata, schema markup, heading structure, content depth, trust signals, and AI readiness - giving you a complete picture in one place.</p>
+                  <p>Every scan covers 25 checks across metadata, schema, headings, and more. You get a full picture in one place.</p>
                 </div>
                 <div className="what-we-do-card">
                   <h3>Actionable recommendations</h3>
-                  <p>Each issue comes with a plain-English explanation and a specific fix you can implement right away, ranked by impact so you always know what to tackle first.</p>
+                  <p>Each issue comes with a plain-English explanation and a specific fix you can use right away. Issues are ranked by impact so you always know what to tackle first.</p>
                 </div>
               </div>
             </div>
@@ -689,7 +689,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 <p className="launch-eyebrow">Why it matters</p>
                 <h2>Search is becoming answer-first. Your site needs machine-readable proof.</h2>
                 <p>
-                  Buyers increasingly discover brands through AI summaries and answer engines like ChatGPT and Perplexity. AEOCheck shows you whether your page gives those systems enough signal to understand, summarize, and cite your business.
+                  More buyers now find brands through AI tools like ChatGPT and Perplexity. AEOCheck shows you whether your page gives those systems enough signal to understand and cite your business.
                 </p>
                 <p>Learn how we score your AEO readiness in our <a href="#report">sample report ↓</a></p>
                 <div className="story-checks">

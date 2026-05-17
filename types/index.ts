@@ -20,6 +20,10 @@ export interface ScrapedData {
   dateModified?: string;
   hasPersonSchema?: boolean;
   readabilityScore?: number;
+  hasLlmsTxt?: boolean;
+  allowsAiBots?: boolean;
+  hasRobotsTxt?: boolean;
+  hasSitemap?: boolean;
 }
 
 export interface ScanMetadata {
