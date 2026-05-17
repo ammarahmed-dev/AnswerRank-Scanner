@@ -5,7 +5,7 @@ type AppRoutes = "/" | "/about" | "/admin" | "/blog" | "/blog/[slug]" | "/contac
 type AppRouteHandlerRoutes = "/api/account" | "/api/admin/summary" | "/api/admin/users" | "/api/analyze" | "/api/checkout" | "/api/compare" | "/api/contact" | "/api/health" | "/api/logo" | "/api/og" | "/api/og/report" | "/api/polar/webhook" | "/api/reports/[id]" | "/api/reports/[id]/retest" | "/api/scan" | "/api/stats" | "/api/stats/increment"
 type PageRoutes = never
 type LayoutRoutes = "/"
-type RedirectRoutes = "/index.php"
+type RedirectRoutes = "/index.php" | "/logo.png"
 type RewriteRoutes = never
 type Routes = AppRoutes | PageRoutes | LayoutRoutes | RedirectRoutes | RewriteRoutes | AppRouteHandlerRoutes
 
@@ -38,6 +38,7 @@ interface ParamMap {
   "/forgot-password": {}
   "/index.php": {}
   "/login": {}
+  "/logo.png": {}
   "/privacy-policy": {}
   "/refund-policy": {}
   "/report": {}
