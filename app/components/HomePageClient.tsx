@@ -3,7 +3,6 @@
 import { CSSProperties, ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import LoadingState from "./LoadingState";
-import SiteFooter from "./SiteFooter";
 import SiteHeader from "./SiteHeader";
 import TopBar from "./TopBar";
 import UpgradeButton from "./UpgradeButton";
@@ -867,8 +866,6 @@ export default function Home({ heroContent }: HomePageClientProps) {
           </div>
         </section>
       )}
-
-      <SiteFooter />
 
       {isClient && showLimitModal && createPortal(
         <div className="waitlist-modal-overlay" onClick={() => setShowLimitModal(false)}>

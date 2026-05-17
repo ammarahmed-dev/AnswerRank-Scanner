@@ -1,5 +1,6 @@
 import HomePageClient from "./components/HomePageClient";
 import SchemaMarkup from "./components/SchemaMarkup";
+import SiteFooter from "./components/SiteFooter";
 import { ShieldCheck } from "lucide-react";
 
 export default function HomePage() {
@@ -29,6 +30,7 @@ export default function HomePage() {
     <>
       <SchemaMarkup />
       <HomePageClient heroContent={heroContent} />
+      <SiteFooter />
     </>
   );
 }

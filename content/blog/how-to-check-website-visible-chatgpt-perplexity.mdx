@@ -1,0 +1,199 @@
+---
+title: How to Check If Your Website Is Visible to ChatGPT and Perplexity
+description: A step-by-step guide to testing whether your website appears in ChatGPT, Perplexity, and other AI search engines - and what to do if it does not.
+date: 2026-05-15
+slug: how-to-check-website-visible-chatgpt-perplexity
+tags: [aeo, chatgpt, perplexity, ai-search, visibility]
+author: AEOCheck
+coverImage: /images/blog/check-ai-visibility-cover.png
+---
+
+More than 800 million people use ChatGPT every week. Perplexity is growing fast as a research tool. Google AI Overviews now appear in over half of all searches. If your website is not showing up in these AI-generated answers, you are invisible to a huge and rapidly growing segment of your potential customers.
+
+The problem is most website owners have no idea whether they appear in AI answers or not. This guide shows you exactly how to check - manually, using your analytics, and with automated tools - and what to do if you are not showing up.
+
+Want a full technical scan of your site's AI readiness right now? [Run a free AEOCheck scan](https://aeocheck.co) and get your AI visibility score in under 60 seconds.
+
+---
+
+## Why AI Visibility Is Different From Google Rankings
+
+Traditional SEO tells you where you rank in Google's list of links. AI visibility is different - it tells you whether AI systems actually mention, cite, or recommend your brand when someone asks a relevant question.
+
+Here is the uncomfortable truth: only 12% of URLs cited by ChatGPT and Perplexity rank in Google's top 10 results. That means ranking well in Google does not guarantee you are visible in AI answers, and vice versa.
+
+AI engines work differently from search engines:
+- They synthesize answers from multiple sources
+- They cite a small number of trusted pages, not a ranked list
+- They reward content structure, authority signals, and machine-readability
+- They can change which sources they cite daily
+
+This is why you need to check AI visibility separately from your Google rankings.
+
+---
+
+## Method 1 - Test Manually in Each AI Tool (Free, 15 Minutes)
+
+The most direct way to check is to ask the AI tools the same questions your target customers would ask - and see if your brand appears.
+
+**Step 1 - Write 5-10 test queries**
+
+Think like your customer, not your brand. Do not search your own name. Search the problem you solve:
+
+- "best tool to audit a website for AI search"
+- "how do I improve my AI search visibility"
+- "what is AEO and how do I get started"
+- "top [your category] tools in 2026"
+- "how to make my website show up in ChatGPT"
+
+**Step 2 - Run each query in ChatGPT**
+
+Go to [chat.openai.com](https://chat.openai.com) and run each query. Make sure web browsing is turned on (ChatGPT Plus). Note:
+- Does your brand get mentioned?
+- Is your website cited as a source?
+- Which competitors appear instead of you?
+
+**Step 3 - Run the same queries in Perplexity**
+
+Go to [perplexity.ai](https://perplexity.ai) and repeat the same queries. Perplexity always shows its sources panel - check whether your domain appears in the numbered sources list. Sources listed higher usually shape the answer more than those at the bottom.
+
+**Step 4 - Test in Google AI Overviews**
+
+Search the same queries in Google and check if an AI Overview appears at the top. Look for your site in the cited sources.
+
+**What to record:**
+- Which queries surface your brand
+- Which queries surface competitors instead
+- Whether you appear as a cited source or just a mention
+- Which platform shows you most often
+
+Run this test monthly - AI citations change frequently.
+
+---
+
+## Method 2 - Check Your Analytics for AI Referral Traffic
+
+If AI tools are sending you traffic, it shows up in your analytics. Here is where to look.
+
+**In Google Analytics 4:**
+
+1. Go to Reports > Acquisition > Traffic Acquisition
+2. Look for referral sources including:
+   - `perplexity.ai`
+   - `openai.com`
+   - `chat.openai.com`
+   - `bing.com` (ChatGPT Search uses Bing)
+   - `gemini.google.com`
+
+**Pro tip:** Create a custom segment filtering for these referral domains to track AI traffic as a separate channel over time.
+
+**What the numbers tell you:**
+
+- Perplexity traffic appearing = Perplexity is crawling and citing you
+- Low or zero AI referral traffic = you are probably not being cited
+- Growing AI referral traffic after making AEO changes = your fixes are working
+
+Note: AI referral traffic is still a small percentage for most sites, but it is growing fast. Even a small number of AI-referred visitors converts at a high rate because they arrive with high intent.
+
+---
+
+## Method 3 - Check Your robots.txt Right Now
+
+Before anything else, check whether you are accidentally blocking AI crawlers. This is the single most common reason sites are invisible to ChatGPT and Perplexity.
+
+Go to `yourdomain.com/robots.txt` in your browser.
+
+Look for any of these being blocked:
+
+```
+User-agent: GPTBot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+```
+
+If any of these appear with `Disallow: /`, AI crawlers cannot access your site and will not cite it - regardless of how good your content is.
+
+**The fix:** Allow retrieval bots (the ones that cite you in answers) while optionally blocking training bots (the ones that use your content to train AI models):
+
+```
+# Allow AI retrieval bots - these cite you in answers
+User-agent: ChatGPT-User
+User-agent: PerplexityBot
+Allow: /
+
+# Optional: block training crawlers only
+User-agent: GPTBot
+Disallow: /
+```
+
+---
+
+## Method 4 - Use AEOCheck for a Full Technical Scan
+
+Manual testing tells you whether you appear in AI answers today. AEOCheck tells you why you appear or do not appear - and exactly what to fix.
+
+[AEOCheck](https://aeocheck.co) scans 25 technical and content signals that determine AI visibility:
+
+- robots.txt crawler access for GPTBot, ClaudeBot, PerplexityBot
+- llms.txt file presence and quality
+- Schema markup (Organization, Article, FAQ, WebPage)
+- Meta title and description quality
+- H1 structure and heading hierarchy
+- Author and E-E-A-T signals
+- Core Web Vitals (LCP, CLS, TBT)
+- Open Graph tags
+- Sitemap presence and submission
+
+You get a prioritized action plan showing exactly what to fix first for the fastest improvement in AI visibility - not a generic checklist, but specific recommendations for your actual URL.
+
+**[Scan your website free on AEOCheck](https://aeocheck.co)**
+
+---
+
+## What Good AI Visibility Looks Like
+
+When your site is properly optimized for AI search:
+
+- Your brand appears in answers to non-branded queries ("best tool for X") not just branded ones
+- You are cited as a source in Perplexity's sources panel
+- AI-referred traffic appears in your analytics and grows month over month
+- ChatGPT mentions your product when users ask for recommendations in your category
+
+Getting there is not luck - it is the result of specific technical fixes and content structure decisions. The sites that appear most often in AI answers have clean robots.txt rules, proper schema markup, answer-first content, strong E-E-A-T signals, and fast page load times.
+
+---
+
+## Quick Action Checklist
+
+Run through these right now:
+
+- [ ] Check `yourdomain.com/robots.txt` - are PerplexityBot and ChatGPT-User allowed?
+- [ ] Run 5 test queries in ChatGPT and Perplexity - does your brand appear?
+- [ ] Check Google Analytics for perplexity.ai and openai.com referral traffic
+- [ ] Run a free scan on [AEOCheck](https://aeocheck.co) to find technical gaps
+- [ ] Set a monthly reminder to rerun the manual query test
+
+---
+
+## Frequently Asked Questions
+
+**How long does it take to appear in ChatGPT after making fixes?**
+
+For Perplexity, structural changes like fixing robots.txt and adding schema can produce results within 2-6 weeks since Perplexity crawls the web in near real-time. ChatGPT's training-based responses take longer - months rather than weeks.
+
+**Does ranking well on Google guarantee AI visibility?**
+
+No. Only 12% of URLs cited by ChatGPT and Perplexity rank in Google's top 10. Good SEO helps but does not guarantee AI visibility. You need to optimize for both separately.
+
+**Can a new website appear in AI search results?**
+
+Yes - especially in Perplexity. AI retrieval engines assess machine-readability and content relevance, not just domain authority. A new site with proper schema, clear structure, and no crawler blocks can appear in Perplexity answers faster than it can rank on page one of Google.
+
+**Should I block AI training crawlers?**
+
+That is your choice. You can block GPTBot (OpenAI's training crawler) while still allowing ChatGPT-User (OpenAI's retrieval crawler that cites sources in answers). Blocking training does not prevent you from being cited in ChatGPT Search results.

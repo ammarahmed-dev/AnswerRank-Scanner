@@ -5,7 +5,6 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import SiteFooter from "../../components/SiteFooter";
 import SiteHeader from "../../components/SiteHeader";
 import { getAllBlogPosts, getBlogPost } from "@/lib/blog";
-import "./blog-post.css";
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
