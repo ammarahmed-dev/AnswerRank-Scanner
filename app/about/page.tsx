@@ -16,9 +16,35 @@ export const metadata: Metadata = {
   },
 };
 
+const aboutSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "AboutPage",
+      name: "About AEOCheck",
+      url: "https://www.aeocheck.co/about",
+      description:
+        "AEOCheck is an AI search readiness scanner built to help marketers and developers understand how AI search engines evaluate their websites.",
+      publisher: {
+        "@type": "Organization",
+        name: "AEOCheck",
+        url: "https://www.aeocheck.co",
+      },
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://www.aeocheck.co" },
+        { "@type": "ListItem", position: 2, name: "About", item: "https://www.aeocheck.co/about" },
+      ],
+    },
+  ],
+};
+
 export default function AboutPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutSchema) }} />
       <SiteHeader />
       <main className="legal-page">
         <div className="legal-page-inner">

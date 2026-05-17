@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/index.php", destination: "/", permanent: true },
       { source: "/logo.png", destination: "/icons/icon-512.png", permanent: true },
+      { source: "/sitemap-html", destination: "/sitemap", permanent: true },
     ];
   },
   outputFileTracingIncludes: {

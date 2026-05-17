@@ -36,7 +36,7 @@ export default function SiteFooter() {
               <a href="/about">About</a>
               <a href="/team">Team</a>
               <a href="/sample-report">Sample Report</a>
-              <a href="/sitemap-html">Sitemap</a>
+              <a href="/sitemap">Sitemap</a>
             </div>
           </div>
           <div className="footer-link-group">

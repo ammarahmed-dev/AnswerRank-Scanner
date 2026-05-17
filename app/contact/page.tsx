@@ -20,9 +20,19 @@ export const metadata: Metadata = {
   },
 };
 
+const contactSchema = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  name: "Contact AEOCheck",
+  url: "https://www.aeocheck.co/contact",
+  description:
+    "Contact the AEOCheck team with questions about your report, billing, or the scanner.",
+};
+
 export default function ContactPage() {
   return (
     <main className="min-h-screen">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(contactSchema) }} />
       <SiteHeader />
       <section className="launch-section contact-section">
         <div className="launch-container contact-grid">
