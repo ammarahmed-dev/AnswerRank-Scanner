@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/index.php", destination: "/", permanent: true },
+      { source: "/logo.png", destination: "/icons/icon-512.png", permanent: true },
     ];
   },
   outputFileTracingIncludes: {
