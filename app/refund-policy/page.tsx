@@ -1,24 +1,14 @@
 import type { Metadata } from "next";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Refund Policy | AEOCheck AI Scanner",
-  description: "Read AEOCheck's refund policy. We offer a fair refund process for Full Report purchases and Pro Monthly subscriptions.",
-  alternates: {
-    canonical: "https://www.aeocheck.co/refund-policy",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  openGraph: {
-    url: "https://www.aeocheck.co/refund-policy",
-    siteName: "AEOCheck",
-    type: "website",
-    images: [{ url: "https://www.aeocheck.co/api/og" }],
-  },
-};
+  description:
+    "Read AEOCheck's refund policy for manually activated Full Report access and Pro Monthly plans.",
+  path: "/refund-policy",
+});
 
 export default function RefundPolicyPage() {
   return (
@@ -34,7 +24,7 @@ export default function RefundPolicyPage() {
           We want you to be satisfied with every AEOCheck report. If something goes wrong on our end, we will make it right.
         </p>
 
-        <h2>Full Report - $14 One-Time Purchase</h2>
+        <h2>Full Report - $14 One-Time Access</h2>
         <p>You are eligible for a full refund if:</p>
         <ul>
           <li>The report failed to generate due to a technical error on our end</li>
@@ -68,7 +58,7 @@ export default function RefundPolicyPage() {
 
         <h2>Pro Monthly - $39/Month Subscription</h2>
         <ul>
-          <li>You may cancel your Pro Monthly subscription at any time from your account dashboard</li>
+          <li>You may cancel your Pro Monthly subscription at any time through our support and billing contact flow</li>
           <li>Cancellation takes effect at the end of your current billing period</li>
           <li>We do not offer partial month refunds for Pro Monthly subscriptions</li>
           <li>If you were charged after cancelling due to a technical error, contact us within 7 days for a full refund</li>

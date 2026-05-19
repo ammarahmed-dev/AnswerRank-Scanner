@@ -559,12 +559,11 @@ export default function PrintLayout({ report }: Props) {
           <li className="pl-rec-item"><strong>Expand to additional pages.</strong> Audit your homepage, pricing page, and key service pages individually.</li>
         </ol>
         <div className="pl-footer">
-          AEOCheck - aeocheck.co - AI Visibility Report - Generated {date}
+          AEOCheck - www.aeocheck.co - AI Visibility Report - Generated {date}
         </div>
       </div>
     </div>
   );
 }
-
 
 

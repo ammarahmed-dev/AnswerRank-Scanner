@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   trailingSlash: false,
   async redirects() {
     return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "aeocheck.co" }],
+        destination: "https://www.aeocheck.co/:path*",
+        permanent: true,
+      },
       { source: "/index.php", destination: "/", permanent: true },
       { source: "/logo.png", destination: "/icons/icon-512.png", permanent: true },
       { source: "/sitemap-html", destination: "/sitemap", permanent: true },

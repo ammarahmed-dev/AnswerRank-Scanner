@@ -1,3 +1,5 @@
+import { Bot, Gauge, Lightbulb, SearchX } from "lucide-react";
+
 export default function AiSnapshotSection() {
   return (
     <section className="launch-section snapshot-section">
@@ -7,13 +9,15 @@ export default function AiSnapshotSection() {
             <p className="launch-eyebrow">AI Answer Snapshot</p>
             <h2 className="section-heading">See exactly how AI describes your brand</h2>
             <p className="snapshot-subheading">
-              Every full report includes a live snapshot of how AI assistants like ChatGPT and Perplexity currently understand your page and
-              what&apos;s holding them back from citing you.
+              Every full report includes a live snapshot of how AI assistants like ChatGPT and Perplexity understand your page, what context
+              they miss, and what may prevent them from citing you.
             </p>
 
             <div className="snapshot-features">
               <div className="snapshot-feature">
-                <div className="snapshot-feature-icon">🤖</div>
+                <div className="snapshot-feature-icon">
+                  <Bot size={18} />
+                </div>
                 <div>
                   <div className="snapshot-feature-title">AI Summary</div>
                   <div className="snapshot-feature-desc">See the exact summary an AI assistant would generate about your page right now.</div>
@@ -21,7 +25,9 @@ export default function AiSnapshotSection() {
               </div>
 
               <div className="snapshot-feature">
-                <div className="snapshot-feature-icon">🎯</div>
+                <div className="snapshot-feature-icon">
+                  <Gauge size={18} />
+                </div>
                 <div>
                   <div className="snapshot-feature-title">Confidence Score</div>
                   <div className="snapshot-feature-desc">
@@ -31,7 +37,9 @@ export default function AiSnapshotSection() {
               </div>
 
               <div className="snapshot-feature">
-                <div className="snapshot-feature-icon">⚠️</div>
+                <div className="snapshot-feature-icon">
+                  <SearchX size={18} />
+                </div>
                 <div>
                   <div className="snapshot-feature-title">Missing Context</div>
                   <div className="snapshot-feature-desc">
@@ -41,7 +49,9 @@ export default function AiSnapshotSection() {
               </div>
 
               <div className="snapshot-feature">
-                <div className="snapshot-feature-icon">⚡</div>
+                <div className="snapshot-feature-icon">
+                  <Lightbulb size={18} />
+                </div>
                 <div>
                   <div className="snapshot-feature-title">Next Best Improvement</div>
                   <div className="snapshot-feature-desc">

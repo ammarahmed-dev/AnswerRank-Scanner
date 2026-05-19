@@ -77,7 +77,7 @@ export async function GET() {
               background: "linear-gradient(90deg, rgba(0,240,180,0.95), rgba(0,240,180,0.35))",
             }}
           />
-          <div style={{ fontSize: 28, color: "#7eecd4", fontWeight: 600 }}>aeocheck.co</div>
+          <div style={{ fontSize: 28, color: "#7eecd4", fontWeight: 600 }}>www.aeocheck.co</div>
         </div>
       </div>
     ),
@@ -86,4 +86,3 @@ export async function GET() {
     }
   );
 }
-

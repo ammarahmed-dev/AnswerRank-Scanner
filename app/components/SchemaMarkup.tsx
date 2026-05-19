@@ -1,24 +1,27 @@
+import { DEFAULT_OG_IMAGE, SITE_URL } from "@/lib/seo";
+
 export default function SchemaMarkup() {
   const schemas = [
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       name: "AEOCheck",
-      url: "https://www.aeocheck.co",
-      logo: "https://www.aeocheck.co/icons/icon-512.png",
+      url: SITE_URL,
+      logo: `${SITE_URL}/icons/icon-512.png`,
+      email: "hello@aeocheck.co",
       description:
-        "AEOCheck is a free AEO and AI search readiness scanner that checks if your website can be found and cited by AI engines like ChatGPT and Perplexity.",
+        "AEOCheck is an AI search readiness scanner and AEO scanner that checks website visibility for ChatGPT, Perplexity, and Google AI results.",
     },
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: "AEOCheck",
-      url: "https://www.aeocheck.co",
+      url: SITE_URL,
       potentialAction: {
         "@type": "SearchAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: "https://www.aeocheck.co/?url={search_term_string}",
+          urlTemplate: `${SITE_URL}/?url={search_term_string}`,
         },
         "query-input": "required name=search_term_string",
       },
@@ -40,7 +43,7 @@ export default function SchemaMarkup() {
           name: "What does the scanner check?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "It checks schema markup, metadata quality, heading structure, content depth, internal links, and how well the page is structured for AI answer extraction.",
+            text: "It checks over 25 AEO and AI search readiness signals, including schema, metadata, headings, content clarity, and answer extraction structure.",
           },
         },
         {
@@ -53,10 +56,10 @@ export default function SchemaMarkup() {
         },
         {
           "@type": "Question",
-          name: "What payment methods do you accept?",
+          name: "How do paid plans work right now?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "All major credit and debit cards via Polar. Full Report is one-time, and Pro Monthly is a subscription.",
+            text: "Paid access is currently handled through our contact flow. Send us the plan you want and we will help activate access manually.",
           },
         },
         {
@@ -105,42 +108,48 @@ export default function SchemaMarkup() {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       name: "AEOCheck",
-      applicationCategory: "WebApplication",
+      applicationCategory: "SEOApplication",
       operatingSystem: "Web",
-      url: "https://www.aeocheck.co",
-      description: "Free AEO readiness scanner that audits your website for AI search visibility.",
+      url: SITE_URL,
+      description:
+        "AI search readiness and AEO scanner for website visibility in ChatGPT, Perplexity, and Google AI results.",
       offers: [
         {
           "@type": "Offer",
           name: "Free Preview",
           price: "0",
           priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
         },
         {
           "@type": "Offer",
           name: "Full Report",
           price: "14",
           priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+          description: "Manual activation through the AEOCheck contact flow.",
         },
         {
           "@type": "Offer",
           name: "Pro Monthly",
           price: "39",
           priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+          description: "Manual activation through the AEOCheck contact flow.",
         },
       ],
     },
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "@id": "https://www.aeocheck.co/#webpage",
-      url: "https://www.aeocheck.co",
-      name: "AEOCheck - Free AEO & AI Search Readiness Scanner",
+      "@id": `${SITE_URL}/#webpage`,
+      url: SITE_URL,
+      name: "AEOCheck - Free AEO Scanner & AI Search Readiness Audit",
       description:
-        "Free AEO scanner. Check if ChatGPT, Perplexity & Google AI can find your site. Get a scored readiness report in 60 seconds. No signup needed.",
+        "Scan any URL for AI search readiness. AEOCheck checks metadata, schema, headings, content clarity, and answer readiness for ChatGPT, Perplexity, and Google AI results.",
       isPartOf: {
         "@type": "WebSite",
-        "@id": "https://www.aeocheck.co/#website",
+        "@id": `${SITE_URL}/#website`,
       },
       about: {
         "@type": "Thing",
@@ -148,14 +157,14 @@ export default function SchemaMarkup() {
       },
       primaryImageOfPage: {
         "@type": "ImageObject",
-        url: "https://www.aeocheck.co/api/og",
+        url: DEFAULT_OG_IMAGE,
       },
       datePublished: "2026-05-01",
       dateModified: "2026-05-12",
       inLanguage: "en-US",
       potentialAction: {
         "@type": "ReadAction",
-        target: "https://www.aeocheck.co",
+        target: SITE_URL,
       },
     },
     {
@@ -163,13 +172,13 @@ export default function SchemaMarkup() {
       "@type": "ItemList",
       name: "Site Navigation",
       itemListElement: [
-        { "@type": "SiteNavigationElement", position: 1, name: "Home", url: "https://www.aeocheck.co/" },
-        { "@type": "SiteNavigationElement", position: 2, name: "Blog", url: "https://www.aeocheck.co/blog" },
-        { "@type": "SiteNavigationElement", position: 3, name: "Pricing", url: "https://www.aeocheck.co/#pricing" },
-        { "@type": "SiteNavigationElement", position: 4, name: "Sample Report", url: "https://www.aeocheck.co/sample-report" },
-        { "@type": "SiteNavigationElement", position: 5, name: "About", url: "https://www.aeocheck.co/about" },
-        { "@type": "SiteNavigationElement", position: 6, name: "Login", url: "https://www.aeocheck.co/login" },
-        { "@type": "SiteNavigationElement", position: 7, name: "Sign Up", url: "https://www.aeocheck.co/signup" },
+        { "@type": "SiteNavigationElement", position: 1, name: "Home", url: `${SITE_URL}/` },
+        { "@type": "SiteNavigationElement", position: 2, name: "Blog", url: `${SITE_URL}/blog` },
+        { "@type": "SiteNavigationElement", position: 3, name: "Sample Report", url: `${SITE_URL}/sample-report` },
+        { "@type": "SiteNavigationElement", position: 4, name: "About", url: `${SITE_URL}/about` },
+        { "@type": "SiteNavigationElement", position: 5, name: "Contact", url: `${SITE_URL}/contact` },
+        { "@type": "SiteNavigationElement", position: 6, name: "Login", url: `${SITE_URL}/login` },
+        { "@type": "SiteNavigationElement", position: 7, name: "Sign Up", url: `${SITE_URL}/signup` },
       ],
     },
     {
@@ -180,25 +189,25 @@ export default function SchemaMarkup() {
           "@type": "ListItem",
           position: 1,
           name: "Home",
-          item: "https://www.aeocheck.co",
+          item: SITE_URL,
         },
         {
           "@type": "ListItem",
           position: 2,
           name: "Scanner",
-          item: "https://www.aeocheck.co/#scanner",
+          item: `${SITE_URL}/#scanner`,
         },
         {
           "@type": "ListItem",
           position: 3,
           name: "Pricing",
-          item: "https://www.aeocheck.co/#pricing",
+          item: `${SITE_URL}/#pricing`,
         },
         {
           "@type": "ListItem",
           position: 4,
           name: "FAQ",
-          item: "https://www.aeocheck.co/#faq",
+          item: `${SITE_URL}/#faq`,
         },
       ],
     },

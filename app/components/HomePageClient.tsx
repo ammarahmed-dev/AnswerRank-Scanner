@@ -17,10 +17,11 @@ import { canRunScan, isMasterAdmin, isProUser } from "@/lib/access";
 import {
   Globe,
   ArrowRight,
+  CaretRight,
   MagnifyingGlass,
   CheckCircle,
   Sparkle,
-  Plus,
+  Lock,
   XCircle,
   Code,
   FileArrowDown,
@@ -30,6 +31,7 @@ import {
 } from "@phosphor-icons/react";
 
 type AppState = "idle" | "loading" | "done" | "error" | "paywall";
+type ScannerTab = "scan" | "compare" | "monitor" | "audit";
 type ProgressStatus = "started" | "complete" | "skipped" | "error";
 type ScanProgressEvent = {
   type: "progress";
@@ -54,7 +56,7 @@ const trustStats = [
   { value: "6", label: "Readiness categories", text: "Covers metadata, schema, headings, and AI readiness." },
   { value: "3", label: "Priority fixes", text: "The free report focuses attention on the highest-impact work first." },
   { value: "0", label: "Setup required", text: "No signup and no onboarding steps. Paste a public page and scan immediately." },
-  { value: "$14", label: "Full Report", text: "One-time payment for a full AI visibility breakdown with schema recommendations and PDF export." },
+  { value: "$14", label: "Full Report", text: "Paid access is handled through our contact flow so we can activate the right plan for you manually." },
 ];
 
 const auditSignals = [
@@ -62,8 +64,8 @@ const auditSignals = [
   { icon: Code, title: "Structured data", text: "Finds existing JSON-LD schema and flags missing types. Shows you the markup that will have the biggest impact on AI visibility." },
   { icon: Sparkle, title: "Answer readiness", text: "Scores how well your page is set up for AI tools to read, summarize, and cite its content in answers." },
   { icon: Gauge, title: "Priority scoring", text: "A weighted 0-100 score broken down by category. You know exactly where to focus first." },
-  { icon: FileArrowDown, title: "PDF export", text: "A clean, client-ready PDF you can share with any team without extra formatting work." },
-  { icon: FileArchive, title: "Saved reports", text: "Every scan is stored in your account so you can revisit past reports and track improvement over time." },
+  { icon: FileArrowDown, title: "Content clarity", text: "Checks whether your page clearly explains who you are, what you offer, who you help, and why AI systems should trust the answer." },
+  { icon: FileArchive, title: "Trust signals", text: "Checks for entity, business, contact, and credibility signals that help AI systems understand and cite your brand." },
 ];
 
 const workflow = [
@@ -77,7 +79,7 @@ const workflow = [
   },
   {
     title: "Score your AI visibility",
-    text: "Each signal gets a score in one of six areas: Metadata, Schema, Headings, Clarity, Trust, and Performance. Your total score shows how well AI engines can read and cite your page.",
+    text: "Each signal gets a score across metadata, schema, headings, clarity, trust, and performance. Your total AI visibility score shows how well answer engines can read, understand, and cite your page.",
   },
   {
     title: "Act on the highest-impact fixes",
@@ -87,10 +89,34 @@ const workflow = [
 
 const faqs = [
   ["Does it work without signup?", "Yes. Paste any public URL and run a free scan instantly. No account required."],
-  ["What does the scanner check?", "It checks over 25 signals including schema, metadata, and heading structure. It scores how well your page is set up for AI answer extraction."],
+  ["What does the scanner check?", "It checks over 25 AEO and AI search readiness signals, including schema, metadata, headings, content clarity, and answer extraction structure."],
   ["Is this the same as a traditional SEO audit?", "No. Traditional SEO audits focus on keywords and backlinks. This scanner checks whether answer engines like ChatGPT and Perplexity can understand and cite your page."],
-  ["What payment methods do you accept?", "All major credit and debit cards via Polar. Full Report is one-time, and Pro Monthly is a subscription."],
+  ["How do paid plans work right now?", "Paid access is currently handled through our contact flow. Send us the plan you want and we'll help activate access manually."],
   ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; Pro accounts keep full report history."],
+];
+
+const featuredGuides = [
+  {
+    category: "AEO Basics",
+    title: "What Is AEO? Answer Engine Optimization Explained for AI Search",
+    excerpt:
+      "Learn what answer engine optimization means, why AI search visibility matters, and how to improve your website for answer-first discovery.",
+    href: "/blog/what-is-aeo-answer-engine-optimization",
+  },
+  {
+    category: "AI Visibility",
+    title: "How to Check If Your Website Is Visible in ChatGPT and Perplexity",
+    excerpt:
+      "A practical process to evaluate ChatGPT and Perplexity visibility, spot weak signals, and improve answer readiness on key pages.",
+    href: "/blog/how-to-check-website-visible-chatgpt-perplexity",
+  },
+  {
+    category: "Webflow AEO",
+    title: "AEO Checklist for Webflow Websites",
+    excerpt:
+      "A focused checklist for Webflow teams covering schema, metadata, structure, and content clarity improvements for answer engines.",
+    href: "/blog/aeo-checklist-webflow-developers",
+  },
 ];
 
 type HomePageClientProps = {
@@ -113,8 +139,12 @@ export default function Home({ heroContent }: HomePageClientProps) {
   });
   const [isClient, setIsClient] = useState(false);
   const [clientId, setClientId] = useState("");
-  const [showCompetitors, setShowCompetitors] = useState(false);
-  const [competitorUrls, setCompetitorUrls] = useState("");
+  const [scannerTab, setScannerTab] = useState<ScannerTab>("scan");
+  const [compareUrl, setCompareUrl] = useState("");
+  const [compareCompetitorUrl, setCompareCompetitorUrl] = useState("");
+  const [compareState, setCompareState] = useState<"idle" | "loading" | "error">("idle");
+  const [compareError, setCompareError] = useState("");
+  const [compareSimStep, setCompareSimStep] = useState(0);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [waitlistEmail, setWaitlistEmail] = useState("");
   const [waitlistState, setWaitlistState] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -124,6 +154,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [limitModalType, setLimitModalType] = useState<"guest" | "free" | "competitor">("guest");
   const [showScanFirstModal, setShowScanFirstModal] = useState(false);
+  const [activeFaq, setActiveFaq] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastRenderedProgressRef = useRef<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
   const progressQueueRef = useRef<ScanProgressEvent[]>([]);
@@ -233,14 +264,10 @@ export default function Home({ heroContent }: HomePageClientProps) {
     }
     const trimmed = url.trim();
     if (!trimmed) return inputRef.current?.focus();
-    const competitors = competitorUrls
-      .split(/[\n,]+/)
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .slice(0, 3);
 
     setState("loading");
     document.body.style.overflow = "hidden";
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
     currentScanWasGuestRef.current = account?.plan === "guest";
     const initialProgress: LoaderProgress = { step: 1, label: "Preparing scan", status: "started" };
     setLoaderProgress(initialProgress);
@@ -264,7 +291,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ url: trimmed, includeAI: true, clientId, competitorUrls: competitors }),
+        body: JSON.stringify({ url: trimmed, includeAI: true, clientId }),
         signal: controller.signal,
       });
 
@@ -416,18 +443,66 @@ export default function Home({ heroContent }: HomePageClientProps) {
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
+  const handleCompare = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const a = compareUrl.trim();
+    const b = compareCompetitorUrl.trim();
+    if (!a || !b) {
+      setCompareError("Please enter both URLs before running a comparison.");
+      return;
+    }
+    sessionStorage.removeItem("aeocheck_compare_result");
+    setCompareSimStep(0);
+    setCompareState("loading");
+    setCompareError("");
+    document.body.style.overflow = "hidden";
+
+    // Simulated stage progress — advances max to stage 4, never completes
+    let simStep = 0;
+    const stepTimers: ReturnType<typeof setTimeout>[] = [];
+    const durations = [2200, 4800, 7600, 10800, 14400];
+    for (const ms of durations) {
+      stepTimers.push(setTimeout(() => {
+        if (simStep < 4) {
+          simStep += 1;
+          setCompareSimStep(simStep);
+        }
+      }, ms));
+    }
+
+    try {
+      const res = await fetch("/api/compare", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ primaryUrl: a, competitorUrl: b }),
+      });
+      const payload = (await res.json()) as Record<string, unknown>;
+      stepTimers.forEach(clearTimeout);
+      if (!res.ok) {
+        document.body.style.overflow = "";
+        setCompareError((payload.error as string) || "Comparison failed. Please try different URLs.");
+        setCompareState("error");
+        setCompareSimStep(0);
+        return;
+      }
+      sessionStorage.setItem("aeocheck_compare_result", JSON.stringify(payload));
+      router.push("/compare-report");
+    } catch {
+      stepTimers.forEach(clearTimeout);
+      document.body.style.overflow = "";
+      setCompareError("Could not reach the comparison service. Please try again.");
+      setCompareState("error");
+      setCompareSimStep(0);
+    }
+  };
+
   const scrollToScanner = () => {
     document.getElementById("scanner")?.scrollIntoView({ behavior: "smooth", block: "center" });
     setTimeout(() => inputRef.current?.focus(), 250);
   };
 
   const handleHomepageFullReportCta = () => {
-    if (account?.plan === "guest" && guestScansLeft <= 0) {
-      setLimitModalType("guest");
-      setShowLimitModal(true);
-      return;
-    }
-    setShowScanFirstModal(true);
+    router.push("/contact?subject=upgrade");
   };
 
   const closeWaitlistModal = () => {
@@ -517,6 +592,8 @@ export default function Home({ heroContent }: HomePageClientProps) {
           ? `${guestScansLeft} guest preview scan left`
         : undefined;
 
+  const hasProAccess = isClient && account != null && isProUser({ plan: account.plan, isAdmin: account.isAdmin });
+
   return (
     <main className="min-h-screen">
       <Suspense fallback={<div className="top-bar" style={{ minHeight: 37 }} />}>
@@ -531,54 +608,183 @@ export default function Home({ heroContent }: HomePageClientProps) {
             <div className="launch-container hero-content">
               <div className="hero-copy-block">
                 {heroContent}
-                <form onSubmit={handleScan} className="hero-scanner" aria-label="Scan a website">
-                  <div className="hero-input-wrap">
-                    <Globe weight="duotone" className="h-5 w-5" />
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      placeholder="https://yourwebsite.com"
-                      disabled={state === "loading"}
-                    />
+
+                <div className="scanner-card" id="scanner">
+                  <div className="scanner-tabs" role="tablist">
+                    <button role="tab" type="button" aria-selected={scannerTab === "scan"} className={`scanner-tab${scannerTab === "scan" ? " active" : ""}`} onClick={() => setScannerTab("scan")}>
+                      Scan
+                    </button>
+                    <button role="tab" type="button" aria-selected={scannerTab === "compare"} className={`scanner-tab${scannerTab === "compare" ? " active" : ""}`} onClick={() => setScannerTab("compare")}>
+                      Compare <span className="tab-pro-badge">PRO</span>
+                    </button>
+                    <button role="tab" type="button" aria-selected={scannerTab === "monitor"} className={`scanner-tab${scannerTab === "monitor" ? " active" : ""}`} onClick={() => setScannerTab("monitor")}>
+                      Monitor <span className="tab-pro-badge">PRO</span>
+                    </button>
+                    <button role="tab" type="button" aria-selected={scannerTab === "audit"} className={`scanner-tab${scannerTab === "audit" ? " active" : ""}`} onClick={() => setScannerTab("audit")}>
+                      Audit <span className="tab-pro-badge">PRO</span>
+                    </button>
                   </div>
-                  <button type="submit" disabled={state === "loading" || !url.trim()} className="btn btn-primary hero-scan-button">
-                    {state === "loading" ? "Scanning" : "Run Free Scan"}
-                    <ArrowRight weight="bold" className="h-4 w-4" />
-                  </button>
-                  <a href="/sample-report" className="btn btn-secondary hero-secondary-cta">View Sample Report</a>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const isPaid =
-                        account?.plan === "pro" ||
-                        account?.plan === "agency" ||
-                        account?.isAdmin;
-                      if (!isPaid) {
-                        setLimitModalType("competitor");
-                        setShowLimitModal(true);
-                        return;
-                      }
-                      setShowCompetitors(!showCompetitors);
-                    }}
-                    className="hero-competitor-toggle"
-                  >
-                    <Plus weight="bold" className="h-4 w-4" />
-                    {showCompetitors ? "Hide Competitor Compare" : "Compare a Competitor"}
-                  </button>
-                  {showCompetitors && (
-                    <div className="hero-competitor-panel">
-                      <textarea
-                        value={competitorUrls}
-                        onChange={(event) => setCompetitorUrls(event.target.value)}
-                        placeholder={"https://competitor.com\nhttps://another.com"}
-                        rows={3}
-                      />
-                      <p>Optional. Add up to 3 competitor URLs for automatic benchmarking.</p>
-                    </div>
+
+                  {scannerTab === "scan" && (
+                    <form onSubmit={handleScan} className="scanner-tab-panel" aria-label="Scan a website">
+                      <div className="scanner-input-row">
+                        <div className="hero-input-wrap">
+                          <Globe weight="duotone" className="h-5 w-5" />
+                          <input
+                            ref={inputRef}
+                            type="text"
+                            aria-label="Website URL to scan"
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            placeholder="https://yourwebsite.com"
+                            disabled={state === "loading"}
+                          />
+                        </div>
+                        <button type="submit" disabled={state === "loading" || !url.trim()} className="btn btn-primary scanner-submit-btn">
+                          {state === "loading" ? "Scanning..." : "Run Free Scan"}
+                          <ArrowRight weight="bold" className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <a href="/sample-report" className="scanner-sample-link">View a sample full report</a>
+                    </form>
                   )}
-                </form>
+
+                  {scannerTab === "compare" && (
+                    hasProAccess
+                      ? (
+                        <form onSubmit={handleCompare} className="scanner-tab-panel" aria-label="Compare two websites">
+                          <div className="compare-head">
+                            <h3>Compare your site against a competitor</h3>
+                            <p className="compare-subcopy">See where your site is stronger, weaker, or missing AI search signals.</p>
+                          </div>
+                          <div className="compare-form">
+                            <label className="compare-input">
+                              <span>Your website URL</span>
+                              <input
+                                type="url"
+                                aria-label="Your website URL"
+                                placeholder="https://yourwebsite.com"
+                                value={compareUrl}
+                                onChange={(e) => setCompareUrl(e.target.value)}
+                                disabled={compareState === "loading"}
+                              />
+                            </label>
+                            <label className="compare-input">
+                              <span>Competitor URL</span>
+                              <input
+                                type="url"
+                                aria-label="Competitor website URL"
+                                placeholder="https://competitor.com"
+                                value={compareCompetitorUrl}
+                                onChange={(e) => setCompareCompetitorUrl(e.target.value)}
+                                disabled={compareState === "loading"}
+                              />
+                            </label>
+                            <button
+                              type="submit"
+                              className="btn btn-primary compare-submit"
+                              disabled={compareState === "loading" || !compareUrl.trim() || !compareCompetitorUrl.trim()}
+                            >
+                              {compareState === "loading" ? "Comparing..." : "Run Comparison"}
+                            </button>
+                          </div>
+                          {compareError && <p className="compare-error">{compareError}</p>}
+                        </form>
+                      )
+                      : (
+                        <div className="scanner-tab-panel locked-teaser">
+                          <div className="locked-teaser-inner">
+                            <div className="locked-teaser-icon"><Lock size={18} /></div>
+                            <h3>Compare against a competitor</h3>
+                            <p>Unlock side-by-side AI visibility gaps, category wins, and competitor insights.</p>
+                            <div className="locked-teaser-pills">
+                              <span>2 URL scans</span>
+                              <span>Gap analysis</span>
+                              <span>Category wins</span>
+                            </div>
+                            <button type="button" className="btn btn-primary locked-teaser-cta" onClick={() => router.push("/contact?subject=upgrade")}>
+                              Contact us to upgrade
+                            </button>
+                          </div>
+                        </div>
+                      )
+                  )}
+
+                  {scannerTab === "monitor" && (
+                    hasProAccess
+                      ? (
+                        <div className="scanner-tab-panel">
+                          <div className="pro-placeholder-panel">
+                            <div className="pro-placeholder-header">
+                              <span className="tab-pro-badge">PRO</span>
+                              <h3>Monitor your AI visibility</h3>
+                            </div>
+                            <p>Monitor is included in your Pro plan. URL tracking is coming next.</p>
+                            <div className="locked-teaser-pills">
+                              <span>Weekly scans</span>
+                              <span>Trend history</span>
+                              <span>Drop alerts</span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                      : (
+                        <div className="scanner-tab-panel locked-teaser">
+                          <div className="locked-teaser-inner">
+                            <div className="locked-teaser-icon"><Lock size={18} /></div>
+                            <h3>Monitor your AI visibility</h3>
+                            <p>Track score changes over time and get alerted when visibility drops.</p>
+                            <div className="locked-teaser-pills">
+                              <span>Weekly scans</span>
+                              <span>Trend history</span>
+                              <span>Drop alerts</span>
+                            </div>
+                            <button type="button" className="btn btn-primary locked-teaser-cta" onClick={() => router.push("/contact?subject=upgrade")}>
+                              Contact us to upgrade
+                            </button>
+                          </div>
+                        </div>
+                      )
+                  )}
+
+                  {scannerTab === "audit" && (
+                    hasProAccess
+                      ? (
+                        <div className="scanner-tab-panel">
+                          <div className="pro-placeholder-panel">
+                            <div className="pro-placeholder-header">
+                              <span className="tab-pro-badge">PRO</span>
+                              <h3>Audit multiple pages</h3>
+                            </div>
+                            <p>Audit is included in your Pro plan. Multi-page crawling is coming next.</p>
+                            <div className="locked-teaser-pills">
+                              <span>10-page crawl</span>
+                              <span>Weakest pages</span>
+                              <span>Bulk export</span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                      : (
+                        <div className="scanner-tab-panel locked-teaser">
+                          <div className="locked-teaser-inner">
+                            <div className="locked-teaser-icon"><Lock size={18} /></div>
+                            <h3>Audit multiple pages</h3>
+                            <p>Scan important pages across your site and find the weakest opportunities first.</p>
+                            <div className="locked-teaser-pills">
+                              <span>10-page crawl</span>
+                              <span>Weakest pages</span>
+                              <span>Bulk export</span>
+                            </div>
+                            <button type="button" className="btn btn-primary locked-teaser-cta" onClick={() => router.push("/contact?subject=upgrade")}>
+                              Contact us to upgrade
+                            </button>
+                          </div>
+                        </div>
+                      )
+                  )}
+                </div>
+
                 <div className="hero-assurance">
                   <span><CheckCircle weight="fill" className="h-4 w-4" /> Free</span>
                   <span><CheckCircle weight="fill" className="h-4 w-4" /> No signup</span>
@@ -643,7 +849,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
               <div className="what-we-do-grid">
                 <div className="what-we-do-card">
                   <h3>AI visibility scanning</h3>
-                  <p>Paste any public URL. AEOCheck fetches the live page, reads every signal AI engines rely on, and returns a scored report in under 60 seconds.</p>
+                  <p>Paste any public URL. AEOCheck scans the live page for AI search readiness signals and returns a scored AEO report in under 60 seconds.</p>
                 </div>
                 <div className="what-we-do-card">
                   <h3>25-point readiness checks</h3>
@@ -689,9 +895,9 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 <p className="launch-eyebrow">Why it matters</p>
                 <h2>Search is becoming answer-first. Your site needs machine-readable proof.</h2>
                 <p>
-                  More buyers now find brands through AI tools like ChatGPT and Perplexity. AEOCheck shows you whether your page gives those systems enough signal to understand and cite your business.
+                  More buyers now discover brands through AI tools like ChatGPT, Perplexity, and Google AI results. AEOCheck shows whether your page gives those systems enough context to understand, summarize, and cite your business.
                 </p>
-                <p>Learn how we score your AEO readiness in our <a href="/sample-report" style={{ color: "var(--color-primary)", fontWeight: 700, textDecoration: "none" }}>sample report ?</a></p>
+                <p>Learn how we score your AEO readiness in our <a href="/sample-report" style={{ color: "var(--color-primary)", fontWeight: 700, textDecoration: "none" }}>sample report.</a></p>
                 <div className="story-checks">
                   <span><CheckCircle weight="fill" className="h-4 w-4" /> Brand and entity clarity</span>
                   <span><CheckCircle weight="fill" className="h-4 w-4" /> Structured data coverage</span>
@@ -743,6 +949,33 @@ export default function Home({ heroContent }: HomePageClientProps) {
             </div>
           </section>
 
+          <section className="launch-section featured-guides-section" aria-labelledby="featured-guides-heading">
+            <div className="launch-container">
+              <div className="section-intro">
+                <p className="launch-eyebrow">AEO Guides</p>
+                <h2 id="featured-guides-heading">Learn how AI search visibility works</h2>
+                <p className="featured-guides-description">
+                  Practical guides on AEO, AI search readiness, ChatGPT visibility, schema, and website optimization for answer engines.
+                </p>
+              </div>
+
+              <div className="featured-guides-grid">
+                {featuredGuides.map((guide) => (
+                  <article key={guide.href} className="featured-guide-card">
+                    <span className="featured-guide-pill">{guide.category}</span>
+                    <h3>{guide.title}</h3>
+                    <p>{guide.excerpt}</p>
+                    <a href={guide.href} className="featured-guide-link">Read guide</a>
+                  </article>
+                ))}
+              </div>
+
+              <div className="featured-guides-cta-row">
+                <a href="/blog" className="btn btn-secondary">Read more AI search guides</a>
+              </div>
+            </div>
+          </section>
+
           <TestimonialsSection />
 
           <section className="pricing-section" id="pricing">
@@ -786,7 +1019,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> 3 retests on same URL</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Client-ready PDF report</li>
                   </ul>
-                  <button type="button" className="btn btn-secondary" onClick={handleHomepageFullReportCta}>Unlock full report</button>
+                  <button type="button" className="btn btn-secondary" onClick={handleHomepageFullReportCta}>Request full report access</button>
                 </article>
 
                 <article className="pricing-panel pricing-panel-featured">
@@ -802,7 +1035,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited retests on any URL</li>
                   </ul>
                   <UpgradeButton checkoutType="pro_plan" className="btn btn-primary">
-                    Start Pro Monthly
+                    Contact us for Pro access
                   </UpgradeButton>
                 </article>
               </div>
@@ -816,18 +1049,32 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 <h2>Common questions about the scan and report.</h2>
               </div>
               <div className="faq-rows">
-                {faqs.map(([question, answer]) => (
-                  <details key={question}>
-                    <summary><h3>{question}</h3></summary>
-                    <p>
-                      {answer}
-                      {question === "Is this the same as a traditional SEO audit?" && (
-                        <>
-                          {" "}You can <a href="#scanner">run a free scan here</a> to see the difference.
-                        </>
-                      )}
-                    </p>
-                  </details>
+                {faqs.map(([question, answer], index) => (
+                  <div key={question} className={`faq-item${activeFaq === index ? " is-open" : ""}`}>
+                    <button
+                      type="button"
+                      className="faq-question-row"
+                      aria-expanded={activeFaq === index}
+                      onClick={() => setActiveFaq(index)}
+                    >
+                      <span className="faq-question-text">{question}</span>
+                      <span className="faq-icon-wrap" aria-hidden="true">
+                        <CaretRight weight="bold" size={16} />
+                      </span>
+                    </button>
+                    <div className="faq-answer-shell" aria-hidden={activeFaq !== index}>
+                      <div className="faq-answer">
+                        <p>
+                          {answer}
+                          {question === "Is this the same as a traditional SEO audit?" && (
+                            <>
+                              {" "}You can <a href="#scanner">run a free scan here</a> to see the difference.
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -855,13 +1102,22 @@ export default function Home({ heroContent }: HomePageClientProps) {
         document.body
       )}
 
+      {isClient && compareState === "loading" && createPortal(
+        <div className="loading-overlay" role="dialog" aria-modal="true" aria-label="Running competitor comparison">
+          <div className="loading-dialog">
+            <LoadingState mode="compare" step={compareSimStep} />
+          </div>
+        </div>,
+        document.body
+      )}
+
       {state === "paywall" && (
         <section className="launch-container paywall-section">
           <div className="pricing-panel">
             <span className="price">$14</span>
             <strong>Scan limit reached</strong>
-            <p>{errorMsg || "Upgrade to unlock the full report, schema recommendations, implementation checklist, and PDF export."}</p>
-            <UpgradeButton checkoutType="pro_plan">Upgrade to Pro</UpgradeButton>
+            <p>{errorMsg || "Contact us to unlock the full report, schema recommendations, implementation checklist, and PDF export."}</p>
+            <UpgradeButton checkoutType="pro_plan">Contact us to upgrade</UpgradeButton>
             <button onClick={() => setState("idle")} className="btn btn-secondary">Back to scanner</button>
           </div>
         </section>
@@ -1022,6 +1278,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
     </main>
   );
 }
+
 
 
 

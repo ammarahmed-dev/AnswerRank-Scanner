@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
+import { buildPageMetadata, SITE_URL } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "About AEOCheck | AI Search Readiness Scanner",
-  description: "Learn about AEOCheck - the AI search readiness tool that helps marketers and developers understand how AI engines see their websites.",
-  alternates: {
-    canonical: "https://www.aeocheck.co/about",
-  },
-  openGraph: {
-    url: "https://www.aeocheck.co/about",
-    siteName: "AEOCheck",
-    type: "website",
-    images: [{ url: "https://www.aeocheck.co/api/og" }],
-  },
-};
+  description:
+    "Learn how AEOCheck works as an AI search readiness scanner and AEO scanner for AI visibility, answer engine optimization, and ChatGPT and Perplexity visibility.",
+  path: "/about",
+});
 
 const aboutSchema = {
   "@context": "https://schema.org",
@@ -28,7 +22,7 @@ const aboutSchema = {
       publisher: {
         "@type": "Organization",
         name: "AEOCheck",
-        url: "https://www.aeocheck.co",
+        url: SITE_URL,
       },
     },
     {
@@ -46,21 +40,21 @@ export default function AboutPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutSchema) }} />
       <SiteHeader />
-      <main className="legal-page">
+      <main className="legal-page about-page">
         <div className="legal-page-inner">
           <h1>About AEOCheck</h1>
 
           <h2>Who we are</h2>
           <p>
-            AEOCheck is an AI search readiness scanner built by developers who noticed that most websites were invisible to AI-powered search engines - not because they lacked quality, but because they lacked the right signals. We set out to make that gap visible, actionable, and fixable for any team.
+          AEOCheck is an AI search readiness scanner and AEO scanner built by developers who noticed that most websites were invisible to AI-powered search engines, not because they lacked quality, but because they lacked the right signals. We set out to make that gap visible, actionable, and fixable for any team.
           </p>
           <p>
-            We are a small, independent tool built and operated by <a href="/team">a developer focused on practical AEO and AI discoverability</a>. No VC funding, no bloated team, no enterprise pricing. Just a focused tool that does one thing well.
+            We are a small, independent tool built and operated by <a href="/team">a developer focused on practical AEO and AI discoverability</a>. AEOCheck is designed to give teams an AI visibility score, clear answer engine optimization guidance, and practical improvements for ChatGPT and Perplexity visibility.
           </p>
 
           <h2>What AEOCheck does</h2>
           <p>
-            AEOCheck scans any public web page and evaluates it across over 25 signals that AI search engines use to understand, trust, and cite content. That includes metadata quality, schema markup, heading structure, content depth, trust signals, internal linking, and performance.
+            AEOCheck scans any public web page and evaluates it across over 25 signals that AI search engines use to understand, trust, and cite content. That includes metadata quality, schema markup, heading structure, content depth, trust signals, internal linking, performance, and answer engine optimization signals that affect AI search visibility.
           </p>
           <p>
             Every scan returns a 0-100 visibility score, a category-by-category breakdown, and a prioritized list of fixes ranked by impact. No jargon, no padding, no filler recommendations - just a clear picture of where your page stands and what to do next.

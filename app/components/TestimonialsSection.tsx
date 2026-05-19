@@ -34,10 +34,10 @@ function getInitials(name: string) {
 }
 
 const avatarColors = [
-  "linear-gradient(135deg, #00c894, #00f0b4)",
-  "linear-gradient(135deg, #00f0b4, #16a34a)",
-  "linear-gradient(135deg, #00a87d, #00f0b4)",
-  "linear-gradient(135deg, #00c894, #00f0b4)",
+  "linear-gradient(135deg, #009f7b, #00f0b4)",
+  "linear-gradient(135deg, #00dca6, #00a884)",
+  "linear-gradient(135deg, #00b086, #00f0b4)",
+  "linear-gradient(135deg, #009f7b, #00dca6)",
 ];
 
 export default function TestimonialsSection() {

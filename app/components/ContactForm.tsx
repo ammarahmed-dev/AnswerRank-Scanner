@@ -1,7 +1,8 @@
 "use client";
 
 import { CheckCircle2 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type SubjectOption =
   | "General question"
@@ -35,11 +36,21 @@ const INITIAL_VALUES: ContactFormValues = {
 };
 
 export default function ContactForm() {
+  const searchParams = useSearchParams();
   const [values, setValues] = useState<ContactFormValues>(INITIAL_VALUES);
   const [errors, setErrors] = useState<ContactErrors>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+  const isUpgradeRequest = searchParams.get("subject") === "upgrade";
 
   const isDisabled = status === "loading";
+
+  useEffect(() => {
+    if (!isUpgradeRequest) return;
+    setValues((prev) => ({
+      ...prev,
+      subject: "Billing / payment",
+    }));
+  }, [isUpgradeRequest]);
 
   const setField = <K extends keyof ContactFormValues>(key: K, value: ContactFormValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -100,6 +111,12 @@ export default function ContactForm() {
 
   return (
     <form className="contact-form" onSubmit={handleSubmit} noValidate>
+      {isUpgradeRequest && (
+        <div className="contact-upgrade-note">
+          Tell us which plan you want and we&apos;ll help activate access manually.
+        </div>
+      )}
+
       <div className="contact-field">
         <label htmlFor="contact-name">Name</label>
         <input
@@ -171,4 +188,3 @@ export default function ContactForm() {
     </form>
   );
 }
-

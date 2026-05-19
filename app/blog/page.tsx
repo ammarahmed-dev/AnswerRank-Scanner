@@ -4,22 +4,14 @@ import Link from "next/link";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
 import { getAllBlogPosts } from "@/lib/blog";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "AEOCheck Blog - AI Search and AEO Guides",
-  description: "Practical guides for improving AI search visibility, answer engine optimization, schema, and technical content readiness.",
-  alternates: {
-    canonical: "https://www.aeocheck.co/blog",
-  },
-  openGraph: {
-    title: "AEOCheck Blog - AI Search and AEO Guides",
-    description: "Practical guides for improving AI search visibility, answer engine optimization, schema, and technical content readiness.",
-    url: "https://www.aeocheck.co/blog",
-    siteName: "AEOCheck",
-    type: "website",
-    images: [{ url: "https://www.aeocheck.co/api/og" }],
-  },
-};
+export const metadata: Metadata = buildPageMetadata({
+  title: "AEOCheck Blog | AI Search and Answer Engine Optimization Guides",
+  description:
+    "Practical guides for AEO, AI search visibility, ChatGPT and Perplexity visibility, schema audits, and AI search readiness.",
+  path: "/blog",
+});
 
 function formatDate(value: string | Date) {
   const date = value instanceof Date ? value : typeof value === "string" ? new Date(value) : null;

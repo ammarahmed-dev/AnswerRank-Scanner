@@ -2,29 +2,20 @@ import type { Metadata } from "next";
 import ContactForm from "@/app/components/ContactForm";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
+import { buildPageMetadata, SITE_URL } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Contact - AEOCheck",
+export const metadata: Metadata = buildPageMetadata({
+  title: "Contact | AEOCheck",
   description:
-    "Get in touch with the AEOCheck team. Questions about your report, billing, or the scanner answered within 24 hours.",
-  alternates: {
-    canonical: "https://www.aeocheck.co/contact",
-  },
-  openGraph: {
-    title: "Contact - AEOCheck",
-    description:
-      "Get in touch with the AEOCheck team. Questions about your report, billing, or the scanner answered within 24 hours.",
-    url: "https://www.aeocheck.co/contact",
-    siteName: "AEOCheck",
-    type: "website",
-  },
-};
+    "Contact AEOCheck for questions about AI search readiness scans, reports, pricing, or manually activated paid access.",
+  path: "/contact",
+});
 
 const contactSchema = {
   "@context": "https://schema.org",
   "@type": "ContactPage",
   name: "Contact AEOCheck",
-  url: "https://www.aeocheck.co/contact",
+  url: `${SITE_URL}/contact`,
   description:
     "Contact the AEOCheck team with questions about your report, billing, or the scanner.",
 };
