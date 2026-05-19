@@ -1087,7 +1087,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 <h2>Get in touch</h2>
                 <p>Have a question about your report, billing, or the scanner? We&apos;ll get back to you within 24 hours.</p>
               </div>
-              <ContactForm />
+              <Suspense fallback={<div className="surface contact-form-shell" style={{ minHeight: 420 }} />}><ContactForm /></Suspense>
             </div>
           </section>
         </>
