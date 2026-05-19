@@ -4,11 +4,31 @@ import { CheckCircle2, Radar } from "lucide-react";
 
 const STAGE_LIST = [
   { label: "Website access", helper: "Checking if your site can be reached" },
-  { label: "AI visibility", helper: "Reviewing AI crawler access signals" },
-  { label: "SEO foundations", helper: "Checking robots, sitemap, and metadata" },
-  { label: "Performance signals", helper: "Measuring speed and Core Web Vitals" },
+  { label: "AI crawler access", helper: "Reviewing AI crawler and indexability signals" },
+  { label: "Metadata and schema", helper: "Analyzing titles, descriptions, and structured data" },
+  { label: "Answer readiness", helper: "Checking how well your content answers questions" },
+  { label: "Performance and trust", helper: "Reviewing performance and trust signals" },
   { label: "Report generation", helper: "Preparing your final recommendations" },
 ];
+
+const COMPARE_STAGE_LIST = [
+  { label: "Your site scan", helper: "Checking your page signals" },
+  { label: "Competitor scan", helper: "Checking competitor page signals" },
+  { label: "AI visibility signals", helper: "Reviewing crawler access, metadata, and schema" },
+  { label: "Category gaps", helper: "Finding wins, gaps, and differences" },
+  { label: "Comparison report", helper: "Building your comparison report" },
+];
+
+const COMPARE_STEP_LABELS = [
+  "Preparing comparison",
+  "Scanning your site",
+  "Scanning competitor site",
+  "Comparing category signals",
+  "Finding gaps and advantages",
+  "Building comparison report",
+];
+
+const COMPARE_PROGRESS = [8, 24, 44, 62, 78, 88];
 
 type ProgressStatus = "started" | "complete" | "skipped" | "error";
 type LoaderProgress = {
@@ -21,7 +41,7 @@ interface Props {
   progress?: LoaderProgress;
   progressByStepAndStatus?: Record<string, number>;
   step?: number;
-  mode?: "scan" | "report";
+  mode?: "scan" | "report" | "compare";
 }
 
 const DEFAULT_PROGRESS_MAP: Record<string, number> = {
@@ -46,25 +66,25 @@ const DEFAULT_PROGRESS_MAP: Record<string, number> = {
 function getDisplayLabel(label: string) {
   return label
     .replace(/^Preparing scan$/i, "Preparing scan")
-    .replace(/^Fetching website$/i, "Fetching website content")
-    .replace(/^Reading metadata and schema$/i, "Analyzing structured data")
-    .replace(/^Running PageSpeed (analysis|check)$/i, "Measuring performance signals")
-    .replace(/^PageSpeed unavailable, continuing$/i, "Performance signals unavailable - continuing")
-    .replace(/^Generating AI insights$/i, "Reviewing AI visibility signals")
-    .replace(/^Using local recommendations$/i, "Using local visibility recommendations")
+    .replace(/^Fetching website$/i, "Checking site access")
+    .replace(/^Reading metadata and schema$/i, "Analyzing metadata and schema")
+    .replace(/^Running PageSpeed (analysis|check)$/i, "Checking answer readiness signals")
+    .replace(/^PageSpeed unavailable, continuing$/i, "Performance check unavailable - continuing")
+    .replace(/^Generating AI insights$/i, "Evaluating performance and trust signals")
+    .replace(/^Using local recommendations$/i, "Preparing visibility recommendations")
     .replace(/^Scanning competitor$/i, "Scanning competitor")
     .replace(/^Preparing report$/i, "Building your report");
 }
 
 function stageIndexFromProgress(progress: LoaderProgress) {
   const label = progress.label.toLowerCase();
-  if (label.includes("prepare")) return 0;
-  if (label.includes("fetch")) return 0;
-  if (label.includes("metadata") || label.includes("schema")) return 2;
-  if (label.includes("pagespeed") || label.includes("performance")) return 3;
-  if (label.includes("ai insights") || label.includes("local recommendations")) return 1;
-  if (label.includes("competitor") || label.includes("report")) return 4;
-  return Math.max(0, Math.min(4, progress.step - 1));
+  const step = progress.step;
+  if (step <= 1) return 0;
+  if (step === 2) return 1;
+  if (step === 3 || label.includes("metadata") || label.includes("schema")) return 2;
+  if (step === 4 || label.includes("pagespeed") || label.includes("performance")) return 3;
+  if (step === 5 || label.includes("ai insights") || label.includes("local recommendations")) return 4;
+  return 5;
 }
 
 function doneStageIndexFromProgress(progress: LoaderProgress) {
@@ -78,15 +98,146 @@ function stageStatusLabel(index: number, activeIndex: number, doneIndex: number)
   return "Waiting";
 }
 
+function StageDot() {
+  return <span className="loading-stage-dot" />;
+}
+
+function StageList({
+  stages,
+  activeIndex,
+  doneIndex,
+  getStatus,
+}: {
+  stages: { label: string; helper: string }[];
+  activeIndex: number;
+  doneIndex: number;
+  getStatus: (i: number) => string;
+}) {
+  return (
+    <ul className="loading-stage-list">
+      {stages.map((stage, i) => {
+        const done = i < doneIndex;
+        const active = i === activeIndex && !done;
+        const status = getStatus(i);
+        return (
+          <li key={stage.label} className={`loading-stage-row${active ? " is-active" : ""}${done ? " is-done" : ""}`}>
+            <div className="loading-stage-icon">
+              {done ? <CheckCircle2 size={14} /> : <StageDot />}
+            </div>
+            <div className="loading-stage-copy">
+              <span className="loading-stage-label">{stage.label}</span>
+              <span className="loading-stage-helper">{stage.helper}</span>
+            </div>
+            <div className="loading-stage-status">
+              <span className={`loading-stage-pill${active ? " is-active" : ""}${done ? " is-done" : ""}`}>{status}</span>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function MobileStage({
+  stage,
+  stepNum,
+  totalSteps,
+  stages,
+  activeIndex,
+  doneIndex,
+}: {
+  stage: { label: string; helper: string };
+  stepNum: number;
+  totalSteps: number;
+  stages: { label: string; helper: string }[];
+  activeIndex: number;
+  doneIndex: number;
+}) {
+  return (
+    <div className="loading-mobile-stage" aria-hidden="true">
+      <p className="loading-mobile-step-count">Step {stepNum} of {totalSteps}</p>
+      <article className="loading-mobile-stage-card">
+        <div className="loading-mobile-stage-head">
+          <div className="loading-stage-icon">
+            <StageDot />
+          </div>
+          <strong>{stage.label}</strong>
+          <span className="loading-stage-pill is-active">In progress</span>
+        </div>
+        <p>{stage.helper}</p>
+      </article>
+      <div className="loading-mobile-dots" aria-hidden="true">
+        {stages.map((s, i) => {
+          const done = i < doneIndex;
+          const active = i === activeIndex && !done;
+          return <span key={s.label} className={`loading-mobile-dot${done ? " is-done" : ""}${active ? " is-active" : ""}`} />;
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function LoadingState({ progress, progressByStepAndStatus, step, mode = "scan" }: Props) {
   const isReportLoad = mode === "report";
+  const isCompare = mode === "compare";
+
+  if (isCompare) {
+    const compareStage = Math.max(0, Math.min(COMPARE_STAGE_LIST.length - 1, step ?? 0));
+    const stepIdx = Math.min(step ?? 0, COMPARE_STEP_LABELS.length - 1);
+    const pct = COMPARE_PROGRESS[Math.min(step ?? 0, COMPARE_PROGRESS.length - 1)];
+
+    return (
+      <section className="surface loading-card loading-card-focused animate-fade-in-up" role="status" aria-live="polite">
+        <div className="loading-header">
+          <div className="loading-header-icon-col">
+            <div className="loading-scan-indicator" aria-hidden="true">
+              <span className="loading-scan-ring" />
+              <span className="loading-scan-core"><Radar size={16} /></span>
+            </div>
+          </div>
+          <div className="loading-header-copy-col">
+            <h3 className="loading-heading">Comparing both sites</h3>
+            <p className="loading-helper">Scanning your site and competitor site for AI visibility signals.</p>
+          </div>
+          <div className="loading-header-pill-col">
+            <span className="loading-percent-badge">{pct}%</span>
+          </div>
+        </div>
+
+        <div className="loading-progress">
+          <div className="loading-progress-fill" style={{ width: `${pct}%` }} />
+        </div>
+
+        <div className="loading-current-step-card">
+          <p className="loading-current-step-label">Current step</p>
+          <p className="loading-current-step-value">{COMPARE_STEP_LABELS[stepIdx]}</p>
+        </div>
+
+        <StageList
+          stages={COMPARE_STAGE_LIST}
+          activeIndex={compareStage}
+          doneIndex={compareStage}
+          getStatus={(i) => (i < compareStage ? "Complete" : i === compareStage ? "In progress" : "Waiting")}
+        />
+
+        <MobileStage
+          stage={COMPARE_STAGE_LIST[compareStage]}
+          stepNum={compareStage + 1}
+          totalSteps={COMPARE_STAGE_LIST.length}
+          stages={COMPARE_STAGE_LIST}
+          activeIndex={compareStage}
+          doneIndex={compareStage}
+        />
+      </section>
+    );
+  }
+
   const fallbackStep = typeof step === "number" ? Math.max(1, Math.min(6, step + 1)) : 1;
   const activeProgress = progress ?? { step: fallbackStep, label: "Preparing scan", status: "started" as ProgressStatus };
   const stepNumber = Math.max(1, Math.min(6, activeProgress.step));
   const progressKey = `${stepNumber}:${activeProgress.status}`;
   const map = progressByStepAndStatus ?? DEFAULT_PROGRESS_MAP;
   const mappedProgressPercent = map[progressKey] ?? map[`${stepNumber}:started`] ?? 10;
-  const progressPercent = mappedProgressPercent;
   const statusText = activeProgress.status === "error"
     ? "Step unavailable - continuing"
     : activeProgress.status === "skipped"
@@ -98,32 +249,30 @@ export default function LoadingState({ progress, progressByStepAndStatus, step, 
 
   return (
     <section className="surface loading-card loading-card-focused animate-fade-in-up" role="status" aria-live="polite">
-      <div className="loading-card-header loading-header-grid">
+      <div className="loading-header">
         <div className="loading-header-icon-col">
           <div className="loading-scan-indicator" aria-hidden="true">
             <span className="loading-scan-ring" />
-            <span className="loading-scan-core">
-              <Radar className="h-4 w-4" />
-            </span>
+            <span className="loading-scan-core"><Radar size={16} /></span>
           </div>
         </div>
-        <div className="loading-header-copy-col loading-copy-block">
-          <h3 className="section-heading loading-heading">
+        <div className="loading-header-copy-col">
+          <h3 className="loading-heading">
             {isReportLoad ? "Loading your report" : "Scanning your site"}
           </h3>
-          <p className="section-kicker loading-helper">
+          <p className="loading-helper">
             {isReportLoad
               ? "We are preparing your saved report."
               : "Checking AI visibility, crawl access, structured data, and performance signals."}
           </p>
         </div>
         <div className="loading-header-pill-col">
-          <span className="badge loading-percent-badge">{isReportLoad ? "Report view" : `${progressPercent}%`}</span>
+          <span className="loading-percent-badge">{isReportLoad ? "Report view" : `${mappedProgressPercent}%`}</span>
         </div>
       </div>
 
       <div className="loading-progress">
-        <div className="score-bar-fill loading-progress-fill" style={{ width: `${isReportLoad ? 62 : mappedProgressPercent}%` }} />
+        <div className="loading-progress-fill" style={{ width: `${isReportLoad ? 62 : mappedProgressPercent}%` }} />
       </div>
 
       <div className="loading-current-step-card">
@@ -137,55 +286,23 @@ export default function LoadingState({ progress, progressByStepAndStatus, step, 
         </div>
       ) : (
         <>
-          <ul className="loading-stage-list">
-            {STAGE_LIST.map((stage, i) => {
-              const done = i < doneStageIndex;
-              const active = i === activeStageIndex && !done;
-              const status = stageStatusLabel(i, activeStageIndex, doneStageIndex);
-              return (
-                <li key={stage.label} className={`loading-stage-item${active ? " is-active" : ""}${done ? " is-done" : ""}`}>
-                  <div className="loading-stage-main">
-                    <span className="loading-stage-icon-wrap">
-                      <span className="loading-stage-icon">
-                        {done ? <CheckCircle2 className="h-4 w-4" /> : <span className="loading-stage-dot" />}
-                      </span>
-                    </span>
-                    <span className="loading-stage-copy">
-                      <span className="loading-stage-label">{stage.label}</span>
-                      <span className="loading-stage-helper">{stage.helper}</span>
-                    </span>
-                  </div>
-                  <span className="loading-stage-status-badge">{status}</span>
-                </li>
-              );
-            })}
-          </ul>
+          <StageList
+            stages={STAGE_LIST}
+            activeIndex={activeStageIndex}
+            doneIndex={doneStageIndex}
+            getStatus={(i) => stageStatusLabel(i, activeStageIndex, doneStageIndex)}
+          />
 
-          <div className="loading-mobile-stage" aria-hidden="true">
-            <p className="loading-mobile-step-count">Step {Math.max(1, activeStageIndex + 1)} of {STAGE_LIST.length}</p>
-            <article className="loading-mobile-stage-card">
-              <div className="loading-mobile-stage-head">
-                <span className="loading-stage-icon-wrap">
-                  <span className="loading-stage-icon">
-                    <span className="loading-stage-dot" />
-                  </span>
-                </span>
-                <strong>{mobileStage.label}</strong>
-                <span className="loading-stage-status-badge">In progress</span>
-              </div>
-              <p>{mobileStage.helper}</p>
-            </article>
-            <div className="loading-mobile-dots" aria-hidden="true">
-              {STAGE_LIST.map((stage, i) => {
-                const done = i < doneStageIndex;
-                const active = i === activeStageIndex && !done;
-                return <span key={stage.label} className={`loading-mobile-dot${done ? " is-done" : ""}${active ? " is-active" : ""}`} />;
-              })}
-            </div>
-          </div>
+          <MobileStage
+            stage={mobileStage}
+            stepNum={Math.max(1, activeStageIndex + 1)}
+            totalSteps={STAGE_LIST.length}
+            stages={STAGE_LIST}
+            activeIndex={activeStageIndex}
+            doneIndex={doneStageIndex}
+          />
         </>
       )}
     </section>
   );
 }
-

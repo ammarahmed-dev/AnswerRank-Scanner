@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Privacy Policy | AEOCheck AI Scanner",
-  description: "Read AEOCheck's privacy policy. Learn how we collect, use, and protect your data when you use our AI search readiness scanner.",
-  alternates: {
-    canonical: "https://www.aeocheck.co/privacy-policy",
-  },
-  openGraph: {
-    url: "https://www.aeocheck.co/privacy-policy",
-    siteName: "AEOCheck",
-    type: "website",
-    images: [{ url: "https://www.aeocheck.co/api/og" }],
-  },
-};
+  description:
+    "Read AEOCheck's privacy policy for our AI search readiness scanner, report storage, contact flow, and analytics handling.",
+  path: "/privacy-policy",
+});
 
 export default function PrivacyPolicyPage() {
   return (
@@ -27,7 +21,7 @@ export default function PrivacyPolicyPage() {
 
         <h2>1. Who We Are</h2>
         <p>
-          AEOCheck ("we", "us", "our") is an AI search readiness scanner operated at aeocheck.co. We help website owners understand how visible their pages are to AI search engines like ChatGPT, Perplexity, and Google AI Overviews.
+          AEOCheck ("we", "us", "our") is an AI search readiness scanner operated at www.aeocheck.co. We help website owners understand how visible their pages are to AI search engines like ChatGPT, Perplexity, and Google AI Overviews.
         </p>
         <p>
           For privacy questions, contact us at:{" "}
@@ -40,7 +34,7 @@ export default function PrivacyPolicyPage() {
           <li>Email address and password when you create an account</li>
           <li>URLs you submit for scanning</li>
           <li>Name, email, subject, and message when you contact us</li>
-          <li>Payment information processed securely by our payment provider (we never store card details)</li>
+          <li>Billing details you share when requesting paid access through our contact flow</li>
         </ul>
         <p><strong>Information collected automatically:</strong></p>
         <ul>
@@ -55,11 +49,11 @@ export default function PrivacyPolicyPage() {
         <ul>
           <li>Generate and store your AEO readiness reports</li>
           <li>Manage your account and subscription status</li>
-          <li>Process payments and send receipts</li>
+          <li>Handle paid access requests and send receipts when access is activated</li>
           <li>Respond to support and contact requests</li>
           <li>Enforce scan limits by plan tier</li>
           <li>Improve scanner accuracy over time</li>
-          <li>Send transactional emails (report ready, payment confirmation, account updates)</li>
+          <li>Send transactional emails (report ready, access updates, account updates)</li>
         </ul>
         <p>
           We do not sell, rent, or share your personal data with third parties for marketing purposes.
@@ -91,7 +85,7 @@ export default function PrivacyPolicyPage() {
           <li>OpenAI / Google Gemini: AI analysis of scanned page content</li>
           <li>Google PageSpeed API: performance scoring</li>
           <li>Google Analytics / GTM: anonymized usage analytics</li>
-          <li>Polar: payment processing</li>
+          <li>Billing support providers: used when paid access is activated</li>
         </ul>
         <p>Each third party has their own privacy policy governing their data practices.</p>
 
@@ -129,7 +123,7 @@ export default function PrivacyPolicyPage() {
         <p>For any privacy-related questions or requests:</p>
         <p>
           Email: <a href="mailto:hello@aeocheck.co">hello@aeocheck.co</a><br />
-          Website: <a href="https://aeocheck.co">aeocheck.co</a>
+          Website: <a href="https://www.aeocheck.co">www.aeocheck.co</a>
         </p>
         </div>
       </main>
@@ -137,4 +131,3 @@ export default function PrivacyPolicyPage() {
     </>
   );
 }
-

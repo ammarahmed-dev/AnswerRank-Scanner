@@ -9,9 +9,13 @@ export default function robots(): MetadataRoute.Robots {
     "/sample-report",
     "/sitemap",
     "/contact",
-    "/pricing",
     "/privacy-policy",
     "/terms-of-service",
+    "/refund-policy",
+    "/vs/otterly",
+    "/vs/semrush-ai",
+    "/vs/peec-ai",
+    "/vs/profound",
   ];
 
   return {

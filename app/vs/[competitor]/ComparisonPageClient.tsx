@@ -132,7 +132,7 @@ export default function ComparisonPageClient({ data }: Props) {
         <div className="launch-container vs-cta-block">
           <p className="launch-eyebrow">Try it free</p>
           <h2>Run a free AEO scan in 60 seconds</h2>
-          <p>No signup. No credit card. Paste any public URL and get your AI visibility score instantly.</p>
+          <p>No signup. Paste any public URL and get your AI visibility score instantly. Paid access is available through our contact flow.</p>
           <a href="/#scanner" className="btn btn-primary">
             Run Free Scan <ArrowRight className="h-4 w-4" />
           </a>

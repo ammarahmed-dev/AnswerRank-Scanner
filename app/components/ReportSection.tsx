@@ -64,7 +64,7 @@ export default function ReportSection({ report, onReset }: Props) {
   };
 
   const showUpgrade = () => {
-    setNotice("Use the Pro upgrade button to open checkout.");
+    setNotice("Use the Pro upgrade button to contact us for access.");
     setTimeout(() => setNotice(""), 2800);
   };
 
@@ -202,7 +202,7 @@ export default function ReportSection({ report, onReset }: Props) {
       <section className="surface pro-card">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
           <div className="flex-1">
-            <SectionHeader icon={<Crown className="h-4 w-4" />} title="Pro Report locked" text="A clear paid upgrade path for the next checkout step." />
+            <SectionHeader icon={<Crown className="h-4 w-4" />} title="Pro Report locked" text="A clear path to request paid access for this report." />
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 "Full AI search breakdown",
@@ -220,8 +220,8 @@ export default function ReportSection({ report, onReset }: Props) {
             </div>
           </div>
           <div className="lg:w-64">
-              <button onClick={showUpgrade} className="btn btn-primary">Unlock Full Report - $14</button>
-            <p className="muted-copy mt-3 text-center">One-time report purchase. No subscription yet.</p>
+              <button onClick={showUpgrade} className="btn btn-primary">Request Full Report Access - $14</button>
+            <p className="muted-copy mt-3 text-center">Paid access is currently handled through our contact flow.</p>
           </div>
         </div>
       </section>

@@ -738,7 +738,7 @@ const downloadPdf = () => {
             <article className="ai-snapshot-card ai-snapshot-locked">
               <p className="ai-snapshot-label">Missing context and next best improvement</p>
               <p className="ai-snapshot-value">Unlock detailed guidance to see missing context and the next best improvement for this page.</p>
-              <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Unlock Full Report</button>
+              <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Request Full Report Access</button>
             </article>
           )}
         </div>
@@ -786,20 +786,8 @@ const downloadPdf = () => {
                 >
                   <div className="issue-toggle-left">
                     <span
-                      className="issue-status-dot"
+                      className={`issue-status-dot issue-marker-${issue.category}`}
                       aria-hidden="true"
-                      style={{
-                        background: issue.priority === "critical" || issue.priority === "high"
-                          ? "rgba(255, 77, 106, 0.8)"
-                          : issue.priority === "medium"
-                            ? "rgba(255, 184, 48, 0.8)"
-                            : "rgba(0, 214, 143, 0.8)",
-                        boxShadow: issue.priority === "critical" || issue.priority === "high"
-                          ? "0 0 0 3px rgba(255, 77, 106, 0.15)"
-                          : issue.priority === "medium"
-                            ? "0 0 0 3px rgba(255, 184, 48, 0.15)"
-                            : "0 0 0 3px rgba(0, 214, 143, 0.15)",
-                      }}
                     />
                     <span className={`issue-category-pill issue-cat-${issue.category}`}>
                       {CATEGORY_LABELS[issue.category]}
@@ -843,7 +831,7 @@ const downloadPdf = () => {
             <p className="detailed-issues-lock-title">Unlock the full issue breakdown</p>
             <p className="detailed-issues-lock-desc">Get every issue with why it matters, priority, effort level, and the recommended fix.</p>
             <button type="button" className="detailed-issues-lock-cta" onClick={() => setIsUpgradeModalOpen(true)}>
-              Unlock Full Report →
+              Request Full Report Access →
             </button>
             <small className="detailed-issues-lock-price">$14 one-time</small>
           </div>
@@ -1004,7 +992,7 @@ const downloadPdf = () => {
               <>
                 <div className="locked-inline"><Lock className="h-4 w-4" /> Export a client-ready PDF</div>
                 <p>Download a clean report with scores, priority fixes, detailed issues, schema recommendations, and AI insights.</p>
-                <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Unlock Full Report</button>
+                <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Request Full Report Access</button>
               </>
             )}
           </div>
@@ -1026,7 +1014,7 @@ const downloadPdf = () => {
             isMasterAdmin={isAdmin}
           />
         )}
-        {!hasFullReportAccess && <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Unlock Full Report</button>}
+        {!hasFullReportAccess && <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Request Full Report Access</button>}
         <button onClick={onReset} className="btn btn-primary">
           <RotateCcw className="h-4 w-4" /> Scan another URL
         </button>
@@ -1059,7 +1047,7 @@ const downloadPdf = () => {
                 className="btn btn-secondary upgrade-choice-button"
                 disabled={!canUnlockSpecificReport}
               >
-                Unlock this report
+                Request access to this report
               </UpgradeButton>
               {!canUnlockSpecificReport && (
                 <small>Run a scan first to unlock a specific report.</small>
@@ -1079,11 +1067,11 @@ const downloadPdf = () => {
                 <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Priority scan access</span></li>
               </ul>
               <UpgradeButton checkoutType="pro_plan" className="btn btn-primary upgrade-choice-button">
-                Start monthly plan
+                Contact us for Pro access
               </UpgradeButton>
             </article>
           </div>
-          <p className="upgrade-choice-note">You can cancel the monthly plan anytime from Polar billing.</p>
+          <p className="upgrade-choice-note">Paid access is handled through our contact flow, and we will help activate the right plan for you.</p>
           <div className="upgrade-choice-actions">
             <button type="button" className="btn btn-secondary" onClick={() => setIsUpgradeModalOpen(false)}>Cancel</button>
           </div>

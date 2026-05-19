@@ -46,6 +46,10 @@ function impactFromAbsGap(absGap: number): Impact {
   return "low";
 }
 
+function toNumericOrNull(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
 function toLabel(category: string): string {
   if (category === "aiReadiness") return "AI Readiness";
   if (category === "contentClarity") return "Content Clarity";
@@ -99,10 +103,10 @@ export async function POST(req: Request) {
 
   try {
     const [primaryCore, competitorCore] = await Promise.all([runScanCore(primaryUrl, {
-      includePageSpeed: false,
+      includePageSpeed: true,
       normalizeAndValidate: false,
     }), runScanCore(competitorUrl, {
-      includePageSpeed: false,
+      includePageSpeed: true,
       normalizeAndValidate: false,
     })]);
 
@@ -120,35 +124,44 @@ export async function POST(req: Request) {
     ];
 
     const categoryKeys = ["metadata", "headings", "schema", "contentClarity", "aiReadiness", "trustSignals", "performance"] as const;
-    const categoryBreakdown = categoryKeys.map((category) => {
-      const p = primaryCore.categoryScores[category] ?? 0;
-      const c = competitorCore.categoryScores[category] ?? 0;
-      const gap = p - c;
-      return {
+    const categoryBreakdown = categoryKeys.flatMap((category) => {
+      const p = toNumericOrNull(primaryCore.categoryScores[category]);
+      const c = toNumericOrNull(competitorCore.categoryScores[category]);
+      if (p === null && c === null) {
+        return [{
+          category,
+          primaryScore: null,
+          competitorScore: null,
+          gap: null,
+          winner: "tie" as const,
+        }];
+      }
+      const gap = p !== null && c !== null ? p - c : null;
+      return [{
         category,
         primaryScore: p,
         competitorScore: c,
         gap,
-        winner: winnerFromGap(gap),
-      };
+        winner: gap === null ? "tie" : winnerFromGap(gap),
+      }];
     });
 
     const advantages = categoryBreakdown
-      .filter((item) => item.gap > 0)
+      .filter((item) => typeof item.gap === "number" && item.gap > 0)
       .map((item) => ({
         title: `${toLabel(item.category)} advantage`,
-        description: `Primary leads by ${item.gap} points in ${toLabel(item.category)}.`,
+        description: `Primary leads by ${item.gap as number} points in ${toLabel(item.category)}.`,
         category: item.category,
-        impact: impactFromAbsGap(Math.abs(item.gap)),
+        impact: impactFromAbsGap(Math.abs(item.gap as number)),
       }));
 
     const gaps = categoryBreakdown
-      .filter((item) => item.gap < 0)
+      .filter((item) => typeof item.gap === "number" && item.gap < 0)
       .map((item) => ({
         title: `${toLabel(item.category)} gap`,
-        description: `Competitor leads by ${Math.abs(item.gap)} points in ${toLabel(item.category)}.`,
+        description: `Competitor leads by ${Math.abs(item.gap as number)} points in ${toLabel(item.category)}.`,
         category: item.category,
-        impact: impactFromAbsGap(Math.abs(item.gap)),
+        impact: impactFromAbsGap(Math.abs(item.gap as number)),
       }));
 
     const primaryScore = primaryCore.score;
@@ -183,4 +196,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

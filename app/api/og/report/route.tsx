@@ -102,11 +102,10 @@ export async function GET(req: NextRequest) {
             fontSize: "20px",
           }}
         >
-          Check your site free at aeocheck.co
+          Check your site free at www.aeocheck.co
         </div>
       </div>
     ),
     { width: 1200, height: 630 }
   );
 }
-

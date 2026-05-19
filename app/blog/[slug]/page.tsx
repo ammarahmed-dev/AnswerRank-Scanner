@@ -5,6 +5,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import SiteFooter from "../../components/SiteFooter";
 import SiteHeader from "../../components/SiteHeader";
 import { getAllBlogPosts, getBlogPost } from "@/lib/blog";
+import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
 
 type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
@@ -30,14 +31,18 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   if (!post) {
     return {
       title: "Blog post not found - AEOCheck",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
   const ogImage = post.coverImage
     ? post.coverImage.startsWith("http")
       ? post.coverImage
-      : `https://www.aeocheck.co${post.coverImage}`
-    : "https://www.aeocheck.co/api/og";
+      : absoluteUrl(post.coverImage)
+    : DEFAULT_OG_IMAGE;
 
   return {
     title: `${post.title} - AEOCheck`,
@@ -49,10 +54,17 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       title: post.title,
       description: post.description,
       type: "article",
-      url: `https://www.aeocheck.co/blog/${post.slug}`,
+      url: `${SITE_URL}/blog/${post.slug}`,
+      siteName: SITE_NAME,
       publishedTime: post.date,
       tags: post.tags,
       images: [{ url: ogImage }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.description,
+      images: [ogImage],
     },
   };
 }
@@ -63,12 +75,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   if (!post) notFound();
 
-  const postUrl = `https://www.aeocheck.co/blog/${slug}`;
+  const postUrl = `${SITE_URL}/blog/${slug}`;
   const imageUrl = post.coverImage
     ? post.coverImage.startsWith("http")
       ? post.coverImage
-      : `https://www.aeocheck.co${post.coverImage}`
-    : "https://www.aeocheck.co/api/og";
+      : absoluteUrl(post.coverImage)
+    : DEFAULT_OG_IMAGE;
 
   const schema = {
     "@context": "https://schema.org",
@@ -91,7 +103,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           name: "AEOCheck",
           logo: {
             "@type": "ImageObject",
-            url: "https://www.aeocheck.co/icons/icon-512.png",
+            url: `${SITE_URL}/icons/icon-512.png`,
           },
         },
         mainEntityOfPage: {

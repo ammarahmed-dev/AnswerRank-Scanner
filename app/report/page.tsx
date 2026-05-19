@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import ReportClient from "./ReportClient";
 import { getReportRecord } from "@/lib/report-db";
+import { SITE_URL } from "@/lib/seo";
 
 type ReportPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -45,7 +46,7 @@ export async function generateMetadata({ searchParams }: ReportPageProps): Promi
   const grade = score >= 80 ? "Excellent" : score >= 60 ? "Needs Work" : "Poor";
 
   const ogImageUrl =
-    `https://aeocheck.co/api/og/report` +
+    `${SITE_URL}/api/og/report` +
     `?score=${score}` +
     `&domain=${encodeURIComponent(domain)}` +
     `&grade=${encodeURIComponent(grade)}`;
@@ -61,14 +62,14 @@ export async function generateMetadata({ searchParams }: ReportPageProps): Promi
       follow: false,
     },
     alternates: {
-      canonical: `https://aeocheck.co/report?id=${reportId}`,
+      canonical: `${SITE_URL}/report?id=${reportId}`,
     },
     openGraph: {
       title: `${domain} scores ${score}/100 on AEOCheck`,
       description:
         `AI search readiness: ${grade}. ` +
-        `See what needs fixing at aeocheck.co`,
-      url: `https://aeocheck.co/report?id=${reportId}`,
+        `See what needs fixing at www.aeocheck.co`,
+      url: `${SITE_URL}/report?id=${reportId}`,
       siteName: "AEOCheck",
       images: [
         {
@@ -84,7 +85,7 @@ export async function generateMetadata({ searchParams }: ReportPageProps): Promi
       title: `${domain} AEO Score: ${score}/100`,
       description:
         `Grade: ${grade}. ` +
-        `Check your own site free at aeocheck.co`,
+        `Check your own site free at www.aeocheck.co`,
       images: [ogImageUrl],
     },
   };

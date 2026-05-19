@@ -1,22 +1,23 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import BackToTop from "@/app/components/BackToTop";
+import { absoluteUrl, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
-const HOME_TITLE = "AEOCheck - Free AEO & AI Search Readiness Scanner";
+const HOME_TITLE = "AEOCheck - Free AEO Scanner & AI Search Readiness Audit";
 const HOME_DESCRIPTION =
-  "Free AEO scanner. Check if ChatGPT, Perplexity & Google AI can find your site. Get a scored readiness report in 60 seconds. No signup needed.";
+  "Scan any URL for AI search readiness. AEOCheck checks metadata, schema, headings, content clarity, and answer readiness for ChatGPT, Perplexity, and Google AI results.";
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.aeocheck.co"),
+  metadataBase: new URL(SITE_URL),
   title: HOME_TITLE,
   description: HOME_DESCRIPTION,
   other: {
     keywords:
-      "AEO checker, AI search readiness, answer engine optimization tool, LLM visibility scanner, AEO audit, GEO checker, AI SEO tool",
+      "AEO scanner, AI search readiness scanner, AI visibility scanner, AI SEO audit, answer engine optimization tool, ChatGPT visibility checker, Perplexity visibility checker, Google AI results optimization, AI search visibility checker, schema audit for AI search, GEO scanner, generative engine optimization checker, Webflow AEO",
     "msvalidate.01": "9B4C2F424809ACD0BE84EEB08CB2B2BD",
   },
   alternates: {
-    canonical: "https://www.aeocheck.co",
+    canonical: absoluteUrl("/"),
   },
   icons: {
     icon: "/icons/icon-512.png",
@@ -25,15 +26,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: HOME_TITLE,
     description: HOME_DESCRIPTION,
-    url: "https://www.aeocheck.co",
-    siteName: "AEOCheck",
+    url: absoluteUrl("/"),
+    siteName: SITE_NAME,
     type: "website",
     images: [
       {
-        url: "https://www.aeocheck.co/api/og",
-      },
-      {
-        url: "https://www.aeocheck.co/og-image.png",
+        url: DEFAULT_OG_IMAGE,
       },
     ],
   },
@@ -41,7 +39,7 @@ export const metadata: Metadata = {
     title: HOME_TITLE,
     description: HOME_DESCRIPTION,
     card: "summary_large_image",
-    images: ["https://www.aeocheck.co/api/og", "https://www.aeocheck.co/og-image.png"],
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

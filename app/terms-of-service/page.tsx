@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Terms of Service | AEOCheck AI Scanner",
-  description: "Read AEOCheck's terms of service. Understand the rules and conditions for using our AI visibility and AEO readiness scanning tool.",
-  alternates: {
-    canonical: "https://www.aeocheck.co/terms-of-service",
-  },
-  openGraph: {
-    url: "https://www.aeocheck.co/terms-of-service",
-    siteName: "AEOCheck",
-    type: "website",
-    images: [{ url: "https://www.aeocheck.co/api/og" }],
-  },
-};
+  description:
+    "Read the terms for using AEOCheck, including scan allowances, contact-based paid access, report usage, and acceptable use.",
+  path: "/terms-of-service",
+});
 
 export default function TermsOfServicePage() {
   return (
@@ -27,7 +21,7 @@ export default function TermsOfServicePage() {
 
         <h2>1. Acceptance of Terms</h2>
         <p>
-          By accessing or using AEOCheck at aeocheck.co, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.
+          By accessing or using AEOCheck at www.aeocheck.co, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our service.
         </p>
 
         <h2>2. Description of Service</h2>
@@ -75,27 +69,27 @@ export default function TermsOfServicePage() {
             Free account: 3 full scans per month. Resets on a rolling 30-day basis. Reports show overall score and top 3 issues only.
           </li>
           <li>
-            Full Report ($14 one-time): Unlocks the complete report for the specific URL that was scanned. Includes full issue breakdown, schema recommendations, AI Answer Snapshot, competitor takeaway, and client-ready PDF. This is a per-report unlock, not a general scan credit - it applies to the scanned URL only.
+            Full Report ($14 one-time): Unlocks the complete report for the specific URL that was scanned. Includes full issue breakdown, schema recommendations, AI Answer Snapshot, competitor takeaway, and client-ready PDF. This is a per-report unlock, not a general scan credit, and it applies to the scanned URL only.
           </li>
           <li>
-            Pro Monthly ($39/month): 30 full reports per month. Resets on your monthly billing date. Includes all Full Report features plus saved report history and priority scan access.
+            Pro Monthly ($39/month): 30 full reports per month. Includes all Full Report features plus saved report history and priority scan access.
           </li>
         </ul>
         <p>Scan limits are enforced server-side. We reserve the right to adjust limits with reasonable notice to registered users.</p>
 
         <h2>6. Payments</h2>
         <p>
-          All payments are processed securely by our payment provider. By making a purchase you agree to provide accurate payment information and authorize the applicable charge.
+          Paid access is currently handled through our contact flow. When a paid plan is activated, you agree to provide accurate billing information and authorize the applicable charge.
         </p>
         <ul>
           <li>Full Report ($14): One-time payment that unlocks the full report for the specific scanned URL</li>
-          <li>Pro Monthly ($39/month): Recurring subscription billed monthly. You may cancel at any time from your account dashboard.</li>
+          <li>Pro Monthly ($39/month): Recurring subscription billed monthly. Contact us for billing support and activation details.</li>
         </ul>
         <p>For billing questions, contact <a href="mailto:hello@aeocheck.co">hello@aeocheck.co</a></p>
 
         <h2>7. Refund Policy</h2>
         <p>
-          Please see our full Refund Policy at <a href="https://aeocheck.co/refund-policy">aeocheck.co/refund-policy</a> for complete details.
+          Please see our full Refund Policy at <a href="https://www.aeocheck.co/refund-policy">www.aeocheck.co/refund-policy</a> for complete details.
         </p>
         <p>Summary:</p>
         <ul>
@@ -150,7 +144,7 @@ export default function TermsOfServicePage() {
         <p>For questions about these terms:</p>
         <p>
           Email: <a href="mailto:hello@aeocheck.co">hello@aeocheck.co</a><br />
-          Website: <a href="https://aeocheck.co">aeocheck.co</a>
+          Website: <a href="https://www.aeocheck.co">www.aeocheck.co</a>
         </p>
         </div>
       </main>
@@ -158,4 +152,3 @@ export default function TermsOfServicePage() {
     </>
   );
 }
-
