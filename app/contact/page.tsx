@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import ContactForm from "@/app/components/ContactForm";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
@@ -39,7 +40,9 @@ export default function ContactPage() {
               <a href="mailto:hello@aeocheck.co">hello@aeocheck.co</a>
             </p>
           </div>
-          <ContactForm />
+          <Suspense fallback={<div className="surface contact-form-shell" style={{ minHeight: 420 }} />}>
+            <ContactForm />
+          </Suspense>
         </div>
       </section>
       <SiteFooter />
