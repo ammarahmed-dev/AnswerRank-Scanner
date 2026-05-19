@@ -691,7 +691,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 <p>
                   More buyers now find brands through AI tools like ChatGPT and Perplexity. AEOCheck shows you whether your page gives those systems enough signal to understand and cite your business.
                 </p>
-                <p>Learn how we score your AEO readiness in our <a href="/sample-report" style={{ color: "var(--color-primary)", fontWeight: 700, textDecoration: "none" }}>sample report ↓</a></p>
+                <p>Learn how we score your AEO readiness in our <a href="/sample-report" style={{ color: "var(--color-primary)", fontWeight: 700, textDecoration: "none" }}>sample report ?</a></p>
                 <div className="story-checks">
                   <span><CheckCircle weight="fill" className="h-4 w-4" /> Brand and entity clarity</span>
                   <span><CheckCircle weight="fill" className="h-4 w-4" /> Structured data coverage</span>

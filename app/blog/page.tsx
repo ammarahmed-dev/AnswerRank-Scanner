@@ -96,11 +96,6 @@ export default function BlogPage() {
           height: 100%;
           color: inherit;
           text-decoration: none;
-          transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
-        }
-
-        .blog-index-card:hover {
-          transform: translateY(-4px);
         }
 
         .blog-index-card-inner {
@@ -109,14 +104,9 @@ export default function BlogPage() {
           height: 100%;
           flex-direction: column;
           overflow: hidden;
-          border: 1px solid var(--color-line);
+          border: 1px solid var(--border);
           border-radius: var(--radius-lg);
-          background: rgba(15, 23, 42, 0.58);
-        }
-
-        .blog-index-card:hover .blog-index-card-inner {
-          border-color: rgba(124, 106, 255, 0.42);
-          background: rgba(15, 23, 42, 0.72);
+          background: var(--bg-card);
         }
 
         .blog-index-card-media {
@@ -124,7 +114,7 @@ export default function BlogPage() {
           flex: 0 0 200px;
           overflow: hidden;
           border-radius: calc(var(--radius-lg) - 2px) calc(var(--radius-lg) - 2px) 0 0;
-          background: rgba(2, 6, 23, 0.5);
+          background: var(--bg-2);
         }
 
         .blog-index-card-media img {
@@ -143,22 +133,24 @@ export default function BlogPage() {
         }
 
         .blog-index-card-body time {
-          color: var(--color-ink-muted);
+          color: var(--text-muted);
+          font-family: var(--font-mono);
           font-size: 0.82rem;
-          font-weight: 800;
+          font-weight: 500;
         }
 
         .blog-card-author {
-          color: var(--color-ink-muted);
+          color: var(--text-muted);
           font-size: 0.78rem;
-          font-weight: 600;
+          font-weight: 500;
           margin: -4px 0 0;
         }
 
         .blog-index-card-body h2 {
-          color: white;
+          color: var(--text);
+          font-family: var(--font-display);
           font-size: 1.22rem;
-          font-weight: 950;
+          font-weight: 700;
           letter-spacing: 0;
           line-height: 1.15;
         }
@@ -166,7 +158,7 @@ export default function BlogPage() {
         .blog-index-card-body p {
           display: -webkit-box;
           overflow: hidden;
-          color: var(--color-ink-soft);
+          color: var(--text-muted);
           line-height: 1.6;
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 3;

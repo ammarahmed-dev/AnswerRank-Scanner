@@ -3,7 +3,7 @@
 import { CheckResult, CompetitorScanResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
 import { AlertCircle, CheckCircle2, ChevronDown, Copy, Download, ExternalLink, Lock, RotateCcw, Sparkles, TrendingUp, Zap } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import dynamic from "next/dynamic";
 import UpgradeButton from "./UpgradeButton";
@@ -639,7 +639,7 @@ const downloadPdf = () => {
                 <span>{CATEGORY_LABELS[item.category]}</span>
                 <strong>{item.score}</strong>
               </div>
-              <div className="score-bar"><span className="score-bar-fill" style={{ width: `${item.score}%` }} /></div>
+              <div className="score-bar"><span className="score-bar-fill" style={{ width: `${item.score}%`, "--bar-color": item.score >= 90 ? "#00d68f" : item.score >= 70 ? "#00f0b4" : item.score >= 50 ? "#ffb830" : "#ff4d6a" } as CSSProperties} /></div>
               <small>{item.status}</small>
               <p>{categoryNote(item.category, item.score)}</p>
             </div>
@@ -785,6 +785,22 @@ const downloadPdf = () => {
                   aria-expanded={isOpen}
                 >
                   <div className="issue-toggle-left">
+                    <span
+                      className="issue-status-dot"
+                      aria-hidden="true"
+                      style={{
+                        background: issue.priority === "critical" || issue.priority === "high"
+                          ? "rgba(255, 77, 106, 0.8)"
+                          : issue.priority === "medium"
+                            ? "rgba(255, 184, 48, 0.8)"
+                            : "rgba(0, 214, 143, 0.8)",
+                        boxShadow: issue.priority === "critical" || issue.priority === "high"
+                          ? "0 0 0 3px rgba(255, 77, 106, 0.15)"
+                          : issue.priority === "medium"
+                            ? "0 0 0 3px rgba(255, 184, 48, 0.15)"
+                            : "0 0 0 3px rgba(0, 214, 143, 0.15)",
+                      }}
+                    />
                     <span className={`issue-category-pill issue-cat-${issue.category}`}>
                       {CATEGORY_LABELS[issue.category]}
                     </span>
@@ -823,13 +839,13 @@ const downloadPdf = () => {
           })}
         </div>
         {!hasFullReportAccess && hiddenCount > 0 && (
-          <div className="locked-panel detailed-issues-lock">
-            <div className="detailed-issues-lock-copy">
-              <p>Unlock the full issue breakdown</p>
-              <small>Get every issue with why it matters, priority, effort level, and the recommended fix.</small>
-              <small>Full Report is a one-time unlock for this scan.</small>
-            </div>
-            <button type="button" className="btn btn-primary detailed-issues-lock-cta" onClick={() => setIsUpgradeModalOpen(true)}>Unlock Full Report</button>
+          <div className="detailed-issues-lock">
+            <p className="detailed-issues-lock-title">Unlock the full issue breakdown</p>
+            <p className="detailed-issues-lock-desc">Get every issue with why it matters, priority, effort level, and the recommended fix.</p>
+            <button type="button" className="detailed-issues-lock-cta" onClick={() => setIsUpgradeModalOpen(true)}>
+              Unlock Full Report →
+            </button>
+            <small className="detailed-issues-lock-price">$14 one-time</small>
           </div>
         )}
       </section>

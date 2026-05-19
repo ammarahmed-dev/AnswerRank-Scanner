@@ -12,7 +12,7 @@ export async function GET() {
           width: 512,
           height: 512,
           borderRadius: 112,
-          background: "linear-gradient(135deg, #7c6aff, #6d59f0)",
+          background: "linear-gradient(135deg, #00c894, #00f0b4)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

@@ -258,7 +258,7 @@ a { color: inherit; }
 }
 .header-cta { min-height: 42px; }
 
-/* â”€â”€ Mobile hamburger â”€â”€ */
+/* ── Mobile hamburger ── */
 .nav-hamburger {
   display: none;
   align-items: center;
@@ -280,7 +280,7 @@ a { color: inherit; }
   .nav-hamburger { display: flex; }
 }
 
-/* â”€â”€ Mobile dropdown menu â”€â”€ */
+/* ── Mobile dropdown menu ── */
 .nav-mobile-menu {
   position: fixed;
   top: 76px;
@@ -2045,7 +2045,7 @@ textarea.contact-control {
 }
 .error-suggestions-list li:last-child { margin-bottom: 0; }
 .error-suggestions-list li::before {
-  content: "â†’";
+  content: "→";
   position: absolute;
   left: 0;
   color: var(--color-primary);
@@ -3043,7 +3043,7 @@ textarea.contact-control {
   gap: 11px;
 }
 
-/* â”€â”€ Accordion card â”€â”€ */
+/* ── Accordion card ── */
 .issue-accordion-card {
   border: 1px solid var(--color-line);
   border-radius: 15px;
@@ -3063,7 +3063,7 @@ textarea.contact-control {
   border-color: rgba(148, 163, 184, 0.28);
 }
 
-/* â”€â”€ Toggle row â”€â”€ */
+/* ── Toggle row ── */
 .issue-accordion-toggle {
   width: 100%;
   display: flex;
@@ -3100,7 +3100,7 @@ textarea.contact-control {
   text-overflow: ellipsis;
 }
 
-/* â”€â”€ Category pills (small, color-coded) â”€â”€ */
+/* ── Category pills (small, color-coded) ── */
 .issue-category-pill {
   flex-shrink: 0;
   min-height: 22px;
@@ -3121,7 +3121,7 @@ textarea.contact-control {
 .issue-cat-performance   { background: rgba(239, 68, 68, 0.12);   border-color: rgba(239, 68, 68, 0.24);   color: #fca5a5; }
 .issue-cat-ai-readiness  { background: rgba(6, 182, 212, 0.12);   border-color: rgba(6, 182, 212, 0.24);   color: #67e8f9; }
 
-/* â”€â”€ Chevron â”€â”€ */
+/* ── Chevron ── */
 .issue-chevron {
   width: 14px;
   height: 14px;
@@ -3131,7 +3131,7 @@ textarea.contact-control {
 }
 .issue-chevron.is-open { transform: rotate(180deg); }
 
-/* â”€â”€ Mini badges (scoped to accordion to not affect other sections) â”€â”€ */
+/* ── Mini badges (scoped to accordion to not affect other sections) ── */
 .issue-pill-row {
   display: inline-flex;
   flex-wrap: wrap;
@@ -3165,7 +3165,7 @@ textarea.contact-control {
 .badge-medium   { background: rgba(59, 130, 246, 0.12); border-color: rgba(96, 165, 250, 0.28);  color: #bfdbfe; }
 .badge-low      { background: rgba(148, 163, 184, 0.12); border-color: rgba(148, 163, 184, 0.26); color: #cbd5e1; }
 
-/* â”€â”€ Expanded body â”€â”€ */
+/* ── Expanded body ── */
 .issue-expanded {
   border-top: 1px solid var(--color-line);
   padding: 14px 18px 18px;
@@ -5712,7 +5712,7 @@ textarea.contact-control {
 }
 
 @media (max-width: 640px) {
-  /* Detailed Issues accordion â€” two-line collapsed row */
+  /* Detailed Issues accordion — two-line collapsed row */
   .issue-accordion-toggle {
     flex-direction: column;
     align-items: flex-start;
@@ -5756,7 +5756,7 @@ textarea.contact-control {
     page-break-after: avoid;
   }
 
-  /* Schema code head â€” label full-width on line 1, button wraps to line 2 */
+  /* Schema code head — label full-width on line 1, button wraps to line 2 */
   .schema-code-head {
     flex-wrap: wrap;
     min-height: auto;
@@ -5785,14 +5785,14 @@ textarea.contact-control {
 .print-layout { display: none !important; }
 
 @media print {
-  /* â”€â”€ Color rendering â”€â”€ */
+  /* ── Color rendering ── */
   *, *::before, *::after {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     color-adjust: exact !important;
   }
 
-  /* â”€â”€ Hidden elements â”€â”€ */
+  /* ── Hidden elements ── */
   .site-header,
   .navbar,
   .site-footer,
@@ -5809,13 +5809,13 @@ textarea.contact-control {
     display: none !important;
   }
 
-  /* â”€â”€ Body â”€â”€ */
+  /* ── Body ── */
   body {
     background: white !important;
     color: #111827 !important;
   }
 
-  /* â”€â”€ Print cover â€” first section header â”€â”€ */
+  /* ── Print cover — first section header ── */
   .print-cover {
     border-top: 3px solid #06b6d4 !important;
     border-left: none !important;
@@ -5834,13 +5834,13 @@ textarea.contact-control {
     margin-bottom: 20px;
   }
 
-  /* â”€â”€ Page breaks between sections â”€â”€ */
+  /* ── Page breaks between sections ── */
   .report-stack > section:nth-child(n+2):not(:last-of-type) {
     break-before: auto;
     page-break-before: auto;
   }
 
-  /* â”€â”€ Surfaces â”€â”€ */
+  /* ── Surfaces ── */
   .surface,
   .panel,
   .panel-soft,
@@ -5852,7 +5852,7 @@ textarea.contact-control {
     color: #111827 !important;
   }
 
-  /* â”€â”€ Section spacing â”€â”€ */
+  /* ── Section spacing ── */
   .print-section {
     break-inside: avoid;
     page-break-inside: avoid;
@@ -5869,7 +5869,7 @@ textarea.contact-control {
     margin-bottom: 0 !important;
   }
 
-  /* â”€â”€ Typography â”€â”€ */
+  /* ── Typography ── */
   .section-heading,
   .report-title,
   .score-breakdown-head strong,
@@ -5893,7 +5893,7 @@ textarea.contact-control {
     color: #374151 !important;
   }
 
-  /* â”€â”€ Score circle â”€â”€ */
+  /* ── Score circle ── */
   .score-ring::before,
   .score-ring::after {
     display: none !important;
@@ -5916,7 +5916,7 @@ textarea.contact-control {
   }
   .score-core small { color: #374151 !important; }
 
-  /* â”€â”€ Save panel (Main diagnosis / Top opportunity) â”€â”€ */
+  /* ── Save panel (Main diagnosis / Top opportunity) ── */
   .report-save-panel > div {
     background: #f8fafc !important;
     border-color: #e5e7eb !important;
@@ -5924,17 +5924,17 @@ textarea.contact-control {
   .report-save-panel span { color: #6b7280 !important; }
   .report-save-panel strong { color: #111827 !important; }
 
-  /* â”€â”€ Score breakdown bars â”€â”€ */
+  /* ── Score breakdown bars ── */
   .score-bar { background: #e5e7eb !important; }
   .score-bar-fill { background: #2563eb !important; }
 
-  /* â”€â”€ Badge colors â”€â”€ */
+  /* ── Badge colors ── */
   .badge-critical { background: #dc2626 !important; color: white !important; border-color: #dc2626 !important; }
   .badge-high     { background: #d97706 !important; color: white !important; border-color: #d97706 !important; }
   .badge-medium   { background: #2563eb !important; color: white !important; border-color: #2563eb !important; }
   .badge-low      { background: #64748b !important; color: white !important; border-color: #64748b !important; }
 
-  /* â”€â”€ Category pills â”€â”€ */
+  /* ── Category pills ── */
   .issue-cat-schema       { background: #7c3aed !important; border-color: #7c3aed !important; color: white !important; }
   .issue-cat-metadata     { background: #2563eb !important; border-color: #2563eb !important; color: white !important; }
   .issue-cat-content      { background: #16a34a !important; border-color: #16a34a !important; color: white !important; }
@@ -5943,7 +5943,7 @@ textarea.contact-control {
   .issue-cat-performance  { background: #dc2626 !important; border-color: #dc2626 !important; color: white !important; }
   .issue-cat-ai-readiness { background: #0891b2 !important; border-color: #0891b2 !important; color: white !important; }
 
-  /* â”€â”€ Code blocks â”€â”€ */
+  /* ── Code blocks ── */
   .report-code-block {
     background: #f8fafc !important;
     color: #111827 !important;
@@ -5952,7 +5952,7 @@ textarea.contact-control {
     overflow: visible !important;
   }
 
-  /* â”€â”€ Card elements â”€â”€ */
+  /* ── Card elements ── */
   .insight-card,
   .action-plan-item,
   .issue-accordion-card,
@@ -5965,7 +5965,7 @@ textarea.contact-control {
     background: #ffffff !important;
   }
 
-  /* â”€â”€ Issue accordion â”€â”€ */
+  /* ── Issue accordion ── */
   .issue-section-text {
     display: block !important;
     overflow: visible !important;
@@ -5983,10 +5983,10 @@ textarea.contact-control {
     visibility: visible !important;
   }
 
-  /* â”€â”€ Insights grid â”€â”€ */
+  /* ── Insights grid ── */
   .insights-list { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 
-  /* â”€â”€ Roadmap item rows â”€â”€ */
+  /* ── Roadmap item rows ── */
   .roadmap-item-row {
     background: #f9fafb !important;
     background-color: #f9fafb !important;
@@ -5994,7 +5994,7 @@ textarea.contact-control {
     border: 1px solid #e5e7eb !important;
   }
 
-  /* â”€â”€ Trailing blank page fix â”€â”€ */
+  /* ── Trailing blank page fix ── */
   .report-stack {
     padding-bottom: 0 !important;
   }
@@ -6004,20 +6004,20 @@ textarea.contact-control {
     padding-bottom: 16px !important;
   }
 
-  /* â”€â”€ Swap screen layout for print layout â”€â”€ */
+  /* ── Swap screen layout for print layout ── */
   .report-stack { display: none !important; }
   .report-action-row { display: none !important; }
   .print-layout { display: block !important; }
 }
 
-/* â”€â”€ PrintLayout styles â”€â”€ */
+/* ── PrintLayout styles ── */
 @media print {
   html,
   body {
     background: #ffffff !important;
   }
 
-  /* â”€â”€ Base â”€â”€ */
+  /* ── Base ── */
   .print-layout {
     font-family: 'Inter', -apple-system, sans-serif;
     font-size: 10.5pt;
@@ -6030,7 +6030,7 @@ textarea.contact-control {
     page-break-after: avoid;
   }
 
-  /* â”€â”€ Cover page â”€â”€ */
+  /* ── Cover page ── */
   .pl-cover {
     display: flex;
     flex-direction: column;
@@ -6135,7 +6135,7 @@ textarea.contact-control {
     margin: 0 0 8pt;
   }
 
-  /* â”€â”€ Page sections â”€â”€ */
+  /* ── Page sections ── */
   .pl-page { padding-top: 4pt; }
   .pl-force-break { break-before: page; page-break-before: always; }
   .pl-last-page   { break-after: avoid; page-break-after: avoid; }
@@ -6144,7 +6144,7 @@ textarea.contact-control {
     padding-bottom: 0 !important;
   }
 
-  /* â”€â”€ Repeating page header â”€â”€ */
+  /* ── Repeating page header ── */
   .pl-page-header {
     display: flex;
     align-items: center;
@@ -6167,7 +6167,7 @@ textarea.contact-control {
   .pl-page-url  { color: #374151; flex: 1; word-break: break-all; }
   .pl-page-date { color: #6b7280; white-space: nowrap; }
 
-  /* â”€â”€ Section headings â”€â”€ */
+  /* ── Section headings ── */
   .pl-section-title {
     font-size: 13pt;
     font-weight: 800;
@@ -6178,7 +6178,7 @@ textarea.contact-control {
   }
   .pl-issue-count { font-weight: 400; color: #6b7280; font-size: 10pt; }
 
-  /* â”€â”€ Score table â”€â”€ */
+  /* ── Score table ── */
   .pl-table {
     width: 100%;
     border-collapse: collapse;
@@ -6203,7 +6203,7 @@ textarea.contact-control {
   }
   .pl-table tr:last-child td { border-bottom: none; }
 
-  /* â”€â”€ Grade badges â”€â”€ */
+  /* ── Grade badges ── */
   .pl-grade {
     display: inline-block;
     font-size: 8pt;
@@ -6218,7 +6218,7 @@ textarea.contact-control {
   .pl-grade-medium    { background: #fffbeb; color: #d97706; border: 1pt solid #fde68a; }
   .pl-grade-poor      { background: #fef2f2; color: #dc2626; border: 1pt solid #fecaca; }
 
-  /* â”€â”€ AI summary + quick win â”€â”€ */
+  /* ── AI summary + quick win ── */
   .pl-ai-summary { margin-top: 16pt; }
   .pl-body { font-size: 10pt; color: #374151; line-height: 1.55; margin: 0 0 6pt; }
   .pl-quick-win {
@@ -6358,7 +6358,7 @@ textarea.contact-control {
     color: #111827;
   }
 
-  /* â”€â”€ Issue cards â”€â”€ */
+  /* ── Issue cards ── */
   .pl-issue-card {
     margin-bottom: 12pt;
     padding: 10pt 12pt;
@@ -6447,7 +6447,7 @@ textarea.contact-control {
   .pl-issue-fix strong { color: #0ea5e9; font-size: 8pt; }
   .pl-issue-why strong { font-size: 8pt; }
 
-  /* â”€â”€ Recommendations â”€â”€ */
+  /* ── Recommendations ── */
   .pl-rec-list {
     margin: 0;
     padding-left: 16pt;
@@ -6460,7 +6460,7 @@ textarea.contact-control {
     padding-left: 4pt;
   }
 
-  /* â”€â”€ CTA box â”€â”€ */
+  /* ── CTA box ── */
   .pl-cta-box {
     margin-top: 16pt;
     padding: 12pt 14pt;
@@ -6480,7 +6480,7 @@ textarea.contact-control {
   .pl-cta-box p { font-size: 9.5pt; color: #1e40af; margin: 0; line-height: 1.55; }
   .pl-cta-link { font-weight: 700; text-decoration: underline; }
 
-  /* â”€â”€ Footer â”€â”€ */
+  /* ── Footer ── */
   .pl-footer {
     margin-top: 12pt;
     padding-top: 6pt;
@@ -6672,7 +6672,7 @@ textarea.contact-control {
 
 
 
-/* ── Comparison pages ── */
+/* -- Comparison pages -- */
 .vs-hero {
   padding: clamp(60px, 8vw, 120px) 0 clamp(40px, 5vw, 80px);
   text-align: center;
@@ -7022,7 +7022,7 @@ textarea.contact-control {
 }
 .contact-email-alt a:hover { color: var(--color-ink); }
 
-/* ── Blog post page ─────────────────────────────────────────────── */
+/* -- Blog post page ----------------------------------------------- */
 .blog-post-page {
   padding-top: 56px;
   padding-bottom: 80px;

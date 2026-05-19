@@ -1,4 +1,3 @@
-import { Sparkles } from "lucide-react";
 import AuthButton from "./AuthButton";
 
 type Props = {
@@ -9,11 +8,8 @@ export default function SiteHeader({ scanCountLabel }: Props) {
   return (
     <header className="site-header">
       <a href="/" className="brand-lockup" aria-label="AEOCheck home">
-        <span className="brand-mark"><Sparkles className="h-5 w-5" /></span>
-        <span>
-          <span className="brand-name">AEOCheck</span>
-          <span className="brand-subtitle">AI visibility scanner</span>
-        </span>
+        <span className="brand-mark" aria-hidden="true">A</span>
+        <span className="brand-name">AEOCheck</span>
       </a>
       <nav className="site-nav" aria-label="Primary navigation">
         <a href="/#how">How it works</a>
