@@ -81,7 +81,7 @@ export default function ReportSection({ report, onReset }: Props) {
               <span className="badge">Scanned {new Date(report.analysisTimestamp).toLocaleString()}</span>
             </div>
             <h2 className="report-title break-words">{report.url}</h2>
-            <a href={report.url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-blue-700 hover:text-blue-900">
+            <a href={report.url} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-emerald-400 hover:text-emerald-300">
               Open scanned page <ExternalLink className="h-3.5 w-3.5" />
             </a>
             <p className="report-summary">{ai.plainEnglishSummary}</p>
@@ -213,7 +213,7 @@ export default function ReportSection({ report, onReset }: Props) {
                 "Priority implementation checklist",
               ].map((item) => (
                 <div key={item} className="panel flex items-center gap-2 px-3 py-3 text-sm font-semibold text-slate-700">
-                  <Lock className="h-3.5 w-3.5 flex-shrink-0 text-blue-700" />
+                  <Lock className="h-3.5 w-3.5 flex-shrink-0 text-emerald-400" />
                   {item}
                 </div>
               ))}

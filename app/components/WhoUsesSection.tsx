@@ -27,7 +27,7 @@ export default function WhoUsesSection() {
       <div className="launch-container">
         <div className="section-intro">
           <p className="launch-eyebrow">Who uses AEOCheck?</p>
-          <h2>Built for the people who fix websites for a living</h2>
+          <h2 className="section-heading">Built for the people who fix websites for a living</h2>
         </div>
         <div className="who-uses-grid">
           {audiences.map((audience) => (

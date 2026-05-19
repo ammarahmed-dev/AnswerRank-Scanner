@@ -1,21 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  normalizeUrl,
-  validateUrl,
-  fetchHtml,
-  fetchJinaReaderText,
-  parseHtmlToScrapedData,
-  parseReaderTextToScrapedData,
-} from "@/lib/scrape";
-import { runDeterministicChecks, calculateScore } from "@/lib/score-engine";
+import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { buildAIPrompt } from "@/lib/build-ai-prompt";
 import { generateAIInsights } from "@/lib/ai-provider";
-import { getPageSpeedScore } from "@/lib/pagespeed";
+import { runScanCore } from "@/lib/scan-core";
 import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { checkUsageLimit, getClientKey, getPlanLimit, incrementUsage } from "@/lib/usage-limits";
 import { isMasterAdmin } from "@/lib/admin";
-import { ScrapedData, ScanResult, AIInsights, CheckResult, CompetitorScanResult, ScanMetadata, SchemaRecommendation } from "@/types/index";
+import { ScrapedData, ScanResult, AIInsights, CompetitorScanResult, SchemaRecommendation } from "@/types/index";
 
 export const runtime = "nodejs";
 
@@ -155,206 +147,6 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-type TrustValidationStatus = "pass" | "warn" | "fail";
-type TrustValidationResult = {
-  status: TrustValidationStatus;
-  detail: string;
-};
-
-type RobotsValidationResult = TrustValidationResult & {
-  body?: string;
-  finalUrl?: string;
-};
-
-function getDomainCandidates(rawUrl: string): string[] {
-  try {
-    const parsed = new URL(rawUrl);
-    const host = parsed.hostname.toLowerCase();
-    const normalizedHost = host.startsWith("www.") ? host.slice(4) : host;
-    const withWww = normalizedHost.startsWith("www.") ? normalizedHost : `www.${normalizedHost}`;
-    const primary = `https://${normalizedHost}`;
-    const secondary = `https://${withWww}`;
-    return host.startsWith("www.") ? [secondary, primary] : [primary, secondary];
-  } catch {
-    return [];
-  }
-}
-
-function extractSitemapFromRobots(robotsBody?: string): string | null {
-  if (!robotsBody) return null;
-  const lines = robotsBody.split(/\r?\n/);
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const match = trimmed.match(/^sitemap:\s*(.+)$/i);
-    if (!match) continue;
-    const url = match[1].trim();
-    try {
-      return new URL(url).toString();
-    } catch {
-      continue;
-    }
-  }
-  return null;
-}
-
-async function fetchWithTimeoutAndRedirects(
-  targetUrl: string,
-  timeoutMs = 5000,
-  maxRedirects = 2
-): Promise<{ response: Response; body: string; finalUrl: string }> {
-  let currentUrl = targetUrl;
-  for (let redirectCount = 0; redirectCount <= maxRedirects; redirectCount++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetch(currentUrl, {
-        method: "GET",
-        redirect: "manual",
-        signal: controller.signal,
-        headers: {
-          "User-Agent": "AEOCheckScanner/1.0 (+https://aeocheck.co)",
-          Accept: "text/plain, application/xml, text/xml;q=0.9, */*;q=0.8",
-        },
-      });
-
-      if (response.status >= 300 && response.status < 400) {
-        if (redirectCount === maxRedirects) {
-          throw new Error("Redirect limit reached");
-        }
-        const location = response.headers.get("location");
-        if (!location) throw new Error("Redirect response missing location");
-        currentUrl = new URL(location, currentUrl).toString();
-        continue;
-      }
-
-      const body = await response.text();
-      return { response, body, finalUrl: currentUrl };
-    } finally {
-      clearTimeout(timeout);
-    }
-  }
-  throw new Error("Unexpected redirect handling failure");
-}
-
-async function checkRobotsTxt(baseUrl: string): Promise<RobotsValidationResult> {
-  const candidates = getDomainCandidates(baseUrl);
-  if (!candidates.length) {
-    return { status: "warn", detail: "robots.txt could not be verified" };
-  }
-
-  let sawNotFound = false;
-  for (const candidate of candidates) {
-    const robotsUrl = `${candidate}/robots.txt`;
-    try {
-      const { response, body, finalUrl } = await fetchWithTimeoutAndRedirects(robotsUrl, 5000, 2);
-      if (response.status === 404) {
-        sawNotFound = true;
-        continue;
-      }
-      if (response.status !== 200) continue;
-
-      const contentType = (response.headers.get("content-type") || "").toLowerCase();
-      if (contentType.includes("text/plain") || /user-agent\s*:/i.test(body)) {
-        return {
-          status: "pass",
-          detail: "robots.txt found and accessible",
-          body,
-          finalUrl,
-        };
-      }
-      return {
-        status: "warn",
-        detail: "robots.txt could not be verified",
-        body,
-        finalUrl,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message.toLowerCase() : "";
-      if (message.includes("timeout") || message.includes("abort")) {
-        return { status: "warn", detail: "robots.txt could not be verified" };
-      }
-      continue;
-    }
-  }
-
-  if (sawNotFound) {
-    return { status: "fail", detail: "robots.txt not found" };
-  }
-  return { status: "warn", detail: "robots.txt could not be verified" };
-}
-
-async function checkSitemapXml(baseUrl: string, robotsBody?: string): Promise<TrustValidationResult> {
-  const robotsSitemapUrl = extractSitemapFromRobots(robotsBody);
-  const candidates: string[] = [];
-  if (robotsSitemapUrl) {
-    candidates.push(robotsSitemapUrl);
-  } else {
-    for (const domain of getDomainCandidates(baseUrl)) {
-      candidates.push(`${domain}/sitemap.xml`);
-    }
-  }
-  if (!candidates.length) {
-    return { status: "warn", detail: "sitemap.xml could not be verified" };
-  }
-
-  let sawNotFound = false;
-  for (const sitemapUrl of candidates) {
-    try {
-      const { response, body } = await fetchWithTimeoutAndRedirects(sitemapUrl, 5000, 2);
-      if (response.status === 404) {
-        sawNotFound = true;
-        continue;
-      }
-      if (response.status !== 200) continue;
-
-      if (/<urlset\b/i.test(body) || /<sitemapindex\b/i.test(body)) {
-        return { status: "pass", detail: "sitemap.xml found and valid" };
-      }
-      return { status: "warn", detail: "sitemap.xml could not be verified" };
-    } catch (error) {
-      const message = error instanceof Error ? error.message.toLowerCase() : "";
-      if (message.includes("timeout") || message.includes("abort")) {
-        return { status: "warn", detail: "sitemap.xml could not be verified" };
-      }
-      continue;
-    }
-  }
-
-  if (sawNotFound) {
-    return { status: "fail", detail: "sitemap.xml not found" };
-  }
-  return { status: "warn", detail: "sitemap.xml could not be verified" };
-}
-
-function applyTrustValidationChecks(
-  checks: CheckResult[],
-  robots: TrustValidationResult,
-  sitemap: TrustValidationResult,
-  aiBotResult?: { status: "pass" | "warn" | "fail"; detail: string },
-  llmsTxtResult?: { status: "pass" | "warn" | "fail"; detail: string },
-  cwvResult?: { status: "pass" | "warn" | "fail"; detail: string }
-): CheckResult[] {
-  return checks.map((check) => {
-    if (check.id === "robots") {
-      return { ...check, status: robots.status, detail: robots.detail };
-    }
-    if (check.id === "sitemap") {
-      return { ...check, status: sitemap.status, detail: sitemap.detail };
-    }
-    if (check.id === "ai_bot_access" && aiBotResult) {
-      return { ...check, status: aiBotResult.status, detail: aiBotResult.detail };
-    }
-    if (check.id === "llms_txt" && llmsTxtResult) {
-      return { ...check, status: llmsTxtResult.status, detail: llmsTxtResult.detail };
-    }
-    if (check.id === "core_web_vitals" && cwvResult) {
-      return { ...check, status: cwvResult.status, detail: cwvResult.detail };
-    }
-    return check;
-  });
-}
-
 type ProgressStatus = "started" | "complete" | "skipped" | "error";
 type ProgressEvent = {
   type: "progress";
@@ -389,57 +181,6 @@ function supabaseHeaders() {
   };
 }
 
-function checkScore(status: CheckResult["status"]): number {
-  if (status === "pass") return 100;
-  if (status === "warn") return 60;
-  return 25;
-}
-
-function categoryScoresFromChecks(checks: CheckResult[], pagespeed: { score: number } | null) {
-  const byCategory = {
-    metadata: checks.filter((c) => c.id === "title" || c.id === "meta_desc" || c.id.includes("og")),
-    headings: checks.filter((c) => c.id.includes("heading") || c.id === "h1"),
-    schema: checks.filter((c) => c.id.includes("schema")),
-    contentClarity: checks.filter((c) => c.id === "word_count" || c.id === "internal_links" || c.id === "alt_text"),
-    aiReadiness: checks.filter((c) => !["title", "meta_desc", "h1", "heading_structure", "https", "robots", "sitemap", "word_count", "internal_links", "alt_text"].includes(c.id) && !c.id.includes("schema") && !c.id.includes("og")),
-    trustSignals: checks.filter((c) => c.id === "https" || c.id === "robots" || c.id === "sitemap"),
-  };
-  const avg = (rows: CheckResult[]) => rows.length ? Math.round(rows.reduce((sum, row) => sum + checkScore(row.status), 0) / rows.length) : undefined;
-  return {
-    metadata: avg(byCategory.metadata),
-    headings: avg(byCategory.headings),
-    schema: avg(byCategory.schema),
-    contentClarity: avg(byCategory.contentClarity),
-    aiReadiness: avg(byCategory.aiReadiness),
-    performance: pagespeed?.score,
-    trustSignals: avg(byCategory.trustSignals),
-  };
-}
-
-function metadataFromScrapedData(scrapedData: ScrapedData): ScanMetadata {
-  const h1 = scrapedData.headings.find((h) => h.startsWith("H1:"))?.replace(/^H1:\s*/, "") ?? "";
-  return {
-    title: scrapedData.title,
-    metaDescription: scrapedData.metaDescription,
-    ogTitle: scrapedData.ogTitle,
-    ogDescription: scrapedData.ogDescription,
-    ogImage: scrapedData.ogImage,
-    canonical: scrapedData.canonical,
-    h1,
-  };
-}
-
-async function scrapeUrlWithFallback(url: string): Promise<ScrapedData> {
-  try {
-    const html = await fetchHtml(url);
-    if (!html.trim()) throw new Error("Website returned empty HTML.");
-    return parseHtmlToScrapedData(html, url);
-  } catch {
-    const readerText = await fetchJinaReaderText(url);
-    return parseReaderTextToScrapedData(readerText, url);
-  }
-}
-
 async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
   let normalizedUrl = rawUrl;
   try {
@@ -455,21 +196,19 @@ async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
   });
 
   const work = (async (): Promise<CompetitorScanResult> => {
-    const scrapedData = await scrapeUrlWithFallback(normalizedUrl);
-    const baseChecks = runDeterministicChecks(scrapedData);
-    const robotsCheck = await checkRobotsTxt(normalizedUrl);
-    const sitemapCheck = await checkSitemapXml(normalizedUrl, robotsCheck.body);
-    const checks = applyTrustValidationChecks(baseChecks, robotsCheck, sitemapCheck);
-    const score = calculateScore(checks);
+    const core = await runScanCore(normalizedUrl, {
+      includePageSpeed: false,
+      normalizeAndValidate: false,
+    });
 
     return {
       url: normalizedUrl,
-      score,
-      checks,
-      categoryScores: categoryScoresFromChecks(checks, null),
-      metadata: metadataFromScrapedData(scrapedData),
+      score: core.score,
+      checks: core.checks,
+      categoryScores: core.categoryScores,
+      metadata: core.metadata,
       pagespeed: null,
-      summary: checks.find((check) => check.status !== "pass")?.detail ?? "Core visibility signals are in good shape.",
+      summary: core.checks.find((check) => check.status !== "pass")?.detail ?? "Core visibility signals are in good shape.",
     };
   })();
 
@@ -583,217 +322,45 @@ export async function POST(req: NextRequest) {
       try {
         emitProgress(1, "Preparing scan", "started");
         emitProgress(1, "Preparing scan", "complete");
-        emitProgress(2, "Fetching website", "started");
-
-        let scrapedData: ScrapedData;
+        let coreResult;
         try {
-          const html = await fetchHtml(url);
-          if (!html.trim()) {
-            emitError("Website returned empty HTML. Try another page URL.");
-            controller.close();
-            return;
-          }
-          scrapedData = parseHtmlToScrapedData(html, url);
+          coreResult = await runScanCore(url, {
+            includePageSpeed: true,
+            normalizeAndValidate: false,
+            onProgress: (phase) => {
+              if (phase === "fetch_started") emitProgress(2, "Fetching website", "started");
+              if (phase === "fetch_complete") emitProgress(2, "Fetching website", "complete");
+              if (phase === "parse_complete") {
+                emitProgress(3, "Reading metadata and schema", "started");
+                emitProgress(3, "Reading metadata and schema", "complete");
+              }
+              if (phase === "pagespeed_started") emitProgress(4, "Running PageSpeed check", "started");
+              if (phase === "pagespeed_complete") emitProgress(4, "Running PageSpeed check", "complete");
+            },
+          });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : "Unknown error";
-          console.warn(`Direct fetch failed for ${url}; trying Jina Reader. ${message}`);
-          try {
-            const readerText = await fetchJinaReaderText(url);
-            scrapedData = parseReaderTextToScrapedData(readerText, url);
-          } catch (readerErr: unknown) {
-            const readerMessage = readerErr instanceof Error ? readerErr.message : "Unknown error";
-            console.error("Jina Reader also failed:", readerMessage);
-            let errorMsg = "Could not fetch this website directly or through Jina Reader.";
-            if (message.toLowerCase().includes("timeout") || message.toLowerCase().includes("aborted")) {
-              errorMsg = "Request timed out while fetching this URL.";
-            } else if (message.toLowerCase().includes("blocked")) {
-              errorMsg = "This website blocked the scanner and Jina Reader could not recover the content.";
-            }
-            emitError(errorMsg);
-            controller.close();
-            return;
-          }
-        }
-        emitProgress(2, "Fetching website", "complete");
-
-        emitProgress(3, "Reading metadata and schema", "started");
-
-        if (!scrapedData.bodyText && !scrapedData.title && !scrapedData.metaDescription) {
-          emitError("Could not extract meaningful content from this page.");
+          const message = err instanceof Error ? err.message : "Could not scan this website.";
+          emitError(message);
           controller.close();
           return;
         }
-        emitProgress(3, "Reading metadata and schema", "complete");
 
-        const baseChecks = runDeterministicChecks(scrapedData);
-        const robotsCheck = await checkRobotsTxt(url);
-        const sitemapCheck = await checkSitemapXml(url, robotsCheck.body);
-
-        // Check AI bot access from robots.txt body
-        const robotsBody = robotsCheck.body ?? "";
-        const robotsLower = robotsBody.toLowerCase();
-
-        // Check if major AI bots are explicitly blocked
-        const aiBots = ["gptbot", "claudebot", "perplexitybot", "googlebot-extended", "anthropic-ai", "cohere-ai"];
-
-        // Parse disallow rules for each bot
-        let currentAgent = "";
-        const blockedBots: string[] = [];
-        let allAgentBlocked = false;
-
-        for (const line of robotsBody.split(/\r?\n/)) {
-          const trimmed = line.trim().toLowerCase();
-          if (trimmed.startsWith("user-agent:")) {
-            currentAgent = trimmed.replace("user-agent:", "").trim();
-          } else if (trimmed.startsWith("disallow:")) {
-            const path = trimmed.replace("disallow:", "").trim();
-            if (path === "/" || path === "/*") {
-              if (currentAgent === "*") allAgentBlocked = true;
-              if (aiBots.includes(currentAgent)) blockedBots.push(currentAgent);
-            }
-          }
+        const scrapedData: ScrapedData = coreResult.scrapedData;
+        const checks = coreResult.checks;
+        const score = coreResult.score;
+        const pagespeed = coreResult.pagespeed;
+        const categoryScores = coreResult.categoryScores;
+        if (!pagespeed) {
+          const psError = coreResult.pagespeedResult?.error ?? "";
+          const isConfigIssue = psError.toLowerCase().includes("no google pagespeed api key configured");
+          emitProgress(4, "PageSpeed unavailable, continuing", isConfigIssue ? "skipped" : "error");
         }
-
-        // Determine AI bot access status
-        let aiBotStatus: "pass" | "warn" | "fail" = "pass";
-        let aiBotDetail = "AI crawlers have access to this page";
-
-        if (blockedBots.length > 0) {
-          aiBotStatus = "fail";
-          aiBotDetail = `AI bots blocked: ${blockedBots.join(", ")} - invisible to these AI search engines`;
-        } else if (allAgentBlocked) {
-          aiBotStatus = "warn";
-          aiBotDetail = "All bots blocked by default - verify AI crawlers are explicitly allowed";
-        } else if (!robotsBody) {
-          aiBotStatus = "warn";
-          aiBotDetail = "robots.txt not found - AI bot access cannot be verified";
-        } else if (robotsLower.includes("gptbot") && !robotsLower.includes("disallow")) {
-          aiBotStatus = "pass";
-          aiBotDetail = "GPTBot explicitly allowed in robots.txt";
-        }
-
-        // Check llms.txt
-        let llmsTxtStatus: "pass" | "warn" | "fail" = "warn";
-        let llmsTxtDetail = "No llms.txt file found - add one to guide AI crawlers";
-
-        try {
-          const llmsUrl = new URL("/llms.txt", robotsCheck.finalUrl ?? url).toString();
-          const llmsRes = await fetch(llmsUrl, {
-            method: "GET",
-            signal: AbortSignal.timeout(5000),
-            headers: { "User-Agent": "AEOCheckScanner/1.0 (+https://aeocheck.co)" }
-          });
-          if (llmsRes.ok) {
-            const llmsBody = await llmsRes.text();
-            if (llmsBody.trim().length > 0) {
-              llmsTxtStatus = "pass";
-              llmsTxtDetail = "llms.txt found - AI crawlers have structured guidance";
-            }
-          }
-        } catch {
-          // llms.txt not found or timeout, keep warn
-        }
-
-        scrapedData.hasRobotsTxt = robotsCheck.status !== "fail";
-        scrapedData.hasSitemap = sitemapCheck.status !== "fail";
-        scrapedData.allowsAiBots = aiBotStatus === "pass";
-        scrapedData.hasLlmsTxt = llmsTxtStatus === "pass";
 
         const detectedSchemas = scrapedData.schemaTypes;
         const candidateSchemaTypes = ["Organization", "WebSite", "WebPage", "FAQPage", "Article", "HowTo", "BreadcrumbList", "Service", "Product", "SoftwareApplication"];
         const missingSchemas = candidateSchemaTypes.filter(
           (type) => !detectedSchemas.some((detected) => detected.toLowerCase() === type.toLowerCase())
         );
-
-        emitProgress(4, "Running PageSpeed check", "started");
-
-        let pagespeed: ScanResult["pagespeed"] = null;
-        let pagespeedResult: Awaited<ReturnType<typeof getPageSpeedScore>> | null = null;
-        try {
-          const psResult = await getPageSpeedScore(url);
-          pagespeedResult = psResult;
-          if (psResult.score !== null) {
-            pagespeed = {
-              score: psResult.score,
-              lcp: psResult.lcp ?? null,
-              cls: psResult.cls ?? null,
-              fid: psResult.fid ?? null,
-            };
-            emitProgress(4, "Running PageSpeed check", "complete");
-          } else {
-            if (psResult.error) {
-              console.warn("PageSpeed unavailable:", psResult.error);
-            }
-            const isConfigIssue = (psResult.error ?? "").toLowerCase().includes("no google pagespeed api key configured");
-            emitProgress(4, "PageSpeed unavailable, continuing", isConfigIssue ? "skipped" : "error");
-          }
-        } catch (err: unknown) {
-          console.error("PageSpeed fetch failed:", err instanceof Error ? err.message : "Unknown error");
-          emitProgress(4, "PageSpeed unavailable, continuing", "error");
-        }
-
-        // Core Web Vitals check
-        let cwvStatus: "pass" | "warn" | "fail" = "warn";
-        let cwvDetail = "PageSpeed data unavailable - Core Web Vitals could not be checked";
-
-        if (pagespeedResult && typeof pagespeedResult.score === "number") {
-          const { lcp, cls, fid, score } = pagespeedResult;
-          const parts: string[] = [];
-
-          // LCP: Good < 2.5s, Needs Improvement < 4s, Poor >= 4s
-          if (typeof lcp === "number") {
-            parts.push(`LCP ${lcp}s`);
-          }
-          // CLS: Good < 0.1, Needs Improvement < 0.25, Poor >= 0.25
-          if (typeof cls === "number") {
-            parts.push(`CLS ${cls}`);
-          }
-          // FID/TBT: Good < 200ms
-          if (typeof fid === "number") {
-            parts.push(`TBT ${fid}ms`);
-          }
-
-          const lcpOk = typeof lcp !== "number" || lcp < 2.5;
-          const clsOk = typeof cls !== "number" || cls < 0.1;
-          const fidOk = typeof fid !== "number" || fid < 200;
-          const scoreOk = score >= 75;
-
-          if (scoreOk && lcpOk && clsOk && fidOk) {
-            cwvStatus = "pass";
-            cwvDetail = parts.length
-              ? `Good Core Web Vitals: ${parts.join(", ")} - PageSpeed ${score}/100`
-              : `Good performance score (${score}/100)`;
-          } else if (score >= 50) {
-            cwvStatus = "warn";
-            const issues: string[] = [];
-            if (!lcpOk && typeof lcp === "number") issues.push(`LCP ${lcp}s (target <2.5s)`);
-            if (!clsOk && typeof cls === "number") issues.push(`CLS ${cls} (target <0.1)`);
-            if (!fidOk && typeof fid === "number") issues.push(`TBT ${fid}ms (target <200ms)`);
-            cwvDetail = issues.length
-              ? `CWV needs work: ${issues.join(", ")} - PageSpeed ${score}/100`
-              : `Performance needs improvement (${score}/100)`;
-          } else {
-            cwvStatus = "fail";
-            const issues: string[] = [];
-            if (!lcpOk && typeof lcp === "number") issues.push(`LCP ${lcp}s (target <2.5s)`);
-            if (!clsOk && typeof cls === "number") issues.push(`CLS ${cls} (target <0.1)`);
-            if (!fidOk && typeof fid === "number") issues.push(`TBT ${fid}ms (target <200ms)`);
-            cwvDetail = issues.length
-              ? `Poor CWV: ${issues.join(", ")} - PageSpeed ${score}/100`
-              : `Poor performance score (${score}/100) - needs significant improvement`;
-          }
-        }
-
-        const checks = applyTrustValidationChecks(
-          baseChecks,
-          robotsCheck,
-          sitemapCheck,
-          { status: aiBotStatus, detail: aiBotDetail },
-          { status: llmsTxtStatus, detail: llmsTxtDetail },
-          { status: cwvStatus, detail: cwvDetail }
-        );
-        const score = calculateScore(checks);
-        const categoryScores = categoryScoresFromChecks(checks, pagespeed);
         const issueTitles = checks
           .filter((check) => check.status !== "pass")
           .map((check) => check.label);
@@ -848,7 +415,7 @@ export async function POST(req: NextRequest) {
           checks,
           aiInsights,
           pagespeed,
-          metadata: metadataFromScrapedData(scrapedData),
+          metadata: coreResult.metadata,
           competitorUrls: competitorUrls.length ? competitorUrls : undefined,
           competitors,
           scannedAt: new Date().toISOString(),

@@ -1,16 +1,11 @@
-import { Sparkles } from "lucide-react";
-
 export default function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="launch-container footer-grid">
         <div>
           <div className="brand-lockup">
-            <span className="brand-mark"><Sparkles className="h-5 w-5" /></span>
-            <span>
-              <span className="brand-name">AEOCheck</span>
-              <span className="brand-subtitle">Free AEO & AI search readiness scanner.</span>
-            </span>
+            <span className="brand-mark" aria-hidden="true">A</span>
+            <span className="brand-name">AEOCheck</span>
           </div>
           <p>&copy; 2026 AEOCheck. All rights reserved.</p>
           <p className="footer-contact-email">

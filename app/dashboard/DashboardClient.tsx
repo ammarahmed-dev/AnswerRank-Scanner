@@ -16,6 +16,7 @@ import {
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
 import UpgradeButton from "../components/UpgradeButton";
+import CompareWorkbench from "../components/CompareWorkbench";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { isMasterAdmin } from "@/lib/access";
 
@@ -291,6 +292,8 @@ export default function DashboardClient() {
                 </div>
               )}
             </section>
+
+            <CompareWorkbench />
           </>
         )}
       </section>

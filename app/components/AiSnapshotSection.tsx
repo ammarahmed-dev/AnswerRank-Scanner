@@ -5,7 +5,7 @@ export default function AiSnapshotSection() {
         <div className="snapshot-grid">
           <div className="snapshot-intro">
             <p className="launch-eyebrow">AI Answer Snapshot</p>
-            <h2>See exactly how AI describes your brand</h2>
+            <h2 className="section-heading">See exactly how AI describes your brand</h2>
             <p className="snapshot-subheading">
               Every full report includes a live snapshot of how AI assistants like ChatGPT and Perplexity currently understand your page and
               what&apos;s holding them back from citing you.

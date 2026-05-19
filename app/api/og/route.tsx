@@ -40,7 +40,7 @@ export async function GET() {
               style={{
                 fontSize: 42,
                 lineHeight: 1.2,
-                color: "#d6d3ff",
+                color: "#a0f0d8",
                 maxWidth: 740,
               }}
             >
@@ -54,17 +54,17 @@ export async function GET() {
                 width: 230,
                 height: 230,
                 borderRadius: 9999,
-                border: "8px solid #7c6aff",
+                border: "8px solid #00f0b4",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: "rgba(124, 106, 255, 0.08)",
-                boxShadow: "0 0 0 14px rgba(124, 106, 255, 0.12)",
+                background: "rgba(0, 240, 180, 0.08)",
+                boxShadow: "0 0 0 14px rgba(0, 240, 180, 0.12)",
               }}
             >
               <span style={{ fontSize: 96, fontWeight: 800, color: "#ffffff", lineHeight: 1 }}>83</span>
             </div>
-            <span style={{ fontSize: 24, color: "#b4adff", letterSpacing: "0.03em" }}>AI Visibility Score</span>
+            <span style={{ fontSize: 24, color: "#7eecd4", letterSpacing: "0.03em" }}>AI Visibility Score</span>
           </div>
         </div>
 
@@ -74,10 +74,10 @@ export async function GET() {
               height: 6,
               width: 720,
               borderRadius: 9999,
-              background: "linear-gradient(90deg, rgba(124,106,255,0.95), rgba(124,106,255,0.35))",
+              background: "linear-gradient(90deg, rgba(0,240,180,0.95), rgba(0,240,180,0.35))",
             }}
           />
-          <div style={{ fontSize: 28, color: "#bfb8ff", fontWeight: 600 }}>aeocheck.co</div>
+          <div style={{ fontSize: 28, color: "#7eecd4", fontWeight: 600 }}>aeocheck.co</div>
         </div>
       </div>
     ),

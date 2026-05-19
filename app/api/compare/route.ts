@@ -1,27 +1,15 @@
 import { NextResponse } from "next/server";
-import {
-  fetchHtml,
-  fetchJinaReaderText,
-  normalizeUrl,
-  parseHtmlToScrapedData,
-  parseReaderTextToScrapedData,
-  validateUrl,
-} from "@/lib/scrape";
-import { calculateScore, runDeterministicChecks } from "@/lib/score-engine";
-import type { CheckResult, ScrapedData } from "@/types/index";
+import { runScanCore } from "@/lib/scan-core";
+import { normalizeUrl, validateUrl } from "@/lib/scrape";
+import type { CheckResult } from "@/types/index";
 
 export const runtime = "nodejs";
 
-type CompareBody = { urls?: string[] };
-
-async function scrapeUrl(url: string): Promise<ScrapedData> {
-  try {
-    return parseHtmlToScrapedData(await fetchHtml(url), url);
-  } catch {
-    const readerText = await fetchJinaReaderText(url);
-    return parseReaderTextToScrapedData(readerText, url);
-  }
-}
+type CompareBody = {
+  urls?: string[];
+  primaryUrl?: string;
+  competitorUrl?: string;
+};
 
 function checkValue(checks: CheckResult[], id: string) {
   const status = checks.find((check) => check.id === id)?.status;
@@ -43,29 +31,156 @@ function benchmarkMetrics(checks: CheckResult[], score: number) {
   };
 }
 
+type Winner = "primary" | "competitor" | "tie";
+type Impact = "high" | "medium" | "low";
+
+function winnerFromGap(gap: number): Winner {
+  if (gap > 0) return "primary";
+  if (gap < 0) return "competitor";
+  return "tie";
+}
+
+function impactFromAbsGap(absGap: number): Impact {
+  if (absGap >= 15) return "high";
+  if (absGap >= 7) return "medium";
+  return "low";
+}
+
+function toLabel(category: string): string {
+  if (category === "aiReadiness") return "AI Readiness";
+  if (category === "contentClarity") return "Content Clarity";
+  if (category === "trustSignals") return "Trust Signals";
+  if (category === "core_web_vitals") return "Performance";
+  if (category === "performance") return "Performance";
+  return category.charAt(0).toUpperCase() + category.slice(1);
+}
+
+function domainFromUrl(rawUrl: string): string {
+  try {
+    return new URL(rawUrl).hostname.replace(/^www\./i, "");
+  } catch {
+    return rawUrl;
+  }
+}
+
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as CompareBody;
-  const urls = [...new Set((body.urls ?? []).map((url) => url.trim()).filter(Boolean))].slice(0, 3);
+  const candidatePrimary = typeof body.primaryUrl === "string" ? body.primaryUrl.trim() : "";
+  const candidateCompetitor = typeof body.competitorUrl === "string" ? body.competitorUrl.trim() : "";
+  const urlsFromArray = (body.urls ?? []).map((url) => url.trim()).filter(Boolean);
 
-  if (!urls.length) {
-    return NextResponse.json({ error: "Add at least one competitor URL." }, { status: 400 });
+  const primaryInput = candidatePrimary || urlsFromArray[0] || "";
+  const competitorInput = candidateCompetitor || urlsFromArray[1] || "";
+
+  if (!primaryInput || !competitorInput) {
+    return NextResponse.json(
+      { error: "Please provide both primaryUrl and competitorUrl as public website URLs." },
+      { status: 400 }
+    );
   }
 
-  const results = await Promise.all(urls.map(async (rawUrl) => {
-    const url = normalizeUrl(rawUrl);
-    if (!validateUrl(url)) throw new Error(`Invalid URL: ${rawUrl}`);
+  let primaryUrl = "";
+  let competitorUrl = "";
+  try {
+    primaryUrl = normalizeUrl(primaryInput);
+    competitorUrl = normalizeUrl(competitorInput);
+  } catch {
+    return NextResponse.json(
+      { error: "One or more URLs are invalid. Please use full public website URLs like https://example.com." },
+      { status: 400 }
+    );
+  }
+  if (!validateUrl(primaryUrl) || !validateUrl(competitorUrl)) {
+    return NextResponse.json({ error: "Both URLs must be valid public http(s) URLs." }, { status: 400 });
+  }
+  if (primaryUrl === competitorUrl) {
+    return NextResponse.json({ error: "Please provide two different URLs for comparison." }, { status: 400 });
+  }
 
-    const scraped = await scrapeUrl(url);
-    const checks = runDeterministicChecks(scraped);
-    const score = calculateScore(checks);
+  try {
+    const [primaryCore, competitorCore] = await Promise.all([runScanCore(primaryUrl, {
+      includePageSpeed: false,
+      normalizeAndValidate: false,
+    }), runScanCore(competitorUrl, {
+      includePageSpeed: false,
+      normalizeAndValidate: false,
+    })]);
 
-    return {
-      url,
-      score,
-      metrics: benchmarkMetrics(checks, score),
-    };
-  }));
+    const results = [
+      {
+        url: primaryUrl,
+        score: primaryCore.score,
+        metrics: benchmarkMetrics(primaryCore.checks, primaryCore.score),
+      },
+      {
+        url: competitorUrl,
+        score: competitorCore.score,
+        metrics: benchmarkMetrics(competitorCore.checks, competitorCore.score),
+      },
+    ];
 
-  return NextResponse.json({ competitors: results });
+    const categoryKeys = ["metadata", "headings", "schema", "contentClarity", "aiReadiness", "trustSignals", "performance"] as const;
+    const categoryBreakdown = categoryKeys.map((category) => {
+      const p = primaryCore.categoryScores[category] ?? 0;
+      const c = competitorCore.categoryScores[category] ?? 0;
+      const gap = p - c;
+      return {
+        category,
+        primaryScore: p,
+        competitorScore: c,
+        gap,
+        winner: winnerFromGap(gap),
+      };
+    });
+
+    const advantages = categoryBreakdown
+      .filter((item) => item.gap > 0)
+      .map((item) => ({
+        title: `${toLabel(item.category)} advantage`,
+        description: `Primary leads by ${item.gap} points in ${toLabel(item.category)}.`,
+        category: item.category,
+        impact: impactFromAbsGap(Math.abs(item.gap)),
+      }));
+
+    const gaps = categoryBreakdown
+      .filter((item) => item.gap < 0)
+      .map((item) => ({
+        title: `${toLabel(item.category)} gap`,
+        description: `Competitor leads by ${Math.abs(item.gap)} points in ${toLabel(item.category)}.`,
+        category: item.category,
+        impact: impactFromAbsGap(Math.abs(item.gap)),
+      }));
+
+    const primaryScore = primaryCore.score;
+    const competitorScore = competitorCore.score;
+    const scoreGap = primaryScore - competitorScore;
+    const winner = winnerFromGap(scoreGap);
+    const competitorDomain = domainFromUrl(competitorUrl);
+    const summary =
+      winner === "tie"
+        ? "Both sites have the same AI search readiness score."
+        : winner === "primary"
+          ? `Your site is ${scoreGap} points ahead of ${competitorDomain}.`
+          : `Your site is ${Math.abs(scoreGap)} points behind ${competitorDomain}.`;
+
+    return NextResponse.json({
+      competitors: results,
+      comparison: {
+        primaryScore,
+        competitorScore,
+        scoreGap,
+        winner,
+        categoryBreakdown,
+        advantages,
+        gaps,
+        summary,
+      },
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Comparison failed. Please make sure both URLs are publicly accessible and try again." },
+      { status: 500 }
+    );
+  }
 }
 

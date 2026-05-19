@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       >
         <div
           style={{
-            color: "#7c6aff",
+            color: "#00f0b4",
             fontSize: "22px",
             letterSpacing: "0.15em",
             textTransform: "uppercase",
