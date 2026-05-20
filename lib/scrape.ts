@@ -2,6 +2,60 @@ import * as cheerio from "cheerio";
 import { ExtractedData } from "@/types/report";
 import { ScrapedData } from "@/types/index";
 
+function normalizeSchemaTypeLabel(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const clean = trimmed.replace(/^https?:\/\/schema\.org\//i, "");
+  const splitOnHash = clean.split("#").pop() || clean;
+  const splitOnSlash = splitOnHash.split("/").pop() || splitOnHash;
+  return splitOnSlash.trim();
+}
+
+function extractSchemaTypesFromDom($: cheerio.CheerioAPI): string[] {
+  const schemaTypes: string[] = [];
+
+  // JSON-LD
+  $('script[type="application/ld+json"]').each((_, el) => {
+    try {
+      const parsed = JSON.parse($(el).html() || "");
+      const rootItems = Array.isArray(parsed) ? parsed : [parsed];
+      const graphItems = Array.isArray(parsed?.["@graph"]) ? parsed["@graph"] : [];
+      [...rootItems, ...graphItems].forEach((item: { "@type"?: string | string[] }) => {
+        if (!item?.["@type"]) return;
+        const values = Array.isArray(item["@type"]) ? item["@type"] : [item["@type"]];
+        values.forEach((value) => {
+          const normalized = normalizeSchemaTypeLabel(String(value));
+          if (normalized) schemaTypes.push(normalized);
+        });
+      });
+    } catch {
+      // ignore malformed JSON-LD
+    }
+  });
+
+  // Microdata itemtype
+  $("[itemtype]").each((_, el) => {
+    const itemtype = ($(el).attr("itemtype") || "").trim();
+    if (!itemtype) return;
+    itemtype.split(/\s+/).forEach((raw) => {
+      const normalized = normalizeSchemaTypeLabel(raw);
+      if (normalized) schemaTypes.push(normalized);
+    });
+  });
+
+  // RDFa typeof
+  $("[typeof]").each((_, el) => {
+    const typeOf = ($(el).attr("typeof") || "").trim();
+    if (!typeOf) return;
+    typeOf.split(/\s+/).forEach((raw) => {
+      const normalized = normalizeSchemaTypeLabel(raw);
+      if (normalized) schemaTypes.push(normalized);
+    });
+  });
+
+  return Array.from(new Set(schemaTypes));
+}
+
 export function normalizeUrl(input: string): string {
   const trimmed = input.trim().replace(/\s+/g, "");
   const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
@@ -186,19 +240,11 @@ export function parseHtml(html: string, baseUrl: string): ExtractedData {
 
   // JSON-LD schemas
   const jsonLdBlocks: object[] = [];
-  const schemaTypes: string[] = [];
+  const schemaTypes: string[] = extractSchemaTypesFromDom($);
   $('script[type="application/ld+json"]').each((_, el) => {
     try {
       const parsed = JSON.parse($(el).html() || "");
       jsonLdBlocks.push(parsed);
-      const graphItems = Array.isArray(parsed?.["@graph"]) ? parsed["@graph"] : [];
-      const types = [...(Array.isArray(parsed) ? parsed : [parsed]), ...graphItems];
-      types.forEach((item: { "@type"?: string | string[] }) => {
-        if (item["@type"]) {
-          const t = Array.isArray(item["@type"]) ? item["@type"] : [item["@type"]];
-          schemaTypes.push(...t);
-        }
-      });
     } catch {
       // ignore malformed JSON-LD
     }
@@ -247,7 +293,7 @@ export function parseHtml(html: string, baseUrl: string): ExtractedData {
     twitterTitle,
     twitterDescription,
     jsonLdBlocks,
-    schemaTypes: Array.from(new Set(schemaTypes)),
+    schemaTypes,
     imageCount,
     imagesMissingAlt,
     internalLinks,
@@ -338,29 +384,9 @@ export function parseHtmlToScrapedData(
 
   // JSON-LD schemas
   let schemaBlocks = 0;
-  const schemaTypes: string[] = [];
+  const schemaTypes: string[] = extractSchemaTypesFromDom($);
   $('script[type="application/ld+json"]').each((_, el) => {
     schemaBlocks++;
-    try {
-      const parsed = JSON.parse($(el).html() || "");
-      const graphItems = Array.isArray(parsed?.["@graph"])
-        ? parsed["@graph"]
-        : [];
-      const types = [
-        ...(Array.isArray(parsed) ? parsed : [parsed]),
-        ...graphItems,
-      ];
-      types.forEach((item: { "@type"?: string | string[] }) => {
-        if (item["@type"]) {
-          const t = Array.isArray(item["@type"])
-            ? item["@type"]
-            : [item["@type"]];
-          schemaTypes.push(...t);
-        }
-      });
-    } catch {
-      // ignore malformed JSON-LD
-    }
   });
 
   // Images with alt text tracking
@@ -494,7 +520,7 @@ export function parseHtmlToScrapedData(
     metaDescription,
     canonical,
     headings,
-    schemaTypes: Array.from(new Set(schemaTypes)),
+    schemaTypes,
     schemaBlocks,
     bodyText,
     images,

@@ -1,4 +1,5 @@
 import { ScanResult } from "@/types/index";
+import { getNormalizedIssues } from "@/lib/report-issues";
 
 interface Props {
   report: ScanResult;
@@ -159,7 +160,31 @@ function getConfidence(score: number) {
 }
 
 function getMissingContext(report: ScanResult) {
-  if (report.aiInsights?.contentGap?.trim()) return report.aiInsights.contentGap;
+  const aboutContactDetail = report.checks.find((check) => check.id === "eeat_about")?.detail || "";
+  const aboutContactPhrase = (() => {
+    if (/about and contact pages linked/i.test(aboutContactDetail)) return "About and Contact pages are linked.";
+    if (/contact page found.*no.*about page linked/i.test(aboutContactDetail)) return "Contact page found, but no dedicated About page linked.";
+    if (/about page found.*no.*contact page linked/i.test(aboutContactDetail)) return "About page found, but no dedicated Contact page linked.";
+    if (/no about or contact page linked/i.test(aboutContactDetail)) return "No dedicated About or Contact page linked.";
+    return aboutContactDetail;
+  })();
+  const forceAboutContact =
+    /contact page found.*no.*about page linked/i.test(aboutContactDetail) ||
+    /about page found.*no.*contact page linked/i.test(aboutContactDetail) ||
+    /no about or contact page linked/i.test(aboutContactDetail);
+  const aiGap = report.aiInsights?.contentGap?.trim() || "";
+  if (forceAboutContact && aboutContactPhrase) return aboutContactPhrase;
+  if (aiGap) {
+    const lower = aiGap.toLowerCase();
+    const saysContactMissing = /(no|missing|without|lack|lacks|absent).{0,35}contact|contact.{0,35}(missing|not found|absent|lacking)/i.test(lower);
+    const saysAboutMissing = /(no|missing|without|lack|lacks|absent).{0,35}about|about.{0,35}(missing|not found|absent|lacking)/i.test(lower);
+    const contactFound = /contact page found/i.test(aboutContactDetail) || /about and contact pages linked/i.test(aboutContactDetail);
+    const aboutFound = /about page found/i.test(aboutContactDetail) || /about and contact pages linked/i.test(aboutContactDetail);
+    if ((contactFound && saysContactMissing) || (aboutFound && saysAboutMissing)) {
+      return aboutContactPhrase || aiGap;
+    }
+    return aiGap;
+  }
   const signals = new Set<string>();
   report.checks
     .filter((check) => check.status !== "pass")
@@ -171,8 +196,9 @@ function getMissingContext(report: ScanResult) {
       if (category === "content") signals.add("Use cases and audience clarity");
       if (category === "trust") signals.add("Proof and trust signals");
     });
-  if (!signals.size) return "No major missing context detected.";
-  return Array.from(signals).join(", ");
+  if (!signals.size) return aboutContactPhrase || "No major missing context detected.";
+  const joined = Array.from(signals).join(", ");
+  return aboutContactPhrase ? `${joined}. ${aboutContactPhrase}` : joined;
 }
 
 function getNextBestImprovement(report: ScanResult) {
@@ -214,12 +240,13 @@ export default function PrintLayout({ report }: Props) {
     year: "numeric", month: "long", day: "numeric",
   });
   const scores = categoryScores(report.checks);
-  const issues = report.checks.filter((c) => c.status !== "pass");
-  const criticals = issues.filter((c) => c.status === "fail");
-  const warnings = issues.filter((c) => c.status === "warn");
-  const passing = report.checks.length - issues.length;
+  const issues = getNormalizedIssues(report.checks, report.pagespeed);
+  const rawIssues = report.checks.filter((check) => check.status !== "pass");
+  const criticals = issues.filter((issue) => issue.priority === "critical");
+  const highImpact = issues.filter((issue) => issue.priority === "high");
+  const passing = report.checks.filter((check) => check.status === "pass").length;
   const highPriority = criticals.length;
-  const mediumPriority = warnings.length;
+  const mediumPriority = highImpact.length;
 
   const aiSummary = getAiSummary(report);
   const confidence = getConfidence(report.score);
@@ -266,21 +293,21 @@ export default function PrintLayout({ report }: Props) {
           <div className="pl-exec-grid">
             <div className="pl-exec-card">
               <strong>Main diagnosis</strong>
-              <p>{issues.find((c) => {
+              <p>{rawIssues.find((c) => {
                 const cat = mapCategory(c.id);
                 return cat !== "performance" && c.id !== "pagespeed_low" && c.id !== "pagespeed_moderate";
-              })?.detail ?? issues[0]?.detail ?? "Core visibility signals are in good shape."}</p>
+              })?.detail ?? rawIssues[0]?.detail ?? "Core visibility signals are in good shape."}</p>
             </div>
             <div className="pl-exec-card">
               <strong>Top opportunity</strong>
-              <p>{FIX_MAP[issues.find((c) => {
+              <p>{FIX_MAP[rawIssues.find((c) => {
                 const cat = mapCategory(c.id);
                 return cat !== "performance" && c.id !== "pagespeed_low" && c.id !== "pagespeed_moderate";
               })?.id ?? ""]?.fix ?? "Keep schema and answer blocks current as pages evolve."}</p>
             </div>
             <div className="pl-exec-card">
               <strong>Biggest issue</strong>
-              <p>{issues.find((c) => {
+              <p>{rawIssues.find((c) => {
                 const cat = mapCategory(c.id);
                 return cat !== "performance";
               })?.label ?? "No critical blockers detected."}</p>
@@ -439,7 +466,7 @@ export default function PrintLayout({ report }: Props) {
 
       {issues.length > 0 && (() => {
         const criticalItems = criticals;
-        const highItems = warnings;
+        const highItems = highImpact;
         return (
           <div className="pl-page pl-force-break">
             <PageHeader url={report.url} date={date} />
@@ -464,7 +491,7 @@ export default function PrintLayout({ report }: Props) {
               <div className="pl-action-col pl-action-high">
                 <div className="pl-action-head">
                   <span>High Impact</span>
-                  <strong>{warnings.length}</strong>
+                  <strong>{highImpact.length}</strong>
                 </div>
                 <p className="pl-action-desc">Strong lift with manageable effort.</p>
                 {highItems.length > 0 ? highItems.map((c) => (
@@ -512,8 +539,8 @@ export default function PrintLayout({ report }: Props) {
                 <div className="pl-issue-header">
                   <span className="pl-issue-title">{c.label}</span>
                   <span className="pl-issue-cat">{CATEGORY_LABELS[mapCategory(c.id)]}</span>
-                  <span className={`pl-issue-badge ${c.status === "fail" ? "pl-badge-critical" : "pl-badge-warning"}`}>
-                    {c.status === "fail" ? "Critical" : "Warning"}
+                  <span className={`pl-issue-badge ${c.priority === "critical" ? "pl-badge-critical" : "pl-badge-warning"}`}>
+                    {c.priority === "critical" ? "Critical" : "High"}
                   </span>
                 </div>
                 <p className="pl-issue-detail">{c.detail}</p>
@@ -565,5 +592,3 @@ export default function PrintLayout({ report }: Props) {
     </div>
   );
 }
-
-

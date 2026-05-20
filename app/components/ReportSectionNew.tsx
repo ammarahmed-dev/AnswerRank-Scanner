@@ -302,22 +302,22 @@ function badgeTone(value: Priority | Impact | Effort) {
 function getSchemaRecommendation(report: ScanResult, issues: ReportIssue[], host: string): SchemaRecommendation {
   const checks = report.checks;
   const detectedTypes: string[] = [];
-  if (checks.some((c) => c.id === "schema_present" && c.status === "pass")) detectedTypes.push("JSON-LD");
-  if (checks.some((c) => c.id === "faq_schema" && c.status === "pass")) detectedTypes.push("FAQPage");
-  if (checks.some((c) => c.id === "article_schema" && c.status === "pass")) detectedTypes.push("Article/HowTo");
-  const detected = detectedTypes.length ? detectedTypes : ["Not detected from page content."];
+  const detected = detectedTypes;
 
-  const lowerSignals = `${report.url} ${issues.map((i) => i.problem).join(" ")} ${issues.map((i) => i.title).join(" ")}`.toLowerCase();
+  const lowerSignals = `${report.url} ${report.metadata?.title ?? ""} ${report.metadata?.metaDescription ?? ""} ${issues.map((i) => i.problem).join(" ")}`.toLowerCase();
+  const hasArticleSchemaWarning = checks.some((check) => check.id === "article_schema" && check.status === "warn");
+  const hasFaqSchemaWarning = checks.some((check) => check.id === "faq_schema" && check.status === "warn");
   const suggested = ["Organization", "WebSite", "WebPage", "FAQPage"];
-  if (lowerSignals.includes("blog") || lowerSignals.includes("article")) suggested.push("Article");
-  if (lowerSignals.includes("how to") || lowerSignals.includes("guide")) suggested.push("HowTo");
+  if (hasArticleSchemaWarning || lowerSignals.includes("/blog/")) suggested.push("Article");
+  if (hasArticleSchemaWarning && (lowerSignals.includes("how to") || lowerSignals.includes("step"))) suggested.push("HowTo");
+  if (hasFaqSchemaWarning) suggested.push("FAQPage");
   if (lowerSignals.includes("service")) suggested.push("Service");
   if (lowerSignals.includes("software") || lowerSignals.includes("app") || host.includes("ai")) suggested.push("SoftwareApplication");
   if (lowerSignals.includes("pricing") || lowerSignals.includes("product")) suggested.push("Product");
   if (checks.some((c) => c.id === "internal_links" && c.status !== "pass")) suggested.push("BreadcrumbList");
 
   const uniqueSuggested = Array.from(new Set(suggested));
-  const missing = uniqueSuggested.filter((type) => !detectedTypes.some((detectedType) => detectedType.toLowerCase().includes(type.toLowerCase())));
+  const missing = uniqueSuggested.filter((type) => !detectedTypes.some((detectedType) => detectedType.toLowerCase() === type.toLowerCase()));
 
   const reasons = [
     "Organization and WebSite define your brand entity for AI and search systems.",
@@ -332,6 +332,26 @@ function getSchemaRecommendation(report: ScanResult, issues: ReportIssue[], host
     missing,
     reasons,
   };
+}
+
+function aboutContactSnapshotPhrase(detail: string) {
+  if (/about and contact pages linked/i.test(detail)) return "About and Contact pages are linked.";
+  if (/contact page found.*no.*about page linked/i.test(detail)) return "Contact page found, but no dedicated About page linked.";
+  if (/about page found.*no.*contact page linked/i.test(detail)) return "About page found, but no dedicated Contact page linked.";
+  if (/no about or contact page linked/i.test(detail)) return "No dedicated About or Contact page linked.";
+  return detail;
+}
+
+function contradictsAboutContact(text: string, detail: string) {
+  if (!text.trim()) return false;
+  const lower = text.toLowerCase();
+  const saysContactMissing = /(no|missing|without|lack|lacks|absent).{0,35}contact|contact.{0,35}(missing|not found|absent|lacking)/i.test(lower);
+  const saysAboutMissing = /(no|missing|without|lack|lacks|absent).{0,35}about|about.{0,35}(missing|not found|absent|lacking)/i.test(lower);
+  const contactFound = /contact page found/i.test(detail) || /about and contact pages linked/i.test(detail);
+  const aboutFound = /about page found/i.test(detail) || /about and contact pages linked/i.test(detail);
+  if (contactFound && saysContactMissing) return true;
+  if (aboutFound && saysAboutMissing) return true;
+  return false;
 }
 
 export default function ReportSectionNew({ report, onReset }: Props) {
@@ -526,10 +546,10 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     : comparisonState.mode === "behind"
       ? `Your competitor is currently ahead by ${Math.abs(comparisonState.gap)} points. Start with the critical fixes below to close the gap.`
       : "Both pages currently have the same visibility score. Start with the highest-priority fixes below to pull ahead.";
-  const detectedSchemaTypes = report.aiInsights?.schemaRecommendations?.detected ?? [];
-  const missingSchemaTypes = report.aiInsights?.schemaRecommendations?.missing ?? [];
-  const prioritySchema = report.aiInsights?.schemaRecommendations?.priority ?? null;
-  const priorityReasoning = report.aiInsights?.schemaRecommendations?.reasoning ?? "";
+  const detectedSchemaTypes = report.aiInsights?.schemaRecommendations?.detected ?? schemaRecommendation.detected ?? [];
+  const missingSchemaTypes = report.aiInsights?.schemaRecommendations?.missing ?? schemaRecommendation.missing ?? [];
+  const prioritySchema = report.aiInsights?.schemaRecommendations?.priority ?? missingSchemaTypes[0] ?? null;
+  const priorityReasoning = report.aiInsights?.schemaRecommendations?.reasoning ?? schemaRecommendation.reasons.join(" ");
   const otherSuggestedTypes = missingSchemaTypes.filter((t) => t !== prioritySchema);
   const priorityWhyItMatters = prioritySchema
     ? (schemaWhyItMatters[prioritySchema] ?? `${prioritySchema} schema helps AI systems understand and classify this page with higher confidence.`)
@@ -563,6 +583,24 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     return `The page does not clearly surface ${head}, and ${tail}.`;
   }, [checks]);
   const missingContextText = report.aiInsights?.contentGap?.trim() || inferredMissingContext;
+  const aboutContactDetail = checks.find((check) => check.id === "eeat_about")?.detail || "";
+  const safeMissingContextText = (() => {
+    const aiText = report.aiInsights?.contentGap?.trim() || "";
+    const forceAboutContact =
+      /contact page found.*no.*about page linked/i.test(aboutContactDetail) ||
+      /about page found.*no.*contact page linked/i.test(aboutContactDetail) ||
+      /no about or contact page linked/i.test(aboutContactDetail);
+    if (forceAboutContact) return aboutContactSnapshotPhrase(aboutContactDetail);
+    if (!aiText) {
+      return aboutContactDetail
+        ? `${inferredMissingContext} ${aboutContactSnapshotPhrase(aboutContactDetail)}`.trim()
+        : inferredMissingContext;
+    }
+    if (aboutContactDetail && contradictsAboutContact(aiText, aboutContactDetail)) {
+      return aboutContactSnapshotPhrase(aboutContactDetail);
+    }
+    return aiText;
+  })();
   const nextBestImprovement = report.aiInsights?.quickWin?.trim() || issues[0]?.recommendedFix || "Keep improving the highest-priority issue from this audit.";
   const copyReport = async () => {
     const lines = [
@@ -727,7 +765,7 @@ const downloadPdf = () => {
             <>
               <article className="ai-snapshot-card">
                 <p className="ai-snapshot-label">Missing context</p>
-                <p className="ai-snapshot-value">{missingContextText}</p>
+            <p className="ai-snapshot-value">{safeMissingContextText}</p>
               </article>
               <article className="ai-snapshot-card">
                 <p className="ai-snapshot-label">Next best improvement</p>
@@ -838,7 +876,7 @@ const downloadPdf = () => {
         )}
       </section>
 
-      {report.aiInsights?.schemaRecommendations && (
+      {(report.aiInsights?.schemaRecommendations || schemaRecommendation) && (
         <section className="surface report-card print-section">
           <h3 className="section-heading">Schema Analysis</h3>
           <p className="section-kicker mt-1">Detected and recommended schema types based on actual page content.</p>
@@ -908,7 +946,7 @@ const downloadPdf = () => {
                 ))}
               </div>
               {otherSuggestedTypes.includes("FAQPage") && (
-                <p className="schema-note">Google deprecated FAQ rich results in May 2026, but FAQPage schema remains useful for AI answer engines like ChatGPT and Perplexity.</p>
+                <p className="schema-note">Google has reduced FAQ rich result visibility, but FAQPage schema can still help AI systems understand question-and-answer content.</p>
               )}
             </div>
           )}
