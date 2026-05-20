@@ -346,7 +346,9 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
     aiBotDetail = "All bots blocked by default - verify AI crawlers are explicitly allowed";
   } else if (!robotsBody) {
     aiBotStatus = "warn";
-    aiBotDetail = "robots.txt not found - AI bot access cannot be verified";
+    aiBotDetail = robotsCheck.status === "fail"
+      ? "robots.txt not found - AI bot access cannot be verified"
+      : "robots.txt found but has no explicit AI crawler directives";
   } else if (robotsLower.includes("gptbot") && !robotsLower.includes("disallow")) {
     aiBotStatus = "pass";
     aiBotDetail = "GPTBot explicitly allowed in robots.txt";

@@ -384,7 +384,7 @@ const CHECKS_CONFIG: CheckConfig[] = [
       if (data.hasAboutPage && data.hasContactPage) return "About and Contact pages linked - strong trust signals";
       if (data.hasAboutPage) return "About page found, but no dedicated Contact page linked.";
       if (data.hasContactPage) return "Contact page found, but no dedicated About page linked.";
-      return "No dedicated About or Contact page linked.";
+      return "No clearly linked About or Contact page found.";
     },
   },
   {

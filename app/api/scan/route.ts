@@ -108,7 +108,8 @@ function detailToSnapshotPhrase(detail: string): string {
   if (/about and contact pages linked/i.test(detail)) return "About and Contact pages are linked.";
   if (/contact page found.*no.*about page linked/i.test(detail)) return "Contact page found, but no dedicated About page linked.";
   if (/about page found.*no.*contact page linked/i.test(detail)) return "About page found, but no dedicated Contact page linked.";
-  if (/no about or contact page linked/i.test(detail)) return "No dedicated About or Contact page linked.";
+  if (/no (dedicated )?about or contact page linked/i.test(detail)) return "No clearly linked About or Contact page found.";
+  if (/no clearly linked about or contact page found/i.test(detail)) return "No clearly linked About or Contact page found.";
   return detail;
 }
 
@@ -141,7 +142,8 @@ function groundAIInsights(aiInsights: AIInsights | null, facts: DeterministicFac
   const shouldForceAboutContactGap =
     /contact page found.*no.*about page linked/i.test(facts.aboutContactDetail) ||
     /about page found.*no.*contact page linked/i.test(facts.aboutContactDetail) ||
-    /no about or contact page linked/i.test(facts.aboutContactDetail);
+    /no about or contact page linked/i.test(facts.aboutContactDetail) ||
+    /no clearly linked about or contact page found/i.test(facts.aboutContactDetail);
   const groundedGap = shouldForceAboutContactGap
     ? deterministicAboutContact
     : appearsToContradictAboutContact(currentGap, facts)

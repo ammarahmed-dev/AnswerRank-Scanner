@@ -9,6 +9,7 @@ import dynamic from "next/dynamic";
 import UpgradeButton from "./UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { canViewFullReport, isMasterAdmin } from "@/lib/access";
+import { getReportCategoryScores, mapReportCategory, type ReportCategory } from "@/lib/report-category-scores";
 
 const RetestButton = dynamic(() => import("./RetestButton"), { ssr: false });
 const PrintLayout = dynamic(() => import("./PrintLayout"), { ssr: false });
@@ -21,7 +22,7 @@ interface Props {
 type Priority = "critical" | "high" | "medium" | "low";
 type Impact = "high" | "medium" | "low";
 type Effort = "easy" | "medium" | "hard";
-type Category = "schema" | "metadata" | "content" | "performance" | "trust" | "ai-readiness" | "headings";
+type Category = ReportCategory;
 type Plan = "guest" | "free" | "pro" | "agency";
 
 type ReportIssue = {
@@ -91,15 +92,7 @@ function priorityFromWeight(weight: number): Priority {
   return "low";
 }
 
-function mapCategory(id: string): Category {
-  if (id.includes("schema")) return "schema";
-  if (id === "title" || id === "meta_desc" || id.includes("og")) return "metadata";
-  if (id.includes("heading") || id === "h1") return "headings";
-  if (id === "https" || id === "robots" || id === "sitemap") return "trust";
-  if (id === "core_web_vitals" || id.startsWith("cwv_")) return "performance";
-  if (id === "word_count" || id === "internal_links" || id === "alt_text") return "content";
-  return "ai-readiness";
-}
+const mapCategory = mapReportCategory;
 
 function effortById(id: string): Effort {
   if (id.includes("schema")) return "medium";
@@ -338,7 +331,8 @@ function aboutContactSnapshotPhrase(detail: string) {
   if (/about and contact pages linked/i.test(detail)) return "About and Contact pages are linked.";
   if (/contact page found.*no.*about page linked/i.test(detail)) return "Contact page found, but no dedicated About page linked.";
   if (/about page found.*no.*contact page linked/i.test(detail)) return "About page found, but no dedicated Contact page linked.";
-  if (/no about or contact page linked/i.test(detail)) return "No dedicated About or Contact page linked.";
+  if (/no (dedicated )?about or contact page linked/i.test(detail)) return "No clearly linked About or Contact page found.";
+  if (/no clearly linked about or contact page found/i.test(detail)) return "No clearly linked About or Contact page found.";
   return detail;
 }
 
@@ -468,31 +462,14 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     },
   ];
 
-  const categoryScores = useMemo(() => {
-    const groups: Record<Category, number[]> = {
-      metadata: [],
-      headings: [],
-      schema: [],
-      content: [],
-      "ai-readiness": [],
-      performance: [],
-      trust: [],
-    };
-
-    checks.forEach((check) => {
-      const category = mapCategory(check.id);
-      const value = check.status === "pass" ? 100 : check.status === "warn" ? 60 : 25;
-      groups[category].push(value);
-    });
-
-    if (report.pagespeed?.score !== undefined) groups.performance.push(report.pagespeed.score);
-
-    return (Object.entries(groups) as Array<[Category, number[]]>).map(([category, values]) => ({
-      category,
-      score: values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0,
-      status: statusLabel(values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0),
-    }));
-  }, [checks, report.pagespeed?.score]);
+  const categoryScores = useMemo(
+    () => getReportCategoryScores(checks, report.pagespeed).map((item) => ({
+      category: item.category,
+      score: item.score,
+      status: statusLabel(item.score),
+    })),
+    [checks, report.pagespeed]
+  );
 
   const schemaRecommendation = useMemo(() => getSchemaRecommendation(report, issues, host), [report, issues, host]);
   const competitorRows = useMemo(() => {
@@ -589,7 +566,8 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     const forceAboutContact =
       /contact page found.*no.*about page linked/i.test(aboutContactDetail) ||
       /about page found.*no.*contact page linked/i.test(aboutContactDetail) ||
-      /no about or contact page linked/i.test(aboutContactDetail);
+      /no about or contact page linked/i.test(aboutContactDetail) ||
+      /no clearly linked about or contact page found/i.test(aboutContactDetail);
     if (forceAboutContact) return aboutContactSnapshotPhrase(aboutContactDetail);
     if (!aiText) {
       return aboutContactDetail
