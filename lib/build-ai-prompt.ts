@@ -17,6 +17,17 @@ type AIPromptContext = {
     trustSignals?: number;
   };
   issues: string[];
+  deterministicFacts?: {
+    detectedSchemaTypes: string[];
+    hasFAQPageSchema: boolean;
+    hasOrganizationSchema: boolean;
+    hasWebSiteSchema: boolean;
+    hasWebPageSchema: boolean;
+    hasFAQContent: boolean;
+    aboutPageFound: boolean;
+    contactPageFound: boolean;
+    aboutContactDetail: string;
+  };
 };
 
 export function buildAIPrompt(data: ScrapedData, context?: AIPromptContext): string {
@@ -51,6 +62,14 @@ ACTUAL SCAN RESULTS:
 - Headings score: ${context.scores.headings ?? "N/A"}
 - Trust signals score: ${context.scores.trustSignals ?? "N/A"}
 - Failing/warning checks: ${context.issues.join(", ") || "None"}
+- Contact page linked: ${context.deterministicFacts?.contactPageFound ? "Yes" : "No"}
+- About page linked: ${context.deterministicFacts?.aboutPageFound ? "Yes" : "No"}
+- About/Contact deterministic detail: ${context.deterministicFacts?.aboutContactDetail || "Unknown"}
+- FAQ content detected: ${context.deterministicFacts?.hasFAQContent ? "Yes" : "No"}
+- FAQPage schema detected: ${context.deterministicFacts?.hasFAQPageSchema ? "Yes" : "No"}
+- Organization schema detected: ${context.deterministicFacts?.hasOrganizationSchema ? "Yes" : "No"}
+- WebSite schema detected: ${context.deterministicFacts?.hasWebSiteSchema ? "Yes" : "No"}
+- WebPage schema detected: ${context.deterministicFacts?.hasWebPageSchema ? "Yes" : "No"}
 
 STRICT RULES - VIOLATIONS BREAK THE REPORT:
 1. NEVER list a schema type in "missing" that appears in detectedSchemas above.
@@ -58,6 +77,8 @@ STRICT RULES - VIOLATIONS BREAK THE REPORT:
 3. Do NOT mention FAQPage, Organization, or any other schema type as missing unless it is absent from detectedSchemas.
 4. Base ALL recommendations only on failing/warning checks and missing schema types listed above.
 5. Keep each field under 2 sentences.
+6. NEVER claim Contact is missing if Contact page linked = Yes.
+7. NEVER claim About is missing if About page linked = Yes.
 `
     : "";
 

@@ -36,11 +36,8 @@ function normalizeSchemaType(value: string): string {
 
 function parseSchemaRecommendations(parsed: Record<string, unknown>, fallbackDetected: string[]): SchemaRecommendation {
   const sr = parsed.schemaRecommendations as Record<string, unknown> | undefined;
-  const detectedRaw = Array.isArray(sr?.detected)
-    ? (sr.detected as string[]).filter((s): s is string => typeof s === "string")
-    : fallbackDetected;
-  // Always merge with scraped schema types - the scraper is ground truth
-  const detected = Array.from(new Set([...detectedRaw, ...fallbackDetected]));
+  // Detected schema must come only from the deterministic HTML scraper.
+  const detected = Array.from(new Set(fallbackDetected.filter((s): s is string => typeof s === "string" && s.trim().length > 0)));
   const detectedSet = new Set(detected.map(normalizeSchemaType));
 
   const missingRaw = Array.isArray(sr?.missing)
@@ -63,6 +60,107 @@ function parseSchemaRecommendations(parsed: Record<string, unknown>, fallbackDet
   };
 }
 
+type DeterministicFacts = {
+  detectedSchemaTypes: string[];
+  hasFAQPageSchema: boolean;
+  hasOrganizationSchema: boolean;
+  hasWebSiteSchema: boolean;
+  hasWebPageSchema: boolean;
+  hasFAQContent: boolean;
+  aboutPageFound: boolean;
+  contactPageFound: boolean;
+  aboutContactDetail: string;
+};
+
+function hasFaqLikeContent(scrapedData: ScrapedData): boolean {
+  const headingText = scrapedData.headings.map((h) => h.replace(/^H\d+:\s*/, "")).join(" ");
+  return /\?|faq|question|how to|what is|why |when /i.test(headingText) ||
+    /faq|frequently asked/i.test(scrapedData.bodyText.slice(0, 2000));
+}
+
+function getDeterministicFacts(scrapedData: ScrapedData, checks: ScanResult["checks"]): DeterministicFacts {
+  const detectedSchemaTypes = Array.from(new Set(scrapedData.schemaTypes));
+  const hasSchema = (type: string) => detectedSchemaTypes.some((value) => normalizeSchemaType(value) === normalizeSchemaType(type));
+  const aboutContactDetail =
+    checks.find((check) => check.id === "eeat_about")?.detail ||
+    (scrapedData.hasAboutPage && scrapedData.hasContactPage
+      ? "About and Contact pages linked - strong trust signals"
+      : scrapedData.hasContactPage
+        ? "Contact page found but no About page linked"
+        : scrapedData.hasAboutPage
+          ? "About page found but no Contact page linked"
+          : "No About or Contact page linked - add both for E-E-A-T");
+
+  return {
+    detectedSchemaTypes,
+    hasFAQPageSchema: hasSchema("FAQPage"),
+    hasOrganizationSchema: hasSchema("Organization"),
+    hasWebSiteSchema: hasSchema("WebSite"),
+    hasWebPageSchema: hasSchema("WebPage"),
+    hasFAQContent: hasFaqLikeContent(scrapedData),
+    aboutPageFound: Boolean(scrapedData.hasAboutPage),
+    contactPageFound: Boolean(scrapedData.hasContactPage),
+    aboutContactDetail,
+  };
+}
+
+function detailToSnapshotPhrase(detail: string): string {
+  if (/about and contact pages linked/i.test(detail)) return "About and Contact pages are linked.";
+  if (/contact page found.*no.*about page linked/i.test(detail)) return "Contact page found, but no dedicated About page linked.";
+  if (/about page found.*no.*contact page linked/i.test(detail)) return "About page found, but no dedicated Contact page linked.";
+  if (/no about or contact page linked/i.test(detail)) return "No dedicated About or Contact page linked.";
+  return detail;
+}
+
+function appearsToContradictAboutContact(text: string, facts: DeterministicFacts): boolean {
+  const lower = text.toLowerCase();
+  const mentionsContactMissing = /(no|missing|without|lack|lacks|absent).{0,35}contact|contact.{0,35}(missing|not found|absent|lacking)/i.test(lower);
+  const mentionsAboutMissing = /(no|missing|without|lack|lacks|absent).{0,35}about|about.{0,35}(missing|not found|absent|lacking)/i.test(lower);
+  if (facts.contactPageFound && mentionsContactMissing) return true;
+  if (facts.aboutPageFound && mentionsAboutMissing) return true;
+  return false;
+}
+
+function groundAIInsights(aiInsights: AIInsights | null, facts: DeterministicFacts): AIInsights | null {
+  if (!aiInsights) return null;
+
+  const groundedSchema = parseSchemaRecommendations(
+    {
+      schemaRecommendations: {
+        detected: facts.detectedSchemaTypes,
+        missing: aiInsights.schemaRecommendations?.missing ?? [],
+        priority: aiInsights.schemaRecommendations?.priority ?? "",
+        reasoning: aiInsights.schemaRecommendations?.reasoning ?? "",
+      },
+    },
+    facts.detectedSchemaTypes
+  );
+
+  const deterministicAboutContact = detailToSnapshotPhrase(facts.aboutContactDetail);
+  const currentGap = aiInsights.contentGap?.trim() || "";
+  const shouldForceAboutContactGap =
+    /contact page found.*no.*about page linked/i.test(facts.aboutContactDetail) ||
+    /about page found.*no.*contact page linked/i.test(facts.aboutContactDetail) ||
+    /no about or contact page linked/i.test(facts.aboutContactDetail);
+  const groundedGap = shouldForceAboutContactGap
+    ? deterministicAboutContact
+    : appearsToContradictAboutContact(currentGap, facts)
+      ? deterministicAboutContact
+      : currentGap;
+
+  const currentSummary = aiInsights.summary?.trim() || "";
+  const groundedSummary = appearsToContradictAboutContact(currentSummary, facts)
+    ? `${currentSummary ? `${currentSummary.replace(/\s+$/, "")} ` : ""}${deterministicAboutContact}`.trim()
+    : currentSummary;
+
+  return {
+    ...aiInsights,
+    summary: groundedSummary || aiInsights.summary,
+    contentGap: groundedGap || aiInsights.contentGap,
+    schemaRecommendations: groundedSchema,
+  };
+}
+
 async function getAIInsightsWithBudget(
   scrapedData: ScrapedData,
   context?: {
@@ -77,6 +175,7 @@ async function getAIInsightsWithBudget(
       trustSignals?: number;
     };
     issues: string[];
+    deterministicFacts?: DeterministicFacts;
   }
 ): Promise<AIInsights | null> {
   try {
@@ -357,6 +456,7 @@ export async function POST(req: NextRequest) {
         }
 
         const detectedSchemas = scrapedData.schemaTypes;
+        const deterministicFacts = getDeterministicFacts(scrapedData, checks);
         const candidateSchemaTypes = ["Organization", "WebSite", "WebPage", "FAQPage", "Article", "HowTo", "BreadcrumbList", "Service", "Product", "SoftwareApplication"];
         const missingSchemas = candidateSchemaTypes.filter(
           (type) => !detectedSchemas.some((detected) => detected.toLowerCase() === type.toLowerCase())
@@ -390,8 +490,10 @@ export async function POST(req: NextRequest) {
                 trustSignals: categoryScores.trustSignals,
               },
               issues: issueTitles,
+              deterministicFacts,
             });
             if (aiInsights) {
+              aiInsights = groundAIInsights(aiInsights, deterministicFacts);
               emitProgress(5, "Generating AI insights", "complete");
             } else {
               emitProgress(5, "Using local recommendations", "skipped");
@@ -401,6 +503,7 @@ export async function POST(req: NextRequest) {
             emitProgress(5, "Using local recommendations", "error");
           }
         }
+        aiInsights = groundAIInsights(aiInsights, deterministicFacts);
 
         let competitors: CompetitorScanResult[] | undefined;
         if (competitorUrls.length) {

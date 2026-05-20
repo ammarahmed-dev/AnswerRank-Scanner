@@ -17,9 +17,21 @@ function hasArticleContent(data: ScrapedData): boolean {
   const h2Count = data.headings.filter((h) => h.startsWith("H2:")).length;
   const titleLower = (data.title ?? "").toLowerCase();
   const descLower = (data.metaDescription ?? "").toLowerCase();
-  return h2Count >= 3 ||
-    /blog|article|guide|tutorial|post|news|how.?to/i.test(titleLower) ||
-    /blog|article|guide|tutorial/i.test(descLower);
+  const urlLower = (data.url ?? "").toLowerCase();
+  const hasArticleUrlSignal = /\/(blog|news|article|articles|post|posts)\b/.test(urlLower);
+  const hasEditorialKeywords = /\b(blog|article|news|post)\b/.test(`${titleLower} ${descLower}`);
+  const hasHowToKeywords = /\bhow to\b|\bhow-to\b|\bguide\b|\btutorial\b/.test(`${titleLower} ${descLower}`);
+  const hasBylineSignal = Boolean(data.hasAuthor || data.hasPersonSchema);
+  const hasDateSignal = Boolean(data.datePublished || data.dateModified);
+  const hasLongFormSignal = (data.wordCount ?? 0) >= 450 && h2Count >= 3;
+  const hasProceduralSignal = /\bstep\s+\d+\b|\bhow to\b|\bhow-to\b/.test(data.bodyText.toLowerCase());
+  const hasHowToUrlSignal = /\/(how-to|guide|tutorial)\b/.test(urlLower);
+
+  // Require strong evidence before recommending Article/HowTo on non-blog pages.
+  if (hasArticleUrlSignal) return true;
+  if (hasBylineSignal && hasDateSignal && hasLongFormSignal && hasEditorialKeywords) return true;
+  if ((hasHowToUrlSignal || hasHowToKeywords) && hasProceduralSignal && hasLongFormSignal) return true;
+  return false;
 }
 
 type CheckConfig = {
@@ -113,12 +125,13 @@ const CHECKS_CONFIG: CheckConfig[] = [
     label: "Schema Markup",
     weight: 10,
     check: (data: ScrapedData) => {
-      if (data.schemaBlocks > 0) return "pass";
+      if (data.schemaTypes.length > 0) return "pass";
       return "fail";
     },
     detail: (data: ScrapedData) => {
-      if (data.schemaBlocks === 0) return "No JSON-LD schema detected";
-      return `${data.schemaBlocks} schema block${data.schemaBlocks > 1 ? "s" : ""} found`;
+      if (data.schemaTypes.length === 0) return "No schema detected (JSON-LD, microdata, or RDFa)";
+      const count = data.schemaTypes.length;
+      return `${count} schema type${count > 1 ? "s" : ""} detected`;
     },
   },
   {
@@ -324,13 +337,13 @@ const CHECKS_CONFIG: CheckConfig[] = [
     label: "Schema Density",
     weight: 5,
     check: (data: ScrapedData) => {
-      if (data.schemaBlocks > 1) return "pass";
-      if (data.schemaBlocks === 1) return "warn";
+      if (data.schemaTypes.length > 1) return "pass";
+      if (data.schemaTypes.length === 1) return "warn";
       return "warn"; // no schema - schema_present already handles this
     },
     detail: (data: ScrapedData) => {
-      if (data.schemaBlocks > 1)
-        return `Rich schema implementation (${data.schemaBlocks} blocks)`;
+      if (data.schemaTypes.length > 1)
+        return `Rich schema implementation (${data.schemaTypes.length} types)`;
       const suggestions: string[] = [];
       if (!data.schemaTypes.includes("Organization")) suggestions.push("Organization");
       if (!data.schemaTypes.includes("WebSite")) suggestions.push("WebSite");
@@ -338,7 +351,7 @@ const CHECKS_CONFIG: CheckConfig[] = [
       if (hasArticleContent(data) && !data.schemaTypes.some((t) => ["Article", "HowTo", "NewsArticle", "BlogPosting"].includes(t))) suggestions.push("Article");
       if (data.headings.filter((h) => h.startsWith("H2:")).length > 4 && !data.schemaTypes.includes("BreadcrumbList")) suggestions.push("BreadcrumbList");
       const list = suggestions.length > 0 ? suggestions.join(", ") : "additional content-specific types";
-      if (data.schemaBlocks === 1) return `Single schema block - layer more types: ${list}`;
+      if (data.schemaTypes.length === 1) return `Single schema type detected - layer more types: ${list}`;
       return `No schema markup - add: ${list}`;
     },
   },
@@ -369,9 +382,9 @@ const CHECKS_CONFIG: CheckConfig[] = [
     },
     detail: (data: ScrapedData) => {
       if (data.hasAboutPage && data.hasContactPage) return "About and Contact pages linked - strong trust signals";
-      if (data.hasAboutPage) return "About page found but no Contact page linked";
-      if (data.hasContactPage) return "Contact page found but no About page linked";
-      return "No About or Contact page linked - add both for E-E-A-T";
+      if (data.hasAboutPage) return "About page found, but no dedicated Contact page linked.";
+      if (data.hasContactPage) return "Contact page found, but no dedicated About page linked.";
+      return "No dedicated About or Contact page linked.";
     },
   },
   {
