@@ -1,11 +1,12 @@
 import { ScanResult } from "@/types/index";
 import { getNormalizedIssues } from "@/lib/report-issues";
+import { getReportCategoryScores, mapReportCategory, type ReportCategory } from "@/lib/report-category-scores";
 
 interface Props {
   report: ScanResult;
 }
 
-type Category = "schema" | "metadata" | "content" | "performance" | "trust" | "ai-readiness" | "headings";
+type Category = ReportCategory;
 
 const CATEGORY_LABELS: Record<Category, string> = {
   schema: "Schema",
@@ -98,33 +99,7 @@ function gradeClass(score: number) {
   return "pl-grade-poor";
 }
 
-function mapCategory(id: string): Category {
-  if (["schema_present", "faq_schema", "article_schema", "structured_density"].includes(id)) return "schema";
-  if (["title", "meta_desc", "og_tags", "og_image"].includes(id)) return "metadata";
-  if (["h1", "heading_structure"].includes(id)) return "headings";
-  if (["word_count", "alt_text", "internal_links"].includes(id)) return "content";
-  if (["https", "robots", "sitemap"].includes(id)) return "trust";
-  return "ai-readiness";
-}
-
-function categoryScores(checks: ScanResult["checks"]) {
-  const groups: Record<Category, number[]> = {
-    schema: [], metadata: [], content: [], performance: [],
-    trust: [], "ai-readiness": [], headings: [],
-  };
-  checks.forEach((c) => {
-    const cat = mapCategory(c.id);
-    const val = c.status === "pass" ? 100 : c.status === "warn" ? 60 : 25;
-    groups[cat].push(val);
-  });
-  return (Object.entries(groups) as [Category, number[]][])
-    .filter(([, vals]) => vals.length > 0)
-    .map(([cat, vals]) => ({
-      category: cat,
-      label: CATEGORY_LABELS[cat],
-      score: Math.round(vals.reduce((a, b) => a + b, 0) / vals.length),
-    }));
-}
+const mapCategory = mapReportCategory;
 
 function metadataFallbackTitle(url: string) {
   try {
@@ -165,13 +140,15 @@ function getMissingContext(report: ScanResult) {
     if (/about and contact pages linked/i.test(aboutContactDetail)) return "About and Contact pages are linked.";
     if (/contact page found.*no.*about page linked/i.test(aboutContactDetail)) return "Contact page found, but no dedicated About page linked.";
     if (/about page found.*no.*contact page linked/i.test(aboutContactDetail)) return "About page found, but no dedicated Contact page linked.";
-    if (/no about or contact page linked/i.test(aboutContactDetail)) return "No dedicated About or Contact page linked.";
+    if (/no (dedicated )?about or contact page linked/i.test(aboutContactDetail)) return "No clearly linked About or Contact page found.";
+    if (/no clearly linked about or contact page found/i.test(aboutContactDetail)) return "No clearly linked About or Contact page found.";
     return aboutContactDetail;
   })();
   const forceAboutContact =
     /contact page found.*no.*about page linked/i.test(aboutContactDetail) ||
     /about page found.*no.*contact page linked/i.test(aboutContactDetail) ||
-    /no about or contact page linked/i.test(aboutContactDetail);
+    /no about or contact page linked/i.test(aboutContactDetail) ||
+    /no clearly linked about or contact page found/i.test(aboutContactDetail);
   const aiGap = report.aiInsights?.contentGap?.trim() || "";
   if (forceAboutContact && aboutContactPhrase) return aboutContactPhrase;
   if (aiGap) {
@@ -239,7 +216,13 @@ export default function PrintLayout({ report }: Props) {
   const date = new Date(report.scannedAt).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric",
   });
-  const scores = categoryScores(report.checks);
+  const scores = getReportCategoryScores(report.checks, report.pagespeed)
+    .filter((item) => item.score > 0)
+    .map((item) => ({
+      category: item.category,
+      label: CATEGORY_LABELS[item.category],
+      score: item.score,
+    }));
   const issues = getNormalizedIssues(report.checks, report.pagespeed);
   const rawIssues = report.checks.filter((check) => check.status !== "pass");
   const criticals = issues.filter((issue) => issue.priority === "critical");
