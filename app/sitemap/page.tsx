@@ -5,9 +5,9 @@ import { getAllBlogPosts } from "@/lib/blog";
 import { buildPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Sitemap | AEOCheck AI Scanner",
+  title: "HTML Sitemap | AEOCheck",
   description:
-    "Browse AEOCheck pages, comparison guides, blog posts, and legal resources from the HTML sitemap.",
+    "Browse the AEOCheck HTML sitemap with links to scanner pages, blog guides, sample reports, comparison pages, and legal resources.",
   path: "/sitemap",
 });
 
@@ -20,6 +20,9 @@ export default function HtmlSitemapPage() {
       <main className="legal-page">
         <div className="legal-page-inner">
           <h1>Sitemap</h1>
+          <p>
+            This page is a human-readable sitemap for AEOCheck. For crawler XML sitemap files, see <a href="/sitemap.xml">/sitemap.xml</a>.
+          </p>
 
           <h2>Main</h2>
           <ul>
