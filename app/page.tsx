@@ -21,9 +21,6 @@ export default function HomePage() {
       <p className="hero-lede">
         Scan any URL in 60 seconds with a free AEO scanner. Get an AI readiness score, missing schema issues, content clarity gaps, and prioritized fixes for ChatGPT, Perplexity, and Google AI results.
       </p>
-      <p className="hero-lede">
-        New to AEO? Start with our guide: <a href="/blog/what-is-aeo-answer-engine-optimization">What Is AEO? Answer Engine Optimization for AI Search</a>.
-      </p>
     </>
   );
 
