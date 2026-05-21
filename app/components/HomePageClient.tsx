@@ -2,6 +2,7 @@
 
 import { CSSProperties, ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import Link from "next/link";
 import LoadingState from "./LoadingState";
 import SiteHeader from "./SiteHeader";
 import TopBar from "./TopBar";
@@ -961,17 +962,17 @@ export default function Home({ heroContent }: HomePageClientProps) {
 
               <div className="featured-guides-grid">
                 {featuredGuides.map((guide) => (
-                  <article key={guide.href} className="featured-guide-card">
+                  <Link key={guide.href} href={guide.href} className="featured-guide-card">
                     <span className="featured-guide-pill">{guide.category}</span>
                     <h3>{guide.title}</h3>
                     <p>{guide.excerpt}</p>
-                    <a href={guide.href} className="featured-guide-link">Read guide</a>
-                  </article>
+                    <span className="featured-guide-link">Read guide</span>
+                  </Link>
                 ))}
               </div>
 
               <div className="featured-guides-cta-row">
-                <a href="/blog" className="btn btn-secondary">Read more AI search guides</a>
+                <a href="/blog" className="btn btn-secondary featured-guides-cta-link">Read more AI search guides</a>
               </div>
             </div>
           </section>
