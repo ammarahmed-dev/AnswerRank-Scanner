@@ -56,12 +56,16 @@ export function getReportCategoryScores(
   if (typeof pagespeed?.score === "number") groups.performance.push(pagespeed.score);
 
   const schemaPresentCheck = checks.find((check) => check.id === "schema_present");
+  const hasExplicitSchemaMissingSignal = checks.some((check) =>
+    (check.id === "schema_present" || /schema markup/i.test(check.label)) &&
+    check.status === "fail"
+  ) || checks.some((check) => /no schema detected/i.test(check.detail));
 
   return (Object.entries(groups) as Array<[ReportCategory, number[]]>).map(([category, values]) => {
     let score = values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0;
 
     // Guardrail: missing base schema should never look "Strong" just because optional schema checks are not applicable.
-    if (category === "schema" && schemaPresentCheck?.status === "fail") {
+    if (category === "schema" && (schemaPresentCheck?.status === "fail" || hasExplicitSchemaMissingSignal)) {
       score = Math.min(score, 45);
     }
 
