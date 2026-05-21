@@ -31,7 +31,7 @@ export function mapReportCategory(id: string): ReportCategory {
   if (id.includes("heading") || id === "h1") return "headings";
   if (id === "https" || id === "robots" || id === "sitemap") return "trust";
   if (id === "core_web_vitals" || id.startsWith("cwv_")) return "performance";
-  if (id === "word_count" || id === "internal_links" || id === "alt_text") return "content";
+  if (id === "word_count" || id === "internal_links" || id === "alt_text" || id === "readability") return "content";
   return "ai-readiness";
 }
 

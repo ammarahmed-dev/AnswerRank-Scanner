@@ -101,6 +101,19 @@ function gradeClass(score: number) {
 
 const mapCategory = mapReportCategory;
 
+function isOptionalSchemaCheck(id: string) {
+  return id === "faq_schema" || id === "article_schema" || id === "structured_density";
+}
+
+function getPassingChecks(report: ScanResult) {
+  const schemaMissing = report.checks.some((check) => check.id === "schema_present" && check.status === "fail");
+  return report.checks.filter((check) => {
+    if (check.status !== "pass") return false;
+    if (schemaMissing && isOptionalSchemaCheck(check.id)) return false;
+    return true;
+  });
+}
+
 function metadataFallbackTitle(url: string) {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -184,6 +197,43 @@ function getNextBestImprovement(report: ScanResult) {
   return topIssue?.detail || "Address the top-priority issue from this audit to improve AI visibility.";
 }
 
+function getDynamicNextSteps(report: ScanResult, issues: ReturnType<typeof getNormalizedIssues>) {
+  const criticalCount = issues.filter((issue) => issue.priority === "critical").length;
+  const schemaFailed = report.checks.some((check) => check.id === "schema_present" && check.status === "fail");
+  const metadataFailed = report.checks.some((check) =>
+    (check.id === "title" || check.id === "meta_desc" || check.id === "og_tags") && check.status === "fail"
+  );
+  const readabilityIssue = issues.find((issue) => issue.id === "readability");
+  const performanceIssue = issues.find((issue) =>
+    mapCategory(issue.id) === "performance" || issue.id === "core_web_vitals" || issue.id.startsWith("cwv_")
+  );
+
+  const step1 = criticalCount > 0
+    ? "Fix critical issues first. Resolve the critical blockers shown in the Priority Action Plan before lower-priority items."
+    : performanceIssue
+      ? "Improve performance first. Focus on Core Web Vitals and page speed issues to improve crawl reliability."
+      : readabilityIssue
+        ? "Improve readability first. Simplify sentence structure and add clearer answer-first copy."
+        : "Fix the top-priority issues first. Start with the highest-impact items in this report.";
+
+  const step2 = schemaFailed || metadataFailed
+    ? "Resolve schema and metadata gaps. Add or fix JSON-LD, title, meta description, and Open Graph fields."
+    : performanceIssue
+      ? "Address Core Web Vitals details. Improve LCP, CLS, and TBT where flagged."
+      : "Implement the highest-impact recommendations from this scan.";
+
+  const step3 = schemaFailed
+    ? "Validate schema updates before publishing. Use validator.schema.org after adding recommended schema types."
+    : "Re-scan after updates. Confirm the fixes are reflected in scores and issue counts.";
+
+  return [
+    step1,
+    step2,
+    step3,
+    "Expand to additional pages. Audit your homepage, key service pages, and high-intent landing pages individually.",
+  ];
+}
+
 function PageHeader({ url, date }: { url: string; date: string }) {
   return (
     <div className="pl-page-header">
@@ -227,7 +277,8 @@ export default function PrintLayout({ report }: Props) {
   const rawIssues = report.checks.filter((check) => check.status !== "pass");
   const criticals = issues.filter((issue) => issue.priority === "critical");
   const highImpact = issues.filter((issue) => issue.priority === "high");
-  const passing = report.checks.filter((check) => check.status === "pass").length;
+  const passingChecks = getPassingChecks(report);
+  const passing = passingChecks.length;
   const highPriority = criticals.length;
   const mediumPriority = highImpact.length;
 
@@ -235,6 +286,7 @@ export default function PrintLayout({ report }: Props) {
   const confidence = getConfidence(report.score);
   const missingContext = getMissingContext(report);
   const nextBestImprovement = getNextBestImprovement(report);
+  const nextSteps = getDynamicNextSteps(report, issues);
 
   const competitors = (report.competitors ?? []).filter((row) => !row.error && typeof row.score === "number");
   const competitor = competitors[0] ?? null;
@@ -324,13 +376,6 @@ export default function PrintLayout({ report }: Props) {
                 <td><span className={`pl-grade ${gradeClass(row.score)}`}>{grade(row.score)}</span></td>
               </tr>
             ))}
-            {report.pagespeed?.score !== undefined && (
-              <tr>
-                <td>Page Speed</td>
-                <td>{report.pagespeed.score}/100</td>
-                <td><span className={`pl-grade ${gradeClass(report.pagespeed.score)}`}>{grade(report.pagespeed.score)}</span></td>
-              </tr>
-            )}
           </tbody>
         </table>
 
@@ -379,7 +424,7 @@ export default function PrintLayout({ report }: Props) {
           <div className="pl-schema-grid">
             <div className="pl-schema-card">
               <strong>Detected schema types</strong>
-              <p>{report.aiInsights.schemaRecommendations.detected.length ? report.aiInsights.schemaRecommendations.detected.join(", ") : "No schema types detected."}</p>
+              <p>{(report.schemaTypes ?? report.aiInsights.schemaRecommendations.detected).length ? (report.schemaTypes ?? report.aiInsights.schemaRecommendations.detected).join(", ") : "No schema types detected."}</p>
             </div>
             <div className="pl-schema-card">
               <strong>Recommended schema types</strong>
@@ -493,9 +538,7 @@ export default function PrintLayout({ report }: Props) {
                   <strong>{passing}</strong>
                 </div>
                 <p className="pl-action-desc">Signals already in good shape.</p>
-                {report.checks
-                  .filter((c) => c.status === "pass")
-                  .map((c) => (
+                {passingChecks.map((c) => (
                     <div key={c.id} className="pl-action-item">
                       <span>✓</span>
                       <div>
@@ -563,10 +606,9 @@ export default function PrintLayout({ report }: Props) {
 
         <h2 className="pl-section-title" style={{ marginTop: "16pt" }}>Next Steps</h2>
         <ol className="pl-rec-list">
-          <li className="pl-rec-item"><strong>Fix critical issues first.</strong> Address Schema and Metadata failures first because they are usually the highest-impact and quickest to resolve.</li>
-          <li className="pl-rec-item"><strong>Implement structured data updates.</strong> Add the recommended schema types and validate them before publishing.</li>
-          <li className="pl-rec-item"><strong>Re-scan in 2-4 weeks.</strong> Measure score improvements and confirm that changes are reflected.</li>
-          <li className="pl-rec-item"><strong>Expand to additional pages.</strong> Audit your homepage, pricing page, and key service pages individually.</li>
+          {nextSteps.map((step, index) => (
+            <li key={index} className="pl-rec-item">{step}</li>
+          ))}
         </ol>
         <div className="pl-footer">
           AEOCheck - www.aeocheck.co - AI Visibility Report - Generated {date}
@@ -575,3 +617,4 @@ export default function PrintLayout({ report }: Props) {
     </div>
   );
 }
+
