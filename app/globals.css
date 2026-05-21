@@ -8476,6 +8476,39 @@ textarea.contact-control {
   color: var(--color-ink-soft);
   line-height: 1.7;
 }
+.vs-card-body {
+  margin: 0;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+.vs-note-card {
+  margin-top: 14px;
+  max-width: 860px;
+  border-color: rgba(0, 240, 180, 0.24);
+  background: rgba(0, 240, 180, 0.05);
+}
+.vs-note-card p {
+  margin: 0;
+  color: var(--color-ink-soft);
+  font-size: 0.93rem;
+  line-height: 1.6;
+}
+.vs-table-takeaway {
+  margin: 0;
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  text-align: left;
+}
+.vs-table-takeaway-card {
+  margin-top: 14px;
+  max-width: 840px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 14px 16px;
+}
 .vs-table-wrap {
   overflow-x: auto;
   border-radius: var(--radius-lg);
@@ -8532,6 +8565,7 @@ textarea.contact-control {
 .vs-wins-card h3 {
   font-size: 1.1rem;
   font-weight: 700;
+  margin-top: 8px;
   margin-bottom: 16px;
   color: var(--color-ink);
 }
@@ -8561,7 +8595,10 @@ textarea.contact-control {
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  padding-bottom: 0;
+  padding: 24px;
+  border: 1px solid rgba(0, 240, 180, 0.24);
+  border-radius: var(--radius-xl);
+  background: rgba(0, 240, 180, 0.05);
 }
 .vs-cta-section {
   padding: 60px 0 60px;
@@ -8575,6 +8612,36 @@ textarea.contact-control {
   color: var(--color-ink-soft);
   line-height: 1.6;
 }
+.vs-cta-support {
+  max-width: 540px;
+  color: var(--color-ink);
+  font-weight: 650;
+}
+.vs-faq-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.vs-faq-item {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px 18px;
+}
+.vs-faq-item strong {
+  display: block;
+  color: var(--color-ink);
+  font-size: 0.96rem;
+  line-height: 1.4;
+}
+.vs-faq-item p {
+  margin-top: 8px;
+  color: var(--color-ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
 @media (max-width: 768px) {
   .vs-verdict-grid {
     grid-template-columns: 1fr;
@@ -8582,6 +8649,9 @@ textarea.contact-control {
   }
   .vs-wins-grid {
     grid-template-columns: 1fr;
+  }
+  .vs-cta-block {
+    padding: 18px;
   }
 }
 
@@ -8863,10 +8933,43 @@ textarea.contact-control {
 
 .blog-post-prose ul,
 .blog-post-prose ol {
-  padding-left: 1.35rem;
+  margin-left: 0;
 }
 
-.blog-post-prose li { margin-top: 0.45em; }
+.blog-post-prose ul {
+  list-style: disc;
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.blog-post-prose ul li {
+  margin-top: 0;
+  color: var(--color-ink-soft);
+  line-height: 1.68;
+}
+
+.blog-post-prose ol {
+  list-style: decimal;
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.blog-post-prose ol li {
+  margin-top: 0;
+  color: var(--color-ink-soft);
+  line-height: 1.68;
+}
+
+.blog-post-prose ol li::marker {
+  color: var(--color-primary);
+  font-weight: 850;
+}
+
+.blog-post-prose ul li::marker {
+  color: var(--color-primary);
+}
 
 .blog-post-prose a {
   color: var(--color-primary);

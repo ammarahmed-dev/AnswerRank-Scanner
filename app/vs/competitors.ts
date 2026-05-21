@@ -18,6 +18,15 @@ export type Competitor = {
     aeocheck: boolean | string;
     competitor: boolean | string;
   }[];
+  quickSummary?: string[];
+  aeocheckBest?: string[];
+  competitorBest?: string[];
+  auditVsMonitoring?: string[];
+  chooseAeocheckIf?: string[];
+  chooseCompetitorIf?: string[];
+  tableTakeaway?: string;
+  ctaSupportLine?: string;
+  faqs?: { q: string; a: string }[];
 };
 
 export const COMPETITORS: Record<string, Competitor> = {
@@ -111,10 +120,72 @@ export const COMPETITORS: Record<string, Competitor> = {
     priceNote: "Subscription only",
     targetUser: "Marketing teams tracking AI visibility",
     metaTitle: "AEOCheck vs Peec AI: Page Audits vs AI Search Analytics",
-    metaDescription: "AEOCheck audits individual pages for AEO readiness from $14. Peec AI tracks AI search visibility at scale. Different tools for different budgets and goals.",
+    metaDescription: "Compare AEOCheck and Peec AI for AEO audits, AI search visibility, ChatGPT visibility, schema checks, client-ready reports, and AI search analytics.",
     heroHeading: "AEOCheck vs Peec AI",
-    heroSubheading: "Actionable per-page AEO audits vs AI search analytics dashboards.",
+    heroSubheading: "Compare fast page-level AEO audits with ongoing AI search analytics, so you can choose the right workflow for your team.",
     verdict: "Peec AI tracks your visibility across AI platforms over time. AEOCheck tells you what's wrong with a specific page and how to fix it today. For freelancers and agencies delivering client work, AEOCheck is the faster, more affordable choice.",
+    quickSummary: [
+      "AEOCheck helps you audit a specific page and find technical, schema, metadata, and content gaps that affect AI search readiness.",
+      "Peec AI helps teams monitor brand visibility across AI platforms over time, including competitor tracking and visibility analytics.",
+      "They solve different jobs. Teams focused on execution often start with audits, then add monitoring once page foundations are stronger.",
+    ],
+    aeocheckBest: [
+      "Free scan with no signup required",
+      "Fast page-level AEO audit for a specific URL",
+      "Schema and metadata checks with clear fixes",
+      "AI readiness score and prioritized action plan",
+      "Client-ready PDF report for handoff and reporting",
+      "Useful for agencies, freelancers, Webflow developers, SEO freelancers, and founders",
+    ],
+    competitorBest: [
+      "Ongoing AI visibility monitoring",
+      "Brand mention tracking across AI platforms",
+      "Competitor visibility tracking over time",
+      "AI search analytics dashboards for trend analysis",
+      "Useful for marketing teams and larger brands",
+    ],
+    auditVsMonitoring: [
+      "A page-level AEO audit checks if a page gives AI systems enough structure and context to understand and cite it.",
+      "AI visibility monitoring checks whether AI systems already mention, rank, or cite your brand over time.",
+      "Many teams use both, but an audit is often the first step because it reveals immediate fixes.",
+    ],
+    chooseAeocheckIf: [
+      "you want immediate fixes",
+      "you need a client-ready report",
+      "you are checking a specific URL",
+      "you want to improve schema, metadata, content clarity, and AI readiness",
+    ],
+    chooseCompetitorIf: [
+      "you need ongoing monitoring",
+      "you care about share of voice across AI platforms",
+      "you manage large brand or competitor tracking workflows",
+    ],
+    tableTakeaway:
+      "The main difference is workflow. AEOCheck is built for quick page-level diagnosis and client-ready fixes. Peec AI is built for ongoing brand visibility tracking across AI search platforms.",
+    ctaSupportLine:
+      "Use AEOCheck first to fix page-level visibility blockers before investing in long-term monitoring.",
+    faqs: [
+      {
+        q: "Is AEOCheck a Peec AI alternative?",
+        a: "Yes. AEOCheck is a practical Peec AI alternative for teams that need fast page-level AEO audits, schema and metadata checks, and client-ready reports.",
+      },
+      {
+        q: "What is the difference between AEOCheck and Peec AI?",
+        a: "AEOCheck focuses on page-level AI search readiness audits and immediate fixes. Peec AI focuses on ongoing AI visibility monitoring and analytics over time.",
+      },
+      {
+        q: "Which tool is better for agencies?",
+        a: "Agencies that need fast URL audits and client deliverables usually benefit from AEOCheck first. Larger brand programs that need long-term tracking may add Peec AI style monitoring.",
+      },
+      {
+        q: "Should I use an AEO scanner before AI visibility monitoring?",
+        a: "In most cases, yes. AEO scanning identifies technical and semantic gaps first, which improves the quality of your later visibility monitoring signals.",
+      },
+      {
+        q: "Does AEOCheck track brand mentions in AI answers?",
+        a: "AEOCheck is primarily a page-level readiness scanner. It is built to diagnose and fix visibility blockers, rather than run large-scale ongoing brand mention tracking dashboards.",
+      },
+    ],
     theyWinAt: [
       "Tracking AI search visibility trends over time",
       "Multi-domain analytics dashboards",

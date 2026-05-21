@@ -1,11 +1,1 @@
-{
-  "version": 4,
-  "routes": {},
-  "dynamicRoutes": {},
-  "notFoundRoutes": [],
-  "preview": {
-    "previewModeId": "2b36f8fb6e7177cde8a2d85ba90a7eee",
-    "previewModeSigningKey": "932f7ad672fc9330c127c3e5359f85b943e5372bb785e52873052c6bb66970f7",
-    "previewModeEncryptionKey": "621016133852390f5167a3e654604aead13f72dc6491adf2a17a5a2b3fdfe129"
-  }
-}
+{"version":4,"routes":{"/blog/best-aeo-tools-ai-search-visibility":{},"/blog/aeo-checklist-webflow-developers":{},"/blog/how-to-check-website-visible-chatgpt-perplexity":{},"/blog/what-is-aeo-answer-engine-optimization":{},"/vs/otterly":{},"/vs/semrush-ai":{},"/vs/peec-ai":{},"/vs/profound":{}},"dynamicRoutes":{"/blog/[slug]":{"dataRoute":null,"dataRouteRegex":null,"fallback":null,"fallbackRevalidate":false,"fallbackSourceRoute":"/blog/[slug]","routeRegex":"^\\/blog\\/([^/]+?)(?:\\/)?$","allowHeader":[]},"/vs/[competitor]":{"dataRoute":null,"dataRouteRegex":null,"fallback":null,"fallbackRevalidate":false,"fallbackSourceRoute":"/vs/[competitor]","routeRegex":"^\\/vs\\/([^/]+?)(?:\\/)?$","allowHeader":[]}},"notFoundRoutes":[],"preview":{"previewModeId":"bd714d8fa081e1a4a7b5ee5dba2ab859","previewModeSigningKey":"fba3834e32480165d05bd3bf371f9a8fc20f399b56eee08256224ceb61355c75","previewModeEncryptionKey":"443cc7ef295c418f41b6a8e59b514970a5304dfd1b69a33310e142cbe80f562a"}}

@@ -86,11 +86,42 @@
 
 .blog-post-prose ul,
 .blog-post-prose ol {
-  padding-left: 1.35rem;
+  margin-left: 0;
 }
 
-.blog-post-prose li {
-  margin-top: 0.45em;
+.blog-post-prose ul {
+  list-style: disc;
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.blog-post-prose ul li {
+  margin-top: 0;
+  color: var(--color-ink-soft);
+  line-height: 1.68;
+}
+
+.blog-post-prose ul li::marker {
+  color: var(--color-primary);
+}
+
+.blog-post-prose ol {
+  list-style: decimal;
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.blog-post-prose ol li {
+  margin-top: 0;
+  color: var(--color-ink-soft);
+  line-height: 1.68;
+}
+
+.blog-post-prose ol li::marker {
+  color: var(--color-primary);
+  font-weight: 850;
 }
 
 .blog-post-prose a {
