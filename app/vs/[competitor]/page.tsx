@@ -67,24 +67,23 @@ export default async function ComparisonPage({
       },
       {
         "@type": "FAQPage",
-        mainEntity: [
+        mainEntity: (data.faqs && data.faqs.length > 0 ? data.faqs : [
           {
-            "@type": "Question",
-            name: `Who should use AEOCheck instead of ${data.name}?`,
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: data.verdict,
-            },
+            q: `Who should use AEOCheck instead of ${data.name}?`,
+            a: data.verdict,
           },
           {
-            "@type": "Question",
-            name: `Does AEOCheck include a free scan when compared to ${data.name}?`,
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: "Yes. AEOCheck includes a free scan with no signup required, and paid access is available through the contact flow.",
-            },
+            q: `Does AEOCheck include a free scan when compared to ${data.name}?`,
+            a: "Yes. AEOCheck includes a free scan with no signup required, and paid access is available through the contact flow.",
           },
-        ],
+        ]).map((faq) => ({
+          "@type": "Question",
+          name: faq.q,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: faq.a,
+          },
+        })),
       },
     ],
   };
