@@ -167,3 +167,20 @@
 {"timestamp":"00:41:04.661","source":"Server","level":"WARN","message":"[browser] \"\\u001b[33mImage with src \\\"/images/blog/Best-AEO-Tools-for-AI-Search-Visibility-in-2026.png\\\" is using quality \\\"80\\\" which is not configured in images.qualities [75]. Please update your config to [75, 80].\\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities\\u001b[39m\" \"\\u001b[2m(file://D:/AnswerRank Scanner/.next/dev/static/chunks/node_modules_next_dist_115brz8._.js:2431:13)\\u001b[22m\""}
 {"timestamp":"00:41:04.670","source":"Browser","level":"WARN","message":"\u001b[33mImage with src \"/images/blog/Best-AEO-Tools-for-AI-Search-Visibility-in-2026.png\" is using quality \"80\" which is not configured in images.qualities [75]. Please update your config to [75, 80].\nRead more: https://nextjs.org/docs/messages/next-image-unconfigured-qualities\u001b[39m"}
 {"timestamp":"00:41:16.345","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}
+{"timestamp":"00:41:52.338","source":"Server","level":"LOG","message":"○ Compiling /api/scan ..."}
+{"timestamp":"00:44:14.505","source":"Server","level":"ERROR","message":"AI insights failed: \"Invalid state: Controller is already closed\""}
+{"timestamp":"00:44:14.601","source":"Server","level":"ERROR","message":"Stream error: TypeError [ERR_INVALID_STATE]: Invalid state: Controller is already closed"}
+{"timestamp":"00:44:33.450","source":"Browser","level":"WARN","message":"Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior=\"smooth\"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior"}
+{"timestamp":"00:44:33.585","source":"Server","level":"WARN","message":"[browser] \"\\u001b[33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior=\\\"smooth\\\"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior\\u001b[39m\" \"\\u001b[2m(file://D:/AnswerRank Scanner/.next/dev/static/chunks/node_modules_next_dist_115brz8._.js:2431:13)\\u001b[22m\""}
+{"timestamp":"00:44:33.586","source":"Browser","level":"WARN","message":"\u001b[33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior=\"smooth\"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior\u001b[39m"}
+{"timestamp":"00:52:27.024","source":"Server","level":"LOG","message":"✓ Compiled in 1528ms"}
+{"timestamp":"00:53:05.265","source":"Server","level":"LOG","message":"✓ Compiled in 1963ms"}
+{"timestamp":"00:55:22.295","source":"Server","level":"LOG","message":"✓ Compiled in 682ms"}
+{"timestamp":"00:56:00.557","source":"Server","level":"LOG","message":"✓ Compiled in 746ms"}
+{"timestamp":"00:56:25.778","source":"Server","level":"LOG","message":"✓ Compiled in 373ms"}
+{"timestamp":"00:56:32.870","source":"Server","level":"LOG","message":"✓ Compiled in 595ms"}
+{"timestamp":"00:57:46.783","source":"Server","level":"LOG","message":"✓ Compiled in 396ms"}
+{"timestamp":"00:59:08.475","source":"Server","level":"LOG","message":"✓ Compiled in 466ms"}
+{"timestamp":"00:59:31.294","source":"Server","level":"LOG","message":"✓ Compiled in 391ms"}
+{"timestamp":"01:01:25.645","source":"Server","level":"LOG","message":"✓ Compiled in 484ms"}
+{"timestamp":"01:26:47.690","source":"Browser","level":"INFO","message":"%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"}

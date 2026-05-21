@@ -294,7 +294,7 @@ function badgeTone(value: Priority | Impact | Effort) {
 
 function getSchemaRecommendation(report: ScanResult, issues: ReportIssue[], host: string): SchemaRecommendation {
   const checks = report.checks;
-  const detectedTypes: string[] = [];
+  const detectedTypes: string[] = Array.from(new Set((report.schemaTypes ?? []).filter(Boolean)));
   const detected = detectedTypes;
 
   const lowerSignals = `${report.url} ${report.metadata?.title ?? ""} ${report.metadata?.metaDescription ?? ""} ${issues.map((i) => i.problem).join(" ")}`.toLowerCase();
@@ -523,7 +523,10 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     : comparisonState.mode === "behind"
       ? `Your competitor is currently ahead by ${Math.abs(comparisonState.gap)} points. Start with the critical fixes below to close the gap.`
       : "Both pages currently have the same visibility score. Start with the highest-priority fixes below to pull ahead.";
-  const detectedSchemaTypes = report.aiInsights?.schemaRecommendations?.detected ?? schemaRecommendation.detected ?? [];
+  const detectedSchemaTypes = report.schemaTypes
+    ?? report.aiInsights?.schemaRecommendations?.detected
+    ?? schemaRecommendation.detected
+    ?? [];
   const missingSchemaTypes = report.aiInsights?.schemaRecommendations?.missing ?? schemaRecommendation.missing ?? [];
   const prioritySchema = report.aiInsights?.schemaRecommendations?.priority ?? missingSchemaTypes[0] ?? null;
   const priorityReasoning = report.aiInsights?.schemaRecommendations?.reasoning ?? schemaRecommendation.reasons.join(" ");

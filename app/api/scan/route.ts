@@ -520,6 +520,7 @@ export async function POST(req: NextRequest) {
           checks,
           aiInsights,
           pagespeed,
+          schemaTypes: deterministicFacts.detectedSchemaTypes,
           metadata: coreResult.metadata,
           competitorUrls: competitorUrls.length ? competitorUrls : undefined,
           competitors,

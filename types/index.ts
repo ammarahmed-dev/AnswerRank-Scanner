@@ -108,7 +108,7 @@ export interface ScanResult {
   checks: CheckResult[];
   aiInsights: AIInsights | null;
   pagespeed: PageSpeedData | null;
+  schemaTypes?: string[];
   metadata?: ScanMetadata;
   scannedAt: string;
 }
-
