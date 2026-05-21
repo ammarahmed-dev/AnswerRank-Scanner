@@ -1067,6 +1067,18 @@ export default function Home({ heroContent }: HomePageClientProps) {
                       <div className="faq-answer">
                         <p>
                           {answer}
+                          {question === "What does the scanner check?" && (
+                            <>
+                              {" "}For schema best practices, see{" "}
+                              <a
+                                href="https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Google Search Central structured data docs
+                              </a>.
+                            </>
+                          )}
                           {question === "Is this the same as a traditional SEO audit?" && (
                             <>
                               {" "}You can <a href="#scanner">run a free scan here</a> to see the difference.
