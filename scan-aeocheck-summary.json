@@ -1,0 +1,53 @@
+{
+  "url": "https://www.aeocheck.co/",
+  "overall": 96,
+  "critical": 0,
+  "high": 2,
+  "passing": 21,
+  "categories": {
+    "schema": 100,
+    "metadata": 100,
+    "content": 84,
+    "performance": 62,
+    "trust": 100,
+    "ai-readiness": 100,
+    "headings": 100
+  },
+  "issueCategory": {
+    "readability": "content",
+    "lcp": "performance",
+    "tbt": "performance",
+    "coreWebVitals": "performance"
+  },
+  "detectedSchema": [
+    "Organization",
+    "WebSite",
+    "FAQPage",
+    "HowTo",
+    "SoftwareApplication",
+    "WebPage",
+    "ItemList",
+    "BreadcrumbList"
+  ],
+  "recommendedSchema": [
+    "Service",
+    "Product"
+  ],
+  "passingSchemaChecks": [
+    "Schema Markup",
+    "FAQ Schema",
+    "HowTo Schema"
+  ],
+  "aiRecommendations": [
+    "Improve content readability by simplifying language and using shorter sentences.",
+    "Fix Core Web Vitals issues to enhance page performance and user experience.",
+    "Consider adding Service schema if services are described on the page.",
+    "Add Product schema if any products are listed or mentioned."
+  ],
+  "nextSteps": [
+    "Improve content readability by simplifying long sentences and making sections easier for AI systems to extract.",
+    "Improve Core Web Vitals, especially Largest Contentful Paint and Total Blocking Time.",
+    "Review optional Service schema if it accurately describes the AEO scanning service.",
+    "Re-scan after updates."
+  ]
+}

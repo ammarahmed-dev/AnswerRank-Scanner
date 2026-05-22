@@ -1,0 +1,16 @@
+
+> aeocheck-scanner@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.100.14:3000
+- Environments: .env.local
+✓ Ready in 613ms
+Creating turbopack project { dir: 'D:\\AnswerRank Scanner', testMode: true }
+- Experiments (use with caution):
+  ✓ optimizeCss
+  · optimizePackageImports
+
+ GET / 200 in 707ms (next.js: 300ms, application-code: 407ms)
+ POST /api/scan 200 in 281ms (next.js: 208ms, application-code: 72ms)

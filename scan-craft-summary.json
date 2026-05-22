@@ -1,0 +1,43 @@
+{
+  "url": "https://www.craftventures.com/",
+  "overall": 51,
+  "critical": 1,
+  "high": 8,
+  "passing": 5,
+  "categories": {
+    "schema": 45,
+    "metadata": 34,
+    "content": 53,
+    "performance": 60,
+    "trust": 75,
+    "ai-readiness": 67,
+    "headings": 80
+  },
+  "issueCategory": {
+    "readability": "content",
+    "lcp": "performance",
+    "tbt": "performance",
+    "coreWebVitals": "performance"
+  },
+  "detectedSchema": [],
+  "recommendedSchema": [
+    "Organization",
+    "WebSite",
+    "WebPage",
+    "BreadcrumbList"
+  ],
+  "passingSchemaChecks": [],
+  "aiRecommendations": [
+    "Add a descriptive page title and meta description to improve search snippet and click-through rate.",
+    "Add an H1 tag that clearly describes the page's purpose, such as 'Craft Ventures - B2B Technology Investing'.",
+    "Implement Organization, WebSite, and WebPage schema to provide basic structured data for search engines.",
+    "Add Open Graph tags with a proper title, description, and image to enhance social sharing.",
+    "Improve content length (currently 197 words) and add more detailed information about the firm, team, and portfolio."
+  ],
+  "nextSteps": [
+    "Fix critical issues first. Resolve the critical blockers shown in the Priority Action Plan before lower-priority items.",
+    "Improve Core Web Vitals, especially Largest Contentful Paint and Total Blocking Time.",
+    "Validate schema updates before publishing. Use validator.schema.org after adding recommended schema types.",
+    "Re-scan after updates."
+  ]
+}

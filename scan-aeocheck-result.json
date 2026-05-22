@@ -1,0 +1,234 @@
+{
+    "url":  "https://www.aeocheck.co/",
+    "score":  96,
+    "checks":  [
+                   {
+                       "id":  "title",
+                       "label":  "Page Title",
+                       "status":  "pass",
+                       "detail":  "Optimal title (55 chars)",
+                       "weight":  8
+                   },
+                   {
+                       "id":  "meta_desc",
+                       "label":  "Meta Description",
+                       "status":  "pass",
+                       "detail":  "Optimal description (139 chars)",
+                       "weight":  8
+                   },
+                   {
+                       "id":  "h1",
+                       "label":  "H1 Tag",
+                       "status":  "pass",
+                       "detail":  "Exactly 1 H1 tag (optimal)",
+                       "weight":  8
+                   },
+                   {
+                       "id":  "heading_structure",
+                       "label":  "Heading Hierarchy",
+                       "status":  "pass",
+                       "detail":  "Good structure with 11 H2 and 23 H3 tags",
+                       "weight":  5
+                   },
+                   {
+                       "id":  "schema_present",
+                       "label":  "Schema Markup",
+                       "status":  "pass",
+                       "detail":  "8 schema types detected",
+                       "weight":  10
+                   },
+                   {
+                       "id":  "faq_schema",
+                       "label":  "FAQ Schema",
+                       "status":  "pass",
+                       "detail":  "FAQPage schema present (excellent for AI)",
+                       "weight":  10
+                   },
+                   {
+                       "id":  "article_schema",
+                       "label":  "Article Schema",
+                       "status":  "pass",
+                       "detail":  "No article/blog structure detected - Article schema not required",
+                       "weight":  7
+                   },
+                   {
+                       "id":  "howto_schema",
+                       "label":  "HowTo Schema",
+                       "status":  "pass",
+                       "detail":  "HowTo schema present",
+                       "weight":  6
+                   },
+                   {
+                       "id":  "og_tags",
+                       "label":  "Open Graph Tags",
+                       "status":  "pass",
+                       "detail":  "og:title and og:description present",
+                       "weight":  6
+                   },
+                   {
+                       "id":  "og_image",
+                       "label":  "OG Image",
+                       "status":  "pass",
+                       "detail":  "og:image present for social sharing",
+                       "weight":  4
+                   },
+                   {
+                       "id":  "https",
+                       "label":  "HTTPS",
+                       "status":  "pass",
+                       "detail":  "HTTPS enabled (secure)",
+                       "weight":  8
+                   },
+                   {
+                       "id":  "robots",
+                       "label":  "Robots.txt",
+                       "status":  "pass",
+                       "detail":  "robots.txt found and accessible",
+                       "weight":  5
+                   },
+                   {
+                       "id":  "ai_bot_access",
+                       "label":  "AI Crawler Access (GEO)",
+                       "status":  "pass",
+                       "detail":  "AI crawlers have access to this page",
+                       "weight":  8
+                   },
+                   {
+                       "id":  "sitemap",
+                       "label":  "Sitemap.xml",
+                       "status":  "pass",
+                       "detail":  "sitemap.xml found and valid",
+                       "weight":  5
+                   },
+                   {
+                       "id":  "llms_txt",
+                       "label":  "llms.txt File (GEO)",
+                       "status":  "pass",
+                       "detail":  "llms.txt found - AI crawlers have structured guidance",
+                       "weight":  9
+                   },
+                   {
+                       "id":  "alt_text",
+                       "label":  "Image Alt Text",
+                       "status":  "pass",
+                       "detail":  "No images found",
+                       "weight":  6
+                   },
+                   {
+                       "id":  "word_count",
+                       "label":  "Content Length",
+                       "status":  "pass",
+                       "detail":  "Good content length (1123 words)",
+                       "weight":  7
+                   },
+                   {
+                       "id":  "internal_links",
+                       "label":  "Internal Links",
+                       "status":  "pass",
+                       "detail":  "Good link structure (43 internal links)",
+                       "weight":  4
+                   },
+                   {
+                       "id":  "structured_density",
+                       "label":  "Schema Density",
+                       "status":  "pass",
+                       "detail":  "Rich schema implementation (8 types)",
+                       "weight":  5
+                   },
+                   {
+                       "id":  "eeat_author",
+                       "label":  "Author / Attribution",
+                       "status":  "pass",
+                       "detail":  "Author attribution detected - good E-E-A-T signal",
+                       "weight":  7
+                   },
+                   {
+                       "id":  "eeat_about",
+                       "label":  "About / Contact Page",
+                       "status":  "pass",
+                       "detail":  "About and Contact pages linked - strong trust signals",
+                       "weight":  8
+                   },
+                   {
+                       "id":  "eeat_freshness",
+                       "label":  "Content Freshness",
+                       "status":  "pass",
+                       "detail":  "Content is fresh (updated 0 months ago)",
+                       "weight":  5
+                   },
+                   {
+                       "id":  "readability",
+                       "label":  "Content Readability",
+                       "status":  "warn",
+                       "detail":  "Moderate readability (Flesch score: 41/100) - simplify sentences for better AI citation",
+                       "weight":  6
+                   },
+                   {
+                       "id":  "core_web_vitals",
+                       "label":  "Core Web Vitals",
+                       "status":  "warn",
+                       "detail":  "CWV needs work: LCP 6.9s (target \u003c2.5s), TBT 378ms (target \u003c200ms) - PageSpeed 63/100",
+                       "weight":  6
+                   }
+               ],
+    "aiInsights":  {
+                       "recommendations":  [
+                                               "Improve content readability by simplifying language and using shorter sentences.",
+                                               "Fix Core Web Vitals issues to enhance page performance and user experience.",
+                                               "Consider adding Service schema if services are described on the page.",
+                                               "Add Product schema if any products are listed or mentioned."
+                                           ],
+                       "quickWin":  "Review optional Service schema if it accurately describes the AEO scanning service.",
+                       "contentGap":  "The page lacks a dedicated section explaining the benefits of AEO for different industries, which could be added as a new H2.",
+                       "summary":  "The page has strong metadata, schema, and trust signals, scoring 96 overall. However, content readability and Core Web Vitals need improvement to fully optimize for AI search visibility.",
+                       "schemaRecommendations":  {
+                                                     "detected":  [
+                                                                      "Organization",
+                                                                      "WebSite",
+                                                                      "FAQPage",
+                                                                      "HowTo",
+                                                                      "SoftwareApplication",
+                                                                      "WebPage",
+                                                                      "ItemList",
+                                                                      "BreadcrumbList"
+                                                                  ],
+                                                     "missing":  [
+                                                                     "Article",
+                                                                     "Service",
+                                                                     "Product"
+                                                                 ],
+                                                     "priority":  "Article",
+                                                     "reasoning":  "The page includes a \u0027How it works\u0027 section with step-by-step instructions (1-4), which is suitable for Article schema. Additionally, the page describes the service of AEO scanning, making Service schema relevant, but Article schema is more directly applicable to the instructional content."
+                                                 }
+                   },
+    "pagespeed":  {
+                      "score":  63,
+                      "lcp":  6.9,
+                      "cls":  0,
+                      "fid":  378
+                  },
+    "schemaTypes":  [
+                        "Organization",
+                        "WebSite",
+                        "FAQPage",
+                        "HowTo",
+                        "SoftwareApplication",
+                        "WebPage",
+                        "ItemList",
+                        "BreadcrumbList"
+                    ],
+    "metadata":  {
+                     "title":  "AEOCheck - Free AEO Scanner \u0026 AI Search Readiness Audit",
+                     "metaDescription":  "Scan any URL for AEO and AI search readiness. Check metadata, schema, headings, content clarity, and visibility for ChatGPT and Perplexity.",
+                     "ogTitle":  "AEOCheck - Free AEO Scanner \u0026 AI Search Readiness Audit",
+                     "ogDescription":  "Scan any URL for AEO and AI search readiness. Check metadata, schema, headings, content clarity, and visibility for ChatGPT and Perplexity.",
+                     "ogImage":  "https://www.aeocheck.co/api/og",
+                     "canonical":  "https://www.aeocheck.co",
+                     "h1":  "Is your site visible to AI search?"
+                 },
+    "scannedAt":  "2026-05-21T18:30:32.502Z",
+    "unlocked":  false,
+    "retest_count":  0,
+    "max_retests":  3,
+    "reportId":  "bde79ee1-afa2-4e20-82f2-e73fd8ef7342"
+}

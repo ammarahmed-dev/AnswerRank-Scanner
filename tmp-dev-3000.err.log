@@ -1,0 +1,13 @@
+⚠ Port 3000 is in use by process 11536, using available port 3001 instead.
+Warning: Custom Cache-Control headers detected for the following routes:
+  - /_next/static/(.*)
+
+Setting a custom Cache-Control header can break Next.js development behavior.
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3000
+- PID:          11536
+- Dir:          D:\AnswerRank Scanner
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 11536 /F to stop it.

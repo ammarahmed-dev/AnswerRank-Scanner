@@ -1,0 +1,40 @@
+event: progress
+data: {"type":"progress","step":1,"label":"Preparing scan","status":"started"}
+
+event: progress
+data: {"type":"progress","step":1,"label":"Preparing scan","status":"complete"}
+
+event: progress
+data: {"type":"progress","step":2,"label":"Fetching website","status":"started"}
+
+event: progress
+data: {"type":"progress","step":2,"label":"Fetching website","status":"complete"}
+
+event: progress
+data: {"type":"progress","step":3,"label":"Reading metadata and schema","status":"started"}
+
+event: progress
+data: {"type":"progress","step":3,"label":"Reading metadata and schema","status":"complete"}
+
+event: progress
+data: {"type":"progress","step":4,"label":"Running PageSpeed check","status":"started"}
+
+event: progress
+data: {"type":"progress","step":4,"label":"Running PageSpeed check","status":"complete"}
+
+event: progress
+data: {"type":"progress","step":5,"label":"Generating AI insights","status":"started"}
+
+event: progress
+data: {"type":"progress","step":5,"label":"Generating AI insights","status":"complete"}
+
+event: progress
+data: {"type":"progress","step":6,"label":"Preparing report","status":"started"}
+
+event: progress
+data: {"type":"progress","step":6,"label":"Preparing report","status":"complete"}
+
+event: result
+data: {"type":"result","result":{"url":"https://www.craftventures.com/","score":51,"checks":[{"id":"title","label":"Page Title","status":"fail","detail":"Title too short (14 chars, target 30-60)","weight":8},{"id":"meta_desc","label":"Meta Description","status":"fail","detail":"No meta description","weight":8},{"id":"h1","label":"H1 Tag","status":"warn","detail":"4 H1 tags found (should be exactly 1)","weight":8},{"id":"heading_structure","label":"Heading Hierarchy","status":"pass","detail":"Good structure with 2 H2 and 1 H3 tags","weight":5},{"id":"schema_present","label":"Schema Markup","status":"fail","detail":"No schema detected (JSON-LD, microdata, or RDFa)","weight":10},{"id":"faq_schema","label":"FAQ Schema","status":"pass","detail":"No FAQ content detected - FAQPage schema not required","weight":10},{"id":"article_schema","label":"Article Schema","status":"pass","detail":"No article/blog structure detected - Article schema not required","weight":7},{"id":"howto_schema","label":"HowTo Schema","status":"pass","detail":"No procedural how-to structure detected - HowTo schema not required","weight":6},{"id":"og_tags","label":"Open Graph Tags","status":"fail","detail":"No Open Graph tags found","weight":6},{"id":"og_image","label":"OG Image","status":"warn","detail":"og:image not set","weight":4},{"id":"https","label":"HTTPS","status":"pass","detail":"HTTPS enabled (secure)","weight":8},{"id":"robots","label":"Robots.txt","status":"pass","detail":"robots.txt found and accessible","weight":5},{"id":"ai_bot_access","label":"AI Crawler Access (GEO)","status":"warn","detail":"robots.txt found but has no explicit AI crawler directives","weight":8},{"id":"sitemap","label":"Sitemap.xml","status":"fail","detail":"sitemap.xml not found","weight":5},{"id":"llms_txt","label":"llms.txt File (GEO)","status":"warn","detail":"No llms.txt file found - add one to guide AI crawlers","weight":9},{"id":"alt_text","label":"Image Alt Text","status":"fail","detail":"2/18 images have alt text (11%)","weight":6},{"id":"word_count","label":"Content Length","status":"warn","detail":"Moderate content (197 words, target 300+)","weight":7},{"id":"internal_links","label":"Internal Links","status":"pass","detail":"Good link structure (19 internal links)","weight":4},{"id":"structured_density","label":"Schema Density","status":"warn","detail":"No schema markup - add: Organization, WebSite","weight":5},{"id":"eeat_author","label":"Author / Attribution","status":"pass","detail":"Author attribution detected - good E-E-A-T signal","weight":7},{"id":"eeat_about","label":"About / Contact Page","status":"warn","detail":"No clearly linked About or Contact page found.","weight":8},{"id":"eeat_freshness","label":"Content Freshness","status":"warn","detail":"No publish or modified date found - add datePublished/dateModified schema","weight":5},{"id":"readability","label":"Content Readability","status":"fail","detail":"Poor readability (Flesch score: 33/100) - content is too complex for AI engines to cite effectively","weight":6},{"id":"core_web_vitals","label":"Core Web Vitals","status":"warn","detail":"CWV needs work: LCP 12.4s (target <2.5s) - PageSpeed 60/100","weight":6}],"aiInsights":{"recommendations":["Add a descriptive page title and meta description to improve search snippet and click-through rate.","Add an H1 tag that clearly describes the page's purpose, such as 'Craft Ventures - B2B Technology Investing'.","Implement Organization, WebSite, and WebPage schema to provide basic structured data for search engines.","Add Open Graph tags with a proper title, description, and image to enhance social sharing.","Improve content length (currently 197 words) and add more detailed information about the firm, team, and portfolio."],"quickWin":"Add Organization schema with name, URL, and logo to immediately improve schema score.","contentGap":"No clearly linked About or Contact page found.","summary":"The page has minimal content and no structured data, severely limiting AI discoverability. Adding Organization, WebSite, and WebPage schema along with richer content will significantly improve visibility.","schemaRecommendations":{"detected":[],"missing":["Organization","WebSite","WebPage","BreadcrumbList"],"priority":"Organization","reasoning":"The page represents a venture capital firm, and Organization schema is the most fundamental type to describe the business, including name, URL, logo, and social profiles. Content about founders and team members supports this."}},"pagespeed":{"score":60,"lcp":12.4,"cls":0,"fid":58},"schemaTypes":[],"metadata":{"title":"Craft Ventures","metaDescription":"","ogTitle":"","ogDescription":"","ogImage":"","canonical":"","h1":"Building generational companies is a craft."},"scannedAt":"2026-05-21T18:28:09.355Z","unlocked":false,"retest_count":0,"max_retests":3,"reportId":"1a6a01da-5f5f-49eb-898a-2a69c4bddc36"}}
+
+
