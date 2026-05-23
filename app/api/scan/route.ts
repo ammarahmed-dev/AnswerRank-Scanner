@@ -7,6 +7,7 @@ import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { checkUsageLimit, getClientKey, getPlanLimit, incrementUsage } from "@/lib/usage-limits";
 import { isMasterAdmin } from "@/lib/admin";
+import { hasSupabaseConfig } from "@/lib/supabase-config";
 import { ScrapedData, ScanResult, AIInsights, CompetitorScanResult, SchemaRecommendation } from "@/types/index";
 
 export const runtime = "nodejs";
@@ -14,6 +15,7 @@ export const runtime = "nodejs";
 // Simple in-memory rate limiter: store { url: timestamp }
 const aiCallCache = new Map<string, number>();
 const AI_COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
+let didLogDevScanLimitBypass = false;
 
 function checkAIRateLimit(url: string): boolean {
   const lastCall = aiCallCache.get(url);
@@ -26,6 +28,19 @@ function checkAIRateLimit(url: string): boolean {
   return false; // Within cooldown
 }
 
+function isDevScanLimitBypassEnabled(): boolean {
+  const enabled = process.env.AEO_DEV_BYPASS_SCAN_LIMIT === "true";
+  const isDev = process.env.NODE_ENV !== "production";
+  const active = enabled && isDev;
+
+  if (active && !didLogDevScanLimitBypass) {
+    console.warn("[scan] Dev bypass active: scan usage limits are disabled for local verification.");
+    didLogDevScanLimitBypass = true;
+  }
+
+  return active;
+}
+
 function errorResponse(error: string, status: number, details?: string) {
   return NextResponse.json({ error, details }, { status });
 }
@@ -34,7 +49,27 @@ function normalizeSchemaType(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-function parseSchemaRecommendations(parsed: Record<string, unknown>, fallbackDetected: string[]): SchemaRecommendation {
+function pageLooksEditorial(scrapedData: ScrapedData): boolean {
+  const url = (scrapedData.url ?? "").toLowerCase();
+  const title = (scrapedData.title ?? "").toLowerCase();
+  const description = (scrapedData.metaDescription ?? "").toLowerCase();
+  const body = (scrapedData.bodyText ?? "").toLowerCase();
+  const headingText = scrapedData.headings.map((h) => h.replace(/^H\d+:\s*/, "")).join(" ").toLowerCase();
+
+  const hasEditorialPath = /\/(blog|news|article|articles|post|posts)(\/|$)/.test(url);
+  const hasEditorialKeyword = /\b(blog|article|news|editorial)\b/.test(`${title} ${description}`);
+  const hasBylineOrDate = Boolean(scrapedData.hasAuthor || scrapedData.hasPersonSchema || scrapedData.datePublished || scrapedData.dateModified);
+  const hasLongFormStructure = (scrapedData.wordCount ?? 0) >= 450 && scrapedData.headings.filter((h) => h.startsWith("H2:")).length >= 3;
+  const hasEditorialBodySignals = /\bby\s+[a-z]+|\bpublished\b|\bupdated\b/.test(`${headingText} ${body.slice(0, 2200)}`);
+
+  return hasEditorialPath || (hasEditorialKeyword && hasBylineOrDate && hasLongFormStructure) || (hasBylineOrDate && hasEditorialBodySignals && hasLongFormStructure);
+}
+
+function parseSchemaRecommendations(
+  parsed: Record<string, unknown>,
+  fallbackDetected: string[],
+  options?: { allowArticleRecommendation?: boolean }
+): SchemaRecommendation {
   const sr = parsed.schemaRecommendations as Record<string, unknown> | undefined;
   // Detected schema must come only from the deterministic HTML scraper.
   const detected = Array.from(new Set(fallbackDetected.filter((s): s is string => typeof s === "string" && s.trim().length > 0)));
@@ -43,12 +78,18 @@ function parseSchemaRecommendations(parsed: Record<string, unknown>, fallbackDet
   const missingRaw = Array.isArray(sr?.missing)
     ? (sr.missing as string[]).filter((s): s is string => typeof s === "string")
     : [];
+  const allowArticleRecommendation = options?.allowArticleRecommendation ?? true;
   const missing = Array.from(new Set(missingRaw)).filter(
     (type) => !detectedSet.has(normalizeSchemaType(type))
-  );
+  ).filter((type) => {
+    if (allowArticleRecommendation) return true;
+    const normalized = normalizeSchemaType(type);
+    return normalized !== "article" && normalized !== "blogposting" && normalized !== "newsarticle";
+  });
 
   const rawPriority = typeof sr?.priority === "string" ? sr.priority : "";
-  const priority = rawPriority && !detectedSet.has(normalizeSchemaType(rawPriority))
+  const rawPriorityAllowed = allowArticleRecommendation || !["article", "blogposting", "newsarticle"].includes(normalizeSchemaType(rawPriority));
+  const priority = rawPriority && !detectedSet.has(normalizeSchemaType(rawPriority)) && rawPriorityAllowed
     ? rawPriority
     : (missing[0] ?? "");
 
@@ -67,6 +108,7 @@ type DeterministicFacts = {
   hasWebSiteSchema: boolean;
   hasWebPageSchema: boolean;
   hasFAQContent: boolean;
+  pageLooksEditorial: boolean;
   aboutPageFound: boolean;
   contactPageFound: boolean;
   aboutContactDetail: string;
@@ -98,6 +140,7 @@ function getDeterministicFacts(scrapedData: ScrapedData, checks: ScanResult["che
     hasWebSiteSchema: hasSchema("WebSite"),
     hasWebPageSchema: hasSchema("WebPage"),
     hasFAQContent: hasFaqLikeContent(scrapedData),
+    pageLooksEditorial: pageLooksEditorial(scrapedData),
     aboutPageFound: Boolean(scrapedData.hasAboutPage),
     contactPageFound: Boolean(scrapedData.hasContactPage),
     aboutContactDetail,
@@ -134,7 +177,8 @@ function groundAIInsights(aiInsights: AIInsights | null, facts: DeterministicFac
         reasoning: aiInsights.schemaRecommendations?.reasoning ?? "",
       },
     },
-    facts.detectedSchemaTypes
+    facts.detectedSchemaTypes,
+    { allowArticleRecommendation: facts.pageLooksEditorial }
   );
 
   const deterministicAboutContact = detailToSnapshotPhrase(facts.aboutContactDetail);
@@ -270,10 +314,6 @@ type ScanRequestBody = { url?: string; includeAI?: boolean; clientId?: string; c
 const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-function hasSupabaseConfig() {
-  return Boolean(supabaseUrl && supabaseServiceRoleKey);
-}
-
 function supabaseHeaders() {
   return {
     apikey: supabaseServiceRoleKey ?? "",
@@ -347,7 +387,10 @@ export async function POST(req: NextRequest) {
   const authContext = await getAuthContext(req);
   const effectivePlan = authContext.user && isMasterAdmin(authContext.user.email) ? "agency" : authContext.plan;
   const usageKey = authContext.user ? `user:${authContext.user.id}` : getClientKey(body.clientId, req);
-  const usage = await checkUsageLimit(usageKey, getPlanLimit(effectivePlan));
+  const bypassScanLimit = isDevScanLimitBypassEnabled();
+  const usage = bypassScanLimit
+    ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER }
+    : await checkUsageLimit(usageKey, getPlanLimit(effectivePlan));
   if (usage && !usage.allowed) {
     return NextResponse.json(
       {
@@ -459,7 +502,18 @@ export async function POST(req: NextRequest) {
 
         const detectedSchemas = scrapedData.schemaTypes;
         const deterministicFacts = getDeterministicFacts(scrapedData, checks);
-        const candidateSchemaTypes = ["Organization", "WebSite", "WebPage", "FAQPage", "Article", "HowTo", "BreadcrumbList", "Service", "Product", "SoftwareApplication"];
+        const candidateSchemaTypes = [
+          "Organization",
+          "WebSite",
+          "WebPage",
+          "FAQPage",
+          ...(deterministicFacts.pageLooksEditorial ? ["Article"] : []),
+          "HowTo",
+          "BreadcrumbList",
+          "Service",
+          "Product",
+          "SoftwareApplication",
+        ];
         const missingSchemas = candidateSchemaTypes.filter(
           (type) => !detectedSchemas.some((detected) => detected.toLowerCase() === type.toLowerCase())
         );
@@ -518,6 +572,7 @@ export async function POST(req: NextRequest) {
           url,
           score,
           checks,
+          categoryScores,
           aiInsights,
           pagespeed,
           schemaTypes: deterministicFacts.detectedSchemaTypes,
@@ -531,7 +586,7 @@ export async function POST(req: NextRequest) {
         };
 
         const savedResult = await saveReportRecord(result, userId);
-        if (usageKey && usage) {
+        if (!bypassScanLimit && usageKey && usage) {
           await incrementUsage(usageKey, usage.count + 1);
         }
 

@@ -106,6 +106,15 @@ export interface ScanResult {
   url: string;
   score: number;
   checks: CheckResult[];
+  categoryScores?: {
+    metadata?: number;
+    headings?: number;
+    schema?: number;
+    contentClarity?: number;
+    aiReadiness?: number;
+    performance?: number;
+    trustSignals?: number;
+  };
   aiInsights: AIInsights | null;
   pagespeed: PageSpeedData | null;
   schemaTypes?: string[];

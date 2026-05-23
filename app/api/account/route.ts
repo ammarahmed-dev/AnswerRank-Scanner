@@ -3,6 +3,7 @@ import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
 import { getPlanLimit, getUsageCount } from "@/lib/usage-limits";
 import { normalizeUserPlan } from "@/lib/access";
+import { hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 
@@ -22,10 +23,6 @@ type RecentReport = {
     unlockedAt?: string;
   };
 };
-
-function hasSupabaseConfig() {
-  return Boolean(supabaseUrl && supabaseServiceRoleKey);
-}
 
 function supabaseHeaders() {
   return {

@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
+import { hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 
 const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const fallbackCount = 570;
-
-function hasSupabaseConfig() {
-  return Boolean(supabaseUrl && supabaseServiceRoleKey);
-}
 
 function supabaseHeaders() {
   return {
