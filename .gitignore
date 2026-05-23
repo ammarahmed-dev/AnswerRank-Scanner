@@ -9,3 +9,7 @@ data/*.sqlite
 data/*.sqlite-*
 
 tsconfig.tsbuildinfo
+
+# Local env files — never commit secrets
+.env.local
+.env.*.local

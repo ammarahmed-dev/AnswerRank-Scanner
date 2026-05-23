@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { getSupabaseServerUrl, hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 import { ScanResult } from "@/types/index";
 
 type ReportRow = {
@@ -15,7 +15,6 @@ type ReportRow = {
 const dbDir = path.join(process.cwd(), "data");
 const dbPath = path.join(dbDir, "aeocheck.sqlite");
 const supabaseUrl = getSupabaseServerUrl();
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 let db: DatabaseSync | null = null;
 
@@ -68,14 +67,6 @@ export function getReport(id: string): ScanResult | null {
   }
 }
 
-function supabaseHeaders() {
-  return {
-    apikey: supabaseServiceRoleKey ?? "",
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-  };
-}
-
 export async function saveReportRecord(result: ScanResult, userId?: string | null): Promise<ScanResult> {
   const id = result.reportId ?? randomUUID();
   const report = { ...result, reportId: id };
@@ -95,7 +86,7 @@ export async function saveReportRecord(result: ScanResult, userId?: string | nul
     const res = await fetch(`${supabaseUrl}/rest/v1/reports`, {
       method: "POST",
       headers: {
-        ...supabaseHeaders(),
+        ...getSupabaseServiceHeaders(),
         Prefer: "resolution=merge-duplicates",
       },
       body: JSON.stringify(payload),
@@ -110,7 +101,7 @@ export async function saveReportRecord(result: ScanResult, userId?: string | nul
         const legacyRes = await fetch(`${supabaseUrl}/rest/v1/reports`, {
           method: "POST",
           headers: {
-            ...supabaseHeaders(),
+            ...getSupabaseServiceHeaders(),
             Prefer: "resolution=merge-duplicates",
           },
           body: JSON.stringify(legacyPayload),
@@ -140,7 +131,7 @@ export async function getReportRecord(id: string): Promise<ScanResult | null> {
     });
 
     const res = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
-      headers: supabaseHeaders(),
+      headers: getSupabaseServiceHeaders(),
       cache: "no-store",
     });
 
@@ -177,7 +168,7 @@ export async function markReportUnlocked(reportId: string, polarOrderId?: string
     });
 
     const readRes = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
-      headers: supabaseHeaders(),
+      headers: getSupabaseServiceHeaders(),
       cache: "no-store",
     });
 
@@ -200,7 +191,7 @@ export async function markReportUnlocked(reportId: string, polarOrderId?: string
         const patchRes = await fetch(`${supabaseUrl}/rest/v1/reports?id=eq.${encodeURIComponent(reportId)}`, {
           method: "PATCH",
           headers: {
-            ...supabaseHeaders(),
+            ...getSupabaseServiceHeaders(),
             Prefer: "return=minimal",
           },
           body: JSON.stringify({

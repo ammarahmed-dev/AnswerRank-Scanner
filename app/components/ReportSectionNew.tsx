@@ -717,6 +717,7 @@ const downloadPdf = async () => {
                   onClick={() => setExpanded(isOpen ? null : issue.id)}
                   type="button"
                   aria-expanded={isOpen}
+                  aria-label={`${isOpen ? "Collapse" : "Expand"} details for ${issue.title}`}
                 >
                   <div className="issue-toggle-left">
                     <span

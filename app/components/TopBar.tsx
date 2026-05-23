@@ -41,7 +41,6 @@ export default function TopBar() {
           tickTimeout = setTimeout(() => {
             liveCount += 1;
             setDisplayCount(liveCount.toLocaleString("en-US"));
-            fetch("/api/stats/increment", { method: "POST" }).catch(() => {});
             scheduleNextTick();
           }, delay);
         };

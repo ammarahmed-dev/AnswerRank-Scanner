@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin as isMasterAdminEmail } from "@/lib/admin";
-import { hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-function supabaseHeaders() {
-  return {
-    apikey: supabaseServiceRoleKey ?? "",
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-  };
-}
+const supabaseUrl = getSupabaseServerUrl();
+const DEFAULT_MAX_RETESTS = 3;
 
 type ReportRow = {
   id: string;
@@ -38,7 +30,7 @@ export async function POST(
 
   const auth = await getAuthContext(req);
   if (!auth.user) {
-    return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { id: reportId } = await context.params;
@@ -54,7 +46,7 @@ export async function POST(
   });
 
   const res = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
-    headers: supabaseHeaders(),
+    headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
 
@@ -71,7 +63,7 @@ export async function POST(
   const admin = isMasterAdminEmail(auth.user.email);
   const proMonthly = auth.plan === "pro" || auth.plan === "agency";
   const retestCount = report.retest_count ?? 0;
-  const maxRetests = report.max_retests ?? 3;
+  const maxRetests = report.max_retests ?? DEFAULT_MAX_RETESTS;
   const isUnlocked = Boolean(report.result?.unlocked || report.result?.unlockedAt);
 
   if (!admin && !proMonthly) {
@@ -82,7 +74,7 @@ export async function POST(
       return NextResponse.json(
         {
           error: "Retest limit reached",
-          message: "You have used all 3 retests for this report. Upgrade to Pro Monthly for unlimited retests.",
+          message: `You have used all ${DEFAULT_MAX_RETESTS} retests for this report. Upgrade to Pro Monthly for unlimited retests.`,
           retestCount,
           maxRetests,
         },
@@ -94,17 +86,22 @@ export async function POST(
   const nextRetestCount = admin || proMonthly ? retestCount : retestCount + 1;
 
   if (!admin && !proMonthly) {
-    await fetch(`${supabaseUrl}/rest/v1/reports?id=eq.${encodeURIComponent(reportId)}`, {
+    const patchRes = await fetch(`${supabaseUrl}/rest/v1/reports?id=eq.${encodeURIComponent(reportId)}`, {
       method: "PATCH",
       headers: {
-        ...supabaseHeaders(),
+        ...getSupabaseServiceHeaders(),
         Prefer: "return=minimal",
       },
       body: JSON.stringify({
         retest_count: nextRetestCount,
         updated_at: new Date().toISOString(),
       }),
-    }).catch(() => null);
+    });
+    if (!patchRes.ok) {
+      const details = await patchRes.text().catch(() => "");
+      console.error("Retest count update failed:", details);
+      return NextResponse.json({ error: "Could not record retest. Please try again." }, { status: 500 });
+    }
   }
 
   return NextResponse.json({

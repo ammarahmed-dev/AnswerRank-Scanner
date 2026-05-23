@@ -201,7 +201,7 @@ async function callGemini(prompt: string, apiKey: string): Promise<string | null
 }
 
 async function callOpenAI(prompt: string, apiKey: string): Promise<string | null> {
-  const model = process.env.OPENAI_MODEL || "gpt-5-nano";
+  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
   const maxTokens = Number(process.env.AI_MAX_OUTPUT_TOKENS ?? 600);
   const timeoutMs = Number(process.env.AI_PROVIDER_TIMEOUT_MS ?? 5000);
 
@@ -228,7 +228,7 @@ async function callOpenAI(prompt: string, apiKey: string): Promise<string | null
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     console.error(`OpenAI error details:`, errorData);
-    throw new Error(`OpenAI API error: ${response.status} ${JSON.stringify(errorData)}`);
+    throw new Error(`OpenAI API error: ${response.status}`);
   }
 
   const data = await response.json();

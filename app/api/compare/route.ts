@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { runScanCore } from "@/lib/scan-core";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
+import { getAuthContext } from "@/lib/auth-server";
 import type { CheckResult } from "@/types/index";
 
 export const runtime = "nodejs";
@@ -68,6 +69,11 @@ function domainFromUrl(rawUrl: string): string {
 }
 
 export async function POST(req: Request) {
+  const auth = await getAuthContext(req);
+  if (!auth.user) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   const body = (await req.json().catch(() => ({}))) as CompareBody;
   const candidatePrimary = typeof body.primaryUrl === "string" ? body.primaryUrl.trim() : "";
   const candidateCompetitor = typeof body.competitorUrl === "string" ? body.competitorUrl.trim() : "";

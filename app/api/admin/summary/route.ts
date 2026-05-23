@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
-import { hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = getSupabaseServerUrl();
 
 type RecentReport = {
   id: string;
@@ -15,15 +14,6 @@ type RecentReport = {
   created_at: string;
   user_id: string | null;
 };
-
-function supabaseHeaders(extra?: HeadersInit) {
-  return {
-    apikey: supabaseServiceRoleKey ?? "",
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-    ...extra,
-  };
-}
 
 function todayKey() {
   const now = new Date();
@@ -36,7 +26,7 @@ async function getCount(table: string, query = "") {
   if (!hasSupabaseConfig()) return 0;
   const url = `${supabaseUrl}/rest/v1/${table}?select=id${query}`;
   const res = await fetch(url, {
-    headers: supabaseHeaders({ Prefer: "count=exact" }),
+    headers: { ...getSupabaseServiceHeaders(), Prefer: "count=exact" },
     cache: "no-store",
   });
 
@@ -55,7 +45,7 @@ async function getRecentReports() {
   });
 
   const res = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
-    headers: supabaseHeaders(),
+    headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
 
@@ -72,7 +62,7 @@ async function getTodayScans() {
   });
 
   const res = await fetch(`${supabaseUrl}/rest/v1/scan_usage?${params.toString()}`, {
-    headers: supabaseHeaders(),
+    headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
 

@@ -30,18 +30,12 @@ const ALLOWED_SUBJECTS: SubjectOption[] = [
 
 const HOUR_MS = 60 * 60 * 1000;
 const MAX_PER_HOUR = 3;
+const IP_RATE_LIMIT_MAX_ENTRIES = 5_000;
 const ipRateLimitStore = new Map<string, number[]>();
 
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+import { getSupabaseServerUrl, getSupabaseServiceHeaders } from "@/lib/supabase-config";
 
-function supabaseHeaders() {
-  return {
-    apikey: supabaseServiceRoleKey ?? "",
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-  };
-}
+const supabaseUrl = getSupabaseServerUrl();
 
 function getClientIp(req: NextRequest): string {
   const forwardedFor = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
@@ -51,6 +45,11 @@ function getClientIp(req: NextRequest): string {
 
 function checkRateLimit(ip: string): { ok: boolean; retryAfter?: number } {
   const now = Date.now();
+  // Evict oldest entry when the store grows too large to prevent unbounded memory growth.
+  if (ipRateLimitStore.size >= IP_RATE_LIMIT_MAX_ENTRIES) {
+    const firstKey = ipRateLimitStore.keys().next().value;
+    if (firstKey !== undefined) ipRateLimitStore.delete(firstKey);
+  }
   const recent = (ipRateLimitStore.get(ip) ?? []).filter((ts) => now - ts < HOUR_MS);
   if (recent.length >= MAX_PER_HOUR) {
     const oldest = recent[0];
@@ -150,7 +149,7 @@ export async function POST(req: NextRequest) {
   const insertRes = await fetch(`${supabaseUrl}/rest/v1/contact_messages`, {
     method: "POST",
     headers: {
-      ...supabaseHeaders(),
+      ...getSupabaseServiceHeaders(),
       Prefer: "return=minimal",
     },
     body: JSON.stringify({
@@ -164,8 +163,9 @@ export async function POST(req: NextRequest) {
 
   if (!insertRes.ok) {
     const details = await insertRes.text().catch(() => "");
+    console.error("Contact form Supabase insert failed:", details);
     return NextResponse.json(
-      { error: "Could not save contact message.", details },
+      { error: "Could not save contact message. Please try again." },
       { status: 500 }
     );
   }

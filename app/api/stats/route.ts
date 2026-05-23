@@ -1,20 +1,15 @@
 import { NextResponse } from "next/server";
-import { hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = getSupabaseServerUrl();
 const baseCount = 500;
 const fallbackCount = 570;
 
-function supabaseHeaders() {
-  return {
-    apikey: supabaseServiceRoleKey ?? "",
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-  };
-}
+// Throttle the display-count write to at most once per 60 s across concurrent requests.
+let lastDisplayCountWrite = 0;
+const DISPLAY_COUNT_WRITE_INTERVAL_MS = 60_000;
 
 export async function GET() {
   if (!hasSupabaseConfig()) {
@@ -24,7 +19,7 @@ export async function GET() {
   try {
     const countRes = await fetch(`${supabaseUrl}/rest/v1/reports?select=id`, {
       headers: {
-        ...supabaseHeaders(),
+        ...getSupabaseServiceHeaders(),
         Prefer: "count=exact",
         "Range-Unit": "items",
         Range: "0-0",
@@ -37,7 +32,7 @@ export async function GET() {
 
     const statsRes = await fetch(
       `${supabaseUrl}/rest/v1/app_stats?key=eq.scan_display_count&select=value`,
-      { headers: supabaseHeaders(), cache: "no-store" }
+      { headers: getSupabaseServiceHeaders(), cache: "no-store" }
     );
     const statsData = (await statsRes.json()) as Array<{ value?: number }>;
     const displayCount = statsData?.[0]?.value ?? baseCount;
@@ -46,11 +41,13 @@ export async function GET() {
     const finalCount = Math.max(realTotal, displayCount);
     const rounded = Math.floor(finalCount / 10) * 10;
 
-    if (rounded > displayCount) {
+    const now = Date.now();
+    if (rounded > displayCount && now - lastDisplayCountWrite > DISPLAY_COUNT_WRITE_INTERVAL_MS) {
+      lastDisplayCountWrite = now;
       await fetch(`${supabaseUrl}/rest/v1/app_stats?key=eq.scan_display_count`, {
         method: "PATCH",
         headers: {
-          ...supabaseHeaders(),
+          ...getSupabaseServiceHeaders(),
           Prefer: "return=minimal",
         },
         body: JSON.stringify({

@@ -1,8 +1,7 @@
 import { createHash } from "node:crypto";
-import { getSupabaseServerUrl, hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 const supabaseUrl = getSupabaseServerUrl();
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const GUEST_MONTHLY_SCAN_LIMIT = Number(process.env.GUEST_MONTHLY_SCAN_LIMIT ?? 1);
 export const FREE_MONTHLY_SCAN_LIMIT = Number(process.env.FREE_MONTHLY_SCAN_LIMIT ?? 3);
@@ -15,14 +14,6 @@ type UsageResult = {
   limit: number;
 };
 
-function supabaseHeaders() {
-  return {
-    apikey: supabaseServiceRoleKey ?? "",
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-  };
-}
-
 function currentMonthUsageDateKey() {
   const now = new Date();
   const year = now.getUTCFullYear();
@@ -33,8 +24,10 @@ function currentMonthUsageDateKey() {
 export function getClientKey(rawClientId: string | undefined, req: Request) {
   const forwardedFor = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   const userAgent = req.headers.get("user-agent") ?? "";
-  const fallback = `${forwardedFor ?? "unknown-ip"}:${userAgent}`;
-  const source = rawClientId?.trim() || fallback;
+  const ip = forwardedFor ?? "unknown-ip";
+  // IP+UA is the primary key — prevents trivial UUID rotation bypass of guest limits.
+  // Fall back to client-supplied ID only when the IP is undetectable (e.g. local dev).
+  const source = ip !== "unknown-ip" ? `${ip}:${userAgent}` : (rawClientId?.trim() || `unknown:${userAgent}`);
   return createHash("sha256").update(source).digest("hex");
 }
 
@@ -56,7 +49,7 @@ async function readUsageCount(clientKey: string) {
   });
 
   const readRes = await fetch(`${supabaseUrl}/rest/v1/scan_usage?${params.toString()}`, {
-    headers: supabaseHeaders(),
+    headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
 
@@ -101,7 +94,7 @@ export async function incrementUsage(clientKey: string, nextCountHint?: number):
   const writeRes = await fetch(`${supabaseUrl}/rest/v1/scan_usage`, {
     method: "POST",
     headers: {
-      ...supabaseHeaders(),
+      ...getSupabaseServiceHeaders(),
       Prefer: "resolution=merge-duplicates",
     },
     body: JSON.stringify({

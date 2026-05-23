@@ -1,4 +1,4 @@
-import { getSupabaseServerUrl, hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 type AuthUser = {
   id: string;
@@ -11,15 +11,6 @@ export type AuthContext = {
 };
 
 const supabaseUrl = getSupabaseServerUrl();
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-function supabaseHeaders() {
-  return {
-    apikey: supabaseServiceRoleKey ?? "",
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-  };
-}
 
 function normalizePlan(value: unknown): AuthContext["plan"] {
   if (value === "pro" || value === "agency") return value;
@@ -35,7 +26,7 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
 
   const userRes = await fetch(`${supabaseUrl}/auth/v1/user`, {
     headers: {
-      apikey: supabaseServiceRoleKey ?? "",
+      apikey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
       Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
@@ -51,7 +42,7 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
   await fetch(`${supabaseUrl}/rest/v1/profiles`, {
     method: "POST",
     headers: {
-      ...supabaseHeaders(),
+      ...getSupabaseServiceHeaders(),
       Prefer: "resolution=ignore-duplicates",
     },
     body: JSON.stringify({
@@ -68,7 +59,7 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
   });
 
   const profileRes = await fetch(`${supabaseUrl}/rest/v1/profiles?${params.toString()}`, {
-    headers: supabaseHeaders(),
+    headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
 

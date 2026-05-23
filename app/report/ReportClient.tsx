@@ -78,7 +78,6 @@ export default function ReportClient() {
           }
 
           sessionStorage.setItem(`aeocheck_report:${reportId}`, JSON.stringify(data));
-          sessionStorage.setItem(`aeocheck_report:${data.url}`, JSON.stringify(data));
           const cachedCompetitors = sessionStorage.getItem(`aeocheck_competitors:${reportId}`);
           if (cachedCompetitors) {
             data.competitorUrls = JSON.parse(cachedCompetitors) as string[];

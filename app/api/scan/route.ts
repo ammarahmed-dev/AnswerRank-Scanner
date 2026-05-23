@@ -7,14 +7,14 @@ import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { checkUsageLimit, getClientKey, getPlanLimit, incrementUsage } from "@/lib/usage-limits";
 import { isMasterAdmin } from "@/lib/admin";
-import { getSupabaseServerUrl, hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 import { ScrapedData, ScanResult, AIInsights, CompetitorScanResult, SchemaRecommendation } from "@/types/index";
 
 export const runtime = "nodejs";
 
-// Simple in-memory rate limiter: store { url: timestamp }
 const aiCallCache = new Map<string, number>();
 const AI_COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
+const AI_CACHE_MAX_SIZE = 500;
 let didLogDevScanLimitBypass = false;
 
 function checkAIRateLimit(url: string): boolean {
@@ -22,10 +22,15 @@ function checkAIRateLimit(url: string): boolean {
   const now = Date.now();
 
   if (!lastCall || now - lastCall > AI_COOLDOWN_MS) {
+    if (aiCallCache.size >= AI_CACHE_MAX_SIZE) {
+      // FIFO eviction: remove the oldest entry
+      const oldestKey = aiCallCache.keys().next().value;
+      if (oldestKey !== undefined) aiCallCache.delete(oldestKey);
+    }
     aiCallCache.set(url, now);
-    return true; // Allow AI call
+    return true;
   }
-  return false; // Within cooldown
+  return false;
 }
 
 function isDevScanLimitBypassEnabled(): boolean {
@@ -312,15 +317,6 @@ type ScanEvent = ProgressEvent | ResultEvent | ErrorEvent;
 type ScanRequestBody = { url?: string; includeAI?: boolean; clientId?: string; competitorUrls?: string[] | string; retestOfReportId?: string };
 
 const supabaseUrl = getSupabaseServerUrl();
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-function supabaseHeaders() {
-  return {
-    apikey: supabaseServiceRoleKey ?? "",
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-  };
-}
 
 async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
   let normalizedUrl = rawUrl;
@@ -424,7 +420,7 @@ export async function POST(req: NextRequest) {
     });
     try {
       const seedRes = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
-        headers: supabaseHeaders(),
+        headers: getSupabaseServiceHeaders(),
         cache: "no-store",
       });
       if (seedRes.ok) {
@@ -449,6 +445,9 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
+    cancel() {
+      console.info("[scan] SSE client disconnected before stream completed");
+    },
     async start(controller) {
       function emit(event: ScanEvent) {
         controller.enqueue(encoder.encode(`event: ${event.type}\n`));
@@ -563,8 +562,9 @@ export async function POST(req: NextRequest) {
 
         let competitors: CompetitorScanResult[] | undefined;
         if (competitorUrls.length) {
-          emitProgress(6, "Scanning competitor", "started");
-          competitors = [await scanCompetitor(competitorUrls[0])];
+          const label = competitorUrls.length === 1 ? "Scanning competitor" : "Scanning competitors";
+          emitProgress(6, label, "started");
+          competitors = await Promise.all(competitorUrls.map(scanCompetitor));
         }
 
         emitProgress(6, "Preparing report", "started");

@@ -9,8 +9,7 @@ export interface PageSpeedResult {
 export async function getPageSpeedScore(url: string): Promise<PageSpeedResult> {
   const apiKey =
     process.env.GOOGLE_PAGESPEED_API_KEY ||
-    process.env.PAGESPEED_API_KEY ||
-    process.env.NEXT_PUBLIC_GOOGLE_PAGESPEED_API_KEY;
+    process.env.PAGESPEED_API_KEY;
   if (!apiKey) return { score: null, error: "No Google PageSpeed API key configured." };
 
   const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&key=${apiKey}&strategy=mobile&category=performance`;

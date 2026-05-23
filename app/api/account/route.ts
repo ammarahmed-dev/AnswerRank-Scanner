@@ -3,12 +3,11 @@ import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
 import { getPlanLimit, getUsageCount } from "@/lib/usage-limits";
 import { normalizeUserPlan } from "@/lib/access";
-import { getSupabaseServerUrl, hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 
 const supabaseUrl = getSupabaseServerUrl();
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 type RecentReport = {
   id: string;
@@ -24,14 +23,6 @@ type RecentReport = {
   };
 };
 
-function supabaseHeaders() {
-  return {
-    apikey: supabaseServiceRoleKey ?? "",
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-  };
-}
-
 async function getRecentReports(userId: string) {
   if (!hasSupabaseConfig()) return [] as RecentReport[];
 
@@ -43,7 +34,7 @@ async function getRecentReports(userId: string) {
   });
 
   const res = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
-    headers: supabaseHeaders(),
+    headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
 

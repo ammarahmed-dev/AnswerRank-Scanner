@@ -10,16 +10,25 @@ export async function POST(req: NextRequest) {
       returnTo?: string;
     };
 
+    const ALLOWED_CHECKOUT_TYPES = ["full_report", "pro_plan"] as const;
+    if (!ALLOWED_CHECKOUT_TYPES.includes(body.checkoutType)) {
+      return NextResponse.json({ error: "Invalid checkout type" }, { status: 400 });
+    }
+
     const authContext = await getAuthContext(req);
     if (!authContext.user) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 400 });
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
     const userEmail = authContext.user?.email;
 
-    const productId = body.checkoutType === "full_report"
-      ? process.env.POLAR_FULL_REPORT_PRODUCT_ID!
-      : process.env.POLAR_PRO_MONTHLY_PRODUCT_ID!;
+    const fullReportProductId = process.env.POLAR_FULL_REPORT_PRODUCT_ID;
+    const proMonthlyProductId = process.env.POLAR_PRO_MONTHLY_PRODUCT_ID;
+    if (!fullReportProductId || !proMonthlyProductId) {
+      console.error("[checkout] Polar product ID env vars are not configured");
+      return NextResponse.json({ error: "Checkout unavailable" }, { status: 503 });
+    }
+    const productId = body.checkoutType === "full_report" ? fullReportProductId : proMonthlyProductId;
 
     const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://aeocheck.co").replace(/\/$/, "");
     const successUrl = body.checkoutType === "full_report" && body.reportId
@@ -46,12 +55,6 @@ export async function POST(req: NextRequest) {
           metadata,
         };
 
-    console.log("Polar request:", {
-      url: `${POLAR_BASE_URL}/v1/checkouts/`,
-      productId,
-      successUrl,
-    });
-
     const response = await fetch(`${POLAR_BASE_URL}/v1/checkouts/`, {
       method: "POST",
       headers: {
@@ -64,8 +67,9 @@ export async function POST(req: NextRequest) {
 
     const responseText = await response.text();
     if (!response.ok) {
+      console.error("[checkout] Polar API error:", response.status, responseText);
       return NextResponse.json(
-        { error: "Failed to create checkout", detail: responseText },
+        { error: "Failed to create checkout" },
         { status: 500 }
       );
     }
@@ -77,7 +81,7 @@ export async function POST(req: NextRequest) {
     const err = error as { message?: string };
     console.error("Checkout error:", err?.message, error);
     return NextResponse.json(
-      { error: "Failed to create checkout", detail: err?.message },
+      { error: "Failed to create checkout" },
       { status: 500 }
     );
   }

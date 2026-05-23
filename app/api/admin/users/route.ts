@@ -6,8 +6,9 @@ import { hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+import { getSupabaseServerUrl, getSupabaseServiceHeaders } from "@/lib/supabase-config";
+
+const supabaseUrl = getSupabaseServerUrl();
 
 type ProfileRow = {
   id: string;
@@ -16,14 +17,6 @@ type ProfileRow = {
   created_at: string;
 };
 
-function supabaseHeaders() {
-  return {
-    apikey: supabaseServiceRoleKey ?? "",
-    Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    "Content-Type": "application/json",
-  };
-}
-
 function todayKey() {
   const now = new Date();
   const year = now.getUTCFullYear();
@@ -31,27 +24,30 @@ function todayKey() {
   return `${year}-${month}-01`;
 }
 
-async function getProfiles() {
+async function getProfiles(limit: number, offset: number) {
   const params = new URLSearchParams({
     select: "id,email,plan,created_at",
     order: "created_at.desc",
-    limit: "500",
+    limit: String(limit),
+    offset: String(offset),
   });
   const res = await fetch(`${supabaseUrl}/rest/v1/profiles?${params.toString()}`, {
-    headers: supabaseHeaders(),
+    headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
   if (!res.ok) return [] as ProfileRow[];
   return (await res.json()) as ProfileRow[];
 }
 
-async function getReports() {
+async function getReports(userIds: string[]) {
+  if (!userIds.length) return [] as Array<{ user_id: string | null; created_at: string }>;
   const params = new URLSearchParams({
     select: "user_id,created_at",
+    user_id: `in.(${userIds.join(",")})`,
     limit: "5000",
   });
   const res = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
-    headers: supabaseHeaders(),
+    headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
   if (!res.ok) return [] as Array<{ user_id: string | null; created_at: string }>;
@@ -66,21 +62,27 @@ async function getUsageToday() {
     limit: "5000",
   });
   const res = await fetch(`${supabaseUrl}/rest/v1/scan_usage?${params.toString()}`, {
-    headers: supabaseHeaders(),
+    headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
   if (!res.ok) return [] as Array<{ client_key: string; scan_count: number }>;
   return (await res.json()) as Array<{ client_key: string; scan_count: number }>;
 }
 
-async function getAuthUsersMap() {
+async function getAuthUsersMap(userIds: string[]) {
+  if (!userIds.length) return new Map<string, string | null>();
   const res = await fetch(`${supabaseUrl}/auth/v1/admin/users?page=1&per_page=1000`, {
-    headers: supabaseHeaders(),
+    headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
   if (!res.ok) return new Map<string, string | null>();
   const data = (await res.json()) as { users?: Array<{ id: string; last_sign_in_at?: string | null }> };
-  return new Map((data.users ?? []).map((u) => [u.id, u.last_sign_in_at ?? null]));
+  const idSet = new Set(userIds);
+  return new Map(
+    (data.users ?? [])
+      .filter((u) => idSet.has(u.id))
+      .map((u) => [u.id, u.last_sign_in_at ?? null])
+  );
 }
 
 export async function GET(req: Request) {
@@ -89,11 +91,17 @@ export async function GET(req: Request) {
   if (!isMasterAdmin(auth.user.email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   if (!hasSupabaseConfig()) return NextResponse.json({ users: [] });
 
-  const [profiles, reports, usage, authUsers] = await Promise.all([
-    getProfiles(),
-    getReports(),
+  const url = new URL(req.url);
+  const limit = Math.min(Number(url.searchParams.get("limit") || "100"), 200);
+  const offset = Math.max(0, Number(url.searchParams.get("offset") || "0"));
+
+  const profiles = await getProfiles(limit, offset);
+  const userIds = profiles.map((p) => p.id).filter(Boolean);
+
+  const [reports, usage, authUsers] = await Promise.all([
+    getReports(userIds),
     getUsageToday(),
-    getAuthUsersMap(),
+    getAuthUsersMap(userIds),
   ]);
 
   const reportTotals = new Map<string, { total: number; lastScan: string | null }>();
@@ -132,6 +140,6 @@ export async function GET(req: Request) {
     };
   });
 
-  return NextResponse.json({ users });
+  return NextResponse.json({ users, pagination: { limit, offset, count: users.length } });
 }
 

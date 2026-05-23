@@ -3,6 +3,7 @@ import { normalizeUrl, validateUrl, fetchHtml, parseHtml } from "@/lib/scrape";
 import { calculateScores, getFallbackAnalysis } from "@/lib/score";
 import { getPageSpeedScore } from "@/lib/pagespeed";
 import { analyzeWithAI } from "@/lib/openai";
+import { getAuthContext } from "@/lib/auth-server";
 import { AnalysisReport } from "@/types/report";
 
 function errorResponse(error: string, status: number, details?: string) {
@@ -10,6 +11,11 @@ function errorResponse(error: string, status: number, details?: string) {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await getAuthContext(req);
+  if (!auth.user) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
   try {
     const body = (await req.json()) as { url?: string };
     const rawUrl = body?.url;
