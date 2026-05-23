@@ -266,7 +266,22 @@ export default function PrintLayout({ report }: Props) {
   const date = new Date(report.scannedAt).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric",
   });
-  const scores = getReportCategoryScores(report.checks, report.pagespeed)
+  const scoreRows = report.categoryScores
+    ? [
+      { category: "schema" as Category, score: report.categoryScores.schema },
+      { category: "metadata" as Category, score: report.categoryScores.metadata },
+      { category: "content" as Category, score: report.categoryScores.contentClarity },
+      { category: "performance" as Category, score: report.categoryScores.performance },
+      { category: "trust" as Category, score: report.categoryScores.trustSignals },
+      { category: "ai-readiness" as Category, score: report.categoryScores.aiReadiness },
+      { category: "headings" as Category, score: report.categoryScores.headings },
+    ].filter((item) => typeof item.score === "number").map((item) => ({
+      category: item.category,
+      score: item.score as number,
+    }))
+    : getReportCategoryScores(report.checks, report.pagespeed);
+
+  const scores = scoreRows
     .filter((item) => item.score > 0)
     .map((item) => ({
       category: item.category,

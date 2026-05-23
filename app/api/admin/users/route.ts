@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
 import { getPlanLimit } from "@/lib/usage-limits";
+import { hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 
@@ -14,10 +15,6 @@ type ProfileRow = {
   plan: "free" | "pro" | "agency";
   created_at: string;
 };
-
-function hasSupabaseConfig() {
-  return Boolean(supabaseUrl && supabaseServiceRoleKey);
-}
 
 function supabaseHeaders() {
   return {

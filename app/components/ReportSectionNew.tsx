@@ -463,12 +463,34 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   ];
 
   const categoryScores = useMemo(
-    () => getReportCategoryScores(checks, report.pagespeed).map((item) => ({
-      category: item.category,
-      score: item.score,
-      status: statusLabel(item.score),
-    })),
-    [checks, report.pagespeed]
+    () => {
+      if (report.categoryScores) {
+        const persisted = [
+          { category: "schema" as Category, score: report.categoryScores.schema },
+          { category: "metadata" as Category, score: report.categoryScores.metadata },
+          { category: "content" as Category, score: report.categoryScores.contentClarity },
+          { category: "performance" as Category, score: report.categoryScores.performance },
+          { category: "trust" as Category, score: report.categoryScores.trustSignals },
+          { category: "ai-readiness" as Category, score: report.categoryScores.aiReadiness },
+          { category: "headings" as Category, score: report.categoryScores.headings },
+        ].filter((item) => typeof item.score === "number");
+
+        if (persisted.length > 0) {
+          return persisted.map((item) => ({
+            category: item.category,
+            score: item.score as number,
+            status: statusLabel(item.score as number),
+          }));
+        }
+      }
+
+      return getReportCategoryScores(checks, report.pagespeed).map((item) => ({
+        category: item.category,
+        score: item.score,
+        status: statusLabel(item.score),
+      }));
+    },
+    [checks, report.pagespeed, report.categoryScores]
   );
 
   const schemaRecommendation = useMemo(() => getSchemaRecommendation(report, issues, host), [report, issues, host]);

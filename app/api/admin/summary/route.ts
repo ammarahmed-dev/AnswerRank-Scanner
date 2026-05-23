@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
+import { hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 
@@ -14,10 +15,6 @@ type RecentReport = {
   created_at: string;
   user_id: string | null;
 };
-
-function hasSupabaseConfig() {
-  return Boolean(supabaseUrl && supabaseServiceRoleKey);
-}
 
 function supabaseHeaders(extra?: HeadersInit) {
   return {

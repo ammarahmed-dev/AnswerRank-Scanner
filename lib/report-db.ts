@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { hasSupabaseConfig } from "@/lib/supabase-config";
 import { ScanResult } from "@/types/index";
 
 type ReportRow = {
@@ -65,10 +66,6 @@ export function getReport(id: string): ScanResult | null {
   } catch {
     return null;
   }
-}
-
-function hasSupabaseConfig() {
-  return Boolean(supabaseUrl && supabaseServiceRoleKey);
 }
 
 function supabaseHeaders() {

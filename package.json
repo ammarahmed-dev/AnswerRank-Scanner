@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "verify:scan": "node scripts/verify-scan-runtime.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.51.0",
