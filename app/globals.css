@@ -7823,6 +7823,10 @@ textarea.contact-control {
   .pl-page { padding-top: 4pt; }
   .pl-force-break { break-before: page; page-break-before: always; }
   .pl-last-page   { break-after: avoid; page-break-after: avoid; }
+  .pl-page.pl-last-page {
+    break-before: auto;
+    page-break-before: auto;
+  }
   .pl-page:last-child {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
@@ -8044,7 +8048,7 @@ textarea.contact-control {
 
   /* ── Issue cards ── */
   .pl-issue-card {
-    margin-bottom: 12pt;
+    margin: 0;
     padding: 10pt 12pt;
     border: 1pt solid #e5e7eb;
     border-radius: 6pt;
@@ -8054,6 +8058,12 @@ textarea.contact-control {
     page-break-after: auto;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  .pl-issues-list {
+    display: grid;
+    gap: 12pt;
+    break-inside: auto;
+    page-break-inside: auto;
   }
   .pl-issue-header {
     display: flex;
@@ -8089,6 +8099,7 @@ textarea.contact-control {
   }
   .pl-badge-critical { background: #fef2f2; color: #dc2626; border: 1pt solid #fecaca; }
   .pl-badge-warning  { background: #fffbeb; color: #d97706; border: 1pt solid #fde68a; }
+  .pl-badge-medium   { background: #f3f4f6; color: #4b5563; border: 1pt solid #d1d5db; }
   .pl-issue-detail {
     font-size: 9pt;
     color: #6b7280;
@@ -8105,6 +8116,8 @@ textarea.contact-control {
     border-radius: 4pt;
     font-size: 9pt;
     line-height: 1.5;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
   .pl-issue-block strong {
     display: block;
@@ -8205,7 +8218,7 @@ textarea.contact-control {
   }
   .pl-action-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10pt;
     margin-top: 12pt;
   }

@@ -7,7 +7,7 @@ import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { checkUsageLimit, getClientKey, getPlanLimit, incrementUsage } from "@/lib/usage-limits";
 import { isMasterAdmin } from "@/lib/admin";
-import { hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, hasSupabaseConfig } from "@/lib/supabase-config";
 import { ScrapedData, ScanResult, AIInsights, CompetitorScanResult, SchemaRecommendation } from "@/types/index";
 
 export const runtime = "nodejs";
@@ -311,7 +311,7 @@ type ScanEvent = ProgressEvent | ResultEvent | ErrorEvent;
 
 type ScanRequestBody = { url?: string; includeAI?: boolean; clientId?: string; competitorUrls?: string[] | string; retestOfReportId?: string };
 
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
+const supabaseUrl = getSupabaseServerUrl();
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 function supabaseHeaders() {

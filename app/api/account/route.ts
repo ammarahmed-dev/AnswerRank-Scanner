@@ -3,11 +3,11 @@ import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
 import { getPlanLimit, getUsageCount } from "@/lib/usage-limits";
 import { normalizeUserPlan } from "@/lib/access";
-import { hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
+const supabaseUrl = getSupabaseServerUrl();
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 type RecentReport = {

@@ -1,9 +1,40 @@
 import { ScanResult } from "@/types/index";
 import { getNormalizedIssues } from "@/lib/report-issues";
-import { getReportCategoryScores, mapReportCategory, type ReportCategory } from "@/lib/report-category-scores";
+import { mapReportCategory, type ReportCategory } from "@/lib/report-category-scores";
+import { getIssueSeverityLabel, getPassingChecks, getReportPresentation } from "@/lib/report-presentation";
 
 interface Props {
   report: ScanResult;
+  presentationData?: {
+    scoreRows: Array<{ category: ReportCategory; score: number; status: string }>;
+    issues: Array<{
+      id: string;
+      title: string;
+      priority: "critical" | "high" | "medium" | "low";
+      category: ReportCategory;
+      problem: string;
+      whyItMatters: string;
+      recommendedFix: string;
+    }>;
+    groups: {
+      critical: string[];
+      high: string[];
+      nice: string[];
+    };
+    counts?: {
+      critical: number;
+      high: number;
+      nice: number;
+    };
+    passingChecks?: Array<{ id: string; label: string }>;
+    schema: {
+      detected: string[];
+      missing: string[];
+      priority: string | null;
+      reasoning: string;
+      recommended?: string[];
+    };
+  };
 }
 
 type Category = ReportCategory;
@@ -100,19 +131,6 @@ function gradeClass(score: number) {
 }
 
 const mapCategory = mapReportCategory;
-
-function isOptionalSchemaCheck(id: string) {
-  return id === "faq_schema" || id === "article_schema" || id === "structured_density";
-}
-
-function getPassingChecks(report: ScanResult) {
-  const schemaMissing = report.checks.some((check) => check.id === "schema_present" && check.status === "fail");
-  return report.checks.filter((check) => {
-    if (check.status !== "pass") return false;
-    if (schemaMissing && isOptionalSchemaCheck(check.id)) return false;
-    return true;
-  });
-}
 
 function metadataFallbackTitle(url: string) {
   try {
@@ -262,40 +280,47 @@ function MetaRow({ label, value, charLimit, isUrl }: { label: string; value?: st
   );
 }
 
-export default function PrintLayout({ report }: Props) {
+export default function PrintLayout({ report, presentationData }: Props) {
   const date = new Date(report.scannedAt).toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric",
   });
-  const scoreRows = report.categoryScores
-    ? [
-      { category: "schema" as Category, score: report.categoryScores.schema },
-      { category: "metadata" as Category, score: report.categoryScores.metadata },
-      { category: "content" as Category, score: report.categoryScores.contentClarity },
-      { category: "performance" as Category, score: report.categoryScores.performance },
-      { category: "trust" as Category, score: report.categoryScores.trustSignals },
-      { category: "ai-readiness" as Category, score: report.categoryScores.aiReadiness },
-      { category: "headings" as Category, score: report.categoryScores.headings },
-    ].filter((item) => typeof item.score === "number").map((item) => ({
-      category: item.category,
-      score: item.score as number,
-    }))
-    : getReportCategoryScores(report.checks, report.pagespeed);
+  const presentation = presentationData ? null : getReportPresentation(report);
+  const scoreRows = presentationData
+    ? presentationData.scoreRows.map((row) => ({ category: row.category, score: row.score }))
+    : presentation!.scoreRows;
 
   const scores = scoreRows
-    .filter((item) => item.score > 0)
     .map((item) => ({
       category: item.category,
       label: CATEGORY_LABELS[item.category],
       score: item.score,
     }));
-  const issues = getNormalizedIssues(report.checks, report.pagespeed);
-  const rawIssues = report.checks.filter((check) => check.status !== "pass");
-  const criticals = issues.filter((issue) => issue.priority === "critical");
-  const highImpact = issues.filter((issue) => issue.priority === "high");
-  const passingChecks = getPassingChecks(report);
+  const issues = presentationData
+    ? presentationData.issues.map((issue) => ({
+      id: issue.id,
+      label: issue.title,
+      detail: issue.problem,
+      status: "warn" as const,
+      weight: issue.priority === "critical" ? 10 : issue.priority === "high" ? 7 : issue.priority === "medium" ? 4 : 1,
+      priority: issue.priority,
+    }))
+    : presentation!.issues;
+  const issueById = new Map(issues.map((issue) => [issue.id, issue]));
+  const criticals = presentationData
+    ? presentationData.groups.critical.map((id) => issueById.get(id)).filter((item): item is NonNullable<typeof item> => Boolean(item))
+    : presentation!.groupedIssues.critical;
+  const highImpact = presentationData
+    ? presentationData.groups.high.map((id) => issueById.get(id)).filter((item): item is NonNullable<typeof item> => Boolean(item))
+    : presentation!.groupedIssues.high;
+  const niceToHave = presentationData
+    ? presentationData.groups.nice.map((id) => issueById.get(id)).filter((item): item is NonNullable<typeof item> => Boolean(item))
+    : presentation!.groupedIssues.nice;
+  const passingChecks = presentationData?.passingChecks ?? getPassingChecks(report);
   const passing = passingChecks.length;
-  const highPriority = criticals.length;
-  const mediumPriority = highImpact.length;
+  const highPriority = presentationData?.counts?.critical ?? criticals.length;
+  const mediumPriority = presentationData?.counts?.high ?? highImpact.length;
+  const nicePriority = presentationData?.counts?.nice ?? niceToHave.length;
+  const topIssue = issues[0] ?? null;
 
   const aiSummary = getAiSummary(report);
   const confidence = getConfidence(report.score);
@@ -309,6 +334,13 @@ export default function PrintLayout({ report }: Props) {
 
   return (
     <div className="print-layout">
+      <div
+        className="pl-debug"
+        style={{ display: "none" }}
+        data-score-rows={JSON.stringify(scores.map((row) => ({ label: row.label, score: row.score })))}
+        data-counts={JSON.stringify({ critical: highPriority, high: mediumPriority, nice: nicePriority })}
+        data-passing-count={String(passing)}
+      />
       <div className="pl-cover">
         <div className="pl-cover-brand">
           <span className="pl-cover-logo">✦</span>
@@ -333,6 +365,10 @@ export default function PrintLayout({ report }: Props) {
             <strong>{mediumPriority}</strong>
             <span>High impact</span>
           </div>
+          <div className="pl-cover-stat pl-stat-warning">
+            <strong>{nicePriority}</strong>
+            <span>Nice to Have</span>
+          </div>
           <div className="pl-cover-stat pl-stat-pass">
             <strong>{passing}</strong>
             <span>Passing checks</span>
@@ -343,24 +379,15 @@ export default function PrintLayout({ report }: Props) {
           <div className="pl-exec-grid">
             <div className="pl-exec-card">
               <strong>Main diagnosis</strong>
-              <p>{rawIssues.find((c) => {
-                const cat = mapCategory(c.id);
-                return cat !== "performance" && c.id !== "pagespeed_low" && c.id !== "pagespeed_moderate";
-              })?.detail ?? rawIssues[0]?.detail ?? "Core visibility signals are in good shape."}</p>
+              <p>{topIssue?.detail ?? "Core visibility signals are in good shape."}</p>
             </div>
             <div className="pl-exec-card">
               <strong>Top opportunity</strong>
-              <p>{FIX_MAP[rawIssues.find((c) => {
-                const cat = mapCategory(c.id);
-                return cat !== "performance" && c.id !== "pagespeed_low" && c.id !== "pagespeed_moderate";
-              })?.id ?? ""]?.fix ?? "Keep schema and answer blocks current as pages evolve."}</p>
+              <p>{FIX_MAP[topIssue?.id ?? ""]?.fix ?? "Keep schema and answer blocks current as pages evolve."}</p>
             </div>
             <div className="pl-exec-card">
               <strong>Biggest issue</strong>
-              <p>{rawIssues.find((c) => {
-                const cat = mapCategory(c.id);
-                return cat !== "performance";
-              })?.label ?? "No critical blockers detected."}</p>
+              <p>{topIssue?.label ?? "No critical blockers detected."}</p>
             </div>
             <div className="pl-exec-card">
               <strong>Performance score</strong>
@@ -432,30 +459,40 @@ export default function PrintLayout({ report }: Props) {
         </div>
       )}
 
-      {report.aiInsights?.schemaRecommendations && (
+      {(report.aiInsights?.schemaRecommendations || presentationData?.schema) && (
         <div className="pl-page pl-force-break">
           <PageHeader url={report.url} date={date} />
           <h2 className="pl-section-title">Schema Recommendations</h2>
           <div className="pl-schema-grid">
             <div className="pl-schema-card">
               <strong>Detected schema types</strong>
-              <p>{(report.schemaTypes ?? report.aiInsights.schemaRecommendations.detected).length ? (report.schemaTypes ?? report.aiInsights.schemaRecommendations.detected).join(", ") : "No schema types detected."}</p>
+              <p>{
+                (presentationData?.schema.detected ?? report.schemaTypes ?? report.aiInsights?.schemaRecommendations?.detected ?? []).length
+                  ? (presentationData?.schema.detected ?? report.schemaTypes ?? report.aiInsights?.schemaRecommendations?.detected ?? []).join(", ")
+                  : "No schema types detected."
+              }</p>
             </div>
             <div className="pl-schema-card">
               <strong>Recommended schema types</strong>
               <p>
-                {report.aiInsights.schemaRecommendations.missing.length > 0
-                  ? report.aiInsights.schemaRecommendations.missing.join(", ")
-                  : report.aiInsights.schemaRecommendations.priority || "No additional schema needed."}
+                {(presentationData?.schema.recommended ?? []).length > 0
+                  ? (presentationData?.schema.recommended ?? []).join(", ")
+                  : (presentationData?.schema.missing ?? report.aiInsights?.schemaRecommendations?.missing ?? []).length > 0
+                    ? (presentationData?.schema.missing ?? report.aiInsights?.schemaRecommendations?.missing ?? []).join(", ")
+                    : (presentationData?.schema.priority ?? report.aiInsights?.schemaRecommendations?.priority) || "No additional schema needed."}
               </p>
             </div>
             <div className="pl-schema-card">
               <strong>Why it matters</strong>
-              <p>{report.aiInsights.schemaRecommendations.reasoning || "No reasoning provided."}</p>
+              <p>{presentationData?.schema.reasoning || report.aiInsights?.schemaRecommendations?.reasoning || "No reasoning provided."}</p>
             </div>
             <div className="pl-schema-card">
               <strong>How to implement</strong>
-              <p>{report.aiInsights.schemaRecommendations.missing.length ? `Add: ${report.aiInsights.schemaRecommendations.missing.join(", ")}` : "Add the recommended schema in JSON-LD and validate before publishing."}</p>
+              <p>{
+                (presentationData?.schema.missing ?? report.aiInsights?.schemaRecommendations?.missing ?? []).length
+                  ? `Add: ${(presentationData?.schema.missing ?? report.aiInsights?.schemaRecommendations?.missing ?? []).join(", ")}`
+                  : "Add the recommended schema in JSON-LD and validate before publishing."
+              }</p>
             </div>
           </div>
           <p className="pl-disclaimer">Review schema before publishing.</p>
@@ -510,6 +547,7 @@ export default function PrintLayout({ report }: Props) {
       {issues.length > 0 && (() => {
         const criticalItems = criticals;
         const highItems = highImpact;
+        const niceItems = niceToHave;
         return (
           <div className="pl-page pl-force-break">
             <PageHeader url={report.url} date={date} />
@@ -518,7 +556,7 @@ export default function PrintLayout({ report }: Props) {
               <div className="pl-action-col pl-action-critical">
                 <div className="pl-action-head">
                   <span>Critical</span>
-                  <strong>{criticals.length}</strong>
+                  <strong>{highPriority}</strong>
                 </div>
                 <p className="pl-action-desc">Fix immediately to avoid visibility loss.</p>
                 {criticalItems.length > 0 ? criticalItems.map((c) => (
@@ -534,7 +572,7 @@ export default function PrintLayout({ report }: Props) {
               <div className="pl-action-col pl-action-high">
                 <div className="pl-action-head">
                   <span>High Impact</span>
-                  <strong>{highImpact.length}</strong>
+                  <strong>{mediumPriority}</strong>
                 </div>
                 <p className="pl-action-desc">Strong lift with manageable effort.</p>
                 {highItems.length > 0 ? highItems.map((c) => (
@@ -546,6 +584,22 @@ export default function PrintLayout({ report }: Props) {
                     </div>
                   </div>
                 )) : <p className="pl-muted">No high impact warnings.</p>}
+              </div>
+              <div className="pl-action-col pl-action-pass">
+                <div className="pl-action-head">
+                  <span>Nice to Have</span>
+                  <strong>{nicePriority}</strong>
+                </div>
+                <p className="pl-action-desc">Useful improvements after high-impact fixes.</p>
+                {niceItems.length > 0 ? niceItems.map((c) => (
+                    <div key={c.id} className="pl-action-item">
+                      <span>âœ¦</span>
+                      <div>
+                        <p>{c.label}</p>
+                        <small>{c.detail}</small>
+                      </div>
+                    </div>
+                  )) : <p className="pl-muted">No nice-to-have items.</p>}
               </div>
               <div className="pl-action-col pl-action-pass">
                 <div className="pl-action-head">
@@ -568,42 +622,52 @@ export default function PrintLayout({ report }: Props) {
       })()}
 
       {issues.length > 0 && (
-        <div className="pl-page">
+        <div className="pl-page pl-force-break">
           <PageHeader url={report.url} date={date} />
           <h2 className="pl-section-title">
             Priority Issues <span className="pl-issue-count">({issues.length} items)</span>
           </h2>
-          {issues.map((c) => {
-            const meta = FIX_MAP[c.id];
-            return (
-              <div key={c.id} className="pl-issue-card">
-                <div className="pl-issue-header">
-                  <span className="pl-issue-title">{c.label}</span>
-                  <span className="pl-issue-cat">{CATEGORY_LABELS[mapCategory(c.id)]}</span>
-                  <span className={`pl-issue-badge ${c.priority === "critical" ? "pl-badge-critical" : "pl-badge-warning"}`}>
-                    {c.priority === "critical" ? "Critical" : "High"}
-                  </span>
-                </div>
-                <p className="pl-issue-detail">{c.detail}</p>
-                {meta && (
-                  <div className="pl-issue-blocks">
-                    <div className="pl-issue-block pl-issue-why">
-                      <strong>Why it matters</strong>
-                      <p>{meta.why}</p>
-                    </div>
-                    <div className="pl-issue-block pl-issue-fix">
-                      <strong>Recommended fix</strong>
-                      <p>{meta.fix}</p>
-                    </div>
+          <div className="pl-issues-list">
+            {issues.map((c) => {
+              const meta = FIX_MAP[c.id];
+              return (
+                <div key={c.id} className="pl-issue-card">
+                  <div className="pl-issue-header">
+                    <span className="pl-issue-title">{c.label}</span>
+                    <span className="pl-issue-cat">{CATEGORY_LABELS[mapCategory(c.id)]}</span>
+                    <span
+                      className={`pl-issue-badge ${
+                        c.priority === "critical"
+                          ? "pl-badge-critical"
+                          : c.priority === "high"
+                            ? "pl-badge-warning"
+                            : "pl-badge-medium"
+                      }`}
+                    >
+                      {getIssueSeverityLabel(c.priority)}
+                    </span>
                   </div>
-                )}
-              </div>
-            );
-          })}
+                  <p className="pl-issue-detail">{c.detail}</p>
+                  {meta && (
+                    <div className="pl-issue-blocks">
+                      <div className="pl-issue-block pl-issue-why">
+                        <strong>Why it matters</strong>
+                        <p>{meta.why}</p>
+                      </div>
+                      <div className="pl-issue-block pl-issue-fix">
+                        <strong>Recommended fix</strong>
+                        <p>{meta.fix}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      <div className="pl-page pl-force-break pl-last-page">
+      <div className="pl-page pl-last-page">
         <PageHeader url={report.url} date={date} />
         {report.aiInsights && report.aiInsights.recommendations.length > 0 && (
           <>
@@ -619,12 +683,16 @@ export default function PrintLayout({ report }: Props) {
         <h2 className="pl-section-title" style={{ marginTop: "16pt" }}>Report Notes</h2>
         <p className="pl-body">This audit is generated from publicly available page content and automated analysis. Review recommendations before publishing changes, especially schema, metadata, and content updates.</p>
 
-        <h2 className="pl-section-title" style={{ marginTop: "16pt" }}>Next Steps</h2>
-        <ol className="pl-rec-list">
-          {nextSteps.map((step, index) => (
-            <li key={index} className="pl-rec-item">{step}</li>
-          ))}
-        </ol>
+        {nextSteps.length > 0 && (
+          <>
+            <h2 className="pl-section-title" style={{ marginTop: "16pt" }}>Next Steps</h2>
+            <ol className="pl-rec-list">
+              {nextSteps.map((step, index) => (
+                <li key={index} className="pl-rec-item">{step}</li>
+              ))}
+            </ol>
+          </>
+        )}
         <div className="pl-footer">
           AEOCheck - www.aeocheck.co - AI Visibility Report - Generated {date}
         </div>

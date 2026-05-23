@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, hasSupabaseConfig } from "@/lib/supabase-config";
 import { ScanResult } from "@/types/index";
 
 type ReportRow = {
@@ -14,7 +14,7 @@ type ReportRow = {
 
 const dbDir = path.join(process.cwd(), "data");
 const dbPath = path.join(dbDir, "aeocheck.sqlite");
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
+const supabaseUrl = getSupabaseServerUrl();
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 let db: DatabaseSync | null = null;

@@ -65,16 +65,24 @@ function categoryScoresFromChecks(checks: CheckResult[], pagespeed: { score: num
     metadata: checks.filter((c) => c.id === "title" || c.id === "meta_desc" || c.id.includes("og")),
     headings: checks.filter((c) => c.id.includes("heading") || c.id === "h1"),
     schema: checks.filter((c) => c.id.includes("schema")),
-    contentClarity: checks.filter((c) => c.id === "word_count" || c.id === "internal_links" || c.id === "alt_text"),
+    contentClarity: checks.filter((c) => c.id === "word_count" || c.id === "internal_links" || c.id === "alt_text" || c.id === "readability"),
     aiReadiness: checks.filter((c) => !["title", "meta_desc", "h1", "heading_structure", "https", "robots", "sitemap", "word_count", "internal_links", "alt_text"].includes(c.id) && !c.id.includes("schema") && !c.id.includes("og")),
     trustSignals: checks.filter((c) => c.id === "https" || c.id === "robots" || c.id === "sitemap"),
   };
   const avg = (rows: CheckResult[]) => rows.length ? Math.round(rows.reduce((sum, row) => sum + checkScore(row.status), 0) / rows.length) : undefined;
+  const readability = checks.find((c) => c.id === "readability");
+  const rawContentScore = avg(byCategory.contentClarity);
+  let contentClarity = rawContentScore;
+  if (typeof contentClarity === "number" && readability?.status === "warn") {
+    contentClarity = Math.min(contentClarity, 84);
+  } else if (typeof contentClarity === "number" && readability?.status === "fail") {
+    contentClarity = Math.min(contentClarity, 69);
+  }
   return {
     metadata: avg(byCategory.metadata),
     headings: avg(byCategory.headings),
     schema: avg(byCategory.schema),
-    contentClarity: avg(byCategory.contentClarity),
+    contentClarity,
     aiReadiness: avg(byCategory.aiReadiness),
     performance: pagespeed?.score,
     trustSignals: avg(byCategory.trustSignals),

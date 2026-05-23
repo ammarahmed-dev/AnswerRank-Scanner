@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
-import { hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, hasSupabaseConfig } from "@/lib/supabase-config";
 
-const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
+const supabaseUrl = getSupabaseServerUrl();
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const GUEST_MONTHLY_SCAN_LIMIT = Number(process.env.GUEST_MONTHLY_SCAN_LIMIT ?? 1);

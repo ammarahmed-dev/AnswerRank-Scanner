@@ -263,8 +263,9 @@ export default function Home({ heroContent }: HomePageClientProps) {
       setShowLimitModal(true);
       return;
     }
-    const trimmed = url.trim();
+    const trimmed = (url || inputRef.current?.value || "").trim();
     if (!trimmed) return inputRef.current?.focus();
+    if (trimmed !== url) setUrl(trimmed);
 
     setState("loading");
     document.body.style.overflow = "hidden";
@@ -641,7 +642,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                             disabled={state === "loading"}
                           />
                         </div>
-                        <button type="submit" disabled={state === "loading" || !url.trim()} className="btn btn-primary scanner-submit-btn">
+                        <button type="submit" disabled={state === "loading"} className="btn btn-primary scanner-submit-btn">
                           {state === "loading" ? "Scanning..." : "Run Free Scan"}
                           <ArrowRight weight="bold" className="h-4 w-4" />
                         </button>

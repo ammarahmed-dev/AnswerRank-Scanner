@@ -4,15 +4,17 @@ import { CheckResult, CompetitorScanResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
 import { AlertCircle, CheckCircle2, ChevronDown, Copy, Download, ExternalLink, Lock, RotateCcw, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { CSSProperties, useEffect, useMemo, useState } from "react";
-import { createPortal, flushSync } from "react-dom";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
+import PrintLayout from "./PrintLayout";
 import UpgradeButton from "./UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { canViewFullReport, isMasterAdmin } from "@/lib/access";
-import { getReportCategoryScores, mapReportCategory, type ReportCategory } from "@/lib/report-category-scores";
+import { mapReportCategory, type ReportCategory } from "@/lib/report-category-scores";
+import { getNormalizedIssues } from "@/lib/report-issues";
+import { getReportPresentation } from "@/lib/report-presentation";
 
 const RetestButton = dynamic(() => import("./RetestButton"), { ssr: false });
-const PrintLayout = dynamic(() => import("./PrintLayout"), { ssr: false });
 
 interface Props {
   report: ScanResult;
@@ -83,13 +85,6 @@ function categoryNote(category: Category, score: number) {
   if (category === "trust") return score >= 70 ? "Trust signals and crawl directives look good." : "Add trust signals. Include HTTPS, a valid robots.txt, and author or brand information.";
   if (category === "performance") return score >= 70 ? "Page speed and Core Web Vitals are competitive." : "Speed improvements are available. Faster pages are indexed more reliably by AI crawlers.";
   return score >= 70 ? "This page is well-structured for AI answer extraction." : "Improve content clarity so AI assistants can accurately summarize and cite this page.";
-}
-
-function priorityFromWeight(weight: number): Priority {
-  if (weight >= 10) return "critical";
-  if (weight >= 7) return "high";
-  if (weight >= 4) return "medium";
-  return "low";
 }
 
 const mapCategory = mapReportCategory;
@@ -185,101 +180,31 @@ function issueExample(check: CheckResult) {
   return undefined;
 }
 
-function normalizeIssues(checks: CheckResult[]): ReportIssue[] {
-  return checks.map((check) => {
-    const priority = priorityFromWeight(check.weight);
-    const category = mapCategory(check.id);
+function normalizeIssuesFromNormalized(issueRows: ReturnType<typeof getNormalizedIssues>): ReportIssue[] {
+  return issueRows.map((issue) => {
+    const category = mapCategory(issue.id);
+    const priority = issue.priority;
+    const checkLike: CheckResult = {
+      id: issue.id,
+      label: issue.label,
+      detail: issue.detail,
+      status: issue.status,
+      weight: issue.weight,
+    };
+
     return {
-      id: check.id,
-      title: check.label,
+      id: issue.id,
+      title: issue.label,
       priority,
       impact: impactByPriority(priority),
-      effort: effortById(check.id),
+      effort: effortById(issue.id),
       category,
-      problem: check.detail,
-      whyItMatters: whyItMattersById(check.id),
-      recommendedFix: recommendedFix(check),
-      example: issueExample(check),
+      problem: issue.detail,
+      whyItMatters: whyItMattersById(issue.id),
+      recommendedFix: recommendedFix(checkLike),
+      example: issueExample(checkLike),
     };
   });
-}
-
-function buildCoreWebVitalsIssues(pagespeed: ScanResult["pagespeed"], fallbackIssue: ReportIssue): ReportIssue[] {
-  if (!pagespeed) return [fallbackIssue];
-
-  const checks: CheckResult[] = [];
-  if (typeof pagespeed.lcp === "number" && pagespeed.lcp >= 2.5) {
-    checks.push({
-      id: "cwv_lcp",
-      label: "Largest Contentful Paint",
-      status: pagespeed.lcp >= 4 ? "fail" : "warn",
-      detail: `LCP is ${pagespeed.lcp}s. Target under 2.5s.`,
-      weight: fallbackIssue.priority === "critical" ? 10 : 7,
-    });
-  }
-  if (typeof pagespeed.cls === "number" && pagespeed.cls >= 0.1) {
-    checks.push({
-      id: "cwv_cls",
-      label: "Cumulative Layout Shift",
-      status: pagespeed.cls >= 0.25 ? "fail" : "warn",
-      detail: `CLS is ${pagespeed.cls}. Target under 0.1.`,
-      weight: fallbackIssue.priority === "critical" ? 10 : 7,
-    });
-  }
-  if (typeof pagespeed.fid === "number" && pagespeed.fid >= 200) {
-    checks.push({
-      id: "cwv_tbt",
-      label: "Total Blocking Time",
-      status: pagespeed.fid >= 600 ? "fail" : "warn",
-      detail: `TBT is ${pagespeed.fid}ms. Target under 200ms.`,
-      weight: fallbackIssue.priority === "critical" ? 10 : 7,
-    });
-  }
-
-  return checks.length ? normalizeIssues(checks) : [fallbackIssue];
-}
-
-function buildPageSpeedIssues(pagespeed: ScanResult["pagespeed"], existingIssues: ReportIssue[]): ReportIssue[] {
-  if (!pagespeed || typeof pagespeed.score !== "number") return [];
-
-  const hasPerformanceIssue = existingIssues.some((issue) =>
-    issue.category === "performance"
-    || issue.id === "pagespeed_low"
-    || issue.id === "pagespeed_moderate"
-    || issue.title.toLowerCase().includes("performance")
-    || issue.title.toLowerCase().includes("page speed")
-  );
-  if (hasPerformanceIssue) return [];
-
-  if (pagespeed.score < 50) {
-    return [{
-      id: "pagespeed_low",
-      title: "Poor mobile performance",
-      priority: "high",
-      impact: "high",
-      effort: "medium",
-      category: "performance",
-      problem: "The page has a low PageSpeed score, which may reduce user experience and crawl efficiency.",
-      whyItMatters: "Slow pages can reduce user engagement and make it harder for crawlers and AI systems to process page content efficiently.",
-      recommendedFix: "Review image sizes, render-blocking scripts, unused JavaScript, and server response time. Start with the largest assets and third-party scripts.",
-    }];
-  }
-
-  if (pagespeed.score < 75) {
-    return [{
-      id: "pagespeed_moderate",
-      title: "Performance needs improvement",
-      priority: "medium",
-      impact: "medium",
-      effort: "medium",
-      category: "performance",
-      problem: "The page has moderate performance issues based on the PageSpeed score.",
-      whyItMatters: "Moderate speed bottlenecks can still slow down user journeys and reduce crawl efficiency for content processing.",
-      recommendedFix: "Improve loading speed by optimizing images, reducing unused scripts, and reviewing third-party resources.",
-    }];
-  }
-
-  return [];
 }
 
 function badgeTone(value: Priority | Impact | Effort) {
@@ -352,19 +277,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const [plan, setPlan] = useState<Plan>("guest");
   const [copyOk, setCopyOk] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [isPrinting, setIsPrinting] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-
-  useEffect(() => {
-    const onBefore = () => flushSync(() => setIsPrinting(true));
-    const onAfter = () => setIsPrinting(false);
-    window.addEventListener("beforeprint", onBefore);
-    window.addEventListener("afterprint", onAfter);
-    return () => {
-      window.removeEventListener("beforeprint", onBefore);
-      window.removeEventListener("afterprint", onAfter);
-    };
-  }, []);
 
   useEffect(() => {
     if (!isUpgradeModalOpen) return;
@@ -409,15 +322,6 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const hasPdfAccess = hasFullReportAccess;
   const canUnlockSpecificReport = Boolean(report.reportId);
 
-  // Preload the PrintLayout chunk as soon as PDF access is confirmed so it is
-  // ready when window.print() fires. dynamic() with ssr:false defers loading
-  // until the component first renders; without this, the chunk may not be
-  // fetched yet when beforeprint fires synchronously inside flushSync.
-  useEffect(() => {
-    if (hasPdfAccess) {
-      void import("./PrintLayout");
-    }
-  }, [hasPdfAccess]);
   const isAdmin = isMasterAdmin(plan);
   const host = useMemo(() => {
     try {
@@ -427,13 +331,8 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     }
   }, [report.url]);
 
-  const issues = useMemo(() => {
-    const baseIssues = normalizeIssues(checks)
-      .filter((issue) => checks.find((c) => c.id === issue.id)?.status !== "pass")
-      .flatMap((issue) => issue.id === "core_web_vitals" ? buildCoreWebVitalsIssues(report.pagespeed, issue) : [issue]);
-    const performanceIssues = buildPageSpeedIssues(report.pagespeed, baseIssues);
-    return [...baseIssues, ...performanceIssues];
-  }, [checks, report.pagespeed]);
+  const presentation = useMemo(() => getReportPresentation(report), [report]);
+  const issues = useMemo(() => normalizeIssuesFromNormalized(presentation.issues), [presentation.issues]);
   const visibleIssues = hasFullReportAccess ? issues : issues.slice(0, 3);
   const hiddenCount = Math.max(0, issues.length - visibleIssues.length);
   const critical = issues.filter((i) => i.priority === "critical");
@@ -464,33 +363,13 @@ export default function ReportSectionNew({ report, onReset }: Props) {
 
   const categoryScores = useMemo(
     () => {
-      if (report.categoryScores) {
-        const persisted = [
-          { category: "schema" as Category, score: report.categoryScores.schema },
-          { category: "metadata" as Category, score: report.categoryScores.metadata },
-          { category: "content" as Category, score: report.categoryScores.contentClarity },
-          { category: "performance" as Category, score: report.categoryScores.performance },
-          { category: "trust" as Category, score: report.categoryScores.trustSignals },
-          { category: "ai-readiness" as Category, score: report.categoryScores.aiReadiness },
-          { category: "headings" as Category, score: report.categoryScores.headings },
-        ].filter((item) => typeof item.score === "number");
-
-        if (persisted.length > 0) {
-          return persisted.map((item) => ({
-            category: item.category,
-            score: item.score as number,
-            status: statusLabel(item.score as number),
-          }));
-        }
-      }
-
-      return getReportCategoryScores(checks, report.pagespeed).map((item) => ({
+      return presentation.scoreRows.map((item) => ({
         category: item.category,
         score: item.score,
         status: statusLabel(item.score),
       }));
     },
-    [checks, report.pagespeed, report.categoryScores]
+    [presentation.scoreRows]
   );
 
   const schemaRecommendation = useMemo(() => getSchemaRecommendation(report, issues, host), [report, issues, host]);
@@ -623,10 +502,24 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     setTimeout(() => setCopyOk(false), 1500);
   };
 
-const downloadPdf = () => {
+const downloadPdf = async () => {
     if (!hasPdfAccess) return;
-    flushSync(() => setIsPrinting(true));
-    setTimeout(() => window.print(), 500);
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const debugNode = document.querySelector(".print-layout .pl-debug");
+      if (debugNode) break;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    const debugNode = document.querySelector(".print-layout .pl-debug");
+    if (debugNode) {
+      const el = debugNode as HTMLElement;
+      const scoreRows = el.getAttribute("data-score-rows");
+      const counts = el.getAttribute("data-counts");
+      const passingCount = el.getAttribute("data-passing-count");
+      console.info("[pdf-export] print-layout debug", { scoreRows, counts, passingCount });
+    } else {
+      console.warn("[pdf-export] print-layout debug node not found before window.print()");
+    }
+    window.print();
   };
 
   return (
@@ -1120,7 +1013,44 @@ const downloadPdf = () => {
       </div>,
       document.body
     )}
-    {isPrinting && <PrintLayout report={report} />}
+    {hasPdfAccess && (
+      <PrintLayout
+        key={`${report.reportId ?? report.url}-${report.scannedAt}`}
+        report={report}
+        presentationData={{
+          scoreRows: categoryScores,
+          issues: issues.map((issue) => ({
+            id: issue.id,
+            title: issue.title,
+            priority: issue.priority,
+            category: issue.category,
+            problem: issue.problem,
+            whyItMatters: issue.whyItMatters,
+            recommendedFix: issue.recommendedFix,
+          })),
+          groups: {
+            critical: critical.map((issue) => issue.id),
+            high: high.map((issue) => issue.id),
+            nice: nice.map((issue) => issue.id),
+          },
+          counts: {
+            critical: critical.length,
+            high: high.length,
+            nice: nice.length,
+          },
+          passingChecks: presentation.passingChecks,
+          schema: {
+            detected: detectedSchemaTypes,
+            missing: missingSchemaTypes,
+            priority: prioritySchema,
+            reasoning: priorityReasoning,
+            recommended: prioritySchema
+              ? [prioritySchema, ...otherSuggestedTypes]
+              : [...otherSuggestedTypes],
+          },
+        }}
+      />
+    )}
     </>
   );
 }
