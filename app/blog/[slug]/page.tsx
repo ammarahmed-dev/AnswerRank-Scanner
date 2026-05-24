@@ -47,6 +47,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
   return {
     title: `${post.title} - AEOCheck`,
     description: post.description,
+    keywords: post.tags,
     alternates: {
       canonical: `https://www.aeocheck.co/blog/${post.slug}`,
     },

@@ -25,17 +25,28 @@ function formatDate(value: string | Date) {
   }).format(date);
 }
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://www.aeocheck.co" },
+    { "@type": "ListItem", position: 2, name: "Blog", item: "https://www.aeocheck.co/blog" },
+  ],
+};
+
 export default function BlogPage() {
   const posts = getAllBlogPosts();
 
   return (
     <main className="min-h-screen">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <SiteHeader />
       <section className="launch-container blog-index-page">
         <div className="section-intro">
           <p className="launch-eyebrow">Blog</p>
           <h1>AI search visibility guides.</h1>
           <p>Practical notes for making websites easier for ChatGPT, Perplexity, Google AI, and answer engines to understand.</p>
+          <p>Want to see how your site scores right now? <Link href="https://www.aeocheck.co/#scanner">Scan your site free</Link> and get your AEO score in under 60 seconds.</p>
         </div>
 
         <div className="blog-index-list">
