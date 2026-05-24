@@ -144,7 +144,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
         {post.coverImage && (
           <div className="blog-post-cover">
-            <Image src={post.coverImage} alt={post.title} width={1200} height={600} priority quality={80} />
+            <Image src={post.coverImage} alt={post.coverImageAlt ?? post.title} width={1200} height={600} priority quality={80} />
           </div>
         )}
 

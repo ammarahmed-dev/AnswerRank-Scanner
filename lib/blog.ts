@@ -11,6 +11,7 @@ export type BlogPostMeta = {
   description: string;
   tags: string[];
   coverImage?: string;
+  coverImageAlt?: string;
 };
 
 export type BlogPost = BlogPostMeta & {
@@ -43,6 +44,7 @@ function readPostFile(fileName: string): BlogPost {
     description: ensureString(parsed.data.description),
     tags: ensureTags(parsed.data.tags),
     coverImage: ensureString(parsed.data.coverImage) || undefined,
+    coverImageAlt: ensureString(parsed.data.coverImageAlt) || undefined,
     content: parsed.content,
   };
 }
