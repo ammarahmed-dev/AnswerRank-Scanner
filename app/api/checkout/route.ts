@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
     const productId = body.checkoutType === "full_report" ? fullReportProductId : proMonthlyProductId;
 
-    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://aeocheck.co").replace(/\/$/, "");
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://www.aeocheck.co").replace(/\/$/, "");
     const successUrl = body.checkoutType === "full_report" && body.reportId
       ? `${baseUrl}/report?id=${body.reportId}&payment=1`
       : `${baseUrl}/?payment=1`;

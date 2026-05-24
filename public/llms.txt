@@ -1,41 +1,43 @@
-# AEOCheck - AI Search Readiness Scanner
-# https://aeocheck.co
-# llms.txt v1.0
+# AEOCheck
+> AEO and GEO readiness scanner for AI search visibility
 
-## About
-AEOCheck is a free AI search readiness scanner that audits any public webpage 
-for Answer Engine Optimization (AEO) signals. It checks metadata, schema markup, 
-heading structure, content clarity, trust signals, and performance — the exact 
-signals ChatGPT, Perplexity, and Google AI use to understand and cite pages.
+AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO) signals. It scores a page on how well it can be understood, extracted, and cited by AI answer engines including ChatGPT, Perplexity, Google AI Overviews, and Microsoft Copilot.
 
-## What We Do
-- Scan any public URL in 60 seconds
-- Return an AI visibility score (0-100)
-- Identify missing schema, weak metadata, and content gaps
-- Generate prioritized fixes for AI search readiness
-- Export client-ready PDF reports
+## Checks covered
+- Schema markup (JSON-LD presence, FAQPage, Article, Organization)
+- Metadata quality (title, meta description, Open Graph tags)
+- Heading structure (H1, H2/H3 hierarchy)
+- Content clarity (word count, readability, internal links, alt text)
+- AI crawler access (GPTBot, PerplexityBot, ClaudeBot allowlisting in robots.txt)
+- Trust signals (HTTPS, sitemap, About/Contact pages, author attribution, content freshness)
+- AI readiness (llms.txt, E-E-A-T signals, entity signals)
+- Performance (Core Web Vitals via PageSpeed API)
 
-## Target Users
-Agencies, SEO freelancers, Webflow developers, founders, small business owners
-
-## Key Pages
-- Homepage + Scanner: https://aeocheck.co
-- Sample Report: https://aeocheck.co/report?id=bdb3a316-6889-4fa5-9045-cf317938597e
-- Pricing: https://aeocheck.co/#pricing
-- How It Works: https://aeocheck.co/#how
-- vs Otterly: https://aeocheck.co/vs/otterly
-- vs Semrush AI: https://aeocheck.co/vs/semrush-ai
-- vs Peec AI: https://aeocheck.co/vs/peec-ai
-- vs Profound: https://aeocheck.co/vs/profound
+## Features
+- Scan: free for guests; limited monthly scans for free accounts
+- Full report: unlocked per URL ($14 one-time) — includes prioritized fixes, PDF export
+- Pro plan: unlimited scans, Compare (side-by-side competitor analysis), Monitor, Audit
+- Compare: runs AEO scans on two URLs and returns a category-by-category breakdown
+- PDF export: client-ready report export from any full report
 
 ## Pricing
-- Free: 1 guest scan, 3 scans/month with account
-- Full Report: $14 one-time per URL
-- Agency Lite: $39/month, 30 reports/month
+- Guest: 1 scan, preview score only
+- Free account: limited scans per month
+- Full report unlock: $14 one-time per URL
+- Pro: unlimited scans + Compare, Monitor, Audit features
 
-## Do Not Index
+## Key pages
+- Homepage and scanner: https://www.aeocheck.co
+- Sample report: https://www.aeocheck.co/sample-report
+- Pricing: https://www.aeocheck.co/#pricing
+- Blog: https://www.aeocheck.co/blog
+- About: https://www.aeocheck.co/about
+- Contact: https://www.aeocheck.co/contact
+
+## Blog topics
+AEO, GEO, AI search visibility, ChatGPT citations, Perplexity optimization, schema markup, answer engine optimization vs SEO.
+
+## Do not index
 - /api/*
 - /dashboard
 - /admin
-
----

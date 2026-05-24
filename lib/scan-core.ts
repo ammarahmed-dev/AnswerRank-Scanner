@@ -160,7 +160,7 @@ async function fetchWithTimeoutAndRedirects(
         redirect: "manual",
         signal: controller.signal,
         headers: {
-          "User-Agent": "AEOCheckScanner/1.0 (+https://aeocheck.co)",
+          "User-Agent": "AEOCheckScanner/1.0 (+https://www.aeocheck.co)",
           Accept: "text/plain, application/xml, text/xml;q=0.9, */*;q=0.8",
         },
       });
@@ -369,7 +369,7 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
     const llmsRes = await fetch(llmsUrl, {
       method: "GET",
       signal: AbortSignal.timeout(5000),
-      headers: { "User-Agent": "AEOCheckScanner/1.0 (+https://aeocheck.co)" },
+      headers: { "User-Agent": "AEOCheckScanner/1.0 (+https://www.aeocheck.co)" },
     });
     if (llmsRes.ok) {
       const llmsBody = await llmsRes.text();
