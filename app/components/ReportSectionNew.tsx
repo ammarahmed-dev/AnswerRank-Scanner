@@ -139,7 +139,7 @@ function recommendedFix(check: CheckResult) {
   if (check.id === "meta_desc") return "Add a clear 120-160 character meta description with problem, solution, and proof.";
   if (check.id === "h1") return "Use one H1 that states exactly what the page offers and who it is for.";
   if (check.id === "heading_structure") return "Restructure sections with H2 and H3 hierarchy to improve crawl and comprehension.";
-  if (check.id === "schema_present") return "Add at least one JSON-LD block to your page head. Start with Organization and WebSite schema — these establish your brand entity for AI engines. Use schema.org or a generator like technicalseo.com/tools/schema-markup-generator/";
+  if (check.id === "schema_present") return "Add at least one JSON-LD block to your page head. Start with Organization and WebSite schema - these establish your brand entity for AI engines. Use schema.org or a generator like technicalseo.com/tools/schema-markup-generator/";
   if (check.id === "faq_schema") return "Wrap your Q&A content in FAQPage JSON-LD schema. Each question needs a Question and acceptedAnswer pair. Validate at validator.schema.org before publishing.";
   if (check.id === "article_schema") return "Add Article or BlogPosting JSON-LD to this page. Include headline, author, datePublished, and dateModified fields. This tells AI engines your content is authoritative and dated.";
   if (check.id === "structured_density") return "Layer additional schema types relevant to this page. If it has navigation, add BreadcrumbList. If it has a FAQ section, add FAQPage. If it represents your brand, add Organization and WebSite.";

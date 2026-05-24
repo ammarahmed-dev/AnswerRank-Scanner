@@ -25,7 +25,7 @@ export function getClientKey(rawClientId: string | undefined, req: Request) {
   const forwardedFor = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   const userAgent = req.headers.get("user-agent") ?? "";
   const ip = forwardedFor ?? "unknown-ip";
-  // IP+UA is the primary key — prevents trivial UUID rotation bypass of guest limits.
+  // IP+UA is the primary key - prevents trivial UUID rotation bypass of guest limits.
   // Fall back to client-supplied ID only when the IP is undetectable (e.g. local dev).
   const source = ip !== "unknown-ip" ? `${ip}:${userAgent}` : (rawClientId?.trim() || `unknown:${userAgent}`);
   return createHash("sha256").update(source).digest("hex");

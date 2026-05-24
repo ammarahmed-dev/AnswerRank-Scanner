@@ -11,6 +11,7 @@ import ContactForm from "./ContactForm";
 import AiSnapshotSection from "./AiSnapshotSection";
 import WhoUsesSection from "./WhoUsesSection";
 import TestimonialsSection from "./TestimonialsSection";
+import AnimatedProductDemo from "./AnimatedProductDemo";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 import { useRouter } from "next/navigation";
@@ -54,10 +55,10 @@ const GUEST_SCAN_STORAGE_KEY = "aeocheck_guest_scans_month";
 const STEP_ANIMATION_MS = 140;
 
 const trustStats = [
-  { value: "6", label: "Readiness categories", text: "Covers metadata, schema, headings, and AI readiness." },
-  { value: "3", label: "Priority fixes", text: "The free report focuses attention on the highest-impact work first." },
-  { value: "0", label: "Setup required", text: "No signup and no onboarding steps. Paste a public page and scan immediately." },
-  { value: "$14", label: "Full Report", text: "Paid access is handled through our contact flow so we can activate the right plan for you manually." },
+  { value: "5,700+", label: "Scans run", text: "Over 5,700 websites have been scanned for AEO and AI search readiness using AEOCheck." },
+  { value: "25", label: "Checks per scan", text: "Every scan covers 25 signals across schema, metadata, content clarity, trust signals, and AI readiness." },
+  { value: "60s", label: "Scan time", text: "Paste a URL and get a scored AI readiness report in under 60 seconds. No installation needed." },
+  { value: "$0", label: "To start", text: "Run a free scan without creating an account. No credit card, no trial period." },
 ];
 
 const auditSignals = [
@@ -89,10 +90,12 @@ const workflow = [
 ];
 
 const faqs = [
+  ["Is it actually free?", "Yes. You can scan any public URL without creating an account and see your AEO score plus the top issues found. A free account gives you 3 scans per month. No credit card required at any point."],
+  ["What is AEO and why does it matter?", "AEO (Answer Engine Optimization) is the practice of making your website understandable and citable by AI tools like ChatGPT, Perplexity, and Google AI Overviews. As more people get answers directly from AI instead of clicking search results, being a cited source is becoming as important as ranking on page one."],
+  ["How is this different from Google Search Console?", "Google Search Console shows how your site performs in traditional Google search - rankings, clicks, and crawl errors. AEOCheck checks whether AI answer engines can read, understand, and cite your content. A site can rank well on Google and still be invisible to AI search. Different problem, different fixes."],
   ["Does it work without signup?", "Yes. Paste any public URL and run a free scan instantly. No account required."],
   ["What does the scanner check?", "It checks over 25 AEO and AI search readiness signals, including schema, metadata, headings, content clarity, and answer extraction structure."],
   ["Is this the same as a traditional SEO audit?", "No. Traditional SEO audits focus on keywords and backlinks. This scanner checks whether answer engines like ChatGPT and Perplexity can understand and cite your page."],
-  ["How do paid plans work right now?", "Paid access is currently handled through our contact flow. Send us the plan you want and we'll help activate access manually."],
   ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; Pro accounts keep full report history."],
 ];
 
@@ -459,7 +462,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
     setCompareError("");
     document.body.style.overflow = "hidden";
 
-    // Simulated stage progress — advances max to stage 4, never completes
+    // Simulated stage progress - advances max to stage 4, never completes
     let simStep = 0;
     const stepTimers: ReturnType<typeof setTimeout>[] = [];
     const durations = [2200, 4800, 7600, 10800, 14400];
@@ -587,7 +590,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
 
   const scanCountLabel = (() => {
     if (!account) return undefined;
-    // Trust the API's pre-computed flags — avoids client-side re-derivation that can diverge
+    // Trust the API's pre-computed flags - avoids client-side re-derivation that can diverge
     if (account.isAdmin) return "Master Admin · Unlimited Access";
     if (account.unlimited) return "Pro · Unlimited Access";
     if (typeof account.remaining === "number") return `${account.remaining} free scans left this month`;
@@ -644,7 +647,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                           />
                         </div>
                         <button type="submit" disabled={state === "loading"} className="btn btn-primary scanner-submit-btn">
-                          {state === "loading" ? "Scanning..." : "Run Free Scan"}
+                          {state === "loading" ? "Scanning..." : "Scan My Website"}
                           <ArrowRight weight="bold" className="h-4 w-4" />
                         </button>
                       </div>
@@ -656,10 +659,6 @@ export default function Home({ heroContent }: HomePageClientProps) {
                     hasProAccess
                       ? (
                         <form onSubmit={handleCompare} className="scanner-tab-panel" aria-label="Compare two websites">
-                          <div className="compare-head">
-                            <h3>Compare your site against a competitor</h3>
-                            <p className="compare-subcopy">See where your site is stronger, weaker, or missing AI search signals.</p>
-                          </div>
                           <div className="compare-form">
                             <label className="compare-input">
                               <span>Your website URL</span>
@@ -697,14 +696,6 @@ export default function Home({ heroContent }: HomePageClientProps) {
                       : (
                         <div className="scanner-tab-panel locked-teaser">
                           <div className="locked-teaser-inner">
-                            <div className="locked-teaser-icon"><Lock size={18} /></div>
-                            <h3>Compare against a competitor</h3>
-                            <p>Unlock side-by-side AI visibility gaps, category wins, and competitor insights.</p>
-                            <div className="locked-teaser-pills">
-                              <span>2 URL scans</span>
-                              <span>Gap analysis</span>
-                              <span>Category wins</span>
-                            </div>
                             <button type="button" className="btn btn-primary locked-teaser-cta" onClick={() => router.push("/contact?subject=upgrade")}>
                               Contact us to upgrade
                             </button>
@@ -718,30 +709,13 @@ export default function Home({ heroContent }: HomePageClientProps) {
                       ? (
                         <div className="scanner-tab-panel">
                           <div className="pro-placeholder-panel">
-                            <div className="pro-placeholder-header">
-                              <span className="tab-pro-badge">PRO</span>
-                              <h3>Monitor your AI visibility</h3>
-                            </div>
-                            <p>Monitor is included in your Pro plan. URL tracking is coming next.</p>
-                            <div className="locked-teaser-pills">
-                              <span>Weekly scans</span>
-                              <span>Trend history</span>
-                              <span>Drop alerts</span>
-                            </div>
+                            <p>URL tracking is coming next.</p>
                           </div>
                         </div>
                       )
                       : (
                         <div className="scanner-tab-panel locked-teaser">
                           <div className="locked-teaser-inner">
-                            <div className="locked-teaser-icon"><Lock size={18} /></div>
-                            <h3>Monitor your AI visibility</h3>
-                            <p>Track score changes over time and get alerted when visibility drops.</p>
-                            <div className="locked-teaser-pills">
-                              <span>Weekly scans</span>
-                              <span>Trend history</span>
-                              <span>Drop alerts</span>
-                            </div>
                             <button type="button" className="btn btn-primary locked-teaser-cta" onClick={() => router.push("/contact?subject=upgrade")}>
                               Contact us to upgrade
                             </button>
@@ -755,30 +729,13 @@ export default function Home({ heroContent }: HomePageClientProps) {
                       ? (
                         <div className="scanner-tab-panel">
                           <div className="pro-placeholder-panel">
-                            <div className="pro-placeholder-header">
-                              <span className="tab-pro-badge">PRO</span>
-                              <h3>Audit multiple pages</h3>
-                            </div>
-                            <p>Audit is included in your Pro plan. Multi-page crawling is coming next.</p>
-                            <div className="locked-teaser-pills">
-                              <span>10-page crawl</span>
-                              <span>Weakest pages</span>
-                              <span>Bulk export</span>
-                            </div>
+                            <p>Multi-page crawling is coming next.</p>
                           </div>
                         </div>
                       )
                       : (
                         <div className="scanner-tab-panel locked-teaser">
                           <div className="locked-teaser-inner">
-                            <div className="locked-teaser-icon"><Lock size={18} /></div>
-                            <h3>Audit multiple pages</h3>
-                            <p>Scan important pages across your site and find the weakest opportunities first.</p>
-                            <div className="locked-teaser-pills">
-                              <span>10-page crawl</span>
-                              <span>Weakest pages</span>
-                              <span>Bulk export</span>
-                            </div>
                             <button type="button" className="btn btn-primary locked-teaser-cta" onClick={() => router.push("/contact?subject=upgrade")}>
                               Contact us to upgrade
                             </button>
@@ -798,36 +755,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 {isClient && <p className="hero-last-updated">Updated May 2026</p>}
               </div>
 
-              <div className="product-visual" id="report">
-                <div className="visual-toolbar">
-                  <span />
-                  <span />
-                  <span />
-                  <strong>AI Visibility Readiness Report</strong>
-                </div>
-                <div className="visual-score-row">
-                  <div className="visual-score">83</div>
-                  <div>
-                    <p>Overall AI visibility score</p>
-                    <small>Metadata strong, schema partial, FAQs missing</small>
-                  </div>
-                </div>
-                <div className="visual-bars">
-                  {["Metadata", "Schema", "Answer readiness", "Performance"].map((label, index) => (
-                    <div key={label}>
-                      <div className="visual-bar-label">
-                        <span>{label}</span>
-                        <span className="visual-bar-score">{[15, 17, 10, 11][index]}/20</span>
-                      </div>
-                      <div className="visual-bar"><span style={{ width: `${[92, 78, 58, 66][index]}%` }} /></div>
-                    </div>
-                  ))}
-                </div>
-                <div className="visual-fixes">
-                  <p><Sparkle weight="duotone" className="h-4 w-4" /> Add FAQPage schema for answer extraction.</p>
-                  <p><Sparkle weight="duotone" className="h-4 w-4" /> Clarify primary entity and audience language.</p>
-                </div>
-              </div>
+              <AnimatedProductDemo />
             </div>
           </section>
 

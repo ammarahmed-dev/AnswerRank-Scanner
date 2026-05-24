@@ -13,13 +13,14 @@ export const metadata = buildPageMetadata({
 export default function HomePage() {
   const heroContent = (
     <>
-      <p className="hero-badge">25 AEO + GEO checks</p>
+      <p className="hero-badge">25 AEO + GEO checks · Free · No signup</p>
       <h1>
-        Is your site visible to{" "}
-        <span style={{ color: "#00f0b4" }}>AI search</span>?
+        Can{" "}
+        <span style={{ color: "#00f0b4" }}>ChatGPT and Perplexity</span>{" "}
+        find your website?
       </h1>
       <p className="hero-lede">
-        Scan any URL in 60 seconds with a free AEO scanner for Answer Engine Optimization. Get an AI readiness score, missing schema issues, content clarity gaps, and prioritized fixes for ChatGPT, Perplexity, and Google AI results.
+        ChatGPT and Perplexity choose which websites to reference when answering questions. AEOCheck scans your page and shows whether your site qualifies - and exactly what to fix if it doesn&apos;t.
       </p>
     </>
   );
