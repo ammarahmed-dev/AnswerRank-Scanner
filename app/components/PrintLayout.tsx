@@ -593,7 +593,7 @@ export default function PrintLayout({ report, presentationData }: Props) {
                 <p className="pl-action-desc">Useful improvements after high-impact fixes.</p>
                 {niceItems.length > 0 ? niceItems.map((c) => (
                     <div key={c.id} className="pl-action-item">
-                      <span>âœ¦</span>
+                      <span>✦</span>
                       <div>
                         <p>{c.label}</p>
                         <small>{c.detail}</small>
