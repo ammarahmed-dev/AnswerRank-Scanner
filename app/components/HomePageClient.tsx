@@ -487,6 +487,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
         setCompareSimStep(0);
         return;
       }
+      document.body.style.overflow = "";
       sessionStorage.setItem("aeocheck_compare_result", JSON.stringify(payload));
       router.push("/compare-report");
     } catch {

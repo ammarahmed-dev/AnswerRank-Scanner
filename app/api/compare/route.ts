@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { runScanCore } from "@/lib/scan-core";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { getAuthContext } from "@/lib/auth-server";
+import { getClientKey, getPlanLimit, checkUsageLimit, incrementUsage } from "@/lib/usage-limits";
+import { isMasterAdmin } from "@/lib/admin";
 import type { CheckResult } from "@/types/index";
 
 export const runtime = "nodejs";
@@ -70,8 +72,16 @@ function domainFromUrl(rawUrl: string): string {
 
 export async function POST(req: Request) {
   const auth = await getAuthContext(req);
-  if (!auth.user) {
-    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  const effectivePlan = auth.user && isMasterAdmin(auth.user.email) ? "agency" : auth.plan;
+  const clientKey = auth.user
+    ? `compare:user:${auth.user.id}`
+    : `compare:${getClientKey(undefined, req)}`;
+  const usage = await checkUsageLimit(clientKey, getPlanLimit(effectivePlan));
+  if (!usage.allowed) {
+    return NextResponse.json(
+      { error: "Compare limit reached for this month.", limit: usage.limit, remaining: 0 },
+      { status: 429 }
+    );
   }
 
   const body = (await req.json().catch(() => ({}))) as CompareBody;
@@ -181,6 +191,8 @@ export async function POST(req: Request) {
         : winner === "primary"
           ? `Your site is ${scoreGap} points ahead of ${competitorDomain}.`
           : `Your site is ${Math.abs(scoreGap)} points behind ${competitorDomain}.`;
+
+    await incrementUsage(clientKey, usage.count + 1);
 
     return NextResponse.json({
       competitors: results,
