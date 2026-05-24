@@ -381,9 +381,10 @@ export async function POST(req: NextRequest) {
   }
 
   const authContext = await getAuthContext(req);
-  const effectivePlan = authContext.user && isMasterAdmin(authContext.user.email) ? "agency" : authContext.plan;
+  const isAdmin = authContext.user ? isMasterAdmin(authContext.user.email) : false;
+  const effectivePlan = isAdmin ? "agency" : authContext.plan;
   const usageKey = authContext.user ? `user:${authContext.user.id}` : getClientKey(body.clientId, req);
-  const bypassScanLimit = isDevScanLimitBypassEnabled();
+  const bypassScanLimit = isAdmin || isDevScanLimitBypassEnabled();
   const usage = bypassScanLimit
     ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER }
     : await checkUsageLimit(usageKey, getPlanLimit(effectivePlan));

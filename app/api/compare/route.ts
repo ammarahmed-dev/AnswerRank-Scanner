@@ -72,11 +72,15 @@ function domainFromUrl(rawUrl: string): string {
 
 export async function POST(req: Request) {
   const auth = await getAuthContext(req);
-  const effectivePlan = auth.user && isMasterAdmin(auth.user.email) ? "agency" : auth.plan;
+  const isAdmin = auth.user ? isMasterAdmin(auth.user.email) : false;
+  const effectivePlan = isAdmin ? "agency" : auth.plan;
   const clientKey = auth.user
     ? `compare:user:${auth.user.id}`
     : `compare:${getClientKey(undefined, req)}`;
-  const usage = await checkUsageLimit(clientKey, getPlanLimit(effectivePlan));
+  const bypassLimit = isAdmin;
+  const usage = bypassLimit
+    ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER }
+    : await checkUsageLimit(clientKey, getPlanLimit(effectivePlan));
   if (!usage.allowed) {
     return NextResponse.json(
       { error: "Compare limit reached for this month.", limit: usage.limit, remaining: 0 },
@@ -192,7 +196,7 @@ export async function POST(req: Request) {
           ? `Your site is ${scoreGap} points ahead of ${competitorDomain}.`
           : `Your site is ${Math.abs(scoreGap)} points behind ${competitorDomain}.`;
 
-    await incrementUsage(clientKey, usage.count + 1);
+    if (!bypassLimit) await incrementUsage(clientKey, usage.count + 1);
 
     return NextResponse.json({
       competitors: results,
