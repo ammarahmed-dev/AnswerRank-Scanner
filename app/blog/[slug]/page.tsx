@@ -120,6 +120,21 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           { "@type": "ListItem", position: 3, name: post.title, item: postUrl },
         ],
       },
+      ...(post.faqs?.length
+        ? [
+            {
+              "@type": "FAQPage",
+              mainEntity: post.faqs.map((faq) => ({
+                "@type": "Question",
+                name: faq.question,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: faq.answer,
+                },
+              })),
+            },
+          ]
+        : []),
     ],
   };
 

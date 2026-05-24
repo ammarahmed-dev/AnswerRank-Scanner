@@ -4,6 +4,11 @@ import matter from "gray-matter";
 
 const BLOG_DIR = path.join(process.cwd(), "content", "blog");
 
+export type FAQ = {
+  question: string;
+  answer: string;
+};
+
 export type BlogPostMeta = {
   title: string;
   date: string;
@@ -12,6 +17,7 @@ export type BlogPostMeta = {
   tags: string[];
   coverImage?: string;
   coverImageAlt?: string;
+  faqs?: FAQ[];
 };
 
 export type BlogPost = BlogPostMeta & {
@@ -45,6 +51,12 @@ function readPostFile(fileName: string): BlogPost {
     tags: ensureTags(parsed.data.tags),
     coverImage: ensureString(parsed.data.coverImage) || undefined,
     coverImageAlt: ensureString(parsed.data.coverImageAlt) || undefined,
+    faqs: Array.isArray(parsed.data.faqs)
+      ? parsed.data.faqs.filter(
+          (f): f is FAQ =>
+            typeof f?.question === "string" && typeof f?.answer === "string",
+        )
+      : undefined,
     content: parsed.content,
   };
 }
