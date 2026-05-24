@@ -585,15 +585,15 @@ export default function Home({ heroContent }: HomePageClientProps) {
     setWaitlistState("success");
   };
 
-  const scanCountLabel = account && isMasterAdmin({ plan: account.plan, isAdmin: account.isAdmin })
-    ? "Master Admin - Unlimited Access"
-    : account && (account.unlimited || isProUser({ plan: account.plan, isAdmin: account.isAdmin }))
-      ? "Pro - Unlimited Access"
-      : account && typeof account.remaining === "number"
-        ? `${account.remaining} free scans left this month`
-        : account?.plan === "guest" && isClient
-          ? `${guestScansLeft} guest preview scan left`
-        : undefined;
+  const scanCountLabel = (() => {
+    if (!account) return undefined;
+    // Trust the API's pre-computed flags — avoids client-side re-derivation that can diverge
+    if (account.isAdmin) return "Master Admin · Unlimited Access";
+    if (account.unlimited) return "Pro · Unlimited Access";
+    if (typeof account.remaining === "number") return `${account.remaining} free scans left this month`;
+    if (account.plan === "guest" && isClient) return `${guestScansLeft} guest preview scan left`;
+    return undefined;
+  })();
 
   const hasProAccess = isClient && account != null && isProUser({ plan: account.plan, isAdmin: account.isAdmin });
 

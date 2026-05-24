@@ -60,8 +60,12 @@ export async function GET(req: Request) {
     getUsageCount(`user:${auth.user.id}`),
     getRecentReports(auth.user.id),
   ]);
-  const isAdmin = isMasterAdmin(auth.user.email);
-  const plan = isAdmin ? "agency" : normalizeUserPlan(auth.plan);
+  const isEmailAdmin = isMasterAdmin(auth.user.email);
+  const profilePlan = normalizeUserPlan(auth.plan);
+  // Email check is primary; agency plan in Supabase is the fallback
+  // (covers cases where MASTER_ADMIN_EMAILS is missing but profile was already set to "agency")
+  const plan = isEmailAdmin ? "agency" : profilePlan;
+  const isAdmin = isEmailAdmin || plan === "agency";
   const limit = getPlanLimit(plan);
   const unlimited = plan === "pro" || plan === "agency";
 
