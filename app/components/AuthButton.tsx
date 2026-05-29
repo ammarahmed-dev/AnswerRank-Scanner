@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LayoutDashboard, LogOut, Menu, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
+import { LogOut, Menu, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { useAuth } from "@/app/context/AuthContext";
 
@@ -54,9 +54,6 @@ export default function AuthButton() {
             )}
             <a href="/dashboard" title={user.email ?? "Account"}>
               <UserRound className="h-4 w-4" />
-            </a>
-            <a href="/dashboard" title={user.email ?? "Reports"}>
-              <LayoutDashboard className="h-4 w-4" />
             </a>
             <button type="button" onClick={handleLogout} aria-label="Log out">
               <LogOut className="h-4 w-4" />

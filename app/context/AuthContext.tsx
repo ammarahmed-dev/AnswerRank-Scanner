@@ -12,6 +12,7 @@ type AuthState = {
   remaining: number | null;
   unlimited: boolean;
   loading: boolean;
+  portalUrl: string | null;
 };
 
 type AuthContextValue = AuthState & {
@@ -25,6 +26,7 @@ const AuthContext = createContext<AuthContextValue>({
   remaining: null,
   unlimited: false,
   loading: true,
+  portalUrl: null,
   refresh: async () => {},
 });
 
@@ -40,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     remaining: null,
     unlimited: false,
     loading: true,
+    portalUrl: null,
   });
 
   const supabase = getSupabaseBrowserClient();
@@ -51,11 +54,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         cache: "no-store",
       });
       if (!res.ok) {
-        setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false });
+        setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null });
         return;
       }
       const data = (await res.json()) as {
-        profile: { id: string; email: string; plan: UserPlan; isAdmin?: boolean };
+        profile: { id: string; email: string; plan: UserPlan; isAdmin?: boolean; portalUrl?: string | null };
         usage: { remaining: number | null; unlimited: boolean };
       };
       setState({
@@ -65,9 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         remaining: data.usage.remaining,
         unlimited: data.usage.unlimited,
         loading: false,
+        portalUrl: data.profile.portalUrl ?? null,
       });
     } catch {
-      setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false });
+      setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null });
     }
   }, []);
 
@@ -75,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!supabase) return;
     const token = (await getSafeSupabaseSession(supabase))?.access_token;
     if (!token) {
-      setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false });
+      setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null });
       return;
     }
     await fetchAccount(token);
@@ -93,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = client.auth.onAuthStateChange(async (_event, session) => {
       if (!session?.access_token) {
-        setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false });
+        setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null });
         return;
       }
       await fetchAccount(session.access_token);

@@ -4,7 +4,10 @@ import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { getAuthContext } from "@/lib/auth-server";
 import { getClientKey, getPlanLimit, checkUsageLimit, incrementUsage } from "@/lib/usage-limits";
 import { isMasterAdmin } from "@/lib/admin";
+import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 import type { CheckResult } from "@/types/index";
+
+const supabaseUrl = getSupabaseServerUrl();
 
 export const runtime = "nodejs";
 
@@ -197,6 +200,24 @@ export async function POST(req: Request) {
           : `Your site is ${Math.abs(scoreGap)} points behind ${competitorDomain}.`;
 
     if (!bypassLimit) await incrementUsage(clientKey, usage.count + 1);
+
+    if (auth.user && (effectivePlan === "pro" || effectivePlan === "agency") && hasSupabaseConfig()) {
+      fetch(`${supabaseUrl}/rest/v1/compare_runs`, {
+        method: "POST",
+        headers: {
+          ...getSupabaseServiceHeaders(),
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({
+          user_id: auth.user.id,
+          url_a: primaryUrl,
+          url_b: competitorUrl,
+          score_a: primaryScore,
+          score_b: competitorScore,
+        }),
+      }).catch(() => {});
+    }
 
     return NextResponse.json({
       competitors: results,

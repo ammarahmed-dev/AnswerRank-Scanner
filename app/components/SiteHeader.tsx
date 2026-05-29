@@ -14,7 +14,8 @@ export default function SiteHeader({ scanCountLabel }: Props) {
       </a>
       <nav className="site-nav" aria-label="Primary navigation">
         <a href="/#how">How it works</a>
-        <a href="/#report">Report</a>
+        <a href="/scan">Scan</a>
+        <a href="/compare">Compare</a>
         <a href="/#pricing">Pricing</a>
         <a href="/#faq">FAQ</a>
         <a href="/monitor">Monitor</a>

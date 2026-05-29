@@ -10,6 +10,8 @@ type Props = {
   className?: string;
   plan: UpgradePlan;
   disabled?: boolean;
+  isCurrentPlan?: boolean;
+  includedInPlan?: boolean;
 };
 
 export default function UpgradeButton({
@@ -17,11 +19,13 @@ export default function UpgradeButton({
   className = "btn btn-primary",
   plan,
   disabled = false,
+  isCurrentPlan = false,
+  includedInPlan = false,
 }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleUpgrade = async () => {
-    if (loading || disabled) return;
+    if (loading || disabled || isCurrentPlan) return;
     setLoading(true);
     try {
       const supabase = getSupabaseBrowserClient();
@@ -67,11 +71,12 @@ export default function UpgradeButton({
   return (
     <button
       type="button"
-      onClick={handleUpgrade}
-      disabled={loading || disabled}
+      onClick={isCurrentPlan ? undefined : handleUpgrade}
+      disabled={loading || disabled || isCurrentPlan}
       className={className}
+      style={isCurrentPlan ? { cursor: "default", opacity: 0.6 } : undefined}
     >
-      {loading ? "Opening checkout…" : children}
+      {loading ? "Opening checkout…" : (isCurrentPlan && includedInPlan ? "Included in Pro" : children)}
     </button>
   );
 }

@@ -2,6 +2,7 @@
 
 import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { AlertCircle, CheckCircle2, ChevronDown, Download, ExternalLink, LayoutGrid, Loader2 } from "lucide-react";
 import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
@@ -460,6 +461,7 @@ export default function AuditClient() {
       <section className="audit-page app-container">
         <div className="audit-page-topbar">
           <a href="/audit" className="btn btn-secondary">All audits</a>
+          <Link href="/dashboard" className="btn btn-secondary">Dashboard</Link>
           {audit.status === "completed" && (
             <button onClick={handleDownloadPdf} className="btn btn-secondary audit-pdf-btn-top">
               <Download className="h-4 w-4" />

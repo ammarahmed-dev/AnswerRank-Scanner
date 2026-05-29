@@ -137,7 +137,7 @@ function HomeInner({ heroContent }: HomePageClientProps) {
   const [report, setReport] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const { plan, isAdmin, remaining, unlimited, loading: authLoading, refresh: authRefresh } = useAuth();
+  const { plan, isAdmin, remaining, unlimited, loading: authLoading, refresh: authRefresh, portalUrl } = useAuth();
   const [isClient, setIsClient] = useState(false);
   const [clientId, setClientId] = useState("");
   const [scannerTab, setScannerTab] = useState<ScannerTab>("scan");
@@ -615,7 +615,7 @@ function HomeInner({ heroContent }: HomePageClientProps) {
   })();
 
   const hasProAccess = isClient && !authLoading && isProUser({ plan, isAdmin });
-  const auditPageLimit = isAdmin ? 100 : plan === "agency" ? 100 : plan === "pro" ? 50 : plan === "free" ? 10 : 5;
+  const auditPageLimit = isAdmin ? 500 : plan === "agency" ? 500 : plan === "pro" ? 100 : plan === "onetime" ? 50 : plan === "free" ? 5 : 0;
 
   return (
     <main className="min-h-screen">
@@ -754,7 +754,10 @@ function HomeInner({ heroContent }: HomePageClientProps) {
                         </button>
                       </div>
                       {auditError && <p className="compare-error">{auditError}</p>}
-                      <p className="scanner-sample-link">Scans up to {auditPageLimit} pages.</p>
+                      {plan === "guest"
+                        ? <p className="scanner-sample-link"><a href="/signup">Sign up free</a> to start auditing.</p>
+                        : <p className="scanner-sample-link">Scans up to {auditPageLimit} pages.</p>
+                      }
                     </form>
                   )}
                 </div>
@@ -945,6 +948,8 @@ function HomeInner({ heroContent }: HomePageClientProps) {
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Basic score breakdown</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Top 3 issues</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Limited report preview</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 5-page site audit</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 monitor URL</li>
                   </ul>
                   <a href="#scanner" className="btn btn-secondary">Start free scan</a>
                 </article>
@@ -965,7 +970,12 @@ function HomeInner({ heroContent }: HomePageClientProps) {
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Client-ready PDF report</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Up to 50-page site audit</li>
                   </ul>
-                  <UpgradeButton plan="onetime" className="btn btn-outline-white">
+                  <UpgradeButton
+                    plan="onetime"
+                    className="btn btn-outline-white"
+                    isCurrentPlan={plan === "onetime" || plan === "pro" || plan === "agency"}
+                    includedInPlan={plan === "pro" || plan === "agency"}
+                  >
                     {plan === "onetime" ? "Active plan" : "Get Full Report"}
                   </UpgradeButton>
                 </article>
@@ -982,13 +992,25 @@ function HomeInner({ heroContent }: HomePageClientProps) {
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Saved report history</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Client-ready PDF reports</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Competitor comparisons</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited retests</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 10 retests per URL</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Up to 100-page site audit</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Monitor up to 10 URLs</li>
                   </ul>
-                  <UpgradeButton plan="pro" className="btn btn-primary">
-                    {plan === "pro" ? "Active plan" : "Get Pro"}
+                  <UpgradeButton plan="pro" className="btn btn-primary" isCurrentPlan={plan === "pro" || plan === "agency"}>
+                    {plan === "pro" ? "Active plan" : plan === "agency" ? "Included" : "Get Pro"}
                   </UpgradeButton>
+                  {(plan === "pro" || plan === "agency") && portalUrl && (
+                    <a
+                      href={portalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: "block", textAlign: "center", marginTop: 10, fontSize: 13, color: "rgba(255,255,255,0.5)", textDecoration: "none" }}
+                      onMouseEnter={e => (e.currentTarget.style.textDecoration = "underline")}
+                      onMouseLeave={e => (e.currentTarget.style.textDecoration = "none")}
+                    >
+                      Manage subscription →
+                    </a>
+                  )}
                 </article>
 
                 <article className="pricing-panel">
@@ -1006,7 +1028,7 @@ function HomeInner({ heroContent }: HomePageClientProps) {
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Priority scan queue</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> White-label PDF reports</li>
                   </ul>
-                  <UpgradeButton plan="agency" className="btn btn-outline-agency">
+                  <UpgradeButton plan="agency" className="btn btn-outline-agency" isCurrentPlan={plan === "agency"}>
                     {plan === "agency" ? "Active plan" : "Get Agency"}
                   </UpgradeButton>
                 </article>

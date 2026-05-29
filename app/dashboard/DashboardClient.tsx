@@ -3,11 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Activity,
+  ArrowLeftRight,
   ArrowUpRight,
   BarChart3,
   CheckCircle2,
   CreditCard,
   ExternalLink,
+  FileSearch,
   LayoutDashboard,
   Loader2,
   ShieldCheck,
@@ -19,11 +22,19 @@ import UpgradeButton from "../components/UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { isMasterAdmin } from "@/lib/access";
 
+type RecentAudit = {
+  id: string;
+  domain: string;
+  aggregate_score: number | null;
+  status: string;
+  created_at: string;
+};
+
 type AccountData = {
   profile: {
     id: string;
     email: string;
-    plan: "guest" | "free" | "pro" | "agency";
+    plan: "guest" | "free" | "onetime" | "pro" | "agency";
     isAdmin?: boolean;
   };
   usage: {
@@ -41,12 +52,22 @@ type AccountData = {
     max_retests?: number;
     unlocked?: boolean;
   }>;
+  recentAudits: RecentAudit[];
+  monitorCount: number;
 };
 
 function planLabel(plan: AccountData["profile"]["plan"]) {
   if (plan === "agency") return "Agency";
   if (plan === "pro") return "Pro";
+  if (plan === "onetime") return "Full Report";
   return "Free";
+}
+
+function monitorLimit(plan: AccountData["profile"]["plan"]): number | null {
+  if (plan === "agency") return null;
+  if (plan === "pro") return 10;
+  if (plan === "onetime") return 5;
+  return 1;
 }
 
 function formatDate(value: string) {
@@ -111,7 +132,7 @@ export default function DashboardClient() {
   }, [account]);
 
   const masterAdmin = account ? isMasterAdmin({ plan: account.profile.plan, isAdmin: account.profile.isAdmin }) : false;
-  const paidPlan = account ? account.profile.plan === "pro" || account.profile.plan === "agency" : false;
+  const paidPlan = account ? account.profile.plan === "pro" || account.profile.plan === "agency" || account.profile.plan === "onetime" : false;
   const shouldShowUpgradeCard = Boolean(account) && !masterAdmin && !paidPlan;
   const shouldShowPricingCta = shouldShowUpgradeCard;
   const hasUnlockedOneTimeReports = Boolean(account?.reports.some((report) => report.unlocked));
@@ -155,7 +176,7 @@ export default function DashboardClient() {
               <a href="/#scanner" className="btn btn-primary">Scan a URL</a>
             </div>
 
-            <div className="dashboard-grid">
+            <div className="dashboard-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
               {account.profile.isAdmin && (
                 <section className="surface dashboard-card dashboard-admin-card">
                   <div className="dashboard-card-title">
@@ -207,11 +228,11 @@ export default function DashboardClient() {
                 {shouldShowPricingCta && <a href="/#pricing" className="btn btn-secondary">View pricing</a>}
               </section>
 
-              <section className="surface dashboard-card dashboard-usage-card">
+              <section className="surface dashboard-card dashboard-usage-card" style={{ display: "flex", flexDirection: "column" }}>
                 <div className="dashboard-card-title">
                   <span className="icon-tile"><BarChart3 className="h-5 w-5" /></span>
                   <div>
-                    <h2>Monthly scans</h2>
+                    <h2>Scans</h2>
                     <p>Resets at the start of each month.</p>
                   </div>
                 </div>
@@ -227,6 +248,7 @@ export default function DashboardClient() {
                     ? "Your plan is not capped by the free monthly limit."
                     : `${account.usage.remaining} scans remaining this month.`}
                 </p>
+                <a href="/scan" className="btn btn-secondary" style={{ marginTop: "auto" }}>View all →</a>
               </section>
 
               {shouldShowUpgradeCard && (
@@ -247,11 +269,45 @@ export default function DashboardClient() {
               )}
             </div>
 
+            <div className="dashboard-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+              <section className="surface dashboard-card" style={{ display: "flex", flexDirection: "column" }}>
+                <div className="dashboard-card-title">
+                  <span className="icon-tile"><FileSearch className="h-5 w-5" /></span>
+                  <div><h2>Audits</h2><p>Site audits run</p></div>
+                </div>
+                <div className="dashboard-usage-number" style={{ flex: 1 }}>
+                  <strong>{account.recentAudits.length}{account.recentAudits.length === 5 ? "+" : ""}</strong>
+                  <span>site audits run</span>
+                </div>
+                <a href="/audit" className="btn btn-secondary" style={{ marginTop: "auto" }}>New audit →</a>
+              </section>
+
+              <section className="surface dashboard-card" style={{ display: "flex", flexDirection: "column" }}>
+                <div className="dashboard-card-title">
+                  <span className="icon-tile"><Activity className="h-5 w-5" /></span>
+                  <div><h2>Monitor</h2><p>Tracked URLs</p></div>
+                </div>
+                <div className="dashboard-usage-number" style={{ flex: 1 }}>
+                  <strong>{account.monitorCount}</strong>
+                  <span>{monitorLimit(account.profile.plan) === null ? "unlimited" : `of ${monitorLimit(account.profile.plan)} URLs tracked`}</span>
+                </div>
+                <a href="/monitor" className="btn btn-secondary" style={{ marginTop: "auto" }}>Open Monitor →</a>
+              </section>
+
+              <section className="surface dashboard-card" style={{ display: "flex", flexDirection: "column" }}>
+                <div className="dashboard-card-title">
+                  <span className="icon-tile"><ArrowLeftRight className="h-5 w-5" /></span>
+                  <div><h2>Compare</h2><p>Side-by-side analysis</p></div>
+                </div>
+                <p className="dashboard-plan-copy" style={{ flex: 1 }}>Analyze any two URLs head to head.</p>
+                <a href="/compare" className="btn btn-secondary" style={{ marginTop: "auto" }}>Compare URLs →</a>
+              </section>
+            </div>
+
             <section className="surface dashboard-reports">
               <div className="dashboard-section-header">
                 <div>
-                  <span className="launch-eyebrow">Recent reports</span>
-                  <h2>Saved scans</h2>
+                  <h2>Recent scans</h2>
                 </div>
                 <a href="/#scanner" className="btn btn-secondary">New scan</a>
               </div>
@@ -288,6 +344,37 @@ export default function DashboardClient() {
                   <ExternalLink className="h-5 w-5" />
                   <strong>No saved reports yet</strong>
                   <p>Run your first scan while logged in and it will appear here automatically.</p>
+                </div>
+              )}
+            </section>
+
+            <section className="surface dashboard-reports">
+              <div className="dashboard-section-header">
+                <div>
+                  <h2>Site audits</h2>
+                </div>
+                <a href="/audit" className="btn btn-secondary">New audit</a>
+              </div>
+              {account.recentAudits.length ? (
+                <div className="dashboard-report-list">
+                  {account.recentAudits.map((audit) => (
+                    <div className="dashboard-report-row" key={audit.id}>
+                      <a href={`/audit/${audit.id}`} className="dashboard-report-link">
+                        <div>
+                          <strong>{audit.domain}</strong>
+                          <span>{formatDate(audit.created_at)} · {audit.status}</span>
+                        </div>
+                        {audit.aggregate_score !== null && <em>{audit.aggregate_score}</em>}
+                        <ArrowUpRight className="h-4 w-4" />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="dashboard-empty-state">
+                  <FileSearch className="h-5 w-5" />
+                  <strong>No audits yet</strong>
+                  <p>Run a multi-page site audit and it will appear here.</p>
                 </div>
               )}
             </section>

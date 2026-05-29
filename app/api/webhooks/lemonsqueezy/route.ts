@@ -96,9 +96,11 @@ export async function POST(req: Request) {
       const plan = variantToPlan(variantId);
       if (plan === "pro" || plan === "agency") {
         const subscriptionId = event.data?.id ?? null;
+        const portalUrl = (attrs.urls as Record<string, string> | undefined)?.customer_portal ?? null;
         await patchProfile(userId, {
           plan,
           lemonsqueezy_subscription_id: subscriptionId,
+          lemonsqueezy_portal_url: portalUrl,
           plan_expires_at: null,
         });
         console.info(`[ls-webhook] ${eventName} → plan=${plan} user:`, userId);
