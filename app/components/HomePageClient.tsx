@@ -128,7 +128,7 @@ type HomePageClientProps = {
   heroContent?: ReactNode;
 };
 
-export default function Home({ heroContent }: HomePageClientProps) {
+function HomeInner({ heroContent }: HomePageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [url, setUrl] = useState("");
@@ -1263,9 +1263,13 @@ export default function Home({ heroContent }: HomePageClientProps) {
   );
 }
 
-
-
-
+export default function Home(props: HomePageClientProps) {
+  return (
+    <Suspense fallback={null}>
+      <HomeInner {...props} />
+    </Suspense>
+  );
+}
 
 
 
