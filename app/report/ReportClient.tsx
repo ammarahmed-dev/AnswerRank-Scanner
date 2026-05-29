@@ -171,21 +171,25 @@ export default function ReportClient() {
 
       <section className="report-page" id="report-top">
         {state === "loading" && (
-          <div className="launch-container py-8">
-            <LoadingState step={loadingStep} mode={reportId ? "report" : "scan"} />
+          <div className="report-loading-wrap">
+            <div className="launch-container">
+              <LoadingState step={loadingStep} mode={reportId ? "report" : "scan"} />
+            </div>
           </div>
         )}
 
         {state === "error" && (
-          <div className="launch-container py-8">
-            <div className="error-banner">
-              <AlertCircle className="h-5 w-5" />
-              <div>
-                <strong>Report unavailable</strong>
-                <p>{errorMsg}</p>
-                <small>Open a valid report link or scan the URL again from the homepage.</small>
+          <div className="report-loading-wrap">
+            <div className="launch-container">
+              <div className="error-banner">
+                <AlertCircle className="h-5 w-5" />
+                <div>
+                  <strong>Report unavailable</strong>
+                  <p>{errorMsg}</p>
+                  <small>Open a valid report link or scan the URL again from the homepage.</small>
+                </div>
+                <a href="/#scanner" className="btn btn-danger">Scan a URL</a>
               </div>
-              <a href="/#scanner" className="btn btn-danger">Scan a URL</a>
             </div>
           </div>
         )}

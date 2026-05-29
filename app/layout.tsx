@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import BackToTop from "@/app/components/BackToTop";
+import { Providers } from "./providers";
 import { absoluteUrl, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
@@ -83,8 +84,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
-        {children}
-        <BackToTop />
+        <Providers>
+          {children}
+          <BackToTop />
+        </Providers>
       </body>
     </html>
   );

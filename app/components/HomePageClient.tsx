@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { CSSProperties, ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -14,8 +14,9 @@ import TestimonialsSection from "./TestimonialsSection";
 import AnimatedProductDemo from "./AnimatedProductDemo";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
-import { useRouter } from "next/navigation";
-import { canRunScan, isMasterAdmin, isProUser } from "@/lib/access";
+import { useRouter, useSearchParams } from "next/navigation";
+import { canRunScan, isProUser } from "@/lib/access";
+import { useAuth } from "@/app/context/AuthContext";
 import {
   Globe,
   ArrowRight,
@@ -129,18 +130,14 @@ type HomePageClientProps = {
 
 export default function Home({ heroContent }: HomePageClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [url, setUrl] = useState("");
   const [state, setState] = useState<AppState>("idle");
   const [loaderProgress, setLoaderProgress] = useState<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
   const [report, setReport] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const [account, setAccount] = useState<{ plan: "guest" | "free" | "pro" | "agency"; isAdmin: boolean; remaining: number | null; unlimited: boolean } | null>({
-    plan: "guest",
-    isAdmin: false,
-    remaining: null,
-    unlimited: false,
-  });
+  const { plan, isAdmin, remaining, unlimited, loading: authLoading, refresh: authRefresh } = useAuth();
   const [isClient, setIsClient] = useState(false);
   const [clientId, setClientId] = useState("");
   const [scannerTab, setScannerTab] = useState<ScannerTab>("scan");
@@ -149,6 +146,9 @@ export default function Home({ heroContent }: HomePageClientProps) {
   const [compareState, setCompareState] = useState<"idle" | "loading" | "error">("idle");
   const [compareError, setCompareError] = useState("");
   const [compareSimStep, setCompareSimStep] = useState(0);
+  const [auditDomain, setAuditDomain] = useState("");
+  const [auditState, setAuditState] = useState<"idle" | "loading" | "error">("idle");
+  const [auditError, setAuditError] = useState("");
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [waitlistEmail, setWaitlistEmail] = useState("");
   const [waitlistState, setWaitlistState] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -196,32 +196,6 @@ export default function Home({ heroContent }: HomePageClientProps) {
     } as Record<string, number>),
     []
   );
-  const refreshAccountUsage = async () => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-    const token = (await getSafeSupabaseSession(supabase))?.access_token;
-    if (!token) {
-      setAccount({ plan: "guest", isAdmin: false, remaining: null, unlimited: false });
-      return;
-    }
-    try {
-      const res = await fetch("/api/account", {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-      if (!res.ok) return;
-      const data = (await res.json()) as { profile: { plan: "guest" | "free" | "pro" | "agency"; isAdmin?: boolean }; usage: { remaining: number | null; unlimited: boolean } };
-      setAccount({
-        plan: data.profile.plan,
-        isAdmin: Boolean(data.profile.isAdmin),
-        remaining: data.usage.remaining,
-        unlimited: data.usage.unlimited,
-      });
-    } catch {
-      return;
-    }
-  };
-
   useEffect(() => {
     setIsClient(true);
     const storedClientId = localStorage.getItem(CLIENT_STORAGE_KEY);
@@ -245,23 +219,23 @@ export default function Home({ heroContent }: HomePageClientProps) {
   }, []);
 
   useEffect(() => {
-    async function loadAccount() {
-      await refreshAccountUsage();
+    const tab = searchParams.get("tab");
+    if (tab === "scan" || tab === "compare" || tab === "monitor" || tab === "audit") {
+      setScannerTab(tab);
     }
-    loadAccount();
-  }, []);
+  }, [searchParams]);
 
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (account && !canRunScan({ plan: account.plan, isAdmin: account.isAdmin }, account.remaining)) {
-      if (account.plan === "free") {
+    if (!authLoading && !canRunScan({ plan, isAdmin }, remaining)) {
+      if (plan === "free") {
         setLimitModalType("free");
         setShowLimitModal(true);
         return;
       }
       return setState("paywall");
     }
-    if (account?.plan === "guest" && guestScansLeft <= 0) {
+    if (plan === "guest" && guestScansLeft <= 0) {
       setLimitModalType("guest");
       setShowLimitModal(true);
       return;
@@ -273,7 +247,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
     setState("loading");
     document.body.style.overflow = "hidden";
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-    currentScanWasGuestRef.current = account?.plan === "guest";
+    currentScanWasGuestRef.current = plan === "guest";
     const initialProgress: LoaderProgress = { step: 1, label: "Preparing scan", status: "started" };
     setLoaderProgress(initialProgress);
     lastRenderedProgressRef.current = initialProgress;
@@ -304,7 +278,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         if (res.status === 429) {
-          if (account?.plan === "free") {
+          if (plan === "free") {
             setLimitModalType("free");
             setShowLimitModal(true);
           } else {
@@ -348,7 +322,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
           localStorage.setItem(GUEST_SCAN_STORAGE_KEY, JSON.stringify({ month, used: nextUsed }));
           setGuestScansLeft(Math.max(0, 1 - nextUsed));
         }
-        await refreshAccountUsage();
+        await authRefresh();
         setReport(result);
         document.body.style.overflow = "";
         setState("done");
@@ -448,6 +422,52 @@ export default function Home({ heroContent }: HomePageClientProps) {
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
+  const handleAudit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const raw = auditDomain.trim();
+    if (!raw) return;
+
+    let domain = raw;
+    try {
+      const parsed = new URL(raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`);
+      if (!parsed.hostname || parsed.hostname.includes(" ")) {
+        setAuditError("Please enter a valid website URL.");
+        setAuditState("error");
+        return;
+      }
+      domain = parsed.href;
+    } catch {
+      setAuditError("Please enter a valid website URL.");
+      setAuditState("error");
+      return;
+    }
+
+    setAuditState("loading");
+    setAuditError("");
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const token = (await getSafeSupabaseSession(supabase))?.access_token;
+      const res = await fetch("/api/audit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ domain }),
+      });
+      const data = (await res.json()) as { id?: string; error?: string };
+      if (!res.ok || !data.id) {
+        setAuditError(data.error ?? "Could not start audit. Please try again.");
+        setAuditState("error");
+        return;
+      }
+      router.push(`/audit/${data.id}`);
+    } catch {
+      setAuditError("Network error. Please check your connection and try again.");
+      setAuditState("error");
+    }
+  };
+
   const handleCompare = async (e: React.FormEvent) => {
     e.preventDefault();
     const a = compareUrl.trim();
@@ -507,9 +527,6 @@ export default function Home({ heroContent }: HomePageClientProps) {
     setTimeout(() => inputRef.current?.focus(), 250);
   };
 
-  const handleHomepageFullReportCta = () => {
-    router.push("/contact?subject=upgrade");
-  };
 
   const closeWaitlistModal = () => {
     setShowWaitlistModal(false);
@@ -589,16 +606,16 @@ export default function Home({ heroContent }: HomePageClientProps) {
   };
 
   const scanCountLabel = (() => {
-    if (!account) return undefined;
-    // Trust the API's pre-computed flags - avoids client-side re-derivation that can diverge
-    if (account.isAdmin) return "Master Admin · Unlimited Access";
-    if (account.unlimited) return "Pro · Unlimited Access";
-    if (typeof account.remaining === "number") return `${account.remaining} free scans left this month`;
-    if (account.plan === "guest" && isClient) return `${guestScansLeft} guest preview scan left`;
+    if (!isClient || authLoading) return undefined;
+    if (isAdmin) return "Master Admin · Unlimited Access";
+    if (unlimited) return "Pro · Unlimited Access";
+    if (typeof remaining === "number") return `${remaining} free scans left this month`;
+    if (plan === "guest") return `${guestScansLeft} guest preview scan left`;
     return undefined;
   })();
 
-  const hasProAccess = isClient && account != null && isProUser({ plan: account.plan, isAdmin: account.isAdmin });
+  const hasProAccess = isClient && !authLoading && isProUser({ plan, isAdmin });
+  const auditPageLimit = isAdmin ? 100 : plan === "agency" ? 100 : plan === "pro" ? 50 : plan === "free" ? 10 : 5;
 
   return (
     <main className="min-h-screen">
@@ -621,13 +638,13 @@ export default function Home({ heroContent }: HomePageClientProps) {
                       Scan
                     </button>
                     <button role="tab" type="button" aria-selected={scannerTab === "compare"} className={`scanner-tab${scannerTab === "compare" ? " active" : ""}`} onClick={() => setScannerTab("compare")}>
-                      Compare <span className="tab-pro-badge">PRO</span>
+                      Compare
                     </button>
                     <button role="tab" type="button" aria-selected={scannerTab === "monitor"} className={`scanner-tab${scannerTab === "monitor" ? " active" : ""}`} onClick={() => setScannerTab("monitor")}>
-                      Monitor <span className="tab-pro-badge">PRO</span>
+                      Monitor
                     </button>
                     <button role="tab" type="button" aria-selected={scannerTab === "audit"} className={`scanner-tab${scannerTab === "audit" ? " active" : ""}`} onClick={() => setScannerTab("audit")}>
-                      Audit <span className="tab-pro-badge">PRO</span>
+                      Audit
                     </button>
                   </div>
 
@@ -656,60 +673,49 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   )}
 
                   {scannerTab === "compare" && (
-                    hasProAccess
-                      ? (
-                        <form onSubmit={handleCompare} className="scanner-tab-panel" aria-label="Compare two websites">
-                          <div className="compare-form">
-                            <label className="compare-input">
-                              <span>Your website URL</span>
-                              <input
-                                type="url"
-                                aria-label="Your website URL"
-                                placeholder="https://yourwebsite.com"
-                                value={compareUrl}
-                                onChange={(e) => setCompareUrl(e.target.value)}
-                                disabled={compareState === "loading"}
-                              />
-                            </label>
-                            <label className="compare-input">
-                              <span>Competitor URL</span>
-                              <input
-                                type="url"
-                                aria-label="Competitor website URL"
-                                placeholder="https://competitor.com"
-                                value={compareCompetitorUrl}
-                                onChange={(e) => setCompareCompetitorUrl(e.target.value)}
-                                disabled={compareState === "loading"}
-                              />
-                            </label>
-                            <button
-                              type="submit"
-                              className="btn btn-primary compare-submit"
-                              disabled={compareState === "loading" || !compareUrl.trim() || !compareCompetitorUrl.trim()}
-                            >
-                              {compareState === "loading" ? "Comparing..." : "Run Comparison"}
-                            </button>
-                          </div>
-                          {compareError && <p className="compare-error">{compareError}</p>}
-                        </form>
-                      )
-                      : (
-                        <div className="scanner-tab-panel locked-teaser">
-                          <div className="locked-teaser-inner">
-                            <button type="button" className="btn btn-primary locked-teaser-cta" onClick={() => router.push("/contact?subject=upgrade")}>
-                              Contact us to upgrade
-                            </button>
-                          </div>
-                        </div>
-                      )
+                    <form onSubmit={handleCompare} className="scanner-tab-panel" aria-label="Compare two websites">
+                      <div className="compare-form">
+                        <label className="compare-input">
+                          <span>Your website URL</span>
+                          <input
+                            type="url"
+                            aria-label="Your website URL"
+                            placeholder="https://yourwebsite.com"
+                            value={compareUrl}
+                            onChange={(e) => setCompareUrl(e.target.value)}
+                            disabled={compareState === "loading"}
+                          />
+                        </label>
+                        <label className="compare-input">
+                          <span>Competitor URL</span>
+                          <input
+                            type="url"
+                            aria-label="Competitor website URL"
+                            placeholder="https://competitor.com"
+                            value={compareCompetitorUrl}
+                            onChange={(e) => setCompareCompetitorUrl(e.target.value)}
+                            disabled={compareState === "loading"}
+                          />
+                        </label>
+                        <button
+                          type="submit"
+                          className="btn btn-primary compare-submit"
+                          disabled={compareState === "loading" || !compareUrl.trim() || !compareCompetitorUrl.trim()}
+                        >
+                          {compareState === "loading" ? "Comparing..." : "Run Comparison"}
+                        </button>
+                      </div>
+                      {compareError && <p className="compare-error">{compareError}</p>}
+                    </form>
                   )}
 
                   {scannerTab === "monitor" && (
                     hasProAccess
                       ? (
                         <div className="scanner-tab-panel">
-                          <div className="pro-placeholder-panel">
-                            <p>URL tracking is coming next.</p>
+                          <div className="monitor-tab-pro" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", minHeight: "200px", padding: "32px" }}>
+                            <p>Track your AEO score over time with weekly or monthly rescans and trend charts.</p>
+                            <Link href="/monitor" className="btn btn-primary">Open Monitor Dashboard</Link>
                           </div>
                         </div>
                       )
@@ -725,23 +731,31 @@ export default function Home({ heroContent }: HomePageClientProps) {
                   )}
 
                   {scannerTab === "audit" && (
-                    hasProAccess
-                      ? (
-                        <div className="scanner-tab-panel">
-                          <div className="pro-placeholder-panel">
-                            <p>Multi-page crawling is coming next.</p>
-                          </div>
+                    <form onSubmit={handleAudit} className="scanner-tab-panel" id="audit" aria-label="Audit a website">
+                      <div style={{ marginBottom: 12 }}>
+                        <h3 style={{ fontSize: "1.05rem", fontWeight: 800, marginBottom: 6 }}>Multi-page AEO audit</h3>
+                        <p className="scanner-sample-link" style={{ marginBottom: 0 }}>Scan every important page and get a site-wide AEO score.</p>
+                      </div>
+                      <div className="scanner-input-row">
+                        <div className="hero-input-wrap">
+                          <Globe weight="duotone" className="h-5 w-5" />
+                          <input
+                            type="text"
+                            aria-label="Domain to audit"
+                            value={auditDomain}
+                            onChange={(e) => setAuditDomain(e.target.value)}
+                            placeholder="https://yourwebsite.com"
+                            disabled={auditState === "loading"}
+                          />
                         </div>
-                      )
-                      : (
-                        <div className="scanner-tab-panel locked-teaser">
-                          <div className="locked-teaser-inner">
-                            <button type="button" className="btn btn-primary locked-teaser-cta" onClick={() => router.push("/contact?subject=upgrade")}>
-                              Contact us to upgrade
-                            </button>
-                          </div>
-                        </div>
-                      )
+                        <button type="submit" disabled={auditState === "loading" || !auditDomain.trim()} className="btn btn-primary scanner-submit-btn">
+                          {auditState === "loading" ? "Starting..." : "Start Audit"}
+                          <ArrowRight weight="bold" className="h-4 w-4" />
+                        </button>
+                      </div>
+                      {auditError && <p className="compare-error">{auditError}</p>}
+                      <p className="scanner-sample-link">Scans up to {auditPageLimit} pages.</p>
+                    </form>
                   )}
                 </div>
 
@@ -913,8 +927,8 @@ export default function Home({ heroContent }: HomePageClientProps) {
             <div className="launch-container pricing-layout">
               <div className="pricing-intro">
                 <p className="launch-eyebrow">Pricing</p>
-                <h2>Choose the report depth you need.</h2>
-                <p>Start with a free preview, then unlock a client-ready report when you need the full breakdown.</p>
+                <h2>Simple pricing for every team size.</h2>
+                <p>Start free, upgrade when you need deeper insights and full site coverage.</p>
                 <p className="pricing-sample-link">Not sure what to expect? <a href="/sample-report">View a sample full report.</a></p>
               </div>
 
@@ -922,7 +936,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 <article className="pricing-panel">
                   <span className="pricing-badge pricing-badge-muted">Free forever</span>
                   <span className="price">$0</span>
-                  <h3>Free Preview</h3>
+                  <h3>Free</h3>
                   <p className="pricing-subline">For testing your AI visibility score.</p>
                   <ul>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 guest preview scan</li>
@@ -936,37 +950,64 @@ export default function Home({ heroContent }: HomePageClientProps) {
                 </article>
 
                 <article className="pricing-panel">
-                  <span className="pricing-badge pricing-badge-blue">One-time</span>
-                  <span className="price">$14 <small>one-time</small></span>
+                  {plan === "onetime"
+                    ? <span className="pricing-badge pricing-badge-blue">Current plan</span>
+                    : <span className="pricing-badge pricing-badge-blue">One-time</span>}
+                  <span className="price">$9 <small>one-time</small></span>
                   <h3>Full Report</h3>
-                  <p className="pricing-subline">Best for one website audit.</p>
+                  <p className="pricing-subline">Best for a single website audit.</p>
                   <ul>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 full report</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Full issue breakdown</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Fix recommendations for every issue</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Schema recommendations</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> AI Answer Snapshot</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Competitor takeaway</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> 3 retests on same URL</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Client-ready PDF report</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Up to 50-page site audit</li>
                   </ul>
-                  <button type="button" className="btn btn-secondary" onClick={handleHomepageFullReportCta}>Request full report access</button>
+                  <UpgradeButton plan="onetime" className="btn btn-secondary">
+                    {plan === "onetime" ? "Active plan" : "Get Full Report"}
+                  </UpgradeButton>
                 </article>
 
                 <article className="pricing-panel pricing-panel-featured">
-                  <span className="pricing-badge pricing-badge-purple">Best value</span>
-                  <span className="price">$39 <small>/month</small></span>
-                  <h3>Pro Monthly</h3>
+                  {plan === "pro"
+                    ? <span className="pricing-badge pricing-badge-purple">Current plan</span>
+                    : <span className="pricing-badge pricing-badge-purple">Best value</span>}
+                  <span className="price">$19 <small>/month</small></span>
+                  <h3>Pro</h3>
+                  <p className="pricing-subline">Best for regular scanning and client work.</p>
                   <ul>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 30 full reports per month</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited full reports</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Saved report history</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Client-ready PDF reports</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Competitor comparisons</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Priority scan access</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited retests on any URL</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited retests</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Up to 100-page site audit</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Monitor up to 10 URLs</li>
                   </ul>
-                  <UpgradeButton checkoutType="pro_plan" className="btn btn-primary">
-                    Contact us for Pro access
+                  <UpgradeButton plan="pro" className="btn btn-primary">
+                    {plan === "pro" ? "Active plan" : "Get Pro"}
+                  </UpgradeButton>
+                </article>
+
+                <article className="pricing-panel">
+                  {plan === "agency"
+                    ? <span className="pricing-badge pricing-badge-muted">Current plan</span>
+                    : <span className="pricing-badge pricing-badge-muted">Agency</span>}
+                  <span className="price">$49 <small>/month</small></span>
+                  <h3>Agency</h3>
+                  <p className="pricing-subline">For agencies auditing multiple client sites.</p>
+                  <ul>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Everything in Pro</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Up to 500-page site audits</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited monitor URLs</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 20 retests per URL</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Priority scan queue</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> White-label PDF reports</li>
+                  </ul>
+                  <UpgradeButton plan="agency" className="btn btn-secondary">
+                    {plan === "agency" ? "Active plan" : "Get Agency"}
                   </UpgradeButton>
                 </article>
               </div>
@@ -1060,7 +1101,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
             <span className="price">$14</span>
             <strong>Scan limit reached</strong>
             <p>{errorMsg || "Contact us to unlock the full report, schema recommendations, implementation checklist, and PDF export."}</p>
-            <UpgradeButton checkoutType="pro_plan">Contact us to upgrade</UpgradeButton>
+            <UpgradeButton plan="pro">Contact us to upgrade</UpgradeButton>
             <button onClick={() => setState("idle")} className="btn btn-secondary">Back to scanner</button>
           </div>
         </section>
@@ -1221,6 +1262,7 @@ export default function Home({ heroContent }: HomePageClientProps) {
     </main>
   );
 }
+
 
 
 

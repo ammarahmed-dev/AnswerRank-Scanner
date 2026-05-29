@@ -67,7 +67,7 @@ export async function GET(req: Request) {
   const plan = isEmailAdmin ? "agency" : profilePlan;
   const isAdmin = isEmailAdmin || plan === "agency";
   const limit = getPlanLimit(plan);
-  const unlimited = plan === "pro" || plan === "agency";
+  const unlimited = plan === "onetime" || plan === "pro" || plan === "agency";
 
   return NextResponse.json({
     profile: {

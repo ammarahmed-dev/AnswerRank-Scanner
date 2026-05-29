@@ -2,11 +2,9 @@ import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
 import { getPlanLimit } from "@/lib/usage-limits";
-import { hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
-
-import { getSupabaseServerUrl, getSupabaseServiceHeaders } from "@/lib/supabase-config";
 
 const supabaseUrl = getSupabaseServerUrl();
 
@@ -86,60 +84,65 @@ async function getAuthUsersMap(userIds: string[]) {
 }
 
 export async function GET(req: Request) {
-  const auth = await getAuthContext(req);
-  if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!isMasterAdmin(auth.user.email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  if (!hasSupabaseConfig()) return NextResponse.json({ users: [] });
+  try {
+    const auth = await getAuthContext(req);
+    if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!isMasterAdmin(auth.user.email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!hasSupabaseConfig()) return NextResponse.json({ users: [] });
 
-  const url = new URL(req.url);
-  const limit = Math.min(Number(url.searchParams.get("limit") || "100"), 200);
-  const offset = Math.max(0, Number(url.searchParams.get("offset") || "0"));
+    const url = new URL(req.url);
+    const limit = Math.min(Number(url.searchParams.get("limit") || "100"), 200);
+    const offset = Math.max(0, Number(url.searchParams.get("offset") || "0"));
 
-  const profiles = await getProfiles(limit, offset);
-  const userIds = profiles.map((p) => p.id).filter(Boolean);
+    const profiles = await getProfiles(limit, offset);
+    const userIds = profiles.map((p) => p.id).filter(Boolean);
 
-  const [reports, usage, authUsers] = await Promise.all([
-    getReports(userIds),
-    getUsageToday(),
-    getAuthUsersMap(userIds),
-  ]);
+    const [reports, usage, authUsers] = await Promise.all([
+      getReports(userIds),
+      getUsageToday(),
+      getAuthUsersMap(userIds),
+    ]);
 
-  const reportTotals = new Map<string, { total: number; lastScan: string | null }>();
-  for (const row of reports) {
-    if (!row.user_id) continue;
-    const current = reportTotals.get(row.user_id) ?? { total: 0, lastScan: null };
-    current.total += 1;
-    if (!current.lastScan || new Date(row.created_at) > new Date(current.lastScan)) {
-      current.lastScan = row.created_at;
+    const reportTotals = new Map<string, { total: number; lastScan: string | null }>();
+    for (const row of reports) {
+      if (!row.user_id) continue;
+      const current = reportTotals.get(row.user_id) ?? { total: 0, lastScan: null };
+      current.total += 1;
+      if (!current.lastScan || new Date(row.created_at) > new Date(current.lastScan)) {
+        current.lastScan = row.created_at;
+      }
+      reportTotals.set(row.user_id, current);
     }
-    reportTotals.set(row.user_id, current);
+
+    const usageTotals = new Map<string, number>();
+    for (const row of usage) {
+      const userId = row.client_key.replace("user:", "");
+      usageTotals.set(userId, row.scan_count ?? 0);
+    }
+
+    const users = profiles.map((profile) => {
+      const todayUsed = usageTotals.get(profile.id) ?? 0;
+      const planLimit = getPlanLimit(profile.plan);
+      const unlimited = profile.plan === "pro" || profile.plan === "agency" || isMasterAdmin(profile.email);
+      const reportMeta = reportTotals.get(profile.id) ?? { total: 0, lastScan: null };
+      return {
+        id: profile.id,
+        email: profile.email ?? "unknown",
+        role: isMasterAdmin(profile.email) ? "master_admin" : "user",
+        plan: profile.plan,
+        freeScansUsed: todayUsed,
+        freeScansLeft: unlimited ? null : Math.max(0, planLimit - todayUsed),
+        totalReports: reportMeta.total,
+        createdAt: profile.created_at,
+        lastSignInAt: authUsers.get(profile.id) ?? null,
+        lastScanAt: reportMeta.lastScan,
+      };
+    });
+
+    return NextResponse.json({ users, pagination: { limit, offset, count: users.length } });
+  } catch (err) {
+    console.error("[api/admin/users] unhandled error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  const usageTotals = new Map<string, number>();
-  for (const row of usage) {
-    const userId = row.client_key.replace("user:", "");
-    usageTotals.set(userId, row.scan_count ?? 0);
-  }
-
-  const users = profiles.map((profile) => {
-    const todayUsed = usageTotals.get(profile.id) ?? 0;
-    const limit = getPlanLimit(profile.plan);
-    const unlimited = profile.plan === "pro" || profile.plan === "agency" || isMasterAdmin(profile.email);
-    const reportMeta = reportTotals.get(profile.id) ?? { total: 0, lastScan: null };
-    return {
-      id: profile.id,
-      email: profile.email ?? "unknown",
-      role: isMasterAdmin(profile.email) ? "master_admin" : "user",
-      plan: profile.plan,
-      freeScansUsed: todayUsed,
-      freeScansLeft: unlimited ? null : Math.max(0, limit - todayUsed),
-      totalReports: reportMeta.total,
-      createdAt: profile.created_at,
-      lastSignInAt: authUsers.get(profile.id) ?? null,
-      lastScanAt: reportMeta.lastScan,
-    };
-  });
-
-  return NextResponse.json({ users, pagination: { limit, offset, count: users.length } });
 }
 

@@ -2,10 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LayoutDashboard, LogOut, Menu, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
-import { getSafeSupabaseUser, getSupabaseBrowserClient } from "@/lib/supabase-browser";
-
-type Plan = "guest" | "free" | "pro" | "agency";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { useAuth } from "@/app/context/AuthContext";
 
 const NAV_LINKS = [
   { href: "/#how", label: "How it works" },
@@ -16,58 +14,9 @@ const NAV_LINKS = [
 
 export default function AuthButton() {
   const supabase = getSupabaseBrowserClient();
-  const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [plan, setPlan] = useState<Plan>("guest");
+  const { user, isAdmin, plan } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!supabase) return;
-    const client = supabase;
-
-    async function loadAccountState() {
-      try {
-        const activeUser = await getSafeSupabaseUser(client);
-        setUser(activeUser);
-        setIsAdmin(false);
-        setPlan("guest");
-
-        if (!activeUser) return;
-
-        const session = await client.auth.getSession();
-        const token = session.data.session?.access_token;
-        if (!token) return;
-
-        const res = await fetch("/api/account", {
-          headers: { Authorization: `Bearer ${token}` },
-          cache: "no-store",
-        });
-
-        if (!res.ok) return;
-        const data = (await res.json()) as { profile?: { isAdmin?: boolean; plan?: string } };
-        const admin = Boolean(data.profile?.isAdmin);
-        const p = data.profile?.plan;
-        setIsAdmin(admin);
-        setPlan(p === "pro" || p === "agency" || p === "free" ? p : "free");
-      } catch {
-        setUser(null);
-        setIsAdmin(false);
-        setPlan("guest");
-      }
-    }
-
-    loadAccountState();
-
-    const { data } = client.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setIsAdmin(false);
-      setPlan("guest");
-      if (session?.user) loadAccountState();
-    });
-
-    return () => data.subscription.unsubscribe();
-  }, [supabase]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -84,11 +33,8 @@ export default function AuthButton() {
 
   const handleLogout = async () => {
     setMenuOpen(false);
-    await supabase.auth.signOut();
+    if (supabase) await supabase.auth.signOut();
     sessionStorage.clear();
-    setUser(null);
-    setIsAdmin(false);
-    setPlan("guest");
   };
 
   const close = () => setMenuOpen(false);
@@ -102,7 +48,7 @@ export default function AuthButton() {
         <div className="hidden md:inline-flex">
           <div className="auth-account">
             {masterAdmin && (
-              <a href="/admin" title="Master Admin Â· Unlimited Access">
+              <a href="/admin" title="Master Admin · Unlimited Access">
                 <ShieldCheck className="h-4 w-4" /> Admin
               </a>
             )}

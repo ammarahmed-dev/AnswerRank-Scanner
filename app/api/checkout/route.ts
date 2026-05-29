@@ -1,88 +1,92 @@
-import { NextRequest, NextResponse } from "next/server";
-import { POLAR_BASE_URL } from "@/lib/polar";
+import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 
-export async function POST(req: NextRequest) {
+export const runtime = "nodejs";
+
+const LS_API = "https://api.lemonsqueezy.com/v1/checkouts";
+
+const PLANS = ["onetime", "pro", "agency"] as const;
+type Plan = (typeof PLANS)[number];
+
+function getVariantId(plan: Plan): string | undefined {
+  if (plan === "onetime") return process.env.LEMONSQUEEZY_VARIANT_ONETIME;
+  if (plan === "pro") return process.env.LEMONSQUEEZY_VARIANT_PRO;
+  if (plan === "agency") return process.env.LEMONSQUEEZY_VARIANT_AGENCY;
+}
+
+export async function POST(req: Request) {
   try {
-    const body = await req.json() as {
-      checkoutType: "full_report" | "pro_plan";
-      reportId?: string;
-      returnTo?: string;
+    const auth = await getAuthContext(req);
+    if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    let body: { plan?: unknown };
+    try {
+      body = (await req.json()) as { plan?: unknown };
+    } catch {
+      return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    }
+
+    const plan = typeof body.plan === "string" ? body.plan : "";
+    if (!PLANS.includes(plan as Plan)) {
+      return NextResponse.json({ error: "Invalid plan." }, { status: 400 });
+    }
+
+    const storeId = process.env.LEMONSQUEEZY_STORE_ID;
+    const variantId = getVariantId(plan as Plan);
+    const apiKey = process.env.LEMONSQUEEZY_API_KEY;
+
+    if (!storeId || !variantId || !apiKey) {
+      console.error("[checkout] Missing Lemon Squeezy env vars");
+      return NextResponse.json({ error: "Checkout unavailable." }, { status: 503 });
+    }
+
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://aeocheck.co").replace(/\/$/, "");
+
+    const payload = {
+      data: {
+        type: "checkouts",
+        attributes: {
+          checkout_data: {
+            email: auth.user.email ?? undefined,
+            custom: { user_id: auth.user.id },
+          },
+          product_options: {
+            redirect_url: `${baseUrl}/dashboard?upgraded=1`,
+          },
+        },
+        relationships: {
+          store: { data: { type: "stores", id: storeId } },
+          variant: { data: { type: "variants", id: variantId } },
+        },
+      },
     };
 
-    const ALLOWED_CHECKOUT_TYPES = ["full_report", "pro_plan"] as const;
-    if (!ALLOWED_CHECKOUT_TYPES.includes(body.checkoutType)) {
-      return NextResponse.json({ error: "Invalid checkout type" }, { status: 400 });
-    }
-
-    const authContext = await getAuthContext(req);
-    if (!authContext.user) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
-
-    const userEmail = authContext.user?.email;
-
-    const fullReportProductId = process.env.POLAR_FULL_REPORT_PRODUCT_ID;
-    const proMonthlyProductId = process.env.POLAR_PRO_MONTHLY_PRODUCT_ID;
-    if (!fullReportProductId || !proMonthlyProductId) {
-      console.error("[checkout] Polar product ID env vars are not configured");
-      return NextResponse.json({ error: "Checkout unavailable" }, { status: 503 });
-    }
-    const productId = body.checkoutType === "full_report" ? fullReportProductId : proMonthlyProductId;
-
-    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://www.aeocheck.co").replace(/\/$/, "");
-    const successUrl = body.checkoutType === "full_report" && body.reportId
-      ? `${baseUrl}/report?id=${body.reportId}&payment=1`
-      : `${baseUrl}/?payment=1`;
-
-    const metadata = {
-      checkoutType: body.checkoutType,
-      ...(body.reportId ? { reportId: body.reportId } : {}),
-      ...(authContext.user?.id ? { userId: authContext.user.id } : {}),
-    };
-
-    const requestBody = body.checkoutType === "pro_plan"
-      ? {
-          products: [productId],
-          success_url: successUrl,
-          ...(userEmail ? { customer_email: userEmail } : {}),
-          metadata,
-        }
-      : {
-          product_id: productId,
-          success_url: successUrl,
-          ...(userEmail ? { customer_email: userEmail } : {}),
-          metadata,
-        };
-
-    const response = await fetch(`${POLAR_BASE_URL}/v1/checkouts/`, {
+    const res = await fetch(LS_API, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.POLAR_ACCESS_TOKEN}`,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/vnd.api+json",
+        "Content-Type": "application/vnd.api+json",
+        Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify(payload),
     });
 
-    const responseText = await response.text();
-    if (!response.ok) {
-      console.error("[checkout] Polar API error:", response.status, responseText);
-      return NextResponse.json(
-        { error: "Failed to create checkout" },
-        { status: 500 }
-      );
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      console.error("[checkout] Lemon Squeezy error:", res.status, detail);
+      return NextResponse.json({ error: "Failed to create checkout." }, { status: 500 });
     }
 
-    const data = JSON.parse(responseText) as { url: string };
-    return NextResponse.json({ url: data.url });
+    const data = (await res.json()) as { data?: { attributes?: { url?: string } } };
+    const checkoutUrl = data.data?.attributes?.url;
+    if (!checkoutUrl) {
+      console.error("[checkout] No URL in LS response");
+      return NextResponse.json({ error: "Failed to create checkout." }, { status: 500 });
+    }
 
-  } catch (error) {
-    const err = error as { message?: string };
-    console.error("Checkout error:", err?.message, error);
-    return NextResponse.json(
-      { error: "Failed to create checkout" },
-      { status: 500 }
-    );
+    return NextResponse.json({ checkoutUrl });
+  } catch (err) {
+    console.error("[checkout] Unhandled error:", err);
+    return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }
 }

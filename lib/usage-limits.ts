@@ -31,7 +31,7 @@ export function getClientKey(rawClientId: string | undefined, req: Request) {
   return createHash("sha256").update(source).digest("hex");
 }
 
-export function getPlanLimit(plan: "guest" | "free" | "pro" | "agency") {
+export function getPlanLimit(plan: "guest" | "free" | "onetime" | "pro" | "agency") {
   if (plan === "guest") return GUEST_MONTHLY_SCAN_LIMIT;
   if (plan === "free") return FREE_MONTHLY_SCAN_LIMIT;
   return PRO_MONTHLY_SCAN_LIMIT;

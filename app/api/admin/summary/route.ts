@@ -72,32 +72,37 @@ async function getTodayScans() {
 }
 
 export async function GET(req: Request) {
-  const auth = await getAuthContext(req);
+  try {
+    const auth = await getAuthContext(req);
 
-  if (!auth.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!auth.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!isMasterAdmin(auth.user.email)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const [users, proUsers, reports, todayScans, recentReports] = await Promise.all([
+      getCount("profiles"),
+      getCount("profiles", "&plan=in.(pro,agency)"),
+      getCount("reports"),
+      getTodayScans(),
+      getRecentReports(),
+    ]);
+
+    return NextResponse.json({
+      stats: {
+        users,
+        proUsers,
+        reports,
+        todayScans,
+      },
+      recentReports,
+    });
+  } catch (err) {
+    console.error("[api/admin/summary] unhandled error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  if (!isMasterAdmin(auth.user.email)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  const [users, proUsers, reports, todayScans, recentReports] = await Promise.all([
-    getCount("profiles"),
-    getCount("profiles", "&plan=in.(pro,agency)"),
-    getCount("reports"),
-    getTodayScans(),
-    getRecentReports(),
-  ]);
-
-  return NextResponse.json({
-    stats: {
-      users,
-      proUsers,
-      reports,
-      todayScans,
-    },
-    recentReports,
-  });
 }
 

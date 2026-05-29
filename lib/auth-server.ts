@@ -7,14 +7,33 @@ type AuthUser = {
 
 export type AuthContext = {
   user: AuthUser | null;
-  plan: "guest" | "free" | "pro" | "agency";
+  plan: "guest" | "free" | "onetime" | "pro" | "agency";
 };
 
 const supabaseUrl = getSupabaseServerUrl();
 
 function normalizePlan(value: unknown): AuthContext["plan"] {
-  if (value === "pro" || value === "agency") return value;
+  if (value === "pro" || value === "agency" || value === "onetime") return value;
   return "free";
+}
+
+export async function getUserPlan(userId: string): Promise<AuthContext["plan"]> {
+  if (!hasSupabaseConfig()) return "free";
+  const params = new URLSearchParams({
+    id: `eq.${userId}`,
+    select: "plan,plan_expires_at",
+    limit: "1",
+  });
+  const res = await fetch(`${supabaseUrl}/rest/v1/profiles?${params.toString()}`, {
+    headers: getSupabaseServiceHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) return "free";
+  const rows = (await res.json()) as Array<{ plan?: string; plan_expires_at?: string | null }>;
+  const row = rows[0];
+  if (!row) return "free";
+  if (row.plan_expires_at && new Date(row.plan_expires_at) < new Date()) return "free";
+  return normalizePlan(row.plan);
 }
 
 export async function getAuthContext(req: Request): Promise<AuthContext> {
@@ -52,20 +71,5 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
     }),
   }).catch(() => null);
 
-  const params = new URLSearchParams({
-    id: `eq.${user.id}`,
-    select: "plan",
-    limit: "1",
-  });
-
-  const profileRes = await fetch(`${supabaseUrl}/rest/v1/profiles?${params.toString()}`, {
-    headers: getSupabaseServiceHeaders(),
-    cache: "no-store",
-  });
-
-  if (!profileRes.ok) return { user, plan: "free" };
-
-  const rows = (await profileRes.json()) as Array<{ plan?: string }>;
-  return { user, plan: normalizePlan(rows[0]?.plan) };
+  return { user, plan: await getUserPlan(user.id) };
 }
-

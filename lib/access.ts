@@ -1,4 +1,11 @@
-export type UserPlan = "guest" | "free" | "pro" | "agency";
+export type UserPlan = "guest" | "free" | "onetime" | "pro" | "agency";
+
+export const PLAN_LIMITS = {
+  free:    { auditPages: 5,   auditPerDay: 1,   monitorUrls: 1,  scanPerMonth: 3 },
+  onetime: { auditPages: 50,  auditRescans: 3,  monitorUrls: 5,  fullReport: true },
+  pro:     { auditPages: 100, auditRescans: 10, monitorUrls: 10, scanUnlimited: true },
+  agency:  { auditPages: 500, auditRescans: 20, monitorUrls: -1, scanUnlimited: true },
+} as const;
 
 export type AccessProfile = {
   plan?: UserPlan | string | null;
@@ -6,7 +13,13 @@ export type AccessProfile = {
 };
 
 export function normalizeUserPlan(plan: unknown): UserPlan {
-  if (plan === "agency" || plan === "pro" || plan === "free" || plan === "guest") return plan;
+  if (
+    plan === "agency" ||
+    plan === "pro" ||
+    plan === "onetime" ||
+    plan === "free" ||
+    plan === "guest"
+  ) return plan;
   return "free";
 }
 
@@ -16,9 +29,11 @@ export function isMasterAdmin(profile: AccessProfile | UserPlan) {
 }
 
 export function isProUser(profile: AccessProfile | UserPlan) {
-  if (typeof profile === "string") return profile === "pro" || profile === "agency";
+  if (typeof profile === "string") {
+    return profile === "pro" || profile === "agency" || profile === "onetime";
+  }
   const plan = normalizeUserPlan(profile.plan);
-  return plan === "pro" || plan === "agency" || Boolean(profile.isAdmin);
+  return plan === "pro" || plan === "agency" || plan === "onetime" || Boolean(profile.isAdmin);
 }
 
 export function canRunScan(profile: AccessProfile | UserPlan, remaining: number | null) {
@@ -35,3 +50,6 @@ export function canDownloadPdf(profile: AccessProfile | UserPlan) {
   return isProUser(profile);
 }
 
+export function canMonitor(profile: AccessProfile | UserPlan) {
+  return isProUser(profile);
+}

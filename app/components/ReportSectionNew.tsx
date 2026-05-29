@@ -8,8 +8,8 @@ import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import PrintLayout from "./PrintLayout";
 import UpgradeButton from "./UpgradeButton";
-import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { canViewFullReport, isMasterAdmin } from "@/lib/access";
+import { useAuth } from "@/app/context/AuthContext";
 import { mapReportCategory, type ReportCategory } from "@/lib/report-category-scores";
 import { getNormalizedIssues } from "@/lib/report-issues";
 import { getReportPresentation } from "@/lib/report-presentation";
@@ -25,7 +25,6 @@ type Priority = "critical" | "high" | "medium" | "low";
 type Impact = "high" | "medium" | "low";
 type Effort = "easy" | "medium" | "hard";
 type Category = ReportCategory;
-type Plan = "guest" | "free" | "pro" | "agency";
 
 type ReportIssue = {
   id: string;
@@ -274,7 +273,7 @@ function contradictsAboutContact(text: string, detail: string) {
 }
 
 export default function ReportSectionNew({ report, onReset }: Props) {
-  const [plan, setPlan] = useState<Plan>("guest");
+  const { plan, isAdmin: ctxIsAdmin } = useAuth();
   const [copyOk, setCopyOk] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -298,31 +297,13 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     };
   }, [isUpgradeModalOpen]);
 
-  useEffect(() => {
-    async function loadPlan() {
-      const supabase = getSupabaseBrowserClient();
-      if (!supabase) return;
-      const token = (await getSafeSupabaseSession(supabase))?.access_token;
-      if (!token) return setPlan("guest");
-      try {
-        const res = await fetch("/api/account", { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
-        if (!res.ok) return setPlan("free");
-        const data = (await res.json()) as { profile?: { plan?: Plan } };
-        setPlan(data.profile?.plan ?? "free");
-      } catch {
-        setPlan("free");
-      }
-    }
-    loadPlan();
-  }, []);
-
   const checks = report.checks;
   const isReportUnlocked = Boolean(report.unlocked || report.unlockedAt);
-  const hasFullReportAccess = isMasterAdmin(plan) || canViewFullReport(plan) || isReportUnlocked;
+  const hasFullReportAccess = ctxIsAdmin || canViewFullReport({ plan, isAdmin: ctxIsAdmin }) || isReportUnlocked;
   const hasPdfAccess = hasFullReportAccess;
   const canUnlockSpecificReport = Boolean(report.reportId);
 
-  const isAdmin = isMasterAdmin(plan);
+  const isAdmin = ctxIsAdmin;
   const host = useMemo(() => {
     try {
       return new URL(report.url).hostname.replace(/^www\./, "");
@@ -762,14 +743,25 @@ const downloadPdf = async () => {
           })}
         </div>
         {!hasFullReportAccess && hiddenCount > 0 && (
-          <div className="detailed-issues-lock">
-            <p className="detailed-issues-lock-title">Unlock the full issue breakdown</p>
-            <p className="detailed-issues-lock-desc">Get every issue with why it matters, priority, effort level, and the recommended fix.</p>
-            <button type="button" className="detailed-issues-lock-cta" onClick={() => setIsUpgradeModalOpen(true)}>
-              Request Full Report Access →
-            </button>
-            <small className="detailed-issues-lock-price">$14 one-time</small>
-          </div>
+          <>
+            <p className="muted-copy report-gate-count">
+              Showing {visibleIssues.length} of {visibleIssues.length + hiddenCount} issues — {hiddenCount} more {hiddenCount === 1 ? "fix" : "fixes"} available.
+            </p>
+            <div className="report-save-banner">
+              <span>Your report is ready — sign up free to save it and come back anytime.</span>
+              <a href="/signup" className="btn btn-secondary report-save-banner-btn">Save free</a>
+            </div>
+            <div className="report-gate-card">
+              <p className="report-gate-card-title">Your full report is ready</p>
+              <p className="report-gate-card-desc">Sign up free to save this report, or unlock the full breakdown including every fix recommendation, schema guidance, and a client-ready PDF.</p>
+              <div className="report-gate-card-actions">
+                <button type="button" className="detailed-issues-lock-cta" onClick={() => setIsUpgradeModalOpen(true)}>
+                  Unlock full report →
+                </button>
+                <small className="detailed-issues-lock-price">$14 one-time</small>
+              </div>
+            </div>
+          </>
         )}
       </section>
 
@@ -976,13 +968,11 @@ const downloadPdf = async () => {
                 <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Client-ready PDF report</span></li>
               </ul>
               <UpgradeButton
-                checkoutType="full_report"
-                reportId={report.reportId}
-                reportUrl={report.url}
+                plan="onetime"
                 className="btn btn-secondary upgrade-choice-button"
                 disabled={!canUnlockSpecificReport}
               >
-                Request access to this report
+                Unlock full report
               </UpgradeButton>
               {!canUnlockSpecificReport && (
                 <small>Run a scan first to unlock a specific report.</small>
@@ -1001,8 +991,8 @@ const downloadPdf = async () => {
                 <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Competitor comparisons</span></li>
                 <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Priority scan access</span></li>
               </ul>
-              <UpgradeButton checkoutType="pro_plan" className="btn btn-primary upgrade-choice-button">
-                Contact us for Pro access
+              <UpgradeButton plan="pro" className="btn btn-primary upgrade-choice-button">
+                Get Pro Monthly
               </UpgradeButton>
             </article>
           </div>

@@ -38,12 +38,16 @@ export async function POST(
     return NextResponse.json({ error: "Report not found" }, { status: 404 });
   }
 
+  const admin = isMasterAdminEmail(auth.user.email);
+
   const params = new URLSearchParams({
     id: `eq.${reportId}`,
-    user_id: `eq.${auth.user.id}`,
     select: "id,user_id,url,retest_count,max_retests,result",
     limit: "1",
   });
+  if (!admin) {
+    params.set("user_id", `eq.${auth.user.id}`);
+  }
 
   const res = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
     headers: getSupabaseServiceHeaders(),
@@ -59,8 +63,6 @@ export async function POST(
   if (!report) {
     return NextResponse.json({ error: "Report not found" }, { status: 404 });
   }
-
-  const admin = isMasterAdminEmail(auth.user.email);
   const proMonthly = auth.plan === "pro" || auth.plan === "agency";
   const retestCount = report.retest_count ?? 0;
   const maxRetests = report.max_retests ?? DEFAULT_MAX_RETESTS;

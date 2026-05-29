@@ -1,35 +1,64 @@
 "use client";
 
 import { useState } from "react";
+import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
+
+export type UpgradePlan = "onetime" | "pro" | "agency";
 
 type Props = {
   children?: React.ReactNode;
   className?: string;
-  reportId?: string;
-  reportUrl?: string;
-  checkoutType?: "full_report" | "pro_plan";
+  plan: UpgradePlan;
   disabled?: boolean;
 };
 
 export default function UpgradeButton({
-  children = "Upgrade plan",
+  children = "Upgrade",
   className = "btn btn-primary",
-  reportId: _reportId,
-  reportUrl: _reportUrl,
-  checkoutType: _checkoutType = "full_report",
+  plan,
   disabled = false,
 }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleUpgrade = async () => {
+    if (loading || disabled) return;
     setLoading(true);
-    window.location.href = "/contact?subject=upgrade";
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const token = (await getSafeSupabaseSession(supabase))?.access_token;
+      if (!token) {
+        window.location.href = `/login?next=/#pricing`;
+        return;
+      }
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ plan }),
+      });
+      const data = (await res.json()) as { checkoutUrl?: string; error?: string };
+      if (!res.ok || !data.checkoutUrl) {
+        console.error("[upgrade] Checkout error:", data.error);
+        setLoading(false);
+        return;
+      }
+      window.location.href = data.checkoutUrl;
+    } catch (err) {
+      console.error("[upgrade] Unexpected error:", err);
+      setLoading(false);
+    }
   };
 
   return (
-    <button type="button" onClick={handleUpgrade} disabled={loading || disabled} className={className}>
-      {loading ? "Opening contact form" : children}
+    <button
+      type="button"
+      onClick={handleUpgrade}
+      disabled={loading || disabled}
+      className={className}
+    >
+      {loading ? "Opening checkout…" : children}
     </button>
   );
 }
-

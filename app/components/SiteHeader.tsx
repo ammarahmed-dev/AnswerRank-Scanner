@@ -1,4 +1,5 @@
 import AuthButton from "./AuthButton";
+import AuditNavLink from "./AuditNavLink";
 
 type Props = {
   scanCountLabel?: string;
@@ -16,6 +17,8 @@ export default function SiteHeader({ scanCountLabel }: Props) {
         <a href="/#report">Report</a>
         <a href="/#pricing">Pricing</a>
         <a href="/#faq">FAQ</a>
+        <a href="/monitor">Monitor</a>
+        <AuditNavLink />
       </nav>
       <div className="header-actions">
         {scanCountLabel && <span className="header-pill">{scanCountLabel}</span>}

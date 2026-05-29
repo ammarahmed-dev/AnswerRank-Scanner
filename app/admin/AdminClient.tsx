@@ -67,10 +67,17 @@ export default function AdminClient() {
         return;
       }
 
-      const res = await fetch("/api/admin/summary", {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
+      let res: Response;
+      try {
+        res = await fetch("/api/admin/summary", {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+      } catch (err) {
+        console.error("[admin] fetch /api/admin/summary threw:", err);
+        if (active) { setError("Network error reaching admin API."); setLoading(false); }
+        return;
+      }
 
       if (!active) return;
 
@@ -81,7 +88,9 @@ export default function AdminClient() {
       }
 
       if (!res.ok) {
-        setError("Admin data could not be loaded.");
+        const body = await res.text().catch(() => "");
+        console.error(`[admin] /api/admin/summary returned ${res.status}:`, body);
+        setError(`Admin data could not be loaded. (status ${res.status})`);
         setLoading(false);
         return;
       }
@@ -92,6 +101,8 @@ export default function AdminClient() {
         cache: "no-store",
       });
       if (!usersRes.ok) {
+        const body = await usersRes.text().catch(() => "");
+        console.error(`[admin] /api/admin/users returned ${usersRes.status}:`, body);
         setData(summary);
         setLoading(false);
         return;

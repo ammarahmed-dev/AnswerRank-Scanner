@@ -16,7 +16,6 @@ import {
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
 import UpgradeButton from "../components/UpgradeButton";
-import CompareWorkbench from "../components/CompareWorkbench";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { isMasterAdmin } from "@/lib/access";
 
@@ -243,7 +242,7 @@ export default function DashboardClient() {
                     <li>Unlimited scan allowance</li>
                     <li>Saved report history</li>
                   </ul>
-                  <UpgradeButton checkoutType="pro_plan">Upgrade plan</UpgradeButton>
+                  <UpgradeButton plan="pro">Upgrade plan</UpgradeButton>
                 </section>
               )}
             </div>
@@ -293,7 +292,6 @@ export default function DashboardClient() {
               )}
             </section>
 
-            <CompareWorkbench />
           </>
         )}
       </section>
