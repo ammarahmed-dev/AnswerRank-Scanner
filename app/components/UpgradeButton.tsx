@@ -27,7 +27,10 @@ export default function UpgradeButton({
       const supabase = getSupabaseBrowserClient();
       const token = (await getSafeSupabaseSession(supabase))?.access_token;
       if (!token) {
-        window.location.href = `/login?next=/#pricing`;
+        const returnTo = typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : "/";
+        window.location.href = `/login?next=${encodeURIComponent(returnTo)}`;
         return;
       }
       const res = await fetch("/api/checkout", {

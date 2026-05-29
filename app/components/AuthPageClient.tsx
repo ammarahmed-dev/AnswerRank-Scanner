@@ -42,7 +42,10 @@ export default function AuthPageClient({ mode }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = getSupabaseBrowserClient();
-  const redirectTo = searchParams.get("next") || "/#scanner";
+  const rawNext = searchParams.get("next") ?? "";
+  const redirectTo = rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.startsWith("/\\")
+    ? rawNext
+    : "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

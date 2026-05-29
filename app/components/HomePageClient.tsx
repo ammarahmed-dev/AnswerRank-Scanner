@@ -722,9 +722,9 @@ function HomeInner({ heroContent }: HomePageClientProps) {
                       : (
                         <div className="scanner-tab-panel locked-teaser">
                           <div className="locked-teaser-inner">
-                            <button type="button" className="btn btn-primary locked-teaser-cta" onClick={() => router.push("/contact?subject=upgrade")}>
-                              Contact us to upgrade
-                            </button>
+                            <UpgradeButton plan="pro" className="btn btn-primary locked-teaser-cta">
+                              Upgrade to unlock
+                            </UpgradeButton>
                           </div>
                         </div>
                       )
@@ -1100,8 +1100,8 @@ function HomeInner({ heroContent }: HomePageClientProps) {
           <div className="pricing-panel">
             <span className="price">$14</span>
             <strong>Scan limit reached</strong>
-            <p>{errorMsg || "Contact us to unlock the full report, schema recommendations, implementation checklist, and PDF export."}</p>
-            <UpgradeButton plan="pro">Contact us to upgrade</UpgradeButton>
+            <p>{errorMsg || "Upgrade your plan to unlock the full report, schema recommendations, implementation checklist, and PDF export."}</p>
+            <UpgradeButton plan="pro">Upgrade to unlock</UpgradeButton>
             <button onClick={() => setState("idle")} className="btn btn-secondary">Back to scanner</button>
           </div>
         </section>
