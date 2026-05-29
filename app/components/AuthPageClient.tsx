@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
-import SiteFooter from "./SiteFooter";
 import SiteHeader from "./SiteHeader";
+import SiteFooter from "./SiteFooter";
 
 type Props = {
   mode: "login" | "signup";
@@ -141,17 +141,85 @@ export default function AuthPageClient({ mode }: Props) {
   const switchHref = `${isLogin ? "/signup" : "/login"}?next=${encodeURIComponent(redirectTo)}`;
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen" style={{ display: "flex", flexDirection: "column" }}>
       <SiteHeader />
-      <section className="auth-page">
-        <div className="surface auth-page-card">
-          <div className="auth-page-copy">
-            <span className="launch-eyebrow">{isLogin ? "Welcome back" : "Free account"}</span>
-            <h1>{isLogin ? "Log in to continue scanning." : "Create your AEOCheck account."}</h1>
-            <p>{isLogin ? "Access your free account scans and save reports to your workspace." : "Free accounts get 3 scans per month and saved report links."}</p>
+      <div className="auth-wrap">
+        <div className="auth-split">
+
+      {/* ── Left branding panel ───────────────────────── */}
+      <div className="auth-split-left">
+        <div className="auth-split-brand">
+          <a href="/" className="auth-split-brand-name">AEOCheck</a>
+          <p className="auth-split-tagline">Know how AI sees your website.</p>
+        </div>
+
+        <div className="auth-split-features">
+          <div className="auth-split-feature">
+            <div className="auth-split-feature-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M9 1L2 9h5l-1 6 7-8H8l1-6z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div className="auth-split-feature-text">
+              <strong>Scan any URL in 60 seconds</strong>
+              <span>Full AI visibility breakdown — schema, content, metadata.</span>
+            </div>
           </div>
 
-          <div className="auth-form">
+          <div className="auth-split-feature">
+            <div className="auth-split-feature-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <polyline points="1,11 5,7 9,9 15,3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="11,3 15,3 15,7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div className="auth-split-feature-text">
+              <strong>Track AI visibility over time</strong>
+              <span>Monitor score changes across weekly and monthly rescans.</span>
+            </div>
+          </div>
+
+          <div className="auth-split-feature">
+            <div className="auth-split-feature-icon">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5"/>
+                <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.5"/>
+                <line x1="8" y1="1" x2="8" y2="2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="8" y1="13.5" x2="8" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="1" y1="8" x2="2.5" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="13.5" y1="8" x2="15" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <div className="auth-split-feature-text">
+              <strong>Beat competitors to AI search</strong>
+              <span>Side-by-side comparison shows exactly where you lead or lag.</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="auth-split-deco">
+          <div className="auth-split-deco-score">87</div>
+          <div className="auth-split-deco-text">
+            Average AEO score<br />for optimised pages
+          </div>
+        </div>
+      </div>
+
+      {/* ── Right form panel ─────────────────────────── */}
+      <div className="auth-split-right">
+        <div className="auth-split-form">
+
+          <div className="auth-mobile-logo">
+            <a href="/">AEOCheck</a>
+          </div>
+
+          <div className="auth-split-heading">
+            <h1>{isLogin ? "Welcome back" : "Create your account"}</h1>
+            <p>{isLogin ? "Log in to access your scans and reports." : "Free accounts get 3 scans per month."}</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="auth-form">
+
             <button
               type="button"
               onClick={handleGoogleSignIn}
@@ -163,11 +231,11 @@ export default function AuthPageClient({ mode }: Props) {
                 gap: 10,
                 width: "100%",
                 padding: "12px 20px",
-                background: googleLoading ? "#f5f5f5" : "#ffffff",
+                background: googleLoading ? "#f0f0f0" : "#ffffff",
                 color: "#111111",
-                border: "1px solid rgba(0,0,0,0.15)",
+                border: "1px solid rgba(0,0,0,0.14)",
                 borderRadius: 8,
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: 500,
                 cursor: googleLoading ? "wait" : "pointer",
                 transition: "background 0.15s ease",
@@ -184,48 +252,67 @@ export default function AuthPageClient({ mode }: Props) {
               {googleLoading ? "Redirecting…" : "Continue with Google"}
             </button>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0" }}>
-              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.15)" }} />
-              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", whiteSpace: "nowrap" }}>or</span>
-              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.15)" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", whiteSpace: "nowrap" }}>or</span>
+              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }} />
             </div>
-          </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
             <label>
               Email
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
             </label>
             <label>
               Password
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
-              {!isLogin && <small>Minimum 8 characters</small>}
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={isLogin ? "Enter your password" : "Min. 8 characters"} required minLength={8} />
             </label>
             {!isLogin && (
               <label>
                 Confirm password
-                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={8} />
+                <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat password" required minLength={8} />
               </label>
             )}
             {isLogin && (
-              <p className="auth-form-switch">
+              <p className="auth-form-switch" style={{ textAlign: "right" }}>
                 <a href="/forgot-password">Forgot password?</a>
               </p>
             )}
 
             {message && <p className="auth-message">{message}</p>}
 
-            <button type="submit" disabled={loading} className="btn btn-primary">
-              {loading ? "Working" : isLogin ? "Log in" : "Create account"}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: "100%",
+                padding: "13px 20px",
+                background: loading ? "rgba(0,229,160,0.6)" : "#00e5a0",
+                color: "#000000",
+                border: "none",
+                borderRadius: 8,
+                fontSize: 15,
+                fontWeight: 700,
+                cursor: loading ? "wait" : "pointer",
+                transition: "background 0.15s ease",
+              }}
+            >
+              {loading ? "Working…" : isLogin ? "Log in" : "Create account"}
             </button>
 
             <p className="auth-form-switch">
-              {isLogin ? "No account yet?" : "Already have an account?"} <a href={switchHref}>{isLogin ? "Sign up" : "Log in"}</a>
+              {isLogin ? "No account yet?" : "Already have an account?"}{" "}
+              <a href={switchHref}>{isLogin ? "Sign up" : "Log in"}</a>
             </p>
+
           </form>
+
+          <p className="auth-back-link"><a href="/">← Back to home</a></p>
+
         </div>
-        <p className="auth-back-link"><a href="/">Back to home</a></p>
-      </section>
+      </div>
+
+        </div>
+      </div>
       <SiteFooter />
     </main>
   );

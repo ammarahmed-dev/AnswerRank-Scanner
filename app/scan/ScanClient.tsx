@@ -172,9 +172,9 @@ export default function ScanClient() {
           <Link href="/dashboard" className="btn btn-secondary">Dashboard</Link>
         </div>
 
-        <section className="surface" style={{ padding: "28px" }}>
-          <form onSubmit={handleScan} style={{ display: "flex", gap: 10 }}>
-            <div style={{ flex: 1, display: "flex", alignItems: "center", border: "1px solid var(--color-line-strong)", borderRadius: "var(--radius-lg)", padding: "0 14px", background: "rgba(255,255,255,0.04)" }}>
+        <section className="surface" style={{ padding: "20px 24px 24px" }}>
+          <form onSubmit={handleScan} className="scanner-input-row">
+            <div className="hero-input-wrap">
               <input
                 ref={inputRef}
                 type="url"
@@ -183,10 +183,10 @@ export default function ScanClient() {
                 placeholder="https://example.com"
                 required
                 disabled={loading}
-                style={{ flex: 1, background: "none", border: "none", outline: "none", color: "inherit", fontSize: 15, padding: "14px 0" }}
+                style={{ border: "none", outline: "none", boxShadow: "none", background: "transparent", WebkitAppearance: "none" }}
               />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={loading} style={{ whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 8, minWidth: "140px" }}>
+            <button type="submit" className="btn btn-primary scanner-submit-btn" disabled={loading} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               {loading ? "Scanning…" : "Scan URL"}
             </button>
