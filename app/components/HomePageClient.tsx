@@ -965,7 +965,7 @@ function HomeInner({ heroContent }: HomePageClientProps) {
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Client-ready PDF report</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Up to 50-page site audit</li>
                   </ul>
-                  <UpgradeButton plan="onetime" className="btn btn-secondary">
+                  <UpgradeButton plan="onetime" className="btn btn-outline-white">
                     {plan === "onetime" ? "Active plan" : "Get Full Report"}
                   </UpgradeButton>
                 </article>
@@ -993,8 +993,8 @@ function HomeInner({ heroContent }: HomePageClientProps) {
 
                 <article className="pricing-panel">
                   {plan === "agency"
-                    ? <span className="pricing-badge pricing-badge-muted">Current plan</span>
-                    : <span className="pricing-badge pricing-badge-muted">Agency</span>}
+                    ? <span className="pricing-badge pricing-badge-agency">Current plan</span>
+                    : <span className="pricing-badge pricing-badge-agency">Agency</span>}
                   <span className="price">$49 <small>/month</small></span>
                   <h3>Agency</h3>
                   <p className="pricing-subline">For agencies auditing multiple client sites.</p>
@@ -1006,7 +1006,7 @@ function HomeInner({ heroContent }: HomePageClientProps) {
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> Priority scan queue</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> White-label PDF reports</li>
                   </ul>
-                  <UpgradeButton plan="agency" className="btn btn-secondary">
+                  <UpgradeButton plan="agency" className="btn btn-outline-agency">
                     {plan === "agency" ? "Active plan" : "Get Agency"}
                   </UpgradeButton>
                 </article>
