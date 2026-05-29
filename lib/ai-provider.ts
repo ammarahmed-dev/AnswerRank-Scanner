@@ -129,7 +129,7 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string | 
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
-      "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:3000",
+      "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "https://aeocheck.co",
       "X-Title": process.env.OPENROUTER_APP_NAME || "AEOCheck",
     },
     body: JSON.stringify({

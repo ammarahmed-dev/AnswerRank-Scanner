@@ -6,6 +6,7 @@ import { runScanCore } from "@/lib/scan-core";
 import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { checkUsageLimit, getClientKey, getPlanLimit, incrementUsage } from "@/lib/usage-limits";
+import { validatePublicUrl } from "@/lib/url-safety";
 import { isMasterAdmin } from "@/lib/admin";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 import { ScrapedData, ScanResult, AIInsights, CompetitorScanResult, SchemaRecommendation } from "@/types/index";
@@ -378,6 +379,12 @@ export async function POST(req: NextRequest) {
 
   if (!validateUrl(url)) {
     return errorResponse("Invalid URL. Only public http(s) URLs are supported.", 400);
+  }
+
+  try {
+    await validatePublicUrl(url);
+  } catch (e) {
+    return errorResponse((e as Error).message, 400);
   }
 
   const authContext = await getAuthContext(req);

@@ -44,7 +44,17 @@ export default function UpgradeButton({
         setLoading(false);
         return;
       }
-      window.location.href = data.checkoutUrl;
+      try {
+        const checkoutUrl = new URL(data.checkoutUrl);
+        if (!checkoutUrl.hostname.endsWith("lemonsqueezy.com")) {
+          throw new Error("Unexpected checkout hostname");
+        }
+        window.location.href = data.checkoutUrl;
+      } catch (e) {
+        console.error("[upgrade] Invalid checkout URL:", e);
+        setLoading(false);
+        return;
+      }
     } catch (err) {
       console.error("[upgrade] Unexpected error:", err);
       setLoading(false);

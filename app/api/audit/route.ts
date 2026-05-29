@@ -4,6 +4,7 @@ import { isMasterAdmin as isAdminEmail } from "@/lib/admin";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 import { getAuditTier } from "@/lib/audit-access";
 import { discoverPages } from "@/lib/page-discovery";
+import { validatePublicUrl } from "@/lib/url-safety";
 
 export const runtime = "nodejs";
 
@@ -53,6 +54,12 @@ export async function POST(req: Request) {
           { status: 429 }
         );
       }
+    }
+
+    try {
+      await validatePublicUrl(baseUrl);
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message }, { status: 400 });
     }
 
     // Discover pages (runs async after we've responded would be ideal but we need the urls)
