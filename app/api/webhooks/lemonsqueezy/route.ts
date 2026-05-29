@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const supabaseUrl = getSupabaseServerUrl();
 
