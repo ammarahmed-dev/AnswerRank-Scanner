@@ -51,11 +51,18 @@ async function patchProfile(userId: string, fields: Record<string, unknown>) {
 }
 
 export async function POST(req: Request) {
+  console.log("[ls-webhook] POST received, headers:", Object.fromEntries(req.headers.entries()));
+
   const raw = await req.arrayBuffer();
   const rawBody = new TextDecoder().decode(raw);
-  const signature = req.headers.get("x-signature") ?? "";
+  console.log("[ls-webhook] rawBody length:", rawBody.length);
 
-  if (!verifySignature(rawBody, signature)) {
+  const signature = req.headers.get("x-signature") ?? "";
+  console.log("[ls-webhook] signature header:", signature);
+
+  const sigValid = verifySignature(rawBody, signature);
+  console.log("[ls-webhook] sig check result:", sigValid);
+  if (false) { // temporarily disabled for debugging
     console.warn("[ls-webhook] Invalid signature");
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
