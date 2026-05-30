@@ -150,7 +150,14 @@ export default function DashboardClient() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    const check = () => setIsMobile(window.innerWidth <= 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   function handleTabChange(tab: Tab) {
     setActiveTab(tab);
@@ -481,19 +488,7 @@ export default function DashboardClient() {
   // ── Bottom nav (mobile only) ─────────────────────────────
 
   function BottomNav() {
-    const adminItems: Array<{ id: Tab; emoji: string; label: string }> = [
-      { id: "overview", emoji: "🏠", label: "Home" },
-      { id: "scans",    emoji: "🔍", label: "Scans" },
-      { id: "audits",   emoji: "📋", label: "Audits" },
-      { id: "settings", emoji: "⚙️", label: "Settings" },
-      { id: "admin",    emoji: "🛡️", label: "Admin" },
-    ];
-    const guestItems = [
-      { id: "overview" as Tab, emoji: "🏠", label: "Home", action: () => handleTabChange("overview") },
-      { id: "scans"    as Tab, emoji: "🔍", label: "Scans", action: () => handleTabChange("scans") },
-      { id: "audits"   as Tab, emoji: "📋", label: "Audits", action: () => handleTabChange("audits") },
-      { id: "settings" as Tab, emoji: "⚙️", label: "Settings", action: () => handleTabChange("settings") },
-    ];
+    if (!mounted || !isMobile) return null;
 
     const navStyle: React.CSSProperties = {
       position: "fixed",
@@ -511,30 +506,18 @@ export default function DashboardClient() {
       padding: "0 8px",
     };
 
-    if (!mounted) return null;
-
-    const nav = masterAdmin ? (
+    const nav = (
       <nav className="db-bottom-nav" style={navStyle}>
-        {adminItems.map(item => (
+        {([
+          { id: "overview" as Tab, emoji: "🏠", label: "Home" },
+          { id: "scans"    as Tab, emoji: "🔍", label: "Scans" },
+          { id: "audits"   as Tab, emoji: "📋", label: "Audits" },
+        ] as const).map(item => (
           <button
             key={item.id}
             type="button"
             className={`db-bottom-nav-item${activeTab === item.id ? " is-active" : ""}`}
             onClick={() => handleTabChange(item.id)}
-          >
-            <span className="db-bottom-nav-emoji">{item.emoji}</span>
-            <span className="db-bottom-nav-label">{item.label}</span>
-          </button>
-        ))}
-      </nav>
-    ) : (
-      <nav className="db-bottom-nav" style={navStyle}>
-        {guestItems.map(item => (
-          <button
-            key={item.id}
-            type="button"
-            className={`db-bottom-nav-item${activeTab === item.id ? " is-active" : ""}`}
-            onClick={item.action}
           >
             <span className="db-bottom-nav-emoji">{item.emoji}</span>
             <span className="db-bottom-nav-label">{item.label}</span>
@@ -555,20 +538,6 @@ export default function DashboardClient() {
   }
 
   function renderContent() {
-    if (loading) return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, padding: "80px 20px", textAlign: "center" }}>
-        <Loader2 className="h-5 w-5 animate-spin" />
-        Loading your workspace
-      </div>
-    );
-    if (error) return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "80px 20px", textAlign: "center" }}>
-        <strong>Dashboard unavailable</strong>
-        <p>{error}</p>
-        <a href="/login?next=/dashboard" className="btn btn-secondary">Log in again</a>
-      </div>
-    );
-    if (!account) return null;
     if (activeTab === "overview") return <OverviewTab />;
     if (activeTab === "scans")    return <ScansTab />;
     if (activeTab === "audits")   return <AuditsTab />;
@@ -581,19 +550,27 @@ export default function DashboardClient() {
     <main className="min-h-screen" style={{ display: "flex", flexDirection: "column" }}>
       <SiteHeader />
 
-      <div className="app-container db-layout">
-
-        {/* Sidebar */}
-        <aside className="db-sidebar">
-          <Sidebar />
-        </aside>
-
-        {/* Content */}
-        <div className="db-content">
-          {renderContent()}
+      {loading ? (
+        <div className="page-loading">
+          <div className="page-loading-spinner" />
+          <span>Loading your workspace…</span>
         </div>
-
-      </div>
+      ) : error ? (
+        <div className="page-loading">
+          <strong style={{ color: "white" }}>Dashboard unavailable</strong>
+          <p style={{ margin: 0 }}>{error}</p>
+          <a href="/login?next=/dashboard" className="btn btn-secondary">Log in again</a>
+        </div>
+      ) : account && (
+        <div className="app-container db-layout">
+          <aside className="db-sidebar">
+            <Sidebar />
+          </aside>
+          <div className="db-content">
+            {renderContent()}
+          </div>
+        </div>
+      )}
 
       <BottomNav />
       <SiteFooter />

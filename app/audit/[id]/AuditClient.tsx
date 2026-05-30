@@ -422,12 +422,10 @@ export default function AuditClient() {
     return (
       <main className="min-h-screen">
         <SiteHeader />
-        <section className="audit-page app-container">
-          <div className="audit-loading">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Loading audit
-          </div>
-        </section>
+        <div className="page-loading">
+          <div className="page-loading-spinner" />
+          <span>Loading audit</span>
+        </div>
         <SiteFooter />
       </main>
     );

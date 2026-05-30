@@ -8492,6 +8492,8 @@ textarea.contact-control {
   min-width: 0;
 }
 
+.monitor-row-url-short { display: none; }
+
 .monitor-row-url {
   color: white;
   font-size: 0.95rem;
@@ -8771,18 +8773,22 @@ textarea.contact-control {
     white-space: nowrap;
   }
 
+  /* Fix 1: swap full URL for stripped URL on mobile */
+  .monitor-row-url-full { display: none; }
+  .monitor-row-url-short { display: block; }
+
   /* Date: inner grid col 2 row 2 */
   .monitor-row-meta {
     grid-column: 2;
     grid-row: 2;
   }
 
-  /* Score: outer row 1 col 2, top-aligned with URL */
+  /* Fix 2: score badge vertically centered with URL row */
   .monitor-row-score-block {
     grid-column: 2;
     grid-row: 1;
     justify-self: end;
-    align-self: start;
+    align-self: center;
   }
 
   /* Freq toggle: outer row 2 col 1 */
@@ -8792,13 +8798,13 @@ textarea.contact-control {
     justify-self: start;
   }
 
-  /* Action buttons: outer row 2 col 2 */
+  /* Fix 3: action buttons with explicit gap from freq toggle */
   .monitor-row-actions {
     grid-column: 2;
     grid-row: 2;
     justify-self: end;
     flex-wrap: nowrap;
-    gap: 6px;
+    gap: 8px;
   }
 
   /* Icon-only compact buttons on mobile */
@@ -10048,6 +10054,30 @@ textarea.contact-control {
   color: var(--color-accent);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* ─── Global page loading state ────────────────────────── */
+.page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 160px);
+  gap: 16px;
+  color: rgba(255,255,255,0.5);
+  font-size: 15px;
+  text-align: center;
+}
+.page-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(255,255,255,0.1);
+  border-top-color: #00e5a0;
+  border-radius: 50%;
+  animation: page-spin 0.8s linear infinite;
+}
+@keyframes page-spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Back to top button */

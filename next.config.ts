@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
     "/*": ["./content/blog/**/*"],
   },
   experimental: {
+    scrollRestoration: false,
     optimizeCss: true,
     optimizePackageImports: [
       "lucide-react",

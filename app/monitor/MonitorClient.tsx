@@ -57,6 +57,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function stripUrl(url: string): string {
+  return url.replace(/^https?:\/\/(www\.)?/, "");
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat(undefined, {
     month: "short",
@@ -334,9 +338,9 @@ export default function MonitorClient() {
 
       <section className="app-container monitor-page">
         {loading && (
-          <div className="monitor-loading">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Loading Monitor
+          <div className="page-loading">
+            <div className="page-loading-spinner" />
+            <span>Loading Monitor</span>
           </div>
         )}
 
@@ -436,7 +440,8 @@ export default function MonitorClient() {
                         <div className="monitor-row-identity">
                           <span className={`monitor-grade-badge ${cls}`}>{grade}</span>
                           <div className="monitor-row-url-block">
-                            <strong className="monitor-row-url">{item.url}</strong>
+                            <strong className="monitor-row-url monitor-row-url-full">{item.url}</strong>
+                            <strong className="monitor-row-url monitor-row-url-short" aria-hidden="true">{stripUrl(item.url)}</strong>
                             <span className="monitor-row-meta">
                               {item.last_scanned_at
                                 ? `Last scanned ${formatDate(item.last_scanned_at)}`
