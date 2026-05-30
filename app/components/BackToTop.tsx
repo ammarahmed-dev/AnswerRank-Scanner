@@ -1,8 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function BackToTop() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
+
+  if (pathname === "/dashboard") return null;
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 300);
