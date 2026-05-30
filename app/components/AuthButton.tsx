@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LogOut, Menu, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
+import { ChevronDown, LogOut, Menu, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { useAuth } from "@/app/context/AuthContext";
+import { FEATURES } from "./FeaturesDropdown";
 
 const NAV_LINKS = [
   { href: "/#how", label: "How it works" },
-  { href: "/#report", label: "Report" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];
@@ -16,6 +16,7 @@ export default function AuthButton() {
   const supabase = getSupabaseBrowserClient();
   const { user, isAdmin, plan } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [featuresOpen, setFeaturesOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -88,6 +89,24 @@ export default function AuthButton() {
               {link.label}
             </a>
           ))}
+          <button
+            type="button"
+            className={`nav-mobile-link nav-mobile-features-toggle${featuresOpen ? " is-open" : ""}`}
+            onClick={() => setFeaturesOpen(o => !o)}
+          >
+            Features
+            <ChevronDown className="nav-mobile-features-chevron" aria-hidden="true" />
+          </button>
+          {featuresOpen && (
+            <div className="nav-mobile-features-list">
+              {FEATURES.map(({ href, label, desc }) => (
+                <a key={href} href={href} className="nav-mobile-feature-item" onClick={close}>
+                  <span className="nav-mobile-feature-label">{label}</span>
+                  <span className="nav-mobile-feature-desc">{desc}</span>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="nav-mobile-divider" />

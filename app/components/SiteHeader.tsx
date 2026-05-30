@@ -1,11 +1,11 @@
 import AuthButton from "./AuthButton";
-import AuditNavLink from "./AuditNavLink";
+import FeaturesDropdown from "./FeaturesDropdown";
 
 type Props = {
   scanCountLabel?: string;
 };
 
-export default function SiteHeader({ scanCountLabel }: Props) {
+export default function SiteHeader({ scanCountLabel: _ }: Props) {
   return (
     <header className="site-header">
       <a href="/" className="brand-lockup" aria-label="AEOCheck home">
@@ -14,15 +14,11 @@ export default function SiteHeader({ scanCountLabel }: Props) {
       </a>
       <nav className="site-nav" aria-label="Primary navigation">
         <a href="/#how">How it works</a>
-        <a href="/scan">Scan</a>
-        <a href="/compare">Compare</a>
+        <FeaturesDropdown />
         <a href="/#pricing">Pricing</a>
         <a href="/#faq">FAQ</a>
-        <a href="/monitor">Monitor</a>
-        <AuditNavLink />
       </nav>
       <div className="header-actions">
-        {scanCountLabel && <span className="header-pill">{scanCountLabel}</span>}
         <div className="header-action-buttons">
           <AuthButton />
           <span className="hidden md:inline-flex">
@@ -33,5 +29,3 @@ export default function SiteHeader({ scanCountLabel }: Props) {
     </header>
   );
 }
-
-
