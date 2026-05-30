@@ -157,8 +157,9 @@ export default function RetestButton({
                 null;
 
               if (!newReportId) {
-                setError("Scan completed, but the saved report ID was missing from the response.");
-                setLoading(false);
+                // Scan saved a report but didn't return its ID — go to dashboard
+                console.warn("[retest] result event had no reportId, redirecting to dashboard");
+                window.location.assign("/dashboard");
                 return;
               }
 
@@ -179,24 +180,21 @@ export default function RetestButton({
       }
 
       if (newReportId) {
-        try {
-          if (!newReport) {
-            throw new Error("Missing saved report payload.");
+        if (newReport) {
+          try {
+            sessionStorage.setItem(`aeocheck_report:${newReportId}`, JSON.stringify(newReport));
+            sessionStorage.setItem(`aeocheck_report:${newReport.url}`, JSON.stringify(newReport));
+          } catch {
+            // sessionStorage failure is non-fatal — the report page fetches from API anyway
           }
-          sessionStorage.setItem(`aeocheck_report:${newReportId}`, JSON.stringify(newReport));
-          sessionStorage.setItem(`aeocheck_report:${newReport.url}`, JSON.stringify(newReport));
-          window.location.assign(`/report?id=${encodeURIComponent(newReportId)}`);
-        } catch (err) {
-          console.error("[retest] save or redirect failed:", err);
-          setError("Scan completed, but the new report could not be opened. Please check your dashboard.");
-          setLoading(false);
         }
+        window.location.assign(`/report?id=${encodeURIComponent(newReportId)}`);
         return;
       }
 
-      console.error("[retest] no reportId found in SSE stream");
-      setError("Scan completed but report could not be loaded. Please check your dashboard.");
-      setLoading(false);
+      // Stream ended without a result event — scan may have saved; go to dashboard
+      console.warn("[retest] SSE stream ended without a result event, redirecting to dashboard");
+      window.location.assign("/dashboard");
     } catch (err) {
       console.error("[retest] error:", err);
       setError("Something went wrong. Please try again.");
