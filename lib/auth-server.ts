@@ -58,7 +58,7 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
 
   const user: AuthUser = { id: userData.id, email: userData.email };
 
-  await fetch(`${supabaseUrl}/rest/v1/profiles`, {
+  const upsertResponse = await fetch(`${supabaseUrl}/rest/v1/profiles`, {
     method: "POST",
     headers: {
       ...getSupabaseServiceHeaders(),
@@ -70,6 +70,29 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
       plan: "free",
     }),
   }).catch(() => null);
+
+  try {
+    const isNewUser = upsertResponse?.status === 201;
+    if (isNewUser && user.email) {
+      const secret = process.env.INTERNAL_API_SECRET;
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.aeocheck.co";
+
+      if (!secret) {
+        console.warn("[welcome-email] INTERNAL_API_SECRET missing; skipping trigger");
+      } else {
+        fetch(`${baseUrl}/api/emails/welcome`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${secret}`,
+          },
+          body: JSON.stringify({ email: user.email, userId: user.id }),
+        }).catch((err) => console.error("[welcome-email] failed:", err));
+      }
+    }
+  } catch (err) {
+    console.error("[welcome-email] trigger failed:", err);
+  }
 
   return { user, plan: await getUserPlan(user.id) };
 }
