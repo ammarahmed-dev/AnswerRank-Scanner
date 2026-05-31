@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
+import DashboardWrapper from "./DashboardWrapper";
 
 export const metadata: Metadata = {
   robots: {
@@ -12,20 +12,7 @@ export const metadata: Metadata = {
   },
 };
 
-const DashboardClient = dynamic(
-  () => import("./DashboardClient"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="page-loading">
-        <div className="page-loading-spinner" />
-        <span>Loading your workspace...</span>
-      </div>
-    ),
-  }
-);
-
 export default function DashboardPage() {
-  return <DashboardClient />;
+  return <DashboardWrapper />;
 }
 
