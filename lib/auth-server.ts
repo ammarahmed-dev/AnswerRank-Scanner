@@ -58,7 +58,7 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
 
   const user: AuthUser = { id: userData.id, email: userData.email };
 
-  const upsertResponse = await fetch(`${supabaseUrl}/rest/v1/profiles`, {
+  await fetch(`${supabaseUrl}/rest/v1/profiles`, {
     method: "POST",
     headers: {
       ...getSupabaseServiceHeaders(),
@@ -72,14 +72,33 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
   }).catch(() => null);
 
   try {
-    const isNewUser = upsertResponse?.status === 201;
-    if (isNewUser && user.email) {
+    const profileRes = await fetch(
+      `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=created_at,plan,welcome_email_sent`,
+      {
+        headers: getSupabaseServiceHeaders(),
+        cache: "no-store",
+      }
+    );
+    const profiles = profileRes.ok
+      ? ((await profileRes.json()) as Array<{ welcome_email_sent?: boolean | null }>)
+      : [];
+    const profile = profiles[0];
+    const shouldSendWelcome = profile && profile.welcome_email_sent === false;
+
+    if (shouldSendWelcome && user.email) {
+      await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`, {
+        method: "PATCH",
+        headers: {
+          ...getSupabaseServiceHeaders(),
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ welcome_email_sent: true }),
+      });
+
       const secret = process.env.INTERNAL_API_SECRET;
       const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.aeocheck.co";
-
-      if (!secret) {
-        console.warn("[welcome-email] INTERNAL_API_SECRET missing; skipping trigger");
-      } else {
+      if (secret) {
         fetch(`${baseUrl}/api/emails/welcome`, {
           method: "POST",
           headers: {
