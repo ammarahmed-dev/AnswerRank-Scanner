@@ -26,6 +26,13 @@ type RecentScan = {
   unlocked?: boolean;
 };
 
+function normalizeUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  return `https://${trimmed}`;
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat(undefined, {
     month: "short",
@@ -73,8 +80,9 @@ export default function ScanClient() {
 
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
-    const trimmed = url.trim();
-    if (!trimmed) { inputRef.current?.focus(); return; }
+    const normalizedUrl = normalizeUrl(url);
+    if (!normalizedUrl) { inputRef.current?.focus(); return; }
+    if (normalizedUrl !== url) setUrl(normalizedUrl);
     setLoading(true);
     setError("");
     setStatus("Preparing scan...");
@@ -88,7 +96,7 @@ export default function ScanClient() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ url: trimmed, includeAI: true }),
+        body: JSON.stringify({ url: normalizedUrl, includeAI: true }),
       });
 
       if (!res.ok) {
@@ -201,7 +209,7 @@ export default function ScanClient() {
             <div className="hero-input-wrap">
               <input
                 ref={inputRef}
-                type="url"
+                type="text"
                 value={url}
                 onChange={e => setUrl(e.target.value)}
                 placeholder="https://example.com"

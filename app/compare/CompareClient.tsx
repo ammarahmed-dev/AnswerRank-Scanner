@@ -38,6 +38,13 @@ type CompareRun = {
   created_at: string;
 };
 
+function normalizeUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  return `https://${trimmed}`;
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat(undefined, {
     month: "short",
@@ -94,7 +101,11 @@ export default function CompareClient() {
 
   const handleCompare = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!urlA.trim() || !urlB.trim()) return;
+    const normalizedA = normalizeUrl(urlA);
+    const normalizedB = normalizeUrl(urlB);
+    if (!normalizedA || !normalizedB) return;
+    if (normalizedA !== urlA) setUrlA(normalizedA);
+    if (normalizedB !== urlB) setUrlB(normalizedB);
     setLoading(true);
     setError("");
     setResult(null);
@@ -107,7 +118,7 @@ export default function CompareClient() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ primaryUrl: urlA.trim(), competitorUrl: urlB.trim() }),
+        body: JSON.stringify({ primaryUrl: normalizedA, competitorUrl: normalizedB }),
       });
       const data = (await res.json()) as CompareResult & { error?: string };
       if (!res.ok || data.error) {
@@ -119,8 +130,8 @@ export default function CompareClient() {
       if (isPro) {
         const newRun: CompareRun = {
           id: crypto.randomUUID(),
-          url_a: urlA.trim(),
-          url_b: urlB.trim(),
+          url_a: normalizedA,
+          url_b: normalizedB,
           score_a: data.comparison.primaryScore,
           score_b: data.comparison.competitorScore,
           created_at: new Date().toISOString(),
@@ -160,7 +171,7 @@ export default function CompareClient() {
               <div style={{ flex: 1, minWidth: "200px" }}>
                 <label style={{ display: "block", fontSize: 12, color: "var(--color-ink-muted)", marginBottom: 6 }}>Your URL</label>
                 <input
-                  type="url"
+                  type="text"
                   value={urlA}
                   onChange={e => setUrlA(e.target.value)}
                   placeholder="https://yoursite.com"
@@ -172,7 +183,7 @@ export default function CompareClient() {
               <div style={{ flex: 1, minWidth: "200px" }}>
                 <label style={{ display: "block", fontSize: 12, color: "var(--color-ink-muted)", marginBottom: 6 }}>Competitor URL</label>
                 <input
-                  type="url"
+                  type="text"
                   value={urlB}
                   onChange={e => setUrlB(e.target.value)}
                   placeholder="https://competitor.com"

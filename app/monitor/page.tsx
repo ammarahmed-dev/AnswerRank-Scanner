@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { buildPageMetadata } from "@/lib/seo";
-import MonitorClient from "./MonitorClient";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Monitor - AEOCheck",
@@ -8,6 +8,19 @@ export const metadata: Metadata = buildPageMetadata({
   path: "/monitor",
   noindex: true,
 });
+
+const MonitorClient = dynamic(
+  () => import("./MonitorClient"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="page-loading">
+        <div className="page-loading-spinner" />
+        <span>Loading...</span>
+      </div>
+    ),
+  }
+);
 
 export default function MonitorPage() {
   return <MonitorClient />;

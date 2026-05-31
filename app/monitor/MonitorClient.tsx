@@ -63,6 +63,13 @@ function stripUrl(url: string): string {
   return url.replace(/^https?:\/\/(www\.)?/, "");
 }
 
+function normalizeUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  return `https://${trimmed}`;
+}
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat(undefined, {
     month: "short",
@@ -231,13 +238,14 @@ export default function MonitorClient() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     setAddError("");
-    const raw = addUrl.trim();
-    if (!raw) return;
+    const normalizedUrl = normalizeUrl(addUrl);
+    if (!normalizedUrl) return;
+    if (normalizedUrl !== addUrl) setAddUrl(normalizedUrl);
     setAddLoading(true);
 
     const res = await authFetch("/api/monitor", {
       method: "POST",
-      body: JSON.stringify({ url: raw }),
+      body: JSON.stringify({ url: normalizedUrl }),
     });
 
     setAddLoading(false);

@@ -319,6 +319,9 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const critical = issues.filter((i) => i.priority === "critical");
   const high = issues.filter((i) => i.priority === "high");
   const nice = issues.filter((i) => i.priority === "medium" || i.priority === "low");
+  const isPaidPlan = isAdmin || plan === "onetime" || plan === "pro" || plan === "agency";
+  const visibleHighImpact = isPaidPlan ? high : high.slice(0, 2);
+  const hiddenHighCount = isPaidPlan ? 0 : Math.max(0, high.length - visibleHighImpact.length);
   const scoreStatus = statusLabel(report.score);
   const diagnosis = issues[0]?.problem ?? "Core visibility signals are in good shape.";
   const topOpportunity = issues[0]?.recommendedFix ?? "Keep schema and answer blocks current as pages evolve.";
@@ -680,9 +683,59 @@ const downloadPdf = async () => {
         <p className="section-kicker mt-1">Your highest-impact fixes, grouped by urgency.</p>
         <div className="action-plan-grid mt-4">
           <PriorityColumn title="Critical" description="Fix immediately to avoid visibility loss." items={critical} tone="critical" />
-          <PriorityColumn title="High Impact" description="Strong lift with manageable effort." items={high} tone="high" />
-          <PriorityColumn title="Nice to Have" description="Quality boosters after core fixes." items={nice} tone="medium" />
+          <PriorityColumn
+            title="High Impact"
+            description="Strong lift with manageable effort."
+            items={visibleHighImpact}
+            tone="high"
+          />
+          {isPaidPlan ? (
+            <PriorityColumn title="Nice to Have" description="Quality boosters after core fixes." items={nice} tone="medium" />
+          ) : (
+            <article className="action-plan-column">
+              <div className="action-plan-head">
+                <span>Nice to Have</span>
+                <strong>Locked</strong>
+              </div>
+              <p className="action-plan-desc">Quality boosters after core fixes.</p>
+              <div
+                style={{
+                  background: "rgba(0,229,160,0.04)",
+                  border: "1px dashed rgba(0,229,160,0.2)",
+                  borderRadius: "8px",
+                  padding: "12px 16px",
+                  textAlign: "center",
+                  fontSize: "13px",
+                  color: "rgba(255,255,255,0.5)",
+                }}
+              >
+                Upgrade to view all "Nice to Have" recommendations.
+                <div style={{ marginTop: 10 }}>
+                  <UpgradeButton plan="pro">Upgrade to see all →</UpgradeButton>
+                </div>
+              </div>
+            </article>
+          )}
         </div>
+        {!isPaidPlan && hiddenHighCount > 0 && (
+          <div
+            style={{
+              background: "rgba(0,229,160,0.04)",
+              border: "1px dashed rgba(0,229,160,0.2)",
+              borderRadius: "8px",
+              padding: "12px 16px",
+              textAlign: "center",
+              fontSize: "13px",
+              color: "rgba(255,255,255,0.5)",
+              marginTop: "14px",
+            }}
+          >
+            +{hiddenHighCount} more issues hidden ·
+            <span style={{ marginLeft: "6px", display: "inline-block" }}>
+              <UpgradeButton plan="pro">Upgrade to see all →</UpgradeButton>
+            </span>
+          </div>
+        )}
       </section>
 
       <section className="surface report-card print-section">

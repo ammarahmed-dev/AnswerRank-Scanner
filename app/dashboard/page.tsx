@@ -1,6 +1,5 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
-import DashboardClient from "./DashboardClient";
+import dynamic from "next/dynamic";
 
 export const metadata: Metadata = {
   robots: {
@@ -12,18 +11,21 @@ export const metadata: Metadata = {
     },
   },
 };
-export const dynamic = "force-dynamic";
 
-export default function DashboardPage() {
-  return (
-    <Suspense fallback={
+const DashboardClient = dynamic(
+  () => import("./DashboardClient"),
+  {
+    ssr: false,
+    loading: () => (
       <div className="page-loading">
         <div className="page-loading-spinner" />
-        <span>Loading...</span>
+        <span>Loading your workspace...</span>
       </div>
-    }>
-      <DashboardClient />
-    </Suspense>
-  );
+    ),
+  }
+);
+
+export default function DashboardPage() {
+  return <DashboardClient />;
 }
 

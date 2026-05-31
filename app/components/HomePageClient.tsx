@@ -51,6 +51,13 @@ type LoaderProgress = {
   status: ProgressStatus;
 };
 
+function normalizeUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return trimmed;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  return `https://${trimmed}`;
+}
+
 const CLIENT_STORAGE_KEY = "aeocheck_client_id_v1";
 const GUEST_SCAN_STORAGE_KEY = "aeocheck_guest_scans_month";
 const STEP_ANIMATION_MS = 140;
@@ -240,9 +247,9 @@ function HomeInner({ heroContent }: HomePageClientProps) {
       setShowLimitModal(true);
       return;
     }
-    const trimmed = (url || inputRef.current?.value || "").trim();
-    if (!trimmed) return inputRef.current?.focus();
-    if (trimmed !== url) setUrl(trimmed);
+    const normalizedUrl = normalizeUrl(url || inputRef.current?.value || "");
+    if (!normalizedUrl) return inputRef.current?.focus();
+    if (normalizedUrl !== url) setUrl(normalizedUrl);
 
     setState("loading");
     document.body.style.overflow = "hidden";
@@ -270,7 +277,7 @@ function HomeInner({ heroContent }: HomePageClientProps) {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ url: trimmed, includeAI: true, clientId }),
+        body: JSON.stringify({ url: normalizedUrl, includeAI: true, clientId }),
         signal: controller.signal,
       });
 
@@ -424,12 +431,13 @@ function HomeInner({ heroContent }: HomePageClientProps) {
 
   const handleAudit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const raw = auditDomain.trim();
+    const raw = normalizeUrl(auditDomain);
     if (!raw) return;
+    if (raw !== auditDomain) setAuditDomain(raw);
 
     let domain = raw;
     try {
-      const parsed = new URL(raw.startsWith("http://") || raw.startsWith("https://") ? raw : `https://${raw}`);
+      const parsed = new URL(raw);
       if (!parsed.hostname || parsed.hostname.includes(" ")) {
         setAuditError("Please enter a valid website URL.");
         setAuditState("error");
@@ -470,12 +478,14 @@ function HomeInner({ heroContent }: HomePageClientProps) {
 
   const handleCompare = async (e: React.FormEvent) => {
     e.preventDefault();
-    const a = compareUrl.trim();
-    const b = compareCompetitorUrl.trim();
+    const a = normalizeUrl(compareUrl);
+    const b = normalizeUrl(compareCompetitorUrl);
     if (!a || !b) {
       setCompareError("Please enter both URLs before running a comparison.");
       return;
     }
+    if (a !== compareUrl) setCompareUrl(a);
+    if (b !== compareCompetitorUrl) setCompareCompetitorUrl(b);
     sessionStorage.removeItem("aeocheck_compare_result");
     setCompareSimStep(0);
     setCompareState("loading");
