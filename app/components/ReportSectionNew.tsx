@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { CheckResult, CompetitorScanResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
@@ -709,10 +709,7 @@ const downloadPdf = async () => {
                   color: "rgba(255,255,255,0.5)",
                 }}
               >
-                Upgrade to view all "Nice to Have" recommendations.
-                <div style={{ marginTop: 10 }}>
-                  <UpgradeButton plan="pro">Upgrade to see all →</UpgradeButton>
-                </div>
+                Upgrade to unlock Nice to Have recommendations.
               </div>
             </article>
           )}
@@ -726,17 +723,28 @@ const downloadPdf = async () => {
               padding: "12px 16px",
               textAlign: "center",
               fontSize: "13px",
-              color: "rgba(255,255,255,0.5)",
+              color: "rgba(255,255,255,0.4)",
               marginTop: "14px",
             }}
           >
-            +{hiddenHighCount} more issues hidden ·
-            <span style={{ marginLeft: "6px", display: "inline-block" }}>
-              <UpgradeButton plan="pro">Upgrade to see all →</UpgradeButton>
-            </span>
+            +{hiddenHighCount} more issues hidden — upgrade to see all
           </div>
         )}
       </section>
+
+      {plan === "free" && !!user && (
+        <div className="mobile-upgrade-card">
+          <div style={{ fontSize: "15px", fontWeight: 600, color: "#fff", marginBottom: "6px" }}>
+            See the full breakdown
+          </div>
+          <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", marginBottom: "16px" }}>
+            Upgrade to unlock every fix recommendation, schema guidance, and PDF report.
+          </div>
+          <UpgradeButton plan="pro" style={{ width: "100%" }}>
+            Upgrade to Pro &rarr;
+          </UpgradeButton>
+        </div>
+      )}
 
       <section className="surface report-card print-section">
         <h3 className="section-heading">Detailed Issues</h3>
@@ -798,7 +806,7 @@ const downloadPdf = async () => {
         {!hasFullReportAccess && hiddenCount > 0 && (
           <>
             <p className="muted-copy report-gate-count">
-              Showing {visibleIssues.length} of {visibleIssues.length + hiddenCount} issues — {hiddenCount} more {hiddenCount === 1 ? "fix" : "fixes"} available.
+              Showing {visibleIssues.length} of {visibleIssues.length + hiddenCount} issues â€” {hiddenCount} more {hiddenCount === 1 ? "fix" : "fixes"} available.
             </p>
             {!user && (
               <div className="report-save-banner">
@@ -811,7 +819,7 @@ const downloadPdf = async () => {
               <p className="report-gate-card-desc">{!user ? "Sign up free to save this report, or unlock the full breakdown including every fix recommendation, schema guidance, and a client-ready PDF." : "Unlock the full breakdown including every fix recommendation, schema guidance, and a client-ready PDF."}</p>
               <div className="report-gate-card-actions">
                 <button type="button" className="detailed-issues-lock-cta" onClick={() => setIsUpgradeModalOpen(true)}>
-                  Unlock full report →
+                  Unlock full report â†’
                 </button>
                 <small className="detailed-issues-lock-price">$9 one-time</small>
               </div>
@@ -916,42 +924,42 @@ const downloadPdf = async () => {
             <p className="section-kicker">What&apos;s included in your PDF:</p>
             <div className="pdf-includes-grid">
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">📋</span>
+                <span className="pdf-include-icon">ðŸ“‹</span>
                 <div>
                   <strong>Executive Summary</strong>
                   <p>Main diagnosis, top opportunity, and performance score at a glance.</p>
                 </div>
               </div>
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">📊</span>
+                <span className="pdf-include-icon">ðŸ“Š</span>
                 <div>
                   <strong>Score Breakdown</strong>
                   <p>Category-by-category scores across all 7 readiness areas.</p>
                 </div>
               </div>
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">🤖</span>
+                <span className="pdf-include-icon">ðŸ¤–</span>
                 <div>
                   <strong>AI Answer Snapshot</strong>
                   <p>How AI assistants currently understand and summarize this page.</p>
                 </div>
               </div>
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">⚡</span>
+                <span className="pdf-include-icon">âš¡</span>
                 <div>
                   <strong>Priority Action Plan</strong>
                   <p>Critical, high impact, and passing checks grouped by urgency.</p>
                 </div>
               </div>
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">🔍</span>
+                <span className="pdf-include-icon">ðŸ”</span>
                 <div>
                   <strong>Detailed Issue Breakdown</strong>
                   <p>Every issue with why it matters and the exact recommended fix.</p>
                 </div>
               </div>
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">🏷️</span>
+                <span className="pdf-include-icon">ðŸ·ï¸</span>
                 <div>
                   <strong>Schema Recommendations</strong>
                   <p>Detected types, missing schema, and implementation guidance.</p>
@@ -989,8 +997,8 @@ const downloadPdf = async () => {
         </div>
       </section>
 
-      {plan === "free" && (
-        <div
+      {plan === "free" && !!user && (
+        <div className="sticky-upgrade-bar"
           style={{
             position: "sticky",
             bottom: "24px",
