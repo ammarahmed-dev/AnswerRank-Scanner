@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
-import { ArrowUpRight, ExternalLink, FileSearch, Loader2 } from "lucide-react";
+import { ArrowUpRight, FileSearch, Loader2 } from "lucide-react";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
 import UpgradeButton from "../components/UpgradeButton";
@@ -294,8 +294,76 @@ export default function DashboardClient() {
   function OverviewTab() {
     if (!account) return null;
     const portalUrl = account.profile.portalUrl;
+    const recentScans = account.reports;
+    const recentAudits = account.recentAudits;
     return (
       <>
+        {recentScans.length === 0 && recentAudits.length === 0 && (
+          <div
+            style={{
+              background: "linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,229,160,0.03))",
+              border: "1px solid rgba(0,229,160,0.2)",
+              borderRadius: "12px",
+              padding: "24px 28px",
+              marginBottom: "24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "24px",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: "#00e5a0",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  marginBottom: "8px",
+                }}
+              >
+                Get started
+              </div>
+              <div
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 700,
+                  color: "#ffffff",
+                  marginBottom: "6px",
+                }}
+              >
+                Scan your first URL to see your AI visibility score
+              </div>
+              <div
+                style={{
+                  fontSize: "14px",
+                  color: "rgba(255,255,255,0.5)",
+                  lineHeight: "1.5",
+                }}
+              >
+                Find out if ChatGPT and Perplexity can find your website - takes 60 seconds.
+              </div>
+            </div>
+            <a
+              href="/scan"
+              style={{
+                background: "#00e5a0",
+                color: "#000",
+                fontWeight: 700,
+                fontSize: "14px",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              Scan a URL &rarr;
+            </a>
+          </div>
+        )}
+
         <div className="db-grid-3" style={grid3}>
           <div style={card}>
             <p style={cardLabel}>Profile</p>
@@ -382,10 +450,28 @@ export default function DashboardClient() {
             ))}
           </div>
         ) : (
-          <div className="dashboard-empty-state">
-            <ExternalLink className="h-5 w-5" />
-            <strong>No scans yet</strong>
-            <p>Scan a URL to get started.</p>
+          <div style={{ textAlign: "center", padding: "48px 24px" }}>
+            <div style={{ fontSize: "32px", marginBottom: "16px" }}>🔍</div>
+            <div style={{ fontSize: "18px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>
+              No scans yet
+            </div>
+            <div style={{ fontSize: "14px", color: "rgba(255,255,255,0.5)", marginBottom: "24px" }}>
+              Scan any URL to get your AI visibility score in 60 seconds.
+            </div>
+            <a
+              href="/scan"
+              style={{
+                background: "#00e5a0",
+                color: "#000",
+                fontWeight: 700,
+                fontSize: "14px",
+                padding: "12px 24px",
+                borderRadius: "8px",
+                textDecoration: "none",
+              }}
+            >
+              Scan your first URL &rarr;
+            </a>
           </div>
         )}
       </>

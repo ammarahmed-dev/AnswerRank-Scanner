@@ -12,6 +12,7 @@ type Props = {
   disabled?: boolean;
   isCurrentPlan?: boolean;
   includedInPlan?: boolean;
+  style?: React.CSSProperties;
 };
 
 export default function UpgradeButton({
@@ -21,6 +22,7 @@ export default function UpgradeButton({
   disabled = false,
   isCurrentPlan = false,
   includedInPlan = false,
+  style,
 }: Props) {
   const [loading, setLoading] = useState(false);
 
@@ -74,7 +76,7 @@ export default function UpgradeButton({
       onClick={isCurrentPlan ? undefined : handleUpgrade}
       disabled={loading || disabled || isCurrentPlan}
       className={className}
-      style={isCurrentPlan ? { cursor: "default", opacity: 0.6 } : undefined}
+      style={isCurrentPlan ? { ...(style ?? {}), cursor: "default", opacity: 0.6 } : style}
     >
       {loading ? "Opening checkout…" : (isCurrentPlan && includedInPlan ? "Included in Pro" : children)}
     </button>

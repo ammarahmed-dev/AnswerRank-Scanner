@@ -926,6 +926,46 @@ const downloadPdf = async () => {
         </div>
       </section>
 
+      {plan === "free" && (
+        <div
+          style={{
+            position: "sticky",
+            bottom: "24px",
+            margin: "32px auto",
+            maxWidth: "680px",
+            background: "#0d1117",
+            border: "1px solid rgba(0,229,160,0.25)",
+            borderRadius: "12px",
+            padding: "20px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+            zIndex: 50,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: "15px",
+                fontWeight: 600,
+                color: "#ffffff",
+                marginBottom: "4px",
+              }}
+            >
+              You scored {report.score}/100 - see the full breakdown
+            </div>
+            <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)" }}>
+              Upgrade to see every issue, fix recommendations, and schema suggestions.
+            </div>
+          </div>
+          <UpgradeButton plan="pro" style={{ flexShrink: 0, whiteSpace: "nowrap" }}>
+            Upgrade to Pro &rarr;
+          </UpgradeButton>
+        </div>
+      )}
+
       <div className="report-action-row flex flex-col justify-center gap-3 sm:flex-row print-hidden">
         <button onClick={copyReport} className="btn btn-secondary">
           <Copy className="h-4 w-4" /> {copyOk ? "Copied" : "Copy report summary"}
