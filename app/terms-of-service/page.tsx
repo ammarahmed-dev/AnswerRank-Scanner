@@ -69,7 +69,7 @@ export default function TermsOfServicePage() {
             Free account: 3 full scans per month. Resets on a rolling 30-day basis. Reports show overall score and top 3 issues only.
           </li>
           <li>
-            Full Report ($14 one-time): Unlocks the complete report for the specific URL that was scanned. Includes full issue breakdown, schema recommendations, AI Answer Snapshot, competitor takeaway, and client-ready PDF. This is a per-report unlock, not a general scan credit, and it applies to the scanned URL only.
+            Full Report ($9 one-time): Unlocks the complete report for the specific URL that was scanned. Includes full issue breakdown, schema recommendations, AI Answer Snapshot, competitor takeaway, and client-ready PDF. This is a per-report unlock, not a general scan credit, and it applies to the scanned URL only.
           </li>
           <li>
             Pro Monthly ($39/month): 30 full reports per month. Includes all Full Report features plus saved report history and priority scan access.
@@ -82,7 +82,7 @@ export default function TermsOfServicePage() {
           Paid access is currently handled through our contact flow. When a paid plan is activated, you agree to provide accurate billing information and authorize the applicable charge.
         </p>
         <ul>
-          <li>Full Report ($14): One-time payment that unlocks the full report for the specific scanned URL</li>
+          <li>Full Report ($9): One-time payment that unlocks the full report for the specific scanned URL</li>
           <li>Pro Monthly ($39/month): Recurring subscription billed monthly. Contact us for billing support and activation details.</li>
         </ul>
         <p>For billing questions, contact <a href="mailto:hello@aeocheck.co">hello@aeocheck.co</a></p>

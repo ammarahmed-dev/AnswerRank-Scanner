@@ -24,7 +24,7 @@ export default function RefundPolicyPage() {
           We want you to be satisfied with every AEOCheck report. If something goes wrong on our end, we will make it right.
         </p>
 
-        <h2>Full Report - $14 One-Time Access</h2>
+        <h2>Full Report - $9 One-Time Access</h2>
         <p>You are eligible for a full refund if:</p>
         <ul>
           <li>The report failed to generate due to a technical error on our end</li>

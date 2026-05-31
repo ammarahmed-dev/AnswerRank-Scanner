@@ -22,7 +22,7 @@ export function getAuditTier(profile: AccessProfile | UserPlan): AuditTier {
     return { canAudit: true, pageLimit: 50, auditLimit: 10, windowHours: 24 };
   }
   if (plan === "free") {
-    return { canAudit: true, pageLimit: 10, auditLimit: 3, windowHours: 24 };
+    return { canAudit: true, pageLimit: 5, auditLimit: 3, windowHours: 24 };
   }
   // guest
   return { canAudit: true, pageLimit: 5, auditLimit: 1, windowHours: 24 };

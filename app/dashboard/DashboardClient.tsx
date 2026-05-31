@@ -300,6 +300,7 @@ export default function DashboardClient() {
       <>
         {recentScans.length === 0 && recentAudits.length === 0 && (
           <div
+            className="onboarding-banner"
             style={{
               background: "linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,229,160,0.03))",
               border: "1px solid rgba(0,229,160,0.2)",
@@ -357,6 +358,8 @@ export default function DashboardClient() {
                 textDecoration: "none",
                 whiteSpace: "nowrap",
                 flexShrink: 0,
+                width: isMobile ? "100%" : undefined,
+                textAlign: isMobile ? ("center" as const) : undefined,
               }}
             >
               Scan a URL &rarr;

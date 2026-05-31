@@ -1,13 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Loader2 } from "lucide-react";
 import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
+import LoadingState from "../components/LoadingState";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { useAuth } from "@/app/context/AuthContext";
+
+type ProgressStatus = "started" | "complete" | "skipped" | "error";
+type LoaderProgress = {
+  step: number;
+  label: string;
+  status: ProgressStatus;
+};
 
 type RecentScan = {
   id: string;
@@ -37,7 +46,13 @@ export default function ScanClient() {
   const [recentScans, setRecentScans] = useState<RecentScan[]>([]);
   const [retestingId, setRetestingId] = useState<string | null>(null);
   const [retestDoneId, setRetestDoneId] = useState<string | null>(null);
+  const [loaderProgress, setLoaderProgress] = useState<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
+  const [isClient, setIsClient] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (!user || !supabase) return;
@@ -62,7 +77,8 @@ export default function ScanClient() {
     if (!trimmed) { inputRef.current?.focus(); return; }
     setLoading(true);
     setError("");
-    setStatus("Preparing scan…");
+    setStatus("Preparing scan...");
+    setLoaderProgress({ step: 1, label: "Preparing scan", status: "started" });
 
     try {
       const token = supabase ? (await getSafeSupabaseSession(supabase))?.access_token : undefined;
@@ -101,9 +117,17 @@ export default function ScanClient() {
               type: string;
               label?: string;
               message?: string;
+              step?: number;
+              status?: string;
               result?: { reportId?: string };
             };
-            if (event.type === "progress" && event.label) setStatus(event.label);
+            if (event.type === "progress") {
+              const nextLabel = event.message || event.label || "Running scan...";
+              const nextStep = typeof event.step === "number" ? event.step : 1;
+              const nextStatus = (event.status as ProgressStatus | undefined) || "started";
+              setStatus(nextLabel);
+              setLoaderProgress({ step: nextStep, label: nextLabel, status: nextStatus });
+            }
             if (event.type === "error") {
               setError(event.message ?? "Scan failed.");
               setLoading(false);
@@ -241,7 +265,17 @@ export default function ScanClient() {
         )}
 
       </section>
+      {isClient && loading && createPortal(
+        <div className="loading-overlay" role="dialog" aria-modal="true" aria-label="Running AI visibility scan">
+          <div className="loading-dialog">
+            <LoadingState progress={loaderProgress} />
+          </div>
+        </div>,
+        document.body
+      )}
+
       <SiteFooter />
     </main>
   );
 }
+

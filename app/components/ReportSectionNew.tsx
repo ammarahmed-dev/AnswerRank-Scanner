@@ -273,7 +273,7 @@ function contradictsAboutContact(text: string, detail: string) {
 }
 
 export default function ReportSectionNew({ report, onReset }: Props) {
-  const { plan, isAdmin: ctxIsAdmin } = useAuth();
+  const { user, plan, isAdmin: ctxIsAdmin } = useAuth();
   const [copyOk, setCopyOk] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -300,7 +300,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const checks = report.checks;
   const isReportUnlocked = Boolean(report.unlocked || report.unlockedAt);
   const hasFullReportAccess = ctxIsAdmin || canViewFullReport({ plan, isAdmin: ctxIsAdmin }) || isReportUnlocked;
-  const hasPdfAccess = hasFullReportAccess;
+  const hasPdfAccess = plan === "onetime" || plan === "pro" || plan === "agency";
   const canUnlockSpecificReport = Boolean(report.reportId);
 
   const isAdmin = ctxIsAdmin;
@@ -747,18 +747,20 @@ const downloadPdf = async () => {
             <p className="muted-copy report-gate-count">
               Showing {visibleIssues.length} of {visibleIssues.length + hiddenCount} issues — {hiddenCount} more {hiddenCount === 1 ? "fix" : "fixes"} available.
             </p>
-            <div className="report-save-banner">
-              <span>Your report is ready — sign up free to save it and come back anytime.</span>
-              <a href="/signup" className="btn btn-secondary report-save-banner-btn">Save free</a>
-            </div>
+            {!user && (
+              <div className="report-save-banner">
+                <span>Your report is ready - sign up free to save it and come back anytime.</span>
+                <a href="/signup" className="btn btn-secondary report-save-banner-btn">Save free</a>
+              </div>
+            )}
             <div className="report-gate-card">
               <p className="report-gate-card-title">Your full report is ready</p>
-              <p className="report-gate-card-desc">Sign up free to save this report, or unlock the full breakdown including every fix recommendation, schema guidance, and a client-ready PDF.</p>
+              <p className="report-gate-card-desc">{!user ? "Sign up free to save this report, or unlock the full breakdown including every fix recommendation, schema guidance, and a client-ready PDF." : "Unlock the full breakdown including every fix recommendation, schema guidance, and a client-ready PDF."}</p>
               <div className="report-gate-card-actions">
                 <button type="button" className="detailed-issues-lock-cta" onClick={() => setIsUpgradeModalOpen(true)}>
                   Unlock full report →
                 </button>
-                <small className="detailed-issues-lock-price">$14 one-time</small>
+                <small className="detailed-issues-lock-price">$9 one-time</small>
               </div>
             </div>
           </>
@@ -919,7 +921,15 @@ const downloadPdf = async () => {
               <>
                 <div className="locked-inline"><Lock className="h-4 w-4" /> Export a client-ready PDF</div>
                 <p>Download a clean report with scores, priority fixes, detailed issues, schema recommendations, and AI insights.</p>
-                <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Request Full Report Access</button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled
+                  title="Upgrade to download PDF"
+                  style={{ opacity: 0.7, cursor: "not-allowed" }}
+                >
+                  <Lock className="h-4 w-4" /> Upgrade to download PDF
+                </button>
               </>
             )}
           </div>
@@ -998,7 +1008,7 @@ const downloadPdf = async () => {
             <article className="upgrade-choice-card">
               <span className="upgrade-choice-badge">One-time</span>
               <strong className="upgrade-choice-title">Full Report</strong>
-              <span className="upgrade-choice-price">$14 one-time</span>
+              <span className="upgrade-choice-price">$9 one-time</span>
               <p className="upgrade-choice-description">Unlock this report only.</p>
               <ul className="upgrade-choice-features">
                 <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Full issue breakdown</span></li>

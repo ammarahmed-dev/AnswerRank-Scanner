@@ -12,10 +12,16 @@ export const metadata: Metadata = {
     },
   },
 };
+export const dynamic = "force-dynamic";
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={
+      <div className="page-loading">
+        <div className="page-loading-spinner" />
+        <span>Loading...</span>
+      </div>
+    }>
       <DashboardClient />
     </Suspense>
   );

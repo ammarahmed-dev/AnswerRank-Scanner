@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { CSSProperties, ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -607,8 +607,8 @@ function HomeInner({ heroContent }: HomePageClientProps) {
 
   const scanCountLabel = (() => {
     if (!isClient || authLoading) return undefined;
-    if (isAdmin) return "Master Admin · Unlimited Access";
-    if (unlimited) return "Pro · Unlimited Access";
+    if (isAdmin) return "Master Admin - Unlimited Access";
+    if (unlimited) return "Pro - Unlimited Access";
     if (typeof remaining === "number") return `${remaining} free scans left this month`;
     if (plan === "guest") return `${guestScansLeft} guest preview scan left`;
     return undefined;
@@ -1008,7 +1008,7 @@ function HomeInner({ heroContent }: HomePageClientProps) {
                       onMouseEnter={e => (e.currentTarget.style.textDecoration = "underline")}
                       onMouseLeave={e => (e.currentTarget.style.textDecoration = "none")}
                     >
-                      Manage subscription →
+                      Manage subscription ?
                     </a>
                   )}
                 </article>
@@ -1120,7 +1120,7 @@ function HomeInner({ heroContent }: HomePageClientProps) {
       {state === "paywall" && (
         <section className="launch-container paywall-section">
           <div className="pricing-panel">
-            <span className="price">$14</span>
+            <span className="price">$9</span>
             <strong>Scan limit reached</strong>
             <p>{errorMsg || "Upgrade your plan to unlock the full report, schema recommendations, implementation checklist, and PDF export."}</p>
             <UpgradeButton plan="pro">Upgrade to unlock</UpgradeButton>
@@ -1292,6 +1292,7 @@ export default function Home(props: HomePageClientProps) {
     </Suspense>
   );
 }
+
 
 
 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import SiteHeader from "@/app/components/SiteHeader";
@@ -41,7 +41,7 @@ export default function ComparisonPageClient({ data }: Props) {
         <div className="launch-container vs-verdict-grid">
           <div className="vs-verdict-card vs-verdict-us">
             <p className="launch-eyebrow">AEOCheck</p>
-            <p className="vs-price">$0 / $14 / $39</p>
+            <p className="vs-price">$0 / $9 / $39</p>
             <p className="vs-target">For agencies, freelancers, and developers</p>
           </div>
           <div className="vs-verdict-divider">VS</div>
@@ -300,3 +300,4 @@ export default function ComparisonPageClient({ data }: Props) {
     </main>
   );
 }
+

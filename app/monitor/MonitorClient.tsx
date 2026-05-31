@@ -13,6 +13,8 @@ import {
   ChevronDown,
   ChevronUp,
   Plus,
+  Activity,
+  X,
 } from "lucide-react";
 import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
@@ -159,6 +161,7 @@ export default function MonitorClient() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [historyMap, setHistoryMap] = useState<Record<string, Snapshot[]>>({});
   const [historyLoading, setHistoryLoading] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState(false);
 
   async function getToken() {
     if (!supabase) return null;
@@ -352,28 +355,104 @@ export default function MonitorClient() {
           </div>
         )}
 
-        {!loading && !error && !isPro && (
-          <div className="monitor-gate surface card-pad">
-            <div className="monitor-gate-inner">
-              <TrendingUp className="h-10 w-10 monitor-gate-icon" />
-              <h1>Monitor your AEO score over time</h1>
-              <p>
-                Monitor is a Pro feature. Add URLs to track, get weekly or monthly score snapshots,
-                and see your AI search visibility trend over time.
-              </p>
-              <ul className="monitor-gate-features">
-                <li>Track up to 10 URLs</li>
-                <li>Weekly or monthly automated rescans</li>
-                <li>Score trend charts</li>
-                <li>Category breakdown per scan</li>
-              </ul>
-              <UpgradeButton plan="pro">Upgrade to Pro</UpgradeButton>
-              <a href="/#pricing" className="monitor-gate-pricing-link">View pricing</a>
+        {!loading && !error && !isPro && !dismissed && (
+          <div
+            className="monitor-gate"
+            style={{
+              background: "#0d1117",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 12,
+              maxWidth: 480,
+              margin: "0 auto 20px",
+              padding: "24px 24px 20px",
+              position: "relative",
+              textAlign: "center",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setDismissed(true)}
+              aria-label="Dismiss monitor upgrade gate"
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                width: 30,
+                height: 30,
+                borderRadius: 8,
+                border: "1px solid rgba(255,255,255,0.12)",
+                background: "rgba(255,255,255,0.03)",
+                color: "rgba(255,255,255,0.75)",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                margin: "0 auto 12px",
+                borderRadius: 12,
+                border: "1px solid rgba(0,229,160,0.22)",
+                background: "rgba(0,229,160,0.1)",
+                color: "#00e5a0",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Activity className="h-5 w-5" />
             </div>
+            <h1 style={{ marginBottom: 8 }}>Monitor your AEO score over time</h1>
+            <p style={{ marginBottom: 14 }}>
+              Monitor is a Pro feature. Add URLs to track, get weekly or monthly score snapshots,
+              and see your AI search visibility trend over time.
+            </p>
+            <ul className="monitor-gate-features" style={{ textAlign: "left", marginBottom: 14 }}>
+              <li>Track up to 10 URLs</li>
+              <li>Weekly or monthly automated rescans</li>
+              <li>Score trend charts</li>
+              <li>Category breakdown per scan</li>
+            </ul>
+            <UpgradeButton plan="pro" className="btn btn-primary">Upgrade to Pro</UpgradeButton>
+            <button
+              type="button"
+              onClick={() => setDismissed(true)}
+              style={{
+                marginTop: 10,
+                background: "transparent",
+                border: "none",
+                color: "rgba(255,255,255,0.62)",
+                fontSize: 13,
+                textDecoration: "underline",
+              }}
+            >
+              Maybe later &rarr;
+            </button>
           </div>
         )}
 
-        {!loading && !error && isPro && (
+        {!loading && !error && !isPro && dismissed && (
+          <div
+            style={{
+              marginBottom: 14,
+              padding: "10px 12px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(255,255,255,0.03)",
+              color: "rgba(255,255,255,0.72)",
+              fontSize: 13,
+            }}
+          >
+            Monitor is a Pro feature. Upgrade to track URLs over time. <a href="/#pricing" style={{ color: "#00e5a0", fontWeight: 600, textDecoration: "none" }}>Upgrade</a>
+          </div>
+        )}
+
+        {!loading && !error && (isPro || dismissed) && (
           <>
             <div className="monitor-hero">
               <div>
@@ -384,7 +463,16 @@ export default function MonitorClient() {
               <Link href="/dashboard" className="btn btn-secondary">Dashboard</Link>
             </div>
 
-            {/* Add URL form */}
+            {!isPro && (
+              <div className="surface card-pad" style={{ marginBottom: 16 }}>
+                <strong style={{ display: "block", marginBottom: 8 }}>Monitor is locked on Free</strong>
+                <p style={{ margin: 0, color: "var(--color-ink-muted)", fontSize: 14 }}>
+                  Upgrade to Pro to add monitored URLs, run automated rescans, and view score trends by category.
+                </p>
+              </div>
+            )}
+
+            {isPro && (
             <form className="monitor-add-form surface card-pad" onSubmit={handleAdd}>
               <div className="monitor-add-row">
                 <div className="monitor-add-input-wrap">
@@ -413,8 +501,8 @@ export default function MonitorClient() {
               {addError && <p className="monitor-add-error">{addError}</p>}
               <p className="monitor-add-hint">Up to 10 URLs. Scans run on your schedule or manually.</p>
             </form>
+            )}
 
-            {/* URL list */}
             {items.length === 0 ? (
               <div className="monitor-empty surface card-pad">
                 <Globe className="h-8 w-8 monitor-empty-icon" />

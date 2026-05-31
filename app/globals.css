@@ -12521,4 +12521,16 @@ textarea.contact-control {
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
-}
+}
+
+@media (max-width: 768px) {
+  .onboarding-banner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .onboarding-banner a {
+    width: 100% !important;
+    text-align: center !important;
+  }
+}
