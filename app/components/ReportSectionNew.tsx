@@ -2,7 +2,7 @@
 
 import { CheckResult, CompetitorScanResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
-import { AlertCircle, CheckCircle2, ChevronDown, Copy, Download, ExternalLink, Lock, RotateCcw, Sparkles, TrendingUp, Zap } from "lucide-react";
+import { AlertCircle, BarChart2, Bot, CheckCircle2, ChevronDown, Code, Copy, Download, ExternalLink, FileText, Lock, RotateCcw, Search, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
@@ -819,7 +819,7 @@ const downloadPdf = async () => {
               <p className="report-gate-card-desc">{!user ? "Sign up free to save this report, or unlock the full breakdown including every fix recommendation, schema guidance, and a client-ready PDF." : "Unlock the full breakdown including every fix recommendation, schema guidance, and a client-ready PDF."}</p>
               <div className="report-gate-card-actions">
                 <button type="button" className="detailed-issues-lock-cta" onClick={() => setIsUpgradeModalOpen(true)}>
-                  Unlock full report â†’
+                  Unlock full report &rarr;
                 </button>
                 <small className="detailed-issues-lock-price">$9 one-time</small>
               </div>
@@ -924,42 +924,42 @@ const downloadPdf = async () => {
             <p className="section-kicker">What&apos;s included in your PDF:</p>
             <div className="pdf-includes-grid">
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">ðŸ“‹</span>
+                <span className="pdf-include-icon"><FileText size={16} /></span>
                 <div>
                   <strong>Executive Summary</strong>
                   <p>Main diagnosis, top opportunity, and performance score at a glance.</p>
                 </div>
               </div>
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">ðŸ“Š</span>
+                <span className="pdf-include-icon"><BarChart2 size={16} /></span>
                 <div>
                   <strong>Score Breakdown</strong>
                   <p>Category-by-category scores across all 7 readiness areas.</p>
                 </div>
               </div>
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">ðŸ¤–</span>
+                <span className="pdf-include-icon"><Bot size={16} /></span>
                 <div>
                   <strong>AI Answer Snapshot</strong>
                   <p>How AI assistants currently understand and summarize this page.</p>
                 </div>
               </div>
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">âš¡</span>
+                <span className="pdf-include-icon"><Zap size={16} /></span>
                 <div>
                   <strong>Priority Action Plan</strong>
                   <p>Critical, high impact, and passing checks grouped by urgency.</p>
                 </div>
               </div>
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">ðŸ”</span>
+                <span className="pdf-include-icon"><Search size={16} /></span>
                 <div>
                   <strong>Detailed Issue Breakdown</strong>
                   <p>Every issue with why it matters and the exact recommended fix.</p>
                 </div>
               </div>
               <div className="pdf-include-item">
-                <span className="pdf-include-icon">ðŸ·ï¸</span>
+                <span className="pdf-include-icon"><Code size={16} /></span>
                 <div>
                   <strong>Schema Recommendations</strong>
                   <p>Detected types, missing schema, and implementation guidance.</p>

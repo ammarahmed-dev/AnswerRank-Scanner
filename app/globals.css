@@ -4536,30 +4536,30 @@ textarea.contact-control {
   gap: 6px;
 }
 .mini-pill {
-  min-height: 22px;
+  min-height: 20px;
   border: 1px solid transparent;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px 8px;
-  font-size: 0.7rem;
-  font-weight: 900;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
 }
 .issue-accordion-card .mini-pill {
   min-height: 20px;
   border-radius: 999px;
-  padding: 2px 8px;
-  font-size: 0.688rem;
-  font-weight: 780;
-  letter-spacing: 0.025em;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   line-height: 1.2;
 }
-.badge-critical { background: rgba(239, 68, 68, 0.12); border-color: rgba(248, 113, 113, 0.28); color: #fecaca; }
-.badge-high     { background: rgba(245, 158, 11, 0.12); border-color: rgba(251, 191, 36, 0.28);  color: #fde68a; }
-.badge-medium   { background: rgba(59, 130, 246, 0.12); border-color: rgba(96, 165, 250, 0.28);  color: #bfdbfe; }
+.badge-critical { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #ef4444; }
+.badge-high     { background: rgba(249, 115, 22, 0.12); border-color: rgba(249, 115, 22, 0.25); color: #f97316; }
+.badge-medium   { background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.25); color: #60a5fa; }
 .badge-low      { background: rgba(148, 163, 184, 0.12); border-color: rgba(148, 163, 184, 0.26); color: #cbd5e1; }
 
 /* ── Expanded body ── */
@@ -7472,9 +7472,11 @@ textarea.contact-control {
     gap: 5px;
   }
   .issue-accordion-card .mini-pill {
-    font-size: 0.66rem;
-    min-height: 19px;
-    padding: 2px 7px;
+    font-size: 10px;
+    min-height: 20px;
+    padding: 3px 8px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
   }
   .detailed-issues-lock,
   .report-gate-card {
