@@ -336,6 +336,6 @@ export async function GET(req: Request) {
     }
   }
 
-  console.log(`[cron/monitor-emails] done — processed: ${processed}, errors: ${errors.length}`);
+  console.log(`[cron/monitor-emails] done - processed: ${processed}, errors: ${errors.length}`);
   return NextResponse.json({ processed, errors });
 }

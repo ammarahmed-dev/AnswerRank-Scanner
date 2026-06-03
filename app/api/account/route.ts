@@ -101,6 +101,26 @@ async function getMonitorCount(userId: string): Promise<number> {
   return parseInt(contentRange.split("/")[1] ?? "0", 10);
 }
 
+async function getAuditCountThisMonth(userId: string): Promise<number> {
+  if (!hasSupabaseConfig()) return 0;
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const params = new URLSearchParams({
+    user_id: `eq.${userId}`,
+    created_at: `gte.${startOfMonth.toISOString()}`,
+    select: "id",
+  });
+  const res = await fetch(`${supabaseUrl}/rest/v1/audit_runs?${params.toString()}`, {
+    headers: getSupabaseServiceHeaders(),
+    cache: "no-store",
+  });
+  if (!res.ok) return 0;
+  const rows = await res.json();
+  return Array.isArray(rows) ? rows.length : 0;
+}
+
 export async function GET(req: Request) {
   const auth = await getAuthContext(req);
 
@@ -108,12 +128,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [scanCount, reports, portalUrl, recentAudits, monitorCount] = await Promise.all([
+  const [scanCount, reports, portalUrl, recentAudits, monitorCount, auditCountThisMonth] = await Promise.all([
     getUsageCount(`user:${auth.user.id}`),
     getRecentReports(auth.user.id),
     getPortalUrl(auth.user.id),
     getRecentAudits(auth.user.id),
     getMonitorCount(auth.user.id),
+    getAuditCountThisMonth(auth.user.id),
   ]);
   const isEmailAdmin = isMasterAdmin(auth.user.email);
   const profilePlan = normalizeUserPlan(auth.plan);
@@ -141,6 +162,7 @@ export async function GET(req: Request) {
     reports,
     recentAudits,
     monitorCount,
+    auditCountThisMonth,
   });
 }
 

@@ -29,7 +29,7 @@ AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) 
 ## Key pages
 - Homepage and scanner: https://www.aeocheck.co
 - Sample report: https://www.aeocheck.co/sample-report
-- Pricing: https://www.aeocheck.co/#pricing
+- Pricing: https://www.aeocheck.co/pricing
 - Blog: https://www.aeocheck.co/blog
 - About: https://www.aeocheck.co/about
 - Contact: https://www.aeocheck.co/contact

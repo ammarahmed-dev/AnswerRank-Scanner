@@ -36,21 +36,15 @@ function statusBadge(status: string) {
 
 export default function AuditHistoryClient() {
   const router = useRouter();
-  const { user, plan, isAdmin, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const supabase = getSupabaseBrowserClient();
   const [audits, setAudits] = useState<AuditSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const canAudit = isAdmin || plan === "pro" || plan === "agency";
-
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      router.replace("/login?next=/audit");
-      return;
-    }
-    if (!canAudit) {
       setLoading(false);
       return;
     }
@@ -79,7 +73,7 @@ export default function AuditHistoryClient() {
 
     loadHistory();
     return () => { active = false; };
-  }, [authLoading, user, canAudit, router, supabase]);
+  }, [authLoading, user, router, supabase]);
 
   return (
     <main className="min-h-screen">
@@ -102,18 +96,18 @@ export default function AuditHistoryClient() {
           </div>
         )}
 
-        {!loading && !canAudit && (
+        {!loading && !user && (
           <div className="surface pro-placeholder-panel">
-            <p>Site Audit is available on Pro and Agency plans.</p>
-            <a href="/#pricing" className="btn btn-primary">View Pricing</a>
+            <p>Sign up free to start auditing.</p>
+            <a href="/signup?next=/audit" className="btn btn-primary">Sign up free to start auditing</a>
           </div>
         )}
 
-        {!loading && canAudit && error && (
+        {!loading && !!user && error && (
           <div className="surface audit-error">{error}</div>
         )}
 
-        {!loading && canAudit && !error && (
+        {!loading && !!user && !error && (
           <section className="surface dashboard-reports">
             <div className="dashboard-section-header">
               <div>

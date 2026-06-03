@@ -162,7 +162,7 @@ export default function AuthPageClient({ mode }: Props) {
             </div>
             <div className="auth-split-feature-text">
               <strong>Scan any URL in 60 seconds</strong>
-              <span>Full AI visibility breakdown — schema, content, metadata.</span>
+              <span>Full AI visibility breakdown - schema, content, metadata.</span>
             </div>
           </div>
 

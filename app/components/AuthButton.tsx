@@ -8,7 +8,7 @@ import { FEATURES } from "./FeaturesDropdown";
 
 const NAV_LINKS = [
   { href: "/#how", label: "How it works" },
-  { href: "/#pricing", label: "Pricing" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];
 

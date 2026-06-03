@@ -267,7 +267,7 @@ export default function ComparisonPageClient({ data }: Props) {
           <p>Run a free AEOCheck scan to see whether your website gives ChatGPT, Perplexity, and Google AI enough context to understand and cite your page.</p>
           {data.ctaSupportLine && <p className="vs-cta-support">{data.ctaSupportLine}</p>}
           <p>
-            <a href="/sample-report">View sample report</a> | <a href="/blog/what-is-aeo-answer-engine-optimization">Read what AEO means</a> | <a href="/blog/best-aeo-tools-ai-search-visibility">Compare AEO tools</a> | <a href="/#pricing">See pricing</a>
+            <a href="/sample-report">View sample report</a> | <a href="/blog/what-is-aeo-answer-engine-optimization">Read what AEO means</a> | <a href="/blog/best-aeo-tools-ai-search-visibility">Compare AEO tools</a> | <a href="/pricing">See pricing</a>
           </p>
           <a href="/#scanner" className="btn btn-primary">
             Run Free Scan <ArrowRight className="h-4 w-4" />

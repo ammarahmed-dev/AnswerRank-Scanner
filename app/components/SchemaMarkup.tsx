@@ -201,7 +201,7 @@ export default function SchemaMarkup() {
           "@type": "ListItem",
           position: 3,
           name: "Pricing",
-          item: `${SITE_URL}/#pricing`,
+          item: `${SITE_URL}/pricing`,
         },
         {
           "@type": "ListItem",

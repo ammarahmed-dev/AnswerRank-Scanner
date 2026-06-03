@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -70,6 +70,7 @@ export default function CompareClient() {
   const supabase = getSupabaseBrowserClient();
   const { user, plan } = useAuth();
   const isPro = plan === "pro" || plan === "agency";
+  const isPaid = plan === "pro" || plan === "agency" || plan === "onetime";
 
   const [urlA, setUrlA] = useState("");
   const [urlB, setUrlB] = useState("");
@@ -195,7 +196,7 @@ export default function CompareClient() {
               <button type="submit" className="btn btn-primary" disabled={loading} style={{ minWidth: "160px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, whiteSpace: "nowrap" }}>
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 <ArrowLeftRight className="h-4 w-4" />
-                {loading ? "Comparing…" : "Compare URLs"}
+                {loading ? "Comparingâ€¦" : "Compare URLs"}
               </button>
             </div>
           </form>
@@ -211,38 +212,68 @@ export default function CompareClient() {
                   <p style={{ margin: "0 0 8px", fontSize: 12, color: "var(--color-ink-muted)", wordBreak: "break-all" }}>{c.url}</p>
                   <strong style={{ fontSize: "2.5rem", color: "var(--color-primary)", lineHeight: 1 }}>{c.score}</strong>
                   <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--color-ink-muted)" }}>
-                    {result.comparison.winner === (i === 0 ? "primary" : "competitor") ? "🏆 Winner" : result.comparison.winner === "tie" ? "Tied" : ""}
+                    {result.comparison.winner === (i === 0 ? "primary" : "competitor") ? "ðŸ† Winner" : result.comparison.winner === "tie" ? "Tied" : ""}
                   </p>
                 </div>
               ))}
             </div>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--color-line)" }}>
-                  <th style={{ textAlign: "left", padding: "8px 0", color: "var(--color-ink-muted)", fontWeight: 500 }}>Category</th>
-                  <th style={{ textAlign: "center", padding: "8px 0", color: "var(--color-ink-muted)", fontWeight: 500 }}>Your URL</th>
-                  <th style={{ textAlign: "center", padding: "8px 0", color: "var(--color-ink-muted)", fontWeight: 500 }}>Competitor</th>
-                  <th style={{ textAlign: "center", padding: "8px 0", color: "var(--color-ink-muted)", fontWeight: 500 }}>Gap</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.comparison.categoryBreakdown.map(row => (
-                  <tr key={row.category} style={{ borderBottom: "1px solid var(--color-line)" }}>
-                    <td style={{ padding: "10px 0" }}>{toLabel(row.category)}</td>
-                    <td style={{ textAlign: "center", padding: "10px 0" }}>{row.primaryScore ?? "—"}</td>
-                    <td style={{ textAlign: "center", padding: "10px 0" }}>{row.competitorScore ?? "—"}</td>
-                    <td style={{ textAlign: "center", padding: "10px 0", color: (row.gap ?? 0) > 0 ? "var(--color-primary)" : (row.gap ?? 0) < 0 ? "#f87171" : "var(--color-ink-muted)", fontWeight: 600 }}>
-                      {row.gap !== null ? (row.gap > 0 ? `+${row.gap}` : row.gap) : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {(() => {
+              const categories = result.comparison.categoryBreakdown;
+              const visibleCategories = isPaid ? categories : categories.slice(0, 3);
+              const hiddenCount = isPaid ? 0 : Math.max(0, categories.length - 3);
+              return (
+                <>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid var(--color-line)" }}>
+                        <th style={{ textAlign: "left", padding: "8px 0", color: "var(--color-ink-muted)", fontWeight: 500 }}>Category</th>
+                        <th style={{ textAlign: "center", padding: "8px 0", color: "var(--color-ink-muted)", fontWeight: 500 }}>Your URL</th>
+                        <th style={{ textAlign: "center", padding: "8px 0", color: "var(--color-ink-muted)", fontWeight: 500 }}>Competitor</th>
+                        <th style={{ textAlign: "center", padding: "8px 0", color: "var(--color-ink-muted)", fontWeight: 500 }}>Gap</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleCategories.map((row) => (
+                        <tr key={row.category} style={{ borderBottom: "1px solid var(--color-line)" }}>
+                          <td style={{ padding: "10px 0" }}>{toLabel(row.category)}</td>
+                          <td style={{ textAlign: "center", padding: "10px 0" }}>{row.primaryScore ?? "—"}</td>
+                          <td style={{ textAlign: "center", padding: "10px 0" }}>{row.competitorScore ?? "—"}</td>
+                          <td style={{ textAlign: "center", padding: "10px 0", color: (row.gap ?? 0) > 0 ? "var(--color-primary)" : (row.gap ?? 0) < 0 ? "#f87171" : "var(--color-ink-muted)", fontWeight: 600 }}>
+                            {row.gap !== null ? (row.gap > 0 ? `+${row.gap}` : row.gap) : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                      {!isPaid && hiddenCount > 0 && (
+                        <tr>
+                          <td
+                            colSpan={4}
+                            style={{
+                              textAlign: "center",
+                              padding: "16px",
+                              color: "rgba(255,255,255,0.4)",
+                              fontSize: "13px",
+                              borderTop: "1px solid rgba(255,255,255,0.06)",
+                            }}
+                          >
+                            +{hiddenCount} more categories hidden - upgrade to see full breakdown
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                  {!isPaid && (
+                    <p style={{ marginTop: 8, fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                      Showing 3 of {categories.length} categories. Upgrade to Pro for the full breakdown.
+                    </p>
+                  )}
+                </>
+              );
+            })()}
           </section>
         )}
 
         {!isPro && (
-          <section className="surface" style={{ padding: "24px 28px", marginTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <section className="surface compare-cta-card" style={{ padding: "24px 28px", marginTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
             <div>
               <strong style={{ display: "block", marginBottom: 4 }}>Save compare history</strong>
               <p style={{ margin: 0, fontSize: 13, color: "var(--color-ink-muted)" }}>Upgrade to Pro to save all your comparisons and re-run them anytime.</p>
@@ -264,7 +295,7 @@ export default function CompareClient() {
                       <div>
                         <strong style={{ fontSize: 13 }}>{run.url_a}</strong>
                         <span style={{ color: "var(--color-ink-muted)", fontSize: 12 }}>vs {run.url_b}</span>
-                        <span>{formatDate(run.created_at)} · {run.score_a ?? "—"} vs {run.score_b ?? "—"}</span>
+                        <span>{formatDate(run.created_at)} Â· {run.score_a ?? "â€”"} vs {run.score_b ?? "â€”"}</span>
                       </div>
                     </div>
                     <button type="button" className="btn btn-secondary" style={{ fontSize: 13, padding: "6px 14px" }} onClick={() => prefill(run)}>

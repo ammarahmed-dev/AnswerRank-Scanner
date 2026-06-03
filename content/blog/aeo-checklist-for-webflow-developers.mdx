@@ -1,19 +1,32 @@
 ---
-title: AEO Checklist for Webflow Developers
-description: A checklist to make any Webflow site visible to ChatGPT, Perplexity, and AI search engines. Covers robots.txt, schema, llms.txt, and Core Web Vitals.
+title: "AEO Checklist for Webflow Developers: 12-Point Guide (2025)"
+description: "The complete AEO checklist for Webflow developers. Covers schema markup, structured data, content structure, and technical signals that get Webflow sites cited in ChatGPT and Perplexity."
 date: 2026-05-15
 slug: aeo-checklist-webflow-developers
 tags: [aeo, webflow, checklist, ai-search]
 author: AEOCheck
 coverImage: /images/blog/aeo-checklist-webflow-cover.jpg
 coverImageAlt: AEO checklist for Webflow developers - 10-step guide for AI search visibility
+faqs:
+  - question: "Can Webflow sites rank in AI search engines?"
+    answer: "Yes - Webflow's clean semantic HTML is actually an advantage for AEO. The main gaps are usually missing structured data and content that is not structured as direct answers. Both are fixable with Webflow's custom code embeds."
+  - question: "How do I add schema markup to a Webflow site?"
+    answer: "Use Webflow's custom code embed component (available on paid plans) to add JSON-LD script tags directly to any page. For site-wide schema like Organization, add it in Site Settings > Custom Code > Head Code."
+  - question: "Does Webflow automatically add structured data?"
+    answer: "Webflow adds some basic meta tags but does not automatically generate JSON-LD structured data. FAQ schema, Article schema, and Organization schema all need to be added manually via custom code embeds."
+  - question: "What is the fastest AEO win for a Webflow site?"
+    answer: "Adding FAQ schema to your most important pages. Create a JSON-LD script block in a custom code embed with your top 5 questions and answers. This alone can significantly improve AI citation rates."
+  - question: "How do I check my Webflow site's AEO score?"
+    answer: "Use AEOCheck - paste your Webflow site URL and get a full AI visibility score with a prioritized list of issues in under 60 seconds."
 ---
 
-Search has changed. When someone asks ChatGPT "best tool for X" or asks Perplexity "how do I fix Y," they get a direct answer - not a list of links. If your Webflow site is not optimized for how AI engines read and cite content, you are invisible in the fastest-growing discovery channel on the web.
+Webflow sites have a natural AEO advantage that most developers do not realize: the platform generates clean, semantic HTML with proper heading hierarchy and well-structured markup out of the box. That is more than many WordPress themes or custom builds can claim. AI engines can read Webflow pages clearly.
 
-This checklist covers every technical and content change a Webflow developer can make today to improve AI visibility. No fluff, no theory - just the actual fixes.
+The gaps are not in the HTML. They are in three areas: missing structured data, content that is not formatted for AI extraction, and robots.txt settings that may be blocking AI crawlers. All three are fixable in an afternoon.
 
-Want to know your current AI visibility score before you start? [Run a free scan on AEOCheck](https://www.aeocheck.co/) and get a full report in under 60 seconds.
+This checklist covers every change a Webflow developer needs to make - in order of impact - to go from invisible in AI search to reliably cited. [Run a free AEO scan on your Webflow site](/scan) first to see your current score and understand which items matter most for your specific site.
+
+Not familiar with AEO yet? Read [what is AEO and how it works](/blog/what-is-aeo-answer-engine-optimization) before starting the checklist.
 
 ---
 
@@ -75,7 +88,7 @@ Specific user type - not a vague persona.
 - https://yourdomain.com/blog
 ```
 
-In Webflow, upload this as a static file via **Assets** or use a **Custom Code** embed at the root level. The simplest approach: host it on your server or CDN and point a redirect from `/llms.txt` to it.
+**Webflow-specific note:** Webflow does not allow arbitrary file uploads at your domain root. The most reliable approach is to host the file at any public URL (a GitHub Gist, your own CDN, or an S3 bucket), then add a 301 redirect in **Site Settings > Hosting > 301 Redirects** pointing `/llms.txt` to that URL. Alternatively, create a Webflow page at `/llms-txt` with the content as plain text and redirect `/llms.txt` to it.
 
 **What to check:**
 
@@ -98,10 +111,7 @@ AI engines use structured data to understand what your page is, who wrote it, an
 | Service/product page | `WebPage`, `FAQPage` |
 | About page | `Person` or `Organization` |
 
-**How to add in Webflow:**
-Go to **Page Settings > Custom Code > Head Code** and paste a `<script type="application/ld+json">` block.
-
-Example for a homepage:
+**Organization schema belongs in Site Settings:** Unlike page-specific schema, your Organization block should load on every page. Add it to **Site Settings > Custom Code > Head Code** so it runs site-wide:
 
 ```html
 <script type="application/ld+json">
@@ -115,6 +125,8 @@ Example for a homepage:
 }
 </script>
 ```
+
+**For page-specific schema** (Article, FAQPage, WebPage): go to **Page Settings > Custom Code > Head Code** and add the relevant block to each page type.
 
 **What to check:**
 
@@ -244,13 +256,108 @@ AI engines and Google AI Overviews deprioritize slow pages. Page speed is a trus
 
 ---
 
+## 11. Add FAQ Schema to Key Webflow Pages
+
+FAQPage schema is the single highest-returning AEO fix for most Webflow sites. AI engines specifically parse FAQ structured data when selecting answer sources, and pages with FAQ schema are cited at significantly higher rates than equivalent pages without it.
+
+In Webflow, add a **Custom Code Embed** component directly on the page in the Designer, or use **Page Settings > Custom Code > Before `</body>`**. Paste this JSON-LD and replace the placeholder questions with your actual content:
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is [your topic]?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A direct 2-3 sentence answer. Write it as a self-contained response that makes sense without any surrounding context."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I [common task your customers ask about]?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Your answer here. Keep it direct and specific."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between [option A] and [option B]?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Your answer here."
+      }
+    }
+  ]
+}
+</script>
+```
+
+Target your most important landing page, your pricing page, and any page that already has FAQ-style content. Aim for 3-7 question/answer pairs. Write each answer as a complete standalone response - a paragraph that only makes sense if you read the one above it is a paragraph that cannot be cited.
+
+**What to check:**
+
+- [ ] FAQPage schema added to homepage, pricing page, and key service pages
+- [ ] Each answer is 2-4 sentences and self-contained
+- [ ] Questions match what customers actually search for
+- [ ] Validates cleanly in [Google's Rich Results Test](https://search.google.com/test/rich-results)
+
+---
+
+## 12. Structure Webflow CMS Collections for AEO
+
+Webflow's CMS gives you more AEO control than most platforms if you configure it correctly from the start.
+
+**Dynamic meta titles:** In **Page Settings** for your CMS Collection template, reference the CMS item name or title field rather than using a static title. This ensures every blog post and collection item has a unique, specific title - a basic requirement that is frequently missed on Webflow CMS builds.
+
+**Rich text field structure:** Inside your main rich text fields, apply the same answer-first structure used for static pages. Each major section should open with an H2 framed as a question, followed immediately by a direct 1-2 sentence answer, then supporting detail. AI engines extract from CMS rich text exactly as they do from any HTML page.
+
+**Dynamic Article schema on CMS templates:** Use a custom code embed on your CMS Collection page template to inject dynamic Article schema. Webflow allows you to reference CMS fields inside embed code blocks:
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{wf {\"path\":\"name\"} }}",
+  "datePublished": "{{wf {\"path\":\"published-on\",\"type\":\"Date\",\"format\":\"YYYY-MM-DD\"} }}",
+  "description": "{{wf {\"path\":\"post-summary\"} }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{wf {\"path\":\"author-name\"} }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Your Brand"
+  }
+}
+</script>
+```
+
+Replace `post-summary` and `author-name` with your actual CMS field slugs. This ensures every CMS page has properly attributed Article schema without manual per-page editing.
+
+**What to check:**
+
+- [ ] CMS Collection templates have dynamic, unique meta titles using field references
+- [ ] Article schema on blog template references CMS field values
+- [ ] Rich text content uses H2 headings framed as questions
+- [ ] A summary or description field exists and is used in schema markup
+
+---
+
 ## Check Everything at Once
 
 Going through this checklist manually takes hours. AEOCheck scans your Webflow site against all 25 AEO checks in under 60 seconds - including robots.txt, llms.txt, schema markup, meta tags, heading structure, E-E-A-T signals, and Core Web Vitals.
 
 You get a prioritized action plan showing exactly what to fix first for the fastest improvement in AI visibility.
 
-**[Scan your Webflow site free on AEOCheck](https://www.aeocheck.co/)**
+[Run a free AEO scan on your Webflow site](/scan) - no account required.
+
+Once you have made these fixes, [check if your site appears in ChatGPT and Perplexity](/blog/chatgpt-visibility-checker) to validate the results directly.
 
 ---
 
@@ -260,6 +367,7 @@ You get a prioritized action plan showing exactly what to fix first for the fast
 
 - [ ] robots.txt allows PerplexityBot and ChatGPT-User
 - [ ] llms.txt exists at domain root
+- [ ] Organization schema in Site Settings > Custom Code
 - [ ] JSON-LD schema on all key pages
 - [ ] Sitemap submitted to Google and Bing
 
@@ -270,15 +378,40 @@ You get a prioritized action plan showing exactly what to fix first for the fast
 - [ ] Exactly one H1 per page
 - [ ] OG tags set on key pages
 
-**Content**
+**Content and schema**
 
 - [ ] Answer-first section structure
-- [ ] FAQ content on relevant pages
+- [ ] FAQ schema on homepage, pricing, and key service pages
 - [ ] Named author with bio on blog posts
 - [ ] About and Contact pages exist
+- [ ] CMS templates use dynamic Article schema
 
 **Performance**
 
 - [ ] LCP under 2.5s
 - [ ] CLS under 0.1
 - [ ] No render-blocking scripts
+
+---
+
+## Frequently Asked Questions
+
+**Can Webflow sites rank in AI search engines?**
+
+Yes - Webflow's clean semantic HTML is actually an advantage for AEO. The main gaps are usually missing structured data and content that is not structured as direct answers. Both are fixable with Webflow's custom code embeds.
+
+**How do I add schema markup to a Webflow site?**
+
+Use Webflow's custom code embed component (available on paid plans) to add JSON-LD script tags directly to any page. For site-wide schema like Organization, add it in **Site Settings > Custom Code > Head Code**. For page-specific schema, use **Page Settings > Custom Code > Head Code**.
+
+**Does Webflow automatically add structured data?**
+
+Webflow adds some basic meta tags but does not automatically generate JSON-LD structured data. FAQ schema, Article schema, and Organization schema all need to be added manually via custom code embeds or the Site Settings head code section.
+
+**What is the fastest AEO win for a Webflow site?**
+
+Adding FAQ schema to your most important pages. Create a JSON-LD script block in a custom code embed with your top 3-7 questions and answers. This alone can significantly improve AI citation rates, and it takes under an hour to implement on a live Webflow site.
+
+**How do I check my Webflow site's AEO score?**
+
+[Run a free AEO scan](/scan) on AEOCheck - paste your Webflow site URL and get a full AI visibility score with a prioritized list of issues in under 60 seconds. No account required for the baseline scan.

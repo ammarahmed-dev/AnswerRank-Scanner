@@ -7,6 +7,7 @@ import { AlertCircle, CheckCircle2, ChevronDown, Download, ExternalLink, LayoutG
 import SiteHeader from "../../components/SiteHeader";
 import SiteFooter from "../../components/SiteFooter";
 import ScoreCircle from "../../components/ScoreCircle";
+import UpgradeButton from "../../components/UpgradeButton";
 import { useAuth } from "../../context/AuthContext";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
@@ -203,7 +204,7 @@ export default function AuditClient() {
   const params = useParams<{ id: string }>();
   const auditId = params?.id ?? "";
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, plan, loading: authLoading } = useAuth();
   const supabase = getSupabaseBrowserClient();
 
   const [audit, setAudit] = useState<AuditRun | null>(null);
@@ -451,6 +452,7 @@ export default function AuditClient() {
   }
 
   const aggregateScore = audit.aggregate_score;
+  const hasPdfAccess = plan === "onetime" || plan === "pro" || plan === "agency";
 
   return (
     <main ref={mainRef} className="min-h-screen">
@@ -461,10 +463,22 @@ export default function AuditClient() {
           <a href="/audit" className="btn btn-secondary">All audits</a>
           <Link href="/dashboard" className="btn btn-secondary">Dashboard</Link>
           {audit.status === "completed" && (
-            <button onClick={handleDownloadPdf} className="btn btn-secondary audit-pdf-btn-top">
-              <Download className="h-4 w-4" />
-              Export PDF
-            </button>
+            hasPdfAccess ? (
+              <button onClick={handleDownloadPdf} className="btn btn-secondary audit-pdf-btn-top">
+                <Download className="h-4 w-4" />
+                Export PDF
+              </button>
+            ) : (
+              <button
+                className="btn btn-secondary audit-pdf-btn-top"
+                disabled
+                title="Upgrade to download PDF"
+                style={{ opacity: 0.5, cursor: "not-allowed" }}
+              >
+                <Download className="h-4 w-4" />
+                Export PDF
+              </button>
+            )
           )}
         </div>
 
@@ -639,7 +653,7 @@ export default function AuditClient() {
                     <div className="audit-pattern-head">
                       <AlertCircle className="h-4 w-4 audit-pattern-icon" />
                       <span className="audit-pattern-label">
-                        {issue.label} — affects {issue.count} of {pageCount} pages
+                        {issue.label} - affects {issue.count} of {pageCount} pages
                       </span>
                       <em className={`mini-pill ${severityBadgeClass(issue.severity)}`}>
                         {severityLabel(issue.severity)}
@@ -674,17 +688,17 @@ export default function AuditClient() {
                     Scanned {audit.page_limit} of {audit.total_discovered ? `${audit.total_discovered}+` : `${audit.page_limit}+`} pages
                   </h3>
                   <p className="audit-limit-cta-desc">
-                    Your plan covers {audit.page_limit} pages per audit. Upgrade to Agency for full site coverage and catch every visibility issue across all your pages.
+                    Your plan covers {audit.page_limit} pages per audit. Upgrade to Pro for deeper site coverage and catch more visibility issues across your pages.
                   </p>
                   <ul className="audit-limit-cta-features">
-                    <li><CheckCircle2 className="audit-limit-check-icon" />Up to 500 pages per audit</li>
+                    <li><CheckCircle2 className="audit-limit-check-icon" />Up to 100 pages per audit</li>
                     <li><CheckCircle2 className="audit-limit-check-icon" />Re-audit any time, on demand</li>
                     <li><CheckCircle2 className="audit-limit-check-icon" />Priority scan queue</li>
                   </ul>
                 </div>
                 <div className="audit-limit-cta-action">
-                  <p className="audit-limit-cta-action-label">Agency Plan</p>
-                  <a href="/#pricing" className="btn btn-primary audit-limit-cta-btn">Upgrade to Agency →</a>
+                  <p className="audit-limit-cta-action-label">Pro Plan</p>
+                  <UpgradeButton plan="pro" className="btn btn-primary audit-limit-cta-btn">Upgrade to Pro →</UpgradeButton>
                   <p className="audit-limit-cta-hint">
                     Or re-run with <em>{audit.domain}/blog</em> to audit a specific section.
                   </p>
@@ -1028,4 +1042,3 @@ export default function AuditClient() {
     </main>
   );
 }
-

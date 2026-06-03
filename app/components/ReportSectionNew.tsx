@@ -727,7 +727,7 @@ const downloadPdf = async () => {
               marginTop: "14px",
             }}
           >
-            +{hiddenHighCount} more issues hidden — upgrade to see all
+            +{hiddenHighCount} more issues hidden - upgrade to see all
           </div>
         )}
       </section>

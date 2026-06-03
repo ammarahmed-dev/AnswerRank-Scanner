@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -45,6 +45,7 @@ type AccountData = {
   }>;
   recentAudits: RecentAudit[];
   monitorCount: number;
+  auditCountThisMonth: number;
 };
 
 function planLabel(plan: AccountData["profile"]["plan"]) {
@@ -54,25 +55,18 @@ function planLabel(plan: AccountData["profile"]["plan"]) {
   return "Free";
 }
 
-function monitorLimit(plan: AccountData["profile"]["plan"]): number | null {
-  if (plan === "agency") return null;
-  if (plan === "pro") return 10;
-  if (plan === "onetime") return 5;
-  return 1;
-}
-
 function formatDate(value: string) {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
 }
 
 const NAV_TABS: Array<{ id: Tab; emoji: string; label: string }> = [
-  { id: "overview", emoji: "🏠", label: "Overview" },
-  { id: "scans",    emoji: "🔍", label: "Scans" },
-  { id: "audits",   emoji: "📋", label: "Audits" },
-  { id: "settings", emoji: "⚙️", label: "Settings" },
+  { id: "overview", emoji: "ðŸ ", label: "Overview" },
+  { id: "scans",    emoji: "ðŸ”", label: "Scans" },
+  { id: "audits",   emoji: "ðŸ“‹", label: "Audits" },
+  { id: "settings", emoji: "âš™ï¸", label: "Settings" },
 ];
 
-// ── Shared inline style helpers ──────────────────────────────
+// â”€â”€ Shared inline style helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const card: React.CSSProperties = {
   background: "#0d1117",
@@ -140,7 +134,224 @@ const settingsLabel: React.CSSProperties = {
   color: "rgba(255,255,255,0.5)",
 };
 
-// ── Component ────────────────────────────────────────────────
+type OverviewTabProps = {
+  account: AccountData;
+  isMobile: boolean;
+  masterAdmin: boolean;
+  shouldShowUpgradeCard: boolean;
+  usagePercent: number;
+};
+
+function OverviewTab({
+  account,
+  isMobile,
+  masterAdmin,
+  shouldShowUpgradeCard,
+  usagePercent,
+}: OverviewTabProps) {
+  console.log("[dashboard] auditCountThisMonth:", account.auditCountThisMonth);
+  const portalUrl = account.profile.portalUrl;
+  const recentScans = account.reports;
+  const recentAudits = account.recentAudits;
+  const currentPlan = account.profile.plan;
+  const auditCountThisMonth = account.auditCountThisMonth ?? 0;
+  const auditLimit = currentPlan === "free" ? 3 : -1;
+  const auditPagesPerRunText =
+    currentPlan === "free" ? "5 pages/audit" :
+    currentPlan === "onetime" ? "50 pages/audit" :
+    currentPlan === "pro" ? "100 pages/audit" :
+    "500 pages/audit";
+  const auditProgress = auditLimit === -1 ? 0 : Math.min((auditCountThisMonth / auditLimit) * 100, 100);
+  const auditRemaining = auditLimit === -1 ? null : Math.max(0, auditLimit - auditCountThisMonth);
+  const monitorLimitValue = currentPlan === "free" ? 1 : currentPlan === "onetime" ? 5 : currentPlan === "pro" ? 10 : -1;
+  const monitorProgress = monitorLimitValue === -1 ? 0 : Math.min((account.monitorCount / monitorLimitValue) * 100, 100);
+  const monitorRemaining = monitorLimitValue === -1 ? null : Math.max(0, monitorLimitValue - account.monitorCount);
+  const compareLimitText =
+    currentPlan === "free"
+      ? "Scores only · upgrade for full breakdown"
+      : "Full breakdown · history saved";
+
+  return (
+    <>
+      {recentScans.length === 0 && recentAudits.length === 0 && (
+        <div
+          className="onboarding-banner"
+          style={{
+            background: "linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,229,160,0.03))",
+            border: "1px solid rgba(0,229,160,0.2)",
+            borderRadius: "12px",
+            padding: "24px 28px",
+            marginBottom: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "24px",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#00e5a0",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                marginBottom: "8px",
+              }}
+            >
+              Get started
+            </div>
+            <div
+              style={{
+                fontSize: "18px",
+                fontWeight: 700,
+                color: "#ffffff",
+                marginBottom: "6px",
+              }}
+            >
+              Scan your first URL to see your AI visibility score
+            </div>
+            <div
+              style={{
+                fontSize: "14px",
+                color: "rgba(255,255,255,0.5)",
+                lineHeight: "1.5",
+              }}
+            >
+              Find out if ChatGPT and Perplexity can find your website - takes 60 seconds.
+            </div>
+          </div>
+          <a
+            href="/scan"
+            style={{
+              background: "#00e5a0",
+              color: "#000",
+              fontWeight: 700,
+              fontSize: "14px",
+              padding: "12px 24px",
+              borderRadius: "8px",
+              textDecoration: "none",
+              whiteSpace: "nowrap",
+              flexShrink: 0,
+              width: isMobile ? "100%" : undefined,
+              textAlign: isMobile ? ("center" as const) : undefined,
+            }}
+          >
+            Scan a URL &rarr;
+          </a>
+        </div>
+      )}
+
+      <div className="db-grid-3" style={grid3}>
+        <div style={card}>
+          <p style={cardLabel}>Profile</p>
+          <div style={{ fontSize: 15, fontWeight: 600, color: "rgba(255,255,255,0.85)", wordBreak: "break-all" }}>{account.profile.email}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 4, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <span>Account ID</span>
+            <strong style={{ fontFamily: "monospace" }}>{account.profile.id.slice(0, 8)}</strong>
+          </div>
+        </div>
+
+        <div style={card}>
+          <p style={cardLabel}>Plan</p>
+          <p style={cardValue}>{planLabel(account.profile.plan)}</p>
+          <p style={cardDesc}>{masterAdmin ? "Master Admin Â· Unlimited access." : account.usage.unlimited ? "Unlimited scans active." : "3 scans per month included."}</p>
+          {portalUrl
+            ? <a href={portalUrl} target="_blank" rel="noopener noreferrer" style={{ ...cardLink, marginTop: 4 }}>Manage subscription â†’</a>
+            : shouldShowUpgradeCard && <a href="/pricing" style={{ ...cardLink, marginTop: 4 }}>View pricing â†’</a>}
+        </div>
+
+        <div style={card}>
+          <p style={cardLabel}>Scans this month</p>
+          <p style={cardValue}>
+            {account.usage.unlimited ? "âˆž" : account.usage.count}
+            {!account.usage.unlimited && <span style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.4)" }}> / {account.usage.limit}</span>}
+          </p>
+          <div className="dashboard-progress" style={{ marginTop: 4 }} aria-hidden="true">
+            <span style={{ width: `${usagePercent}%` }} />
+          </div>
+          <a href="/scan" style={{ ...cardLink, marginTop: 4 }}>View all scans â†’</a>
+        </div>
+      </div>
+
+      <div className="db-grid-3" style={{ ...grid3, marginTop: 16 }}>
+        <div style={card}>
+          <p style={cardLabel}>Audits</p>
+          <p style={cardValue}>
+            {auditLimit === -1 ? (
+              <span>∞</span>
+            ) : (
+              <span>
+                {auditCountThisMonth}
+                <span style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.4)" }}> / {auditLimit}</span>
+              </span>
+            )}
+          </p>
+          {auditLimit !== -1 && (
+            <div className="dashboard-progress" style={{ marginTop: 4 }} aria-hidden="true">
+              <span
+                style={{
+                  width: `${auditProgress}%`,
+                  background: auditCountThisMonth >= auditLimit ? "#ef4444" : "#00e5a0",
+                  transition: "width 0.3s ease",
+                }}
+              />
+            </div>
+          )}
+          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)" }}>
+            {auditLimit === -1
+              ? "Unlimited audits this month"
+              : auditCountThisMonth >= auditLimit
+                ? "Limit reached · resets next month"
+                : `${auditRemaining} remaining · resets monthly`}
+          </div>
+          <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginTop: "4px" }}>
+            {auditPagesPerRunText.replace("/audit", " per audit")}
+          </div>
+          <a href="/audit" className="btn btn-secondary" style={{ marginTop: 8 }}>New audit →</a>
+        </div>
+
+        <div style={card}>
+          <p style={cardLabel}>Monitor</p>
+          <p style={cardValue}>
+            {monitorLimitValue === -1 ? (
+              <span>∞</span>
+            ) : (
+              <span>
+                {account.monitorCount}
+                <span style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.4)" }}> / {monitorLimitValue}</span>
+              </span>
+            )}
+          </p>
+          {monitorLimitValue !== -1 && (
+            <div className="dashboard-progress" style={{ marginTop: 4 }} aria-hidden="true">
+              <span
+                style={{
+                  width: `${monitorProgress}%`,
+                  background: account.monitorCount >= monitorLimitValue ? "#ef4444" : "#00e5a0",
+                }}
+              />
+            </div>
+          )}
+          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginTop: "4px" }}>
+            {monitorLimitValue === -1 ? "Unlimited URLs" :
+              account.monitorCount >= monitorLimitValue ? "Limit reached · upgrade for more" :
+              `${monitorRemaining} slots remaining`}
+          </div>
+          <a href="/monitor" className="btn btn-secondary" style={{ marginTop: 8 }}>Open Monitor →</a>
+        </div>
+
+        <div style={card}>
+          <p style={cardLabel}>Compare</p>
+          <p style={{ ...cardDesc, marginTop: 8 }}>{compareLimitText}</p>
+          <a href="/compare" className="btn btn-secondary" style={{ marginTop: 8 }}>Compare URLs â†’</a>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function DashboardClient() {
   const router = useRouter();
@@ -193,7 +404,7 @@ export default function DashboardClient() {
 
   const visibleTabs = [
     ...NAV_TABS,
-    ...(masterAdmin ? [{ id: "admin" as Tab, emoji: "🛡️", label: "Admin" }] : []),
+    ...(masterAdmin ? [{ id: "admin" as Tab, emoji: "ðŸ›¡ï¸", label: "Admin" }] : []),
   ];
 
   function tabStyle(id: Tab): React.CSSProperties {
@@ -236,7 +447,7 @@ export default function DashboardClient() {
     };
   }
 
-  // ── Sidebar ─────────────────────────────────────────────────
+  // â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function Sidebar() {
     if (!account) return null;
@@ -252,7 +463,7 @@ export default function DashboardClient() {
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {account.profile.email.length > 22 ? account.profile.email.slice(0, 22) + "…" : account.profile.email}
+              {account.profile.email.length > 22 ? account.profile.email.slice(0, 22) + "â€¦" : account.profile.email}
             </div>
             <span style={{ display: "inline-block", marginTop: 3, fontSize: 11, fontWeight: 600, color: isPaidPlan ? "#00e5a0" : "rgba(255,255,255,0.4)", background: isPaidPlan ? "rgba(0,229,160,0.1)" : "rgba(255,255,255,0.06)", borderRadius: 4, padding: "1px 6px" }}>
               {planLabel(account.profile.plan)}
@@ -272,10 +483,10 @@ export default function DashboardClient() {
           <div className="db-nav-divider" style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "8px 8px" }} />
 
           <button type="button" className="db-tab" style={externalTabStyle()} onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/monitor"); }}>
-            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>📡</span>Monitor
+            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>ðŸ“¡</span>Monitor
           </button>
           <button type="button" className="db-tab" style={externalTabStyle()} onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/compare"); }}>
-            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>⚖️</span>Compare
+            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>âš–ï¸</span>Compare
           </button>
         </nav>
 
@@ -289,140 +500,7 @@ export default function DashboardClient() {
     );
   }
 
-  // ── Tab content ──────────────────────────────────────────────
-
-  function OverviewTab() {
-    if (!account) return null;
-    const portalUrl = account.profile.portalUrl;
-    const recentScans = account.reports;
-    const recentAudits = account.recentAudits;
-    return (
-      <>
-        {recentScans.length === 0 && recentAudits.length === 0 && (
-          <div
-            className="onboarding-banner"
-            style={{
-              background: "linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,229,160,0.03))",
-              border: "1px solid rgba(0,229,160,0.2)",
-              borderRadius: "12px",
-              padding: "24px 28px",
-              marginBottom: "24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "24px",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  color: "#00e5a0",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  marginBottom: "8px",
-                }}
-              >
-                Get started
-              </div>
-              <div
-                style={{
-                  fontSize: "18px",
-                  fontWeight: 700,
-                  color: "#ffffff",
-                  marginBottom: "6px",
-                }}
-              >
-                Scan your first URL to see your AI visibility score
-              </div>
-              <div
-                style={{
-                  fontSize: "14px",
-                  color: "rgba(255,255,255,0.5)",
-                  lineHeight: "1.5",
-                }}
-              >
-                Find out if ChatGPT and Perplexity can find your website - takes 60 seconds.
-              </div>
-            </div>
-            <a
-              href="/scan"
-              style={{
-                background: "#00e5a0",
-                color: "#000",
-                fontWeight: 700,
-                fontSize: "14px",
-                padding: "12px 24px",
-                borderRadius: "8px",
-                textDecoration: "none",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-                width: isMobile ? "100%" : undefined,
-                textAlign: isMobile ? ("center" as const) : undefined,
-              }}
-            >
-              Scan a URL &rarr;
-            </a>
-          </div>
-        )}
-
-        <div className="db-grid-3" style={grid3}>
-          <div style={card}>
-            <p style={cardLabel}>Profile</p>
-            <div style={{ fontSize: 15, fontWeight: 600, color: "rgba(255,255,255,0.85)", wordBreak: "break-all" }}>{account.profile.email}</div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 4, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              <span>Account ID</span>
-              <strong style={{ fontFamily: "monospace" }}>{account.profile.id.slice(0, 8)}</strong>
-            </div>
-          </div>
-
-          <div style={card}>
-            <p style={cardLabel}>Plan</p>
-            <p style={cardValue}>{planLabel(account.profile.plan)}</p>
-            <p style={cardDesc}>{masterAdmin ? "Master Admin · Unlimited access." : account.usage.unlimited ? "Unlimited scans active." : "3 scans per month included."}</p>
-            {portalUrl
-              ? <a href={portalUrl} target="_blank" rel="noopener noreferrer" style={{ ...cardLink, marginTop: 4 }}>Manage subscription →</a>
-              : shouldShowUpgradeCard && <a href="/#pricing" style={{ ...cardLink, marginTop: 4 }}>View pricing →</a>}
-          </div>
-
-          <div style={card}>
-            <p style={cardLabel}>Scans this month</p>
-            <p style={cardValue}>
-              {account.usage.unlimited ? "∞" : account.usage.count}
-              {!account.usage.unlimited && <span style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.4)" }}> / {account.usage.limit}</span>}
-            </p>
-            <div className="dashboard-progress" style={{ marginTop: 4 }} aria-hidden="true">
-              <span style={{ width: `${usagePercent}%` }} />
-            </div>
-            <a href="/scan" style={{ ...cardLink, marginTop: 4 }}>View all scans →</a>
-          </div>
-        </div>
-
-        <div className="db-grid-3" style={{ ...grid3, marginTop: 16 }}>
-          <div style={card}>
-            <p style={cardLabel}>Audits</p>
-            <p style={cardValue}>{account.recentAudits.length}{account.recentAudits.length === 5 ? "+" : ""}</p>
-            <p style={cardDesc}>Site audits run</p>
-            <a href="/audit" className="btn btn-secondary" style={{ marginTop: 8 }}>New audit →</a>
-          </div>
-
-          <div style={card}>
-            <p style={cardLabel}>Monitor</p>
-            <p style={cardValue}>{account.monitorCount}</p>
-            <p style={cardDesc}>{monitorLimit(account.profile.plan) === null ? "Unlimited URLs tracked" : `of ${monitorLimit(account.profile.plan)} URLs tracked`}</p>
-            <a href="/monitor" className="btn btn-secondary" style={{ marginTop: 8 }}>Open Monitor →</a>
-          </div>
-
-          <div style={card}>
-            <p style={cardLabel}>Compare</p>
-            <p style={{ ...cardDesc, marginTop: 8 }}>Analyze any two URLs head to head.</p>
-            <a href="/compare" className="btn btn-secondary" style={{ marginTop: 8 }}>Compare URLs →</a>
-          </div>
-        </div>
-      </>
-    );
-  }
+  // â”€â”€ Tab content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function ScansTab() {
     if (!account) return null;
@@ -439,7 +517,7 @@ export default function DashboardClient() {
                 <a href={`/report?id=${report.id}`} className="dashboard-report-link">
                   <div>
                     <strong>{report.url}</strong>
-                    <span>{formatDate(report.created_at)}{report.unlocked ? " · Full Report" : ""}</span>
+                    <span>{formatDate(report.created_at)}{report.unlocked ? " Â· Full Report" : ""}</span>
                   </div>
                   <em>{report.score}</em>
                   <ArrowUpRight className="h-4 w-4" />
@@ -454,7 +532,7 @@ export default function DashboardClient() {
           </div>
         ) : (
           <div style={{ textAlign: "center", padding: "48px 24px" }}>
-            <div style={{ fontSize: "32px", marginBottom: "16px" }}>🔍</div>
+            <div style={{ fontSize: "32px", marginBottom: "16px" }}>ðŸ”</div>
             <div style={{ fontSize: "18px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>
               No scans yet
             </div>
@@ -496,7 +574,7 @@ export default function DashboardClient() {
                 <a href={`/audit/${audit.id}`} className="dashboard-report-link">
                   <div>
                     <strong>{audit.domain}</strong>
-                    <span>{formatDate(audit.created_at)} · {audit.status}</span>
+                    <span>{formatDate(audit.created_at)} Â· {audit.status}</span>
                   </div>
                   {audit.aggregate_score !== null && <em>{audit.aggregate_score}</em>}
                   <ArrowUpRight className="h-4 w-4" />
@@ -536,12 +614,12 @@ export default function DashboardClient() {
           </div>
           {hasUnlockedOneTimeReports && <p style={{ ...cardDesc, marginTop: 8 }}>Some reports are individually unlocked.</p>}
           <div style={{ marginTop: 16, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            {portalUrl && <a href={portalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">Manage subscription →</a>}
+            {portalUrl && <a href={portalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">Manage subscription â†’</a>}
             {shouldShowUpgradeCard && <>
               <UpgradeButton plan="pro" className="btn btn-primary">Upgrade to Pro</UpgradeButton>
               <UpgradeButton plan="agency" className="btn btn-secondary">Get Agency</UpgradeButton>
             </>}
-            <a href="/#pricing" className="btn btn-secondary">View pricing →</a>
+            <a href="/pricing" className="btn btn-secondary">View pricing â†’</a>
           </div>
         </div>
 
@@ -553,7 +631,7 @@ export default function DashboardClient() {
           </div>
           <div style={{ ...settingsRow, borderBottom: "none" }}>
             <span style={settingsLabel}>Account ID</span>
-            <strong style={{ fontFamily: "monospace", fontSize: 13 }}>{account.profile.id.slice(0, 16)}…</strong>
+            <strong style={{ fontFamily: "monospace", fontSize: 13 }}>{account.profile.id.slice(0, 16)}â€¦</strong>
           </div>
         </div>
       </>
@@ -568,13 +646,13 @@ export default function DashboardClient() {
         </div>
         <div style={{ ...card, maxWidth: 400 }}>
           <p style={cardDesc}>Access private app controls, user management, and activity logs.</p>
-          <a href="/admin" className="btn btn-secondary" style={{ marginTop: 8 }}>Open admin panel →</a>
+          <a href="/admin" className="btn btn-secondary" style={{ marginTop: 8 }}>Open admin panel â†’</a>
         </div>
       </>
     );
   }
 
-  // ── Bottom nav (mobile only) ─────────────────────────────
+  // â”€â”€ Bottom nav (mobile only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function BottomNav() {
     if (!mounted || !isMobile) return null;
@@ -598,9 +676,9 @@ export default function DashboardClient() {
     const nav = (
       <nav className="db-bottom-nav" style={navStyle}>
         {([
-          { id: "overview" as Tab, emoji: "🏠", label: "Home" },
-          { id: "scans"    as Tab, emoji: "🔍", label: "Scans" },
-          { id: "audits"   as Tab, emoji: "📋", label: "Audits" },
+          { id: "overview" as Tab, emoji: "ðŸ ", label: "Home" },
+          { id: "scans"    as Tab, emoji: "ðŸ”", label: "Scans" },
+          { id: "audits"   as Tab, emoji: "ðŸ“‹", label: "Audits" },
         ] as const).map(item => (
           <button
             key={item.id}
@@ -613,11 +691,11 @@ export default function DashboardClient() {
           </button>
         ))}
         <button type="button" className="db-bottom-nav-item" onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/monitor"); }}>
-          <span className="db-bottom-nav-emoji">📡</span>
+          <span className="db-bottom-nav-emoji">ðŸ“¡</span>
           <span className="db-bottom-nav-label">Monitor</span>
         </button>
         <button type="button" className="db-bottom-nav-item" onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/compare"); }}>
-          <span className="db-bottom-nav-emoji">⚖️</span>
+          <span className="db-bottom-nav-emoji">âš–ï¸</span>
           <span className="db-bottom-nav-label">Compare</span>
         </button>
       </nav>
@@ -627,7 +705,18 @@ export default function DashboardClient() {
   }
 
   function renderContent() {
-    if (activeTab === "overview") return <OverviewTab />;
+    if (activeTab === "overview") {
+      if (!account) return null;
+      return (
+        <OverviewTab
+          account={account}
+          isMobile={isMobile}
+          masterAdmin={masterAdmin}
+          shouldShowUpgradeCard={shouldShowUpgradeCard}
+          usagePercent={usagePercent}
+        />
+      );
+    }
     if (activeTab === "scans")    return <ScansTab />;
     if (activeTab === "audits")   return <AuditsTab />;
     if (activeTab === "settings") return <SettingsTab />;
@@ -642,7 +731,7 @@ export default function DashboardClient() {
       {loading ? (
         <div className="page-loading">
           <div className="page-loading-spinner" />
-          <span>Loading your workspace…</span>
+          <span>Loading your workspaceâ€¦</span>
         </div>
       ) : error ? (
         <div className="page-loading">

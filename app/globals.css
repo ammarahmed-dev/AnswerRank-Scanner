@@ -6555,17 +6555,19 @@ textarea.contact-control {
 }
 
 .dashboard-progress {
-  height: 10px;
-  overflow: hidden;
-  border-radius: 999px;
+  width: 100%;
+  height: 4px;
   background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 8px 0 4px;
 }
 
 .dashboard-progress span {
   display: block;
   height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--color-primary-dark), var(--color-primary));
+  border-radius: 2px;
+  min-width: 2px;
 }
 
 .dashboard-upgrade-card {
@@ -12553,5 +12555,19 @@ textarea.contact-control {
 
   .sticky-upgrade-bar {
     display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .compare-cta-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
+  .compare-cta-card button,
+  .compare-cta-card a {
+    width: 100% !important;
+    text-align: center !important;
   }
 }

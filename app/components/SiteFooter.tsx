@@ -20,7 +20,7 @@ export default function SiteFooter() {
               <a href="/blog">Blog</a>
               <a href="/#scanner">Scanner</a>
               <a href="/#how">How It Works</a>
-              <a href="/#pricing">Pricing</a>
+              <a href="/pricing">Pricing</a>
               <a href="/#faq">FAQ</a>
               <a href="/contact">Contact</a>
             </div>

@@ -124,7 +124,7 @@ export const RESET_PASSWORD_HTML = wrap(`
   </table>
   <p style="margin:20px 0 0;font-size:13px;color:rgba(255,255,255,0.4);line-height:1.5;">
     This link expires in 1 hour. If you didn't request a password reset,
-    you can safely ignore this email — your password won't change.
+    you can safely ignore this email - your password won't change.
   </p>
 `);
 

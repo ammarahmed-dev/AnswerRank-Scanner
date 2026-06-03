@@ -20,7 +20,7 @@ import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
 import UpgradeButton from "../components/UpgradeButton";
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
-import { isMasterAdmin, isProUser } from "@/lib/access";
+import { isMasterAdmin } from "@/lib/access";
 import { useAuth } from "@/app/context/AuthContext";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -169,6 +169,7 @@ export default function MonitorClient() {
   const [historyMap, setHistoryMap] = useState<Record<string, Snapshot[]>>({});
   const [historyLoading, setHistoryLoading] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState(false);
+  const [showUpgradeGate, setShowUpgradeGate] = useState(false);
 
   async function getToken() {
     if (!supabase) return null;
@@ -220,12 +221,7 @@ export default function MonitorClient() {
       }
       tokenRef.current = token;
 
-      const proCheck =
-        isMasterAdmin({ plan, isAdmin }) || isProUser({ plan, isAdmin });
-
-      if (proCheck) {
-        await loadItems(token);
-      }
+      await loadItems(token);
 
       if (!cancelled) setLoading(false);
     }
@@ -238,6 +234,15 @@ export default function MonitorClient() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     setAddError("");
+    if (hasReachedLimit) {
+      if (plan === "free") {
+        setShowUpgradeGate(true);
+        setDismissed(false);
+      } else {
+        setAddError("You have reached your monitor URL limit for this plan.");
+      }
+      return;
+    }
     const normalizedUrl = normalizeUrl(addUrl);
     if (!normalizedUrl) return;
     if (normalizedUrl !== addUrl) setAddUrl(normalizedUrl);
@@ -336,10 +341,16 @@ export default function MonitorClient() {
 
   // ── Derived state ────────────────────────────────────────────────────────────
 
-  const isPro =
-    !authLoading &&
-    user != null &&
-    (isMasterAdmin({ plan, isAdmin }) || isProUser({ plan, isAdmin }));
+  const currentPlanLimit = isMasterAdmin({ plan, isAdmin })
+    ? null
+    : plan === "agency"
+      ? null
+      : plan === "pro"
+        ? 10
+        : plan === "onetime"
+          ? 5
+          : 1;
+  const hasReachedLimit = currentPlanLimit !== null && items.length >= currentPlanLimit;
 
   // ── Render ────────────────────────────────────────────────────────────────────
 
@@ -363,7 +374,7 @@ export default function MonitorClient() {
           </div>
         )}
 
-        {!loading && !error && !isPro && !dismissed && (
+        {!loading && !error && plan === "free" && showUpgradeGate && !dismissed && (
           <div
             className="monitor-gate"
             style={{
@@ -444,7 +455,7 @@ export default function MonitorClient() {
           </div>
         )}
 
-        {!loading && !error && !isPro && dismissed && (
+        {!loading && !error && plan === "free" && showUpgradeGate && dismissed && (
           <div
             style={{
               marginBottom: 14,
@@ -456,11 +467,11 @@ export default function MonitorClient() {
               fontSize: 13,
             }}
           >
-            Monitor is a Pro feature. Upgrade to track URLs over time. <a href="/#pricing" style={{ color: "#00e5a0", fontWeight: 600, textDecoration: "none" }}>Upgrade</a>
+            Monitor is a Pro feature. Upgrade to track URLs over time. <a href="/pricing" style={{ color: "#00e5a0", fontWeight: 600, textDecoration: "none" }}>Upgrade</a>
           </div>
         )}
 
-        {!loading && !error && (isPro || dismissed) && (
+        {!loading && !error && (
           <>
             <div className="monitor-hero">
               <div>
@@ -471,16 +482,6 @@ export default function MonitorClient() {
               <Link href="/dashboard" className="btn btn-secondary">Dashboard</Link>
             </div>
 
-            {!isPro && (
-              <div className="surface card-pad" style={{ marginBottom: 16 }}>
-                <strong style={{ display: "block", marginBottom: 8 }}>Monitor is locked on Free</strong>
-                <p style={{ margin: 0, color: "var(--color-ink-muted)", fontSize: 14 }}>
-                  Upgrade to Pro to add monitored URLs, run automated rescans, and view score trends by category.
-                </p>
-              </div>
-            )}
-
-            {isPro && (
             <form className="monitor-add-form surface card-pad" onSubmit={handleAdd}>
               <div className="monitor-add-row">
                 <div className="monitor-add-input-wrap">
@@ -507,9 +508,10 @@ export default function MonitorClient() {
                 </button>
               </div>
               {addError && <p className="monitor-add-error">{addError}</p>}
-              <p className="monitor-add-hint">Up to 10 URLs. Scans run on your schedule or manually.</p>
+              <p className="monitor-add-hint">
+                {currentPlanLimit === null ? "Unlimited URLs." : `Up to ${currentPlanLimit} URL${currentPlanLimit === 1 ? "" : "s"}.`} Scans run on your schedule or manually.
+              </p>
             </form>
-            )}
 
             {items.length === 0 ? (
               <div className="monitor-empty surface card-pad">
@@ -618,7 +620,7 @@ export default function MonitorClient() {
                       {isExpanded && (
                         <div className="monitor-history-panel">
                           <div className="monitor-chart-wrap">
-                            <p className="monitor-chart-label">Score trend — last {Math.min(snapshots.length, 10)} scans</p>
+                            <p className="monitor-chart-label">Score trend - last {Math.min(snapshots.length, 10)} scans</p>
                             {isHistLoading ? (
                               <div className="monitor-chart-loading">
                                 <Loader2 className="h-5 w-5 animate-spin" />
