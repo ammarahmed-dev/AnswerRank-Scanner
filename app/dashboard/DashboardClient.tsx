@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -59,14 +59,14 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
 }
 
-const NAV_TABS: Array<{ id: Tab; emoji: string; label: string }> = [
-  { id: "overview", emoji: "ðŸ ", label: "Overview" },
-  { id: "scans",    emoji: "ðŸ”", label: "Scans" },
-  { id: "audits",   emoji: "ðŸ“‹", label: "Audits" },
-  { id: "settings", emoji: "âš™ï¸", label: "Settings" },
+const NAV_TABS: Array<{ id: Tab; icon: string; label: string }> = [
+  { id: "overview", icon: "ti ti-layout-dashboard", label: "Overview" },
+  { id: "scans",    icon: "ti ti-search",            label: "Scans" },
+  { id: "audits",   icon: "ti ti-clipboard-list",    label: "Audits" },
+  { id: "settings", icon: "ti ti-settings",          label: "Settings" },
 ];
 
-// â”€â”€ Shared inline style helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Shared inline style helpers ──────────────────────────────────
 
 const card: React.CSSProperties = {
   background: "#0d1117",
@@ -255,22 +255,22 @@ function OverviewTab({
         <div style={card}>
           <p style={cardLabel}>Plan</p>
           <p style={cardValue}>{planLabel(account.profile.plan)}</p>
-          <p style={cardDesc}>{masterAdmin ? "Master Admin Â· Unlimited access." : account.usage.unlimited ? "Unlimited scans active." : "3 scans per month included."}</p>
+          <p style={cardDesc}>{masterAdmin ? "Master Admin · Unlimited access." : account.usage.unlimited ? "Unlimited scans active." : "3 scans per month included."}</p>
           {portalUrl
-            ? <a href={portalUrl} target="_blank" rel="noopener noreferrer" style={{ ...cardLink, marginTop: 4 }}>Manage subscription â†’</a>
-            : shouldShowUpgradeCard && <a href="/pricing" style={{ ...cardLink, marginTop: 4 }}>View pricing â†’</a>}
+            ? <a href={portalUrl} target="_blank" rel="noopener noreferrer" style={{ ...cardLink, marginTop: 4 }}>Manage subscription →</a>
+            : shouldShowUpgradeCard && <a href="/pricing" style={{ ...cardLink, marginTop: 4 }}>View pricing →</a>}
         </div>
 
         <div style={card}>
           <p style={cardLabel}>Scans this month</p>
           <p style={cardValue}>
-            {account.usage.unlimited ? "âˆž" : account.usage.count}
+            {account.usage.unlimited ? "∞" : account.usage.count}
             {!account.usage.unlimited && <span style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.4)" }}> / {account.usage.limit}</span>}
           </p>
           <div className="dashboard-progress" style={{ marginTop: 4 }} aria-hidden="true">
             <span style={{ width: `${usagePercent}%` }} />
           </div>
-          <a href="/scan" style={{ ...cardLink, marginTop: 4 }}>View all scans â†’</a>
+          <a href="/scan" style={{ ...cardLink, marginTop: 4 }}>View all scans →</a>
         </div>
       </div>
 
@@ -344,14 +344,14 @@ function OverviewTab({
         <div style={card}>
           <p style={cardLabel}>Compare</p>
           <p style={{ ...cardDesc, marginTop: 8 }}>{compareLimitText}</p>
-          <a href="/compare" className="btn btn-secondary" style={{ marginTop: 8 }}>Compare URLs â†’</a>
+          <a href="/compare" className="btn btn-secondary" style={{ marginTop: 8 }}>Compare URLs →</a>
         </div>
       </div>
     </>
   );
 }
 
-// â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Component ────────────────────────────────────────────────────
 
 export default function DashboardClient() {
   const router = useRouter();
@@ -404,7 +404,7 @@ export default function DashboardClient() {
 
   const visibleTabs = [
     ...NAV_TABS,
-    ...(masterAdmin ? [{ id: "admin" as Tab, emoji: "ðŸ›¡ï¸", label: "Admin" }] : []),
+    ...(masterAdmin ? [{ id: "admin" as Tab, icon: "ti ti-shield", label: "Admin" }] : []),
   ];
 
   function tabStyle(id: Tab): React.CSSProperties {
@@ -447,7 +447,7 @@ export default function DashboardClient() {
     };
   }
 
-  // â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Sidebar ────────────────────────────────────────────────────
 
   function Sidebar() {
     if (!account) return null;
@@ -463,7 +463,7 @@ export default function DashboardClient() {
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {account.profile.email.length > 22 ? account.profile.email.slice(0, 22) + "â€¦" : account.profile.email}
+              {account.profile.email.length > 22 ? account.profile.email.slice(0, 22) + "…" : account.profile.email}
             </div>
             <span style={{ display: "inline-block", marginTop: 3, fontSize: 11, fontWeight: 600, color: isPaidPlan ? "#00e5a0" : "rgba(255,255,255,0.4)", background: isPaidPlan ? "rgba(0,229,160,0.1)" : "rgba(255,255,255,0.06)", borderRadius: 4, padding: "1px 6px" }}>
               {planLabel(account.profile.plan)}
@@ -475,7 +475,7 @@ export default function DashboardClient() {
         <nav className="db-nav" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {visibleTabs.map(tab => (
             <button key={tab.id} type="button" className={`db-tab${activeTab === tab.id ? " is-active" : ""}`} style={tabStyle(tab.id)} onClick={() => handleTabChange(tab.id)}>
-              <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>{tab.emoji}</span>
+              <i className={tab.icon} aria-hidden="true" style={{ fontSize: 16, width: 20, textAlign: "center", flexShrink: 0 }} />
               {tab.label}
             </button>
           ))}
@@ -483,10 +483,12 @@ export default function DashboardClient() {
           <div className="db-nav-divider" style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "8px 8px" }} />
 
           <button type="button" className="db-tab" style={externalTabStyle()} onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/monitor"); }}>
-            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>ðŸ“¡</span>Monitor
+            <i className="ti ti-activity" aria-hidden="true" style={{ fontSize: 16, width: 20, textAlign: "center", flexShrink: 0 }} />
+            Monitor
           </button>
           <button type="button" className="db-tab" style={externalTabStyle()} onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/compare"); }}>
-            <span style={{ fontSize: 15, width: 20, textAlign: "center" }}>âš–ï¸</span>Compare
+            <i className="ti ti-arrows-diff" aria-hidden="true" style={{ fontSize: 16, width: 20, textAlign: "center", flexShrink: 0 }} />
+            Compare
           </button>
         </nav>
 
@@ -500,7 +502,7 @@ export default function DashboardClient() {
     );
   }
 
-  // â”€â”€ Tab content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Tab content ────────────────────────────────────────────────
 
   function ScansTab() {
     if (!account) return null;
@@ -517,7 +519,7 @@ export default function DashboardClient() {
                 <a href={`/report?id=${report.id}`} className="dashboard-report-link">
                   <div>
                     <strong>{report.url}</strong>
-                    <span>{formatDate(report.created_at)}{report.unlocked ? " Â· Full Report" : ""}</span>
+                    <span>{formatDate(report.created_at)}{report.unlocked ? " · Full Report" : ""}</span>
                   </div>
                   <em>{report.score}</em>
                   <ArrowUpRight className="h-4 w-4" />
@@ -532,7 +534,7 @@ export default function DashboardClient() {
           </div>
         ) : (
           <div style={{ textAlign: "center", padding: "48px 24px" }}>
-            <div style={{ fontSize: "32px", marginBottom: "16px" }}>ðŸ”</div>
+            <div style={{ fontSize: "32px", marginBottom: "16px" }}>🔍</div>
             <div style={{ fontSize: "18px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>
               No scans yet
             </div>
@@ -574,7 +576,7 @@ export default function DashboardClient() {
                 <a href={`/audit/${audit.id}`} className="dashboard-report-link">
                   <div>
                     <strong>{audit.domain}</strong>
-                    <span>{formatDate(audit.created_at)} Â· {audit.status}</span>
+                    <span>{formatDate(audit.created_at)} · {audit.status}</span>
                   </div>
                   {audit.aggregate_score !== null && <em>{audit.aggregate_score}</em>}
                   <ArrowUpRight className="h-4 w-4" />
@@ -614,12 +616,12 @@ export default function DashboardClient() {
           </div>
           {hasUnlockedOneTimeReports && <p style={{ ...cardDesc, marginTop: 8 }}>Some reports are individually unlocked.</p>}
           <div style={{ marginTop: 16, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            {portalUrl && <a href={portalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">Manage subscription â†’</a>}
+            {portalUrl && <a href={portalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">Manage subscription →</a>}
             {shouldShowUpgradeCard && <>
               <UpgradeButton plan="pro" className="btn btn-primary">Upgrade to Pro</UpgradeButton>
               <UpgradeButton plan="agency" className="btn btn-secondary">Get Agency</UpgradeButton>
             </>}
-            <a href="/pricing" className="btn btn-secondary">View pricing â†’</a>
+            <a href="/pricing" className="btn btn-secondary">View pricing →</a>
           </div>
         </div>
 
@@ -631,7 +633,7 @@ export default function DashboardClient() {
           </div>
           <div style={{ ...settingsRow, borderBottom: "none" }}>
             <span style={settingsLabel}>Account ID</span>
-            <strong style={{ fontFamily: "monospace", fontSize: 13 }}>{account.profile.id.slice(0, 16)}â€¦</strong>
+            <strong style={{ fontFamily: "monospace", fontSize: 13 }}>{account.profile.id.slice(0, 16)}…</strong>
           </div>
         </div>
       </>
@@ -646,13 +648,13 @@ export default function DashboardClient() {
         </div>
         <div style={{ ...card, maxWidth: 400 }}>
           <p style={cardDesc}>Access private app controls, user management, and activity logs.</p>
-          <a href="/admin" className="btn btn-secondary" style={{ marginTop: 8 }}>Open admin panel â†’</a>
+          <a href="/admin" className="btn btn-secondary" style={{ marginTop: 8 }}>Open admin panel →</a>
         </div>
       </>
     );
   }
 
-  // â”€â”€ Bottom nav (mobile only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Bottom nav (mobile only) ──────────────────────────────────
 
   function BottomNav() {
     if (!mounted || !isMobile) return null;
@@ -676,9 +678,9 @@ export default function DashboardClient() {
     const nav = (
       <nav className="db-bottom-nav" style={navStyle}>
         {([
-          { id: "overview" as Tab, emoji: "ðŸ ", label: "Home" },
-          { id: "scans"    as Tab, emoji: "ðŸ”", label: "Scans" },
-          { id: "audits"   as Tab, emoji: "ðŸ“‹", label: "Audits" },
+          { id: "overview" as Tab, icon: "ti ti-layout-dashboard", label: "Home" },
+          { id: "scans"    as Tab, icon: "ti ti-search",            label: "Scans" },
+          { id: "audits"   as Tab, icon: "ti ti-clipboard-list",    label: "Audits" },
         ] as const).map(item => (
           <button
             key={item.id}
@@ -686,16 +688,22 @@ export default function DashboardClient() {
             className={`db-bottom-nav-item${activeTab === item.id ? " is-active" : ""}`}
             onClick={() => handleTabChange(item.id)}
           >
-            <span className="db-bottom-nav-emoji">{item.emoji}</span>
+            <span className="db-bottom-nav-emoji">
+              <i className={item.icon} aria-hidden="true" />
+            </span>
             <span className="db-bottom-nav-label">{item.label}</span>
           </button>
         ))}
         <button type="button" className="db-bottom-nav-item" onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/monitor"); }}>
-          <span className="db-bottom-nav-emoji">ðŸ“¡</span>
+          <span className="db-bottom-nav-emoji">
+            <i className="ti ti-activity" aria-hidden="true" />
+          </span>
           <span className="db-bottom-nav-label">Monitor</span>
         </button>
         <button type="button" className="db-bottom-nav-item" onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/compare"); }}>
-          <span className="db-bottom-nav-emoji">âš–ï¸</span>
+          <span className="db-bottom-nav-emoji">
+            <i className="ti ti-arrows-diff" aria-hidden="true" />
+          </span>
           <span className="db-bottom-nav-label">Compare</span>
         </button>
       </nav>
@@ -731,7 +739,7 @@ export default function DashboardClient() {
       {loading ? (
         <div className="page-loading">
           <div className="page-loading-spinner" />
-          <span>Loading your workspaceâ€¦</span>
+          <span>Loading your workspace…</span>
         </div>
       ) : error ? (
         <div className="page-loading">
