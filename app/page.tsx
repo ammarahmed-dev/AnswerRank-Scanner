@@ -2,6 +2,7 @@ import HomePageClient from "./components/HomePageClient";
 import SchemaMarkup from "./components/SchemaMarkup";
 import SiteFooter from "./components/SiteFooter";
 import { buildPageMetadata } from "@/lib/seo";
+import { getLatestPosts } from "@/lib/blog";
 
 export const metadata = buildPageMetadata({
   title: "AEOCheck - Free AEO Scanner & AI Search Readiness Audit",
@@ -11,6 +12,7 @@ export const metadata = buildPageMetadata({
 });
 
 export default function HomePage() {
+  const latestPosts = getLatestPosts(3);
   const heroContent = (
     <>
       <p className="hero-badge">25 AEO + GEO checks · Free · No signup</p>
@@ -28,7 +30,7 @@ export default function HomePage() {
   return (
     <>
       <SchemaMarkup />
-      <HomePageClient heroContent={heroContent} />
+      <HomePageClient heroContent={heroContent} latestPosts={latestPosts} />
       <SiteFooter />
     </>
   );

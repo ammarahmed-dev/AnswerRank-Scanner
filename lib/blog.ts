@@ -72,6 +72,10 @@ export function getAllBlogPosts(): BlogPostMeta[] {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
+export function getLatestPosts(count: number): BlogPostMeta[] {
+  return getAllBlogPosts().slice(0, count);
+}
+
 export function getBlogPost(slug: string): BlogPost | null {
   if (!fs.existsSync(BLOG_DIR)) return null;
 

@@ -3,6 +3,8 @@
 import { CSSProperties, ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import Image from "next/image";
+import type { BlogPostMeta } from "@/lib/blog";
 import LoadingState from "./LoadingState";
 import SiteHeader from "./SiteHeader";
 import TopBar from "./TopBar";
@@ -107,35 +109,13 @@ const faqs = [
   ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; Pro accounts keep full report history."],
 ];
 
-const featuredGuides = [
-  {
-    category: "AEO Basics",
-    title: "What Is AEO? Answer Engine Optimization Explained for AI Search",
-    excerpt:
-      "Learn what answer engine optimization means, why AI search visibility matters, and how to improve your website for answer-first discovery.",
-    href: "/blog/what-is-aeo-answer-engine-optimization",
-  },
-  {
-    category: "AI Visibility",
-    title: "How to Check If Your Website Is Visible in ChatGPT and Perplexity",
-    excerpt:
-      "A practical process to evaluate ChatGPT and Perplexity visibility, spot weak signals, and improve answer readiness on key pages.",
-    href: "/blog/how-to-check-website-visible-chatgpt-perplexity",
-  },
-  {
-    category: "Webflow AEO",
-    title: "AEO Checklist for Webflow Websites",
-    excerpt:
-      "A focused checklist for Webflow teams covering schema, metadata, structure, and content clarity improvements for answer engines.",
-    href: "/blog/aeo-checklist-webflow-developers",
-  },
-];
 
 type HomePageClientProps = {
   heroContent?: ReactNode;
+  latestPosts: BlogPostMeta[];
 };
 
-function HomeInner({ heroContent }: HomePageClientProps) {
+function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [url, setUrl] = useState("");
@@ -918,11 +898,24 @@ function HomeInner({ heroContent }: HomePageClientProps) {
               </div>
 
               <div className="featured-guides-grid">
-                {featuredGuides.map((guide) => (
-                  <Link key={guide.href} href={guide.href} className="featured-guide-card">
-                    <span className="featured-guide-pill">{guide.category}</span>
-                    <h3>{guide.title}</h3>
-                    <p>{guide.excerpt}</p>
+                {latestPosts.map((post) => (
+                  <Link key={post.slug} href={`/blog/${post.slug}`} className="featured-guide-card">
+                    <div style={{ height: 160, overflow: "hidden", borderRadius: 8, marginBottom: 12, flexShrink: 0 }}>
+                      {post.coverImage ? (
+                        <Image
+                          src={post.coverImage}
+                          alt={post.coverImageAlt ?? post.title}
+                          width={480}
+                          height={160}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        />
+                      ) : (
+                        <div style={{ width: "100%", height: "100%", background: "rgba(0, 240, 180, 0.08)", border: "1px solid rgba(0, 240, 180, 0.15)" }} />
+                      )}
+                    </div>
+                    <span className="featured-guide-pill">{post.tags[0] ?? "Guide"}</span>
+                    <h3>{post.title}</h3>
+                    <p>{post.description}</p>
                     <span className="featured-guide-link">Read guide</span>
                   </Link>
                 ))}
