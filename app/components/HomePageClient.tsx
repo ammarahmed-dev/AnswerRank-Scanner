@@ -4,6 +4,7 @@ import { CSSProperties, ReactNode, Suspense, useEffect, useMemo, useRef, useStat
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import type { BlogPostMeta } from "@/lib/blog";
 import LoadingState from "./LoadingState";
 import SiteHeader from "./SiteHeader";
@@ -12,8 +13,16 @@ import UpgradeButton from "./UpgradeButton";
 import ContactForm from "./ContactForm";
 import AiSnapshotSection from "./AiSnapshotSection";
 import WhoUsesSection from "./WhoUsesSection";
-import TestimonialsSection from "./TestimonialsSection";
-import AnimatedProductDemo from "./AnimatedProductDemo";
+
+// Code-split below-fold and decoration-only components out of the initial bundle
+const AnimatedProductDemo = dynamic(() => import("./AnimatedProductDemo"));
+const TestimonialsSection = dynamic(
+  () => import("./TestimonialsSection"),
+  {
+    ssr: false,
+    loading: () => <section className="testimonials-section" style={{ minHeight: 320 }} />,
+  }
+);
 import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
 import { ScanResult } from "@/types/index";
 import { useRouter, useSearchParams } from "next/navigation";
