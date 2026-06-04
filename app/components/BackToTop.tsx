@@ -6,13 +6,13 @@ export default function BackToTop() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
-  if (pathname === "/dashboard") return null;
-
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 300);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  if (pathname === "/dashboard") return null;
 
   return (
     <button
