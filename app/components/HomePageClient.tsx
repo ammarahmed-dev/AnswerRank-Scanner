@@ -126,7 +126,6 @@ type HomePageClientProps = {
 
 function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [url, setUrl] = useState("");
   const [state, setState] = useState<AppState>("idle");
   const [loaderProgress, setLoaderProgress] = useState<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
@@ -214,12 +213,6 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
     setGuestScansLeft(Math.max(0, 1 - used));
   }, []);
 
-  useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab === "scan" || tab === "compare" || tab === "monitor" || tab === "audit") {
-      setScannerTab(tab);
-    }
-  }, [searchParams]);
 
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -618,6 +611,9 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
 
   return (
     <main className="min-h-screen">
+      <Suspense fallback={null}>
+        <SearchParamsTabSync onTab={setScannerTab} />
+      </Suspense>
       <Suspense fallback={<div className="top-bar" style={{ minHeight: 37 }} />}>
         <TopBar />
       </Suspense>
@@ -1297,12 +1293,21 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
   );
 }
 
+// Reads search params to initialise the scanner tab from ?tab= URL parameter.
+// Isolated here so useSearchParams() doesn't suspend the entire HomeInner tree.
+function SearchParamsTabSync({ onTab }: { onTab: (tab: ScannerTab) => void }) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "scan" || tab === "compare" || tab === "monitor" || tab === "audit") {
+      onTab(tab as ScannerTab);
+    }
+  }, [searchParams, onTab]);
+  return null;
+}
+
 export default function Home(props: HomePageClientProps) {
-  return (
-    <Suspense fallback={null}>
-      <HomeInner {...props} />
-    </Suspense>
-  );
+  return <HomeInner {...props} />;
 }
 
 
