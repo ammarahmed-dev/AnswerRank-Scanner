@@ -183,6 +183,58 @@ export default function SchemaMarkup() {
     },
     {
       "@context": "https://schema.org",
+      "@type": "Person",
+      name: "AEOCheck Team",
+      url: `${SITE_URL}/about`,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      name: "AEO Scanner",
+      description:
+        "AI visibility scanner that checks websites for answer engine optimization readiness across ChatGPT, Perplexity, and other AI search engines.",
+      provider: {
+        "@type": "Organization",
+        name: "AEOCheck",
+        url: SITE_URL,
+      },
+      serviceType: "SEO and AEO Analysis",
+      url: `${SITE_URL}/scan`,
+      offers: [
+        {
+          "@type": "Offer",
+          name: "Free Plan",
+          price: "0",
+          priceCurrency: "USD",
+        },
+        {
+          "@type": "Offer",
+          name: "Pro Plan",
+          price: "19",
+          priceCurrency: "USD",
+          priceSpecification: {
+            "@type": "UnitPriceSpecification",
+            price: "19",
+            priceCurrency: "USD",
+            unitCode: "MON",
+          },
+        },
+        {
+          "@type": "Offer",
+          name: "Agency Plan",
+          price: "49",
+          priceCurrency: "USD",
+          priceSpecification: {
+            "@type": "UnitPriceSpecification",
+            price: "49",
+            priceCurrency: "USD",
+            unitCode: "MON",
+          },
+        },
+      ],
+    },
+    {
+      "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
         {

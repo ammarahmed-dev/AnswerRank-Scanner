@@ -11,6 +11,9 @@ export default function SiteFooter() {
           <p className="footer-contact-email">
             <a href="mailto:hello@aeocheck.co">hello@aeocheck.co</a>
           </p>
+          <p style={{ fontSize: "0.75rem", color: "var(--color-ink-muted)", marginTop: 6 }}>
+            Built by the <a href="/about" style={{ color: "inherit", textDecoration: "underline" }}>AEOCheck Team</a>
+          </p>
         </div>
         <div className="footer-links-wrap">
           <div className="footer-link-group">
