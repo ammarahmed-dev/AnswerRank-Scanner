@@ -1,0 +1,31 @@
+name: Generate Blog Post
+on:
+  workflow_dispatch:
+    inputs:
+      keyword:
+        description: 'Target keyword'
+        required: true
+        type: string
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: Generate post
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          KEYWORD: ${{ github.event.inputs.keyword }}
+        run: node scripts/generate-blog.mjs
+      - name: Commit and push
+        run: |
+          git config user.name "AEOCheck Bot"
+          git config user.email "bot@aeocheck.co"
+          git add content/blog/ public/blog/
+          git diff --staged --quiet || (git commit -m "blog: add '${{ github.event.inputs.keyword }}'" && git push)
