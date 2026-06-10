@@ -23,7 +23,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           KEYWORD: ${{ github.event.inputs.keyword }}
         run: node scripts/generate-blog.mjs
-     - name: Commit and push
+      - name: Commit and push
         run: |
           git config user.name "AEOCheck Bot"
           git config user.email "bot@aeocheck.co"
