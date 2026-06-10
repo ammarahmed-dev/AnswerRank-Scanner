@@ -75,8 +75,8 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Use these demo URLs:
 
-- `https://webflow.com`
-- `https://notion.com`
+- `https://anthropic.com`
+- `https://linear.app`
 - `https://shopify.com`
 
 ## Project Structure

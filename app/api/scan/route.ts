@@ -399,7 +399,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         type: "limit_reached",
-        error: "Youâ€™ve used your 3 free scans this month.",
+        error: `You've used your ${usage.limit} free scan${usage.limit === 1 ? "" : "s"} this month.`,
         limit: usage.limit,
         remaining: usage.remaining,
       },

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
+export const revalidate = 60;
 
 const supabaseUrl = getSupabaseServerUrl();
 const baseCount = 500;
