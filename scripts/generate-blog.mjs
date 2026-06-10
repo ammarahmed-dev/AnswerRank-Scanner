@@ -35,11 +35,11 @@ async function callClaude(prompt, maxTokens = 4096) {
   return data.content[0].text;
 }
 
-// ─── Image via NVIDIA NIM - Qwen-Image (free) ────────────────────────────────
+// ─── Image via Hugging Face FLUX.1-schnell (free) ────────────────────────────
 async function generateImage(keyword, slug) {
-  const nvidiaKey = process.env.NVIDIA_API_KEY;
-  if (!nvidiaKey) {
-    console.log('NVIDIA_API_KEY not set - skipping image. Add to .env.local to enable.');
+  const hfToken = process.env.HF_TOKEN;
+  if (!hfToken) {
+    console.log('HF_TOKEN not set - skipping image. Add to .env.local to enable.');
     return null;
   }
 
@@ -52,38 +52,28 @@ No text, no letters anywhere. Output only the prompt, nothing else.`,
 
   console.log('Image prompt:', imagePrompt);
 
-  const res = await fetch('https://integrate.api.nvidia.com/v1/images/generations', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${nvidiaKey}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'qwen/qwen-image',
-      prompt: imagePrompt,
-      n: 1,
-      size: '1024x1024',
-      response_format: 'b64_json',
-    }),
-  });
+  const res = await fetch(
+    'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${hfToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ inputs: imagePrompt }),
+    }
+  );
 
   if (!res.ok) {
-    console.log(`Image skipped (${res.status}):`, (await res.text()).slice(0, 200));
+    console.log(`Image skipped (${res.status}):`, (await res.text()).slice(0, 100));
     return null;
   }
 
-  const data = await res.json();
-  const b64 = data?.data?.[0]?.b64_json;
-  if (!b64) {
-    console.log('Image skipped: no b64_json in response');
-    return null;
-  }
-
+  const buffer = await res.arrayBuffer();
   const outDir = 'public/blog/covers';
   fs.mkdirSync(outDir, { recursive: true });
   const imgPath = path.join(outDir, `${slug}.jpg`);
-  fs.writeFileSync(imgPath, Buffer.from(b64, 'base64'));
+  fs.writeFileSync(imgPath, Buffer.from(buffer));
   console.log('Cover image saved:', imgPath);
   return `/blog/covers/${slug}.jpg`;
 }
@@ -150,4 +140,4 @@ fs.writeFileSync(outPath, content);
 
 console.log('\nDone:');
 console.log('  Post  :', outPath);
-console.log('  Image :', imgPath ?? 'skipped (set NVIDIA_API_KEY to enable)');
+console.log('  Image :', imgPath ?? 'skipped (set HF_TOKEN to enable)');

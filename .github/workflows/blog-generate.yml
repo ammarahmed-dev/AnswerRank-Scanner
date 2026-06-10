@@ -20,7 +20,6 @@ jobs:
       - run: npm ci
       - name: Generate post
         env:
-          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           KEYWORD: ${{ github.event.inputs.keyword }}
         run: node scripts/generate-blog.mjs
