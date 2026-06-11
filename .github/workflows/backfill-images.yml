@@ -22,5 +22,6 @@ jobs:
         run: |
           git config user.name "AEOCheck Bot"
           git config user.email "bot@aeocheck.co"
-          git add content/blog/ public/blog/
+          git add content/blog/
+          if [ -d "public/blog" ]; then git add public/blog/; fi
           git diff --staged --quiet || (git commit -m "chore: backfill blog cover images" && git push)
