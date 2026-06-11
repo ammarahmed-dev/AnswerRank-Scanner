@@ -1,0 +1,26 @@
+name: Backfill Blog Images
+on:
+  workflow_dispatch:
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: Generate missing images
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: node scripts/backfill-images.mjs
+      - name: Commit and push
+        run: |
+          git config user.name "AEOCheck Bot"
+          git config user.email "bot@aeocheck.co"
+          git add content/blog/ public/blog/
+          git diff --staged --quiet || (git commit -m "chore: backfill blog cover images" && git push)
