@@ -1,4 +1,17 @@
-# AEOCheck
+import { getAllBlogPosts } from "@/lib/blog";
+import { SITE_URL } from "@/lib/seo";
+
+export const dynamic = "force-static";
+export const revalidate = 3600;
+
+export function GET() {
+  const posts = getAllBlogPosts();
+
+  const blogLines = posts
+    .map((post) => `- ${SITE_URL}/blog/${post.slug}: ${post.title}`)
+    .join("\n");
+
+  const body = `# AEOCheck
 > AEO and GEO readiness scanner for AI search visibility
 
 AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO) signals. It scores a page on how well it can be understood, extracted, and cited by AI answer engines including ChatGPT, Perplexity, Google AI Overviews, and Microsoft Copilot.
@@ -27,17 +40,26 @@ AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) 
 - Pro: unlimited scans + Compare, Monitor, Audit features
 
 ## Key pages
-- Homepage and scanner: https://www.aeocheck.co
-- Sample report: https://www.aeocheck.co/sample-report
-- Pricing: https://www.aeocheck.co/pricing
-- Blog: https://www.aeocheck.co/blog
-- About: https://www.aeocheck.co/about
-- Contact: https://www.aeocheck.co/contact
+- Homepage and scanner: ${SITE_URL}
+- Sample report: ${SITE_URL}/sample-report
+- Pricing: ${SITE_URL}/pricing
+- Blog: ${SITE_URL}/blog
+- About: ${SITE_URL}/about
+- Contact: ${SITE_URL}/contact
 
-## Blog topics
-AEO, GEO, AI search visibility, ChatGPT citations, Perplexity optimization, schema markup, answer engine optimization vs SEO.
+## Blog posts
+${blogLines}
 
 ## Do not index
 - /api/*
 - /dashboard
 - /admin
+`;
+
+  return new Response(body, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+    },
+  });
+}
