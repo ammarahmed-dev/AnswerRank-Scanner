@@ -1,0 +1,1296 @@
+{
+  "$schema": "./topical-map.schema.json",
+  "site": "https://www.aeocheck.co",
+  "blogBasePath": "/blog/",
+  "updated": "2026-06-12",
+  "pillars": [
+    {
+      "id": "aeo-core",
+      "hubSlug": "what-is-answer-engine-optimization",
+      "name": "Answer Engine Optimization"
+    },
+    {
+      "id": "chatgpt",
+      "hubSlug": "how-to-get-cited-by-chatgpt",
+      "name": "ChatGPT Visibility"
+    },
+    {
+      "id": "perplexity",
+      "hubSlug": "perplexity-seo-guide",
+      "name": "Perplexity Visibility"
+    },
+    {
+      "id": "google-ai",
+      "hubSlug": "google-ai-overviews-organic-traffic",
+      "name": "Google AI Overviews & AI Mode"
+    },
+    {
+      "id": "schema",
+      "hubSlug": "schema-for-ai-search",
+      "name": "Schema & Structured Data for AI"
+    },
+    {
+      "id": "technical",
+      "hubSlug": "technical-aeo-guide",
+      "name": "Technical AI Readiness"
+    },
+    {
+      "id": "platforms",
+      "hubSlug": "aeo-by-platform",
+      "name": "Platform Guides"
+    },
+    {
+      "id": "personas",
+      "hubSlug": "aeo-for-saas",
+      "name": "Personas & Industries"
+    },
+    {
+      "id": "measurement",
+      "hubSlug": "measure-ai-search-traffic",
+      "name": "Measurement & Monitoring"
+    },
+    {
+      "id": "tools",
+      "hubSlug": "best-aeo-tools",
+      "name": "Tools & Comparisons"
+    }
+  ],
+  "slots": [
+    {
+      "slug": "what-is-answer-engine-optimization",
+      "title": "What Is AEO? The Complete Guide to Answer Engine Optimization (2026)",
+      "pillar": "aeo-core",
+      "role": "hub",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "what is aeo",
+        "answer engine optimization",
+        "aeo meaning",
+        "answer engine optimization guide"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "slug": "aeo-vs-seo",
+      "title": "AEO vs SEO: What's Different and What Still Matters",
+      "pillar": "aeo-core",
+      "role": "spoke",
+      "tier": 1,
+      "status": "published",
+      "targetQueries": [
+        "aeo vs seo",
+        "difference between aeo and seo",
+        "is aeo replacing seo"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "aeo-vs-geo",
+      "title": "AEO vs GEO: Are They the Same Thing?",
+      "pillar": "aeo-core",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "aeo vs geo",
+        "geo vs aeo difference",
+        "generative engine optimization vs answer engine optimization"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "aeo-checklist",
+      "title": "The Complete AEO Checklist: 25 Checks Before You Publish",
+      "pillar": "aeo-core",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "aeo checklist",
+        "ai search optimization checklist",
+        "aeo audit checklist"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "how-ai-search-engines-work",
+      "title": "How AI Search Engines Choose What to Cite",
+      "pillar": "aeo-core",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "how ai search engines work",
+        "how does ai search choose sources",
+        "ai citation criteria"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "aeo-ranking-factors",
+      "title": "AEO Ranking Factors: What Actually Influences AI Citations",
+      "pillar": "aeo-core",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "aeo ranking factors",
+        "ai search ranking factors",
+        "what makes ai cite a website"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "answer-engine-optimization-cost",
+      "title": "How Much Does AEO Cost? (DIY vs Agency vs Tools)",
+      "pillar": "aeo-core",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "aeo cost",
+        "aeo pricing",
+        "how much does aeo cost",
+        "aeo agency pricing"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "aeo-mistakes",
+      "title": "12 AEO Mistakes That Keep AI Engines From Citing You",
+      "pillar": "aeo-core",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "aeo mistakes",
+        "why ai doesn't cite my website"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "aeo-statistics",
+      "title": "AEO Statistics 2026: AI Search Adoption Data",
+      "pillar": "aeo-core",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "aeo statistics",
+        "ai search statistics 2026",
+        "ai search adoption data"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "refreshCadence": "quarterly",
+      "notes": "Linkable asset. Pull aggregate stats from AEOCheck scan DB where possible."
+    },
+    {
+      "slug": "how-to-get-cited-by-chatgpt",
+      "title": "How to Get Your Website Cited by ChatGPT",
+      "pillar": "chatgpt",
+      "role": "hub",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "how to get cited by chatgpt",
+        "chatgpt seo",
+        "get website in chatgpt",
+        "chatgpt visibility"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "slug": "chatgpt-search-how-it-works",
+      "title": "How ChatGPT Search Picks Its Sources",
+      "pillar": "chatgpt",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "how chatgpt search works",
+        "chatgpt search sources",
+        "where does chatgpt get information"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "oai-searchbot-crawler",
+      "title": "OAI-SearchBot: How to Verify ChatGPT Is Crawling Your Site",
+      "pillar": "chatgpt",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "oai-searchbot",
+        "chatgpt crawler",
+        "gptbot vs oai-searchbot",
+        "openai crawler user agent"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "chatgpt-shopping-visibility",
+      "title": "ChatGPT Shopping: Getting Your Products Listed",
+      "pillar": "chatgpt",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "chatgpt shopping",
+        "get products in chatgpt",
+        "chatgpt product feed"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "why-chatgpt-doesnt-mention-my-brand",
+      "title": "Why ChatGPT Doesn't Mention Your Brand (And How to Fix It)",
+      "pillar": "chatgpt",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "chatgpt doesn't know my brand",
+        "why is my website not in chatgpt",
+        "brand not appearing in ai"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "chatgpt-traffic-ga4",
+      "title": "How to Track ChatGPT Referral Traffic in GA4",
+      "pillar": "chatgpt",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "chatgpt referral traffic ga4",
+        "track chatgpt traffic",
+        "chatgpt.com referral analytics"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "perplexity-seo-guide",
+      "title": "Perplexity SEO: How to Become a Cited Source",
+      "pillar": "perplexity",
+      "role": "hub",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "perplexity seo",
+        "how to rank in perplexity",
+        "get cited by perplexity"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "slug": "perplexitybot-crawler",
+      "title": "PerplexityBot: Crawl Behavior and robots.txt Setup",
+      "pillar": "perplexity",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "perplexitybot",
+        "perplexity crawler",
+        "perplexity user agent robots.txt"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "perplexity-vs-google",
+      "title": "Perplexity vs Google: Where Should You Focus?",
+      "pillar": "perplexity",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "perplexity vs google",
+        "perplexity market share"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "perplexity-citation-patterns",
+      "title": "What Kind of Pages Perplexity Actually Cites (Data Study)",
+      "pillar": "perplexity",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "perplexity citations",
+        "what does perplexity cite",
+        "perplexity citation study"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "notes": "Linkable asset - use Monitor feature data."
+    },
+    {
+      "slug": "google-ai-overviews-organic-traffic",
+      "title": "How Google AI Overviews Affect Organic Traffic (And What To Do About It)",
+      "pillar": "google-ai",
+      "role": "hub",
+      "tier": 1,
+      "status": "published",
+      "targetQueries": [
+        "google ai overviews organic traffic",
+        "ai overviews traffic impact"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "notes": "EXISTING POST - expand to 3000+ words and add hub links to all spokes in this pillar."
+    },
+    {
+      "slug": "google-ai-mode-optimization",
+      "title": "Optimizing for Google AI Mode",
+      "pillar": "google-ai",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "google ai mode optimization",
+        "rank in google ai mode",
+        "ai mode seo"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "rank-in-ai-overviews",
+      "title": "How to Get Featured in Google AI Overviews",
+      "pillar": "google-ai",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "how to rank in ai overviews",
+        "get featured in ai overviews",
+        "ai overview optimization"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "ai-overviews-ctr-impact",
+      "title": "AI Overviews and CTR: What the Data Shows",
+      "pillar": "google-ai",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "ai overviews ctr",
+        "ai overview click through rate study"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "google-extended-robots",
+      "title": "Google-Extended: Should You Block It?",
+      "pillar": "google-ai",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "google-extended",
+        "block google extended",
+        "google extended robots.txt"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "schema-for-ai-search",
+      "title": "Structured Data for AI Search: The Complete Schema Guide",
+      "pillar": "schema",
+      "role": "hub",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "schema for ai search",
+        "structured data for ai",
+        "json-ld for llms"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "slug": "faq-schema-ai-search",
+      "title": "Does FAQ Schema Still Matter for AI Search?",
+      "pillar": "schema",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "faq schema ai search",
+        "is faq schema still worth it",
+        "faqpage schema 2026"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "organization-schema-entity",
+      "title": "Organization Schema: Building Entity Clarity for AI",
+      "pillar": "schema",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "organization schema",
+        "entity seo schema",
+        "organization json-ld example"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "article-schema-guide",
+      "title": "Article Schema for AI Citations: Setup Guide",
+      "pillar": "schema",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "article schema",
+        "article json-ld",
+        "blogposting schema"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "breadcrumb-schema",
+      "title": "BreadcrumbList Schema and AI Crawlers",
+      "pillar": "schema",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "breadcrumblist schema",
+        "breadcrumb schema example"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "json-ld-vs-microdata",
+      "title": "JSON-LD vs Microdata for AI Engines",
+      "pillar": "schema",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "json-ld vs microdata",
+        "best schema format"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "speakable-schema",
+      "title": "Speakable Schema: Worth Implementing?",
+      "pillar": "schema",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "speakable schema",
+        "speakable specification"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "technical-aeo-guide",
+      "title": "Technical AEO: Making Your Site Machine-Readable",
+      "pillar": "technical",
+      "role": "hub",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "technical aeo",
+        "technical seo for ai",
+        "machine readable website"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "slug": "llms-txt-guide",
+      "title": "llms.txt: What It Is and How to Create One",
+      "pillar": "technical",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "llms.txt",
+        "what is llms.txt",
+        "llms.txt example",
+        "create llms.txt"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "llms-txt-generator",
+      "title": "Free llms.txt Generator (+ Template)",
+      "pillar": "technical",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "llms.txt generator",
+        "llms.txt template"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "notes": "Build as interactive tool page - strong signup driver."
+    },
+    {
+      "slug": "ai-crawlers-list",
+      "title": "Every AI Crawler in 2026: User Agents and What They Do",
+      "pillar": "technical",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "ai crawlers list",
+        "ai bot user agents",
+        "list of ai crawlers",
+        "llm crawlers"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "refreshCadence": "quarterly",
+      "notes": "Linkable asset - keep authoritative and current."
+    },
+    {
+      "slug": "robots-txt-ai-crawlers",
+      "title": "robots.txt for AI Crawlers: Allow or Block?",
+      "pillar": "technical",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "robots.txt ai crawlers",
+        "block ai bots robots.txt",
+        "allow gptbot"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "javascript-rendering-ai-crawlers",
+      "title": "Do AI Crawlers Render JavaScript? (Test Results)",
+      "pillar": "technical",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "do ai crawlers render javascript",
+        "gptbot javascript",
+        "ai crawlers spa"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "notes": "Run actual tests - original research, linkable."
+    },
+    {
+      "slug": "server-side-rendering-aeo",
+      "title": "SSR vs CSR for AI Search Visibility",
+      "pillar": "technical",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "ssr vs csr seo",
+        "server side rendering ai search"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "aeo-by-platform",
+      "title": "AEO Setup Guides by Platform",
+      "pillar": "platforms",
+      "role": "hub",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "aeo setup guide",
+        "ai search optimization platform"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "slug": "webflow-aeo-guide",
+      "title": "Webflow AEO: Complete AI Search Setup Guide",
+      "pillar": "platforms",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "webflow aeo",
+        "webflow ai search",
+        "webflow seo for chatgpt",
+        "webflow llms.txt"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ],
+      "notes": "Author authority play - write from real agency experience."
+    },
+    {
+      "slug": "webflow-schema-markup",
+      "title": "Adding Schema Markup in Webflow (No Plugins)",
+      "pillar": "platforms",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "webflow schema markup",
+        "webflow json-ld",
+        "webflow structured data"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "wordpress-aeo-guide",
+      "title": "WordPress AEO Guide",
+      "pillar": "platforms",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "wordpress aeo",
+        "wordpress ai search optimization"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "shopify-aeo-guide",
+      "title": "Shopify AEO: Product Visibility in AI Search",
+      "pillar": "platforms",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "shopify aeo",
+        "shopify ai search",
+        "shopify chatgpt visibility"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "nextjs-aeo-guide",
+      "title": "Next.js AEO: Metadata API, JSON-LD, llms.txt",
+      "pillar": "platforms",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "nextjs aeo",
+        "nextjs json-ld",
+        "nextjs metadata seo ai"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "framer-aeo-guide",
+      "title": "Framer AEO Guide",
+      "pillar": "platforms",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "framer aeo",
+        "framer seo ai search"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "squarespace-aeo-guide",
+      "title": "Squarespace AEO Guide",
+      "pillar": "platforms",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "squarespace aeo",
+        "squarespace ai search"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "aeo-for-saas",
+      "title": "AEO for SaaS: How to Get Your Product Cited by AI Search Engines",
+      "pillar": "personas",
+      "role": "hub",
+      "tier": 1,
+      "status": "published",
+      "targetQueries": [
+        "aeo for saas",
+        "saas ai search visibility"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "notes": "EXISTING POST - promote to hub, add links to all persona spokes."
+    },
+    {
+      "slug": "aeo-for-agencies",
+      "title": "AEO for Agencies: Productizing AI Search Audits",
+      "pillar": "personas",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "aeo for agencies",
+        "sell aeo audits",
+        "ai search audit service"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "notes": "Conversion target: Agency plan."
+    },
+    {
+      "slug": "aeo-for-ecommerce",
+      "title": "AEO for Ecommerce",
+      "pillar": "personas",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "aeo for ecommerce",
+        "ecommerce ai search"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "aeo-for-local-business",
+      "title": "AEO for Local Businesses",
+      "pillar": "personas",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "aeo for local business",
+        "local ai search optimization"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "aeo-for-b2b",
+      "title": "AEO for B2B: The New Demand Gen Channel",
+      "pillar": "personas",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "aeo for b2b",
+        "b2b ai search"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "aeo-client-reporting",
+      "title": "How to Present AEO Audits to Clients (+ Template)",
+      "pillar": "personas",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "aeo client report",
+        "ai search audit template",
+        "present seo audit to client"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ],
+      "notes": "Conversion target: PDF reports / Pro."
+    },
+    {
+      "slug": "measure-ai-search-traffic",
+      "title": "How to Measure AI Search Traffic and Citations",
+      "pillar": "measurement",
+      "role": "hub",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "measure ai search traffic",
+        "track ai citations",
+        "ai search analytics"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "slug": "ai-referral-traffic-ga4",
+      "title": "Tracking AI Referrals in GA4 (Regex + Setup)",
+      "pillar": "measurement",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "ai referral traffic ga4",
+        "ga4 ai traffic segment",
+        "track llm traffic"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "ai-crawler-log-analysis",
+      "title": "Reading Your Server Logs for AI Crawler Activity",
+      "pillar": "measurement",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "ai crawler log analysis",
+        "server logs ai bots",
+        "log file analysis llm crawlers"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ]
+    },
+    {
+      "slug": "ai-share-of-voice",
+      "title": "AI Share of Voice: Tracking Brand Mentions Across Engines",
+      "pillar": "measurement",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "ai share of voice",
+        "track brand mentions chatgpt",
+        "ai brand monitoring"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "aeo-kpis",
+      "title": "AEO KPIs: What to Report Beyond Rankings",
+      "pillar": "measurement",
+      "role": "spoke",
+      "tier": 3,
+      "status": "planned",
+      "targetQueries": [
+        "aeo kpis",
+        "ai search metrics"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ]
+    },
+    {
+      "slug": "best-aeo-tools",
+      "title": "Best AEO Tools in 2026 (Honest Comparison)",
+      "pillar": "tools",
+      "role": "hub",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "best aeo tools",
+        "aeo tools 2026",
+        "ai search visibility tools",
+        "geo tools"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList",
+        "ItemList"
+      ],
+      "refreshCadence": "quarterly"
+    },
+    {
+      "slug": "free-aeo-tools",
+      "title": "9 Free AEO Tools That Actually Work",
+      "pillar": "tools",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "free aeo tools",
+        "free ai search tools",
+        "free geo tools"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "ItemList"
+      ]
+    },
+    {
+      "slug": "aeo-audit-template",
+      "title": "Free AEO Audit Template (Notion + Sheets)",
+      "pillar": "tools",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "aeo audit template",
+        "ai search audit template"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "notes": "Lead magnet."
+    },
+    {
+      "slug": "profound-alternatives",
+      "title": "Profound Alternatives: Free and Affordable Options",
+      "pillar": "tools",
+      "role": "spoke",
+      "tier": 1,
+      "status": "planned",
+      "targetQueries": [
+        "profound alternatives",
+        "profound ai alternative",
+        "cheaper than profound"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "ItemList"
+      ],
+      "notes": "Route under /alternatives/ if preferred - update slug accordingly."
+    },
+    {
+      "slug": "otterly-alternatives",
+      "title": "Otterly Alternatives Compared",
+      "pillar": "tools",
+      "role": "spoke",
+      "tier": 2,
+      "status": "planned",
+      "targetQueries": [
+        "otterly alternatives",
+        "otterly ai alternative"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "ItemList"
+      ]
+    },
+    {
+      "slug": "aeo-checklist-webflow-developers",
+      "title": "AEO Checklist for Webflow Developers: 12-Point Guide (2025)",
+      "pillar": "platforms",
+      "role": "spoke",
+      "tier": 1,
+      "status": "published",
+      "targetQueries": [
+        "aeo checklist webflow",
+        "webflow aeo guide",
+        "webflow ai search optimization"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ],
+      "notes": "EXISTING POST"
+    },
+    {
+      "slug": "best-aeo-tools-ai-search-visibility",
+      "title": "Best AEO Tools for AI Search Visibility in 2025 (Free + Paid)",
+      "pillar": "tools",
+      "role": "spoke",
+      "tier": 1,
+      "status": "published",
+      "targetQueries": [
+        "best aeo tools",
+        "aeo tools list",
+        "ai search visibility tools"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "ItemList"
+      ],
+      "notes": "EXISTING POST"
+    },
+    {
+      "slug": "chatgpt-product-recommendations",
+      "title": "How to Get Your Website into ChatGPT Product Recommendations",
+      "pillar": "chatgpt",
+      "role": "spoke",
+      "tier": 2,
+      "status": "published",
+      "targetQueries": [
+        "chatgpt product recommendations",
+        "get website in chatgpt",
+        "chatgpt shopping"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "notes": "EXISTING POST - link into chatgpt cluster per seo-system.md"
+    },
+    {
+      "slug": "chatgpt-visibility-checker",
+      "title": "ChatGPT Visibility Checker: How to Test if Your Website Appears in AI Answers",
+      "pillar": "tools",
+      "role": "spoke",
+      "tier": 2,
+      "status": "published",
+      "targetQueries": [
+        "chatgpt visibility checker",
+        "test website chatgpt visibility",
+        "check if website appears in chatgpt"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "notes": "EXISTING POST"
+    },
+    {
+      "slug": "free-aeo-checker",
+      "title": "Free AEO Checker: Scan Your Site for AI Search Visibility",
+      "pillar": "tools",
+      "role": "spoke",
+      "tier": 1,
+      "status": "published",
+      "targetQueries": [
+        "free aeo checker",
+        "free aeo scanner",
+        "free ai search visibility checker"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "notes": "EXISTING POST"
+    },
+    {
+      "slug": "how-to-check-website-visible-chatgpt-perplexity",
+      "title": "How to Check Your Website's AI Search Visibility",
+      "pillar": "measurement",
+      "role": "spoke",
+      "tier": 1,
+      "status": "published",
+      "targetQueries": [
+        "check website chatgpt perplexity visibility",
+        "how to check ai search visibility",
+        "is my website in chatgpt"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "HowTo"
+      ],
+      "notes": "EXISTING POST"
+    },
+    {
+      "slug": "what-is-aeo-answer-engine-optimization",
+      "title": "What is AEO (Answer Engine Optimization)? Complete 2026 Guide",
+      "pillar": "aeo-core",
+      "role": "spoke",
+      "tier": 1,
+      "status": "published",
+      "targetQueries": [
+        "what is aeo",
+        "answer engine optimization",
+        "what is answer engine optimization"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "notes": "EXISTING POST - separate from planned comprehensive hub what-is-answer-engine-optimization"
+    },
+    {
+      "slug": "why-chatgpt-is-not-citing-your-website",
+      "title": "Why ChatGPT Is Not Citing Your Website",
+      "pillar": "chatgpt",
+      "role": "spoke",
+      "tier": 1,
+      "status": "published",
+      "targetQueries": [
+        "why chatgpt not citing my website",
+        "chatgpt not mentioning my brand",
+        "get cited by chatgpt"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage"
+      ],
+      "notes": "EXISTING POST"
+    }
+  ]
+}

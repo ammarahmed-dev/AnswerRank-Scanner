@@ -1,0 +1,57 @@
+name: On Publish (IndexNow + GSC)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "content/blog/**"
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Detect changed posts
+        id: changed
+        run: |
+          SLUGS=$(git diff --name-only HEAD~1 HEAD -- 'content/blog/**' \
+            | grep -E '\.(mdx|md)$' \
+            | xargs -r -n1 basename \
+            | sed -E 's/\.(mdx|md)$//' \
+            | tr '\n' ' ')
+          echo "slugs=$SLUGS" >> "$GITHUB_OUTPUT"
+          echo "Changed slugs: $SLUGS"
+
+      - name: Wait for deployment to go live
+        if: steps.changed.outputs.slugs != ''
+        run: |
+          # Give Vercel time to build before search engines fetch the new URLs.
+          # Replace with a deployment-status check if you prefer (vercel CLI or deploy hook).
+          sleep 180
+
+      - name: Ping IndexNow (Bing/Yandex/etc.)
+        if: steps.changed.outputs.slugs != ''
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+          CHANGED_SLUGS: ${{ steps.changed.outputs.slugs }}
+        run: node scripts/indexnow-ping.mjs
+
+      - name: Resubmit sitemap to Google Search Console
+        if: steps.changed.outputs.slugs != ''
+        env:
+          GSC_CLIENT_EMAIL: ${{ secrets.GSC_CLIENT_EMAIL }}
+          GSC_PRIVATE_KEY: ${{ secrets.GSC_PRIVATE_KEY }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: node scripts/gsc-submit-sitemap.mjs

@@ -1,0 +1,56 @@
+name: Content Draft (Topical Map)
+
+on:
+  schedule:
+    # Mon & Thu 06:00 UTC (11:00 PKT) - ~2 drafts/week
+    - cron: "0 6 * * 1,4"
+  workflow_dispatch:
+    inputs:
+      target_slug:
+        description: "Force a specific slug from topical-map.json (optional)"
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate draft from topical map
+        id: gen
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: claude-sonnet-4-6
+          BLOG_DIR: content/blog
+          TARGET_SLUG: ${{ github.event.inputs.target_slug }}
+        run: node scripts/generate-draft.mjs
+
+      - name: Lint internal links
+        env:
+          BLOG_DIR: content/blog
+        run: node scripts/link-lint.mjs
+
+      - name: Open PR for review
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: content/${{ steps.gen.outputs.slug }}
+          title: "content: ${{ steps.gen.outputs.title }}"
+          commit-message: "content: draft ${{ steps.gen.outputs.slug }} from topical map"
+          body: |
+            Auto-generated draft for `${{ steps.gen.outputs.slug }}` from `content/topical-map.json`.
+
+            Review checklist before merging:
+            - [ ] Facts and claims are accurate (no hallucinated stats)
+            - [ ] Internal links resolve (hub + scanner CTA present - lint passed)
+            - [ ] Voice sounds human; tighten intro if needed
+            - [ ] Add 1 unique insight from real client/scan experience (E-E-A-T)
+            - [ ] Set status to "published" in topical-map.json on merge (or let on-publish handle slugs)
+          labels: content, automated

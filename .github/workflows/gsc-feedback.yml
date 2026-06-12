@@ -1,0 +1,50 @@
+name: GSC Feedback Loop
+
+on:
+  schedule:
+    # Tuesdays 05:00 UTC (10:00 PKT)
+    - cron: "0 5 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  feedback:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run GSC feedback analysis
+        env:
+          GSC_CLIENT_EMAIL: ${{ secrets.GSC_CLIENT_EMAIL }}
+          GSC_PRIVATE_KEY: ${{ secrets.GSC_PRIVATE_KEY }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+        run: node scripts/gsc-feedback.mjs
+
+      - name: Commit report + refresh flags
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/ content/topical-map.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: weekly GSC feedback report"
+            git push
+          fi
+
+      - name: Open summary issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          REPORT=$(ls -t reports/gsc-feedback-*.md | head -1)
+          gh issue create \
+            --title "GSC Feedback: $(date +%Y-%m-%d)" \
+            --body-file "$REPORT" \
+            --label "seo,automated"
