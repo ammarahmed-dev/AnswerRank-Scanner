@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import { InferenceClient } from '@huggingface/inference';
 
 const apiKey = process.env.ANTHROPIC_API_KEY;
 const hfToken = process.env.HF_TOKEN;
@@ -50,32 +51,12 @@ No text, no letters anywhere. Output only the prompt, nothing else.`
 
   console.log(`  Prompt: ${imagePrompt}`);
 
-  const doRequest = () => fetch(
-    'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${hfToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ inputs: imagePrompt }),
-    }
-  );
-
-  let res = await doRequest();
-
-  if (res.status === 503) {
-    console.log('  Model loading (503) - waiting 20s and retrying...');
-    await new Promise(r => setTimeout(r, 20000));
-    res = await doRequest();
-  }
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`HF API error (${res.status}): ${errText.slice(0, 200)}`);
-  }
-
-  const buffer = Buffer.from(await res.arrayBuffer());
+  const client = new InferenceClient(hfToken);
+  const imageBlob = await client.textToImage({
+    model: 'black-forest-labs/FLUX.1-schnell',
+    inputs: imagePrompt,
+  });
+  const buffer = Buffer.from(await imageBlob.arrayBuffer());
 
   fs.mkdirSync(COVERS_DIR, { recursive: true });
   const imgPath = path.join(COVERS_DIR, `${slug}.jpg`);
