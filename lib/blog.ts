@@ -14,6 +14,7 @@ export type BlogPostMeta = {
   date: string;
   slug: string;
   description: string;
+  author: string;
   tags: string[];
   coverImage?: string;
   coverImageAlt?: string;
@@ -48,6 +49,7 @@ function readPostFile(fileName: string): BlogPost {
     date: ensureDateString(parsed.data.date),
     slug,
     description: ensureString(parsed.data.description),
+    author: ensureString(parsed.data.author) || "Ummar Ahmed",
     tags: ensureTags(parsed.data.tags),
     coverImage: ensureString(parsed.data.coverImage) || undefined,
     coverImageAlt: ensureString(parsed.data.coverImageAlt) || undefined,
