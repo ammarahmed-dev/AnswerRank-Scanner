@@ -8,8 +8,12 @@ const nvidiaKey = process.env.NVIDIA_API_KEY;
 if (!apiKey) { console.error('ANTHROPIC_API_KEY env var required'); process.exit(1); }
 if (!nvidiaKey) { console.error('NVIDIA_API_KEY env var required'); process.exit(1); }
 
-const BLOG_DIR = 'content/blog';
-const COVERS_DIR = 'public/blog/covers';
+const BLOG_DIR = process.env.BLOG_DIR || 'content/blog';
+const COVERS_DIR = 'public/images/blog';
+
+// --slug <value> or positional arg to target a single post
+const slugIdx = process.argv.indexOf('--slug');
+const targetSlug = slugIdx !== -1 ? process.argv[slugIdx + 1] : (process.argv[2] && !process.argv[2].startsWith('-') ? process.argv[2] : null);
 
 // ─── Helper: call Anthropic API directly via fetch ───────────────────────────
 async function callClaude(prompt, maxTokens = 100) {
@@ -74,12 +78,21 @@ No text, no letters anywhere. Output only the prompt, nothing else.`
   fs.mkdirSync(COVERS_DIR, { recursive: true });
   const imgPath = path.join(COVERS_DIR, `${slug}.jpg`);
   fs.writeFileSync(imgPath, Buffer.from(b64, 'base64'));
-  return `/blog/covers/${slug}.jpg`;
+  return `/images/blog/${slug}.jpg`;
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-const files = fs.readdirSync(BLOG_DIR).filter(f => f.endsWith('.mdx'));
-console.log(`Found ${files.length} blog post(s).\n`);
+let files = fs.readdirSync(BLOG_DIR).filter(f => f.endsWith('.mdx'));
+
+if (targetSlug) {
+  files = files.filter(f => f === `${targetSlug}.mdx`);
+  if (files.length === 0) {
+    console.error(`No MDX file found for slug: ${targetSlug}`);
+    process.exit(1);
+  }
+}
+
+console.log(`Found ${files.length} blog post(s) to process.\n`);
 
 let processed = 0;
 let skipped = 0;
