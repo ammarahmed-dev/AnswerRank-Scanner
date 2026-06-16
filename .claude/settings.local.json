@@ -14,7 +14,10 @@
       "PowerShell(cd \"d:\\\\AnswerRank Scanner\"; $env:TEMP = \"D:\\\\tmp\"; mkdir -Force \"D:\\\\tmp\" | Out-Null; npx lighthouse http://localhost:3000 --only-categories=performance --output=json --chrome-flags=\"--headless --no-sandbox --disable-gpu\" --output-path=\"D:\\\\tmp\\\\lh.json\" 2>&1 | Select-String -Pattern \"LCP|error|saved|Runtime\" | Select-Object -First 15)",
       "Bash(xargs ls -la)",
       "Bash(sort -k5 -rn)",
-      "Bash(grep -Ei \"\\\\.\\(png|jpg|webp|jpeg\\)$\")"
+      "Bash(grep -Ei \"\\\\.\\(png|jpg|webp|jpeg\\)$\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
       "\\tmp"
