@@ -87,12 +87,18 @@ for (const file of files) {
   const raw = fs.readFileSync(filePath, 'utf-8');
   const parsed = matter(raw);
 
-  const hasCover = parsed.data.coverImage && parsed.data.coverImage.trim() !== '';
+  const coverImagePath = parsed.data.coverImage?.trim() || null;
+  const coverImageFile = coverImagePath ? path.join('public', coverImagePath) : null;
+  const fileExists = coverImageFile ? fs.existsSync(coverImageFile) : false;
 
-  if (hasCover) {
-    console.log(`SKIP  ${file} - already has coverImage`);
+  if (coverImagePath && fileExists) {
+    console.log(`SKIP  ${file} - coverImage set and file exists`);
     skipped++;
     continue;
+  }
+
+  if (coverImagePath && !fileExists) {
+    console.log(`REGEN ${file} - coverImage set but file missing (${coverImagePath})`);
   }
 
   const title = parsed.data.title || slug;
