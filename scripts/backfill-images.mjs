@@ -58,7 +58,7 @@ No text, no letters anywhere. Output only the prompt, nothing else.`
       'Accept': 'application/json',
     },
     body: JSON.stringify({
-      model: 'qwen/qwen-image',
+      model: 'qwen/qwen-image-2512',
       prompt: imagePrompt,
       n: 1,
       size: '1024x1024',
