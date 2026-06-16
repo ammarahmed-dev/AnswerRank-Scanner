@@ -3,10 +3,10 @@ import path from 'path';
 import matter from 'gray-matter';
 
 const apiKey = process.env.ANTHROPIC_API_KEY;
-const nvidiaKey = process.env.NVIDIA_API_KEY;
+const hfToken = process.env.HF_TOKEN;
 
 if (!apiKey) { console.error('ANTHROPIC_API_KEY env var required'); process.exit(1); }
-if (!nvidiaKey) { console.error('NVIDIA_API_KEY env var required'); process.exit(1); }
+if (!hfToken) { console.error('HF_TOKEN env var required'); process.exit(1); }
 
 const BLOG_DIR = process.env.BLOG_DIR || 'content/blog';
 const COVERS_DIR = 'public/images/blog';
@@ -40,7 +40,7 @@ async function callClaude(prompt, maxTokens = 100) {
   return data.content[0].text;
 }
 
-// ─── Generate one cover image via NVIDIA NIM Qwen-Image ─────────────────────
+// ─── Generate one cover image via Hugging Face FLUX.1-schnell ────────────────
 async function generateImage(title, slug) {
   const imagePrompt = (await callClaude(
     `Write a single image generation prompt (under 50 words) for a blog cover about: "${title}".
@@ -50,34 +50,36 @@ No text, no letters anywhere. Output only the prompt, nothing else.`
 
   console.log(`  Prompt: ${imagePrompt}`);
 
-  const res = await fetch('https://integrate.api.nvidia.com/v1/images/generations', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${nvidiaKey}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'qwen/qwen-image-2512',
-      prompt: imagePrompt,
-      n: 1,
-      size: '1024x1024',
-      response_format: 'b64_json',
-    }),
-  });
+  const doRequest = () => fetch(
+    'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${hfToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ inputs: imagePrompt }),
+    }
+  );
+
+  let res = await doRequest();
+
+  if (res.status === 503) {
+    console.log('  Model loading (503) - waiting 20s and retrying...');
+    await new Promise(r => setTimeout(r, 20000));
+    res = await doRequest();
+  }
 
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(`NVIDIA API error (${res.status}): ${errText.slice(0, 200)}`);
+    throw new Error(`HF API error (${res.status}): ${errText.slice(0, 200)}`);
   }
 
-  const data = await res.json();
-  const b64 = data?.data?.[0]?.b64_json;
-  if (!b64) throw new Error('No b64_json in NVIDIA response');
+  const buffer = Buffer.from(await res.arrayBuffer());
 
   fs.mkdirSync(COVERS_DIR, { recursive: true });
   const imgPath = path.join(COVERS_DIR, `${slug}.jpg`);
-  fs.writeFileSync(imgPath, Buffer.from(b64, 'base64'));
+  fs.writeFileSync(imgPath, buffer);
   return `/images/blog/${slug}.jpg`;
 }
 
