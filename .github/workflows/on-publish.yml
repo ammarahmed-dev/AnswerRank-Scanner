@@ -56,7 +56,7 @@ jobs:
             echo "No cover image found for ${SLUG%% *} - generating..."
             node scripts/backfill-images.mjs --slug ${SLUG%% *}
             git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add public/images/blog/ content/blog/
             git commit -m "chore: auto-generate cover image for ${SLUG%% *}" || true
             git push || true
