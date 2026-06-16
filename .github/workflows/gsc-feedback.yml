@@ -46,5 +46,4 @@ jobs:
           REPORT=$(ls -t reports/gsc-feedback-*.md | head -1)
           gh issue create \
             --title "GSC Feedback: $(date +%Y-%m-%d)" \
-            --body-file "$REPORT" \
-            --label "seo,automated"
+            --body-file "$REPORT"
