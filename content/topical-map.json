@@ -62,7 +62,7 @@
       "pillar": "aeo-core",
       "role": "hub",
       "tier": 1,
-      "status": "planned",
+      "status": "drafted",
       "targetQueries": [
         "what is aeo",
         "answer engine optimization",
@@ -73,7 +73,8 @@
         "Article",
         "FAQPage",
         "BreadcrumbList"
-      ]
+      ],
+      "draftedAt": "2026-06-15"
     },
     {
       "slug": "aeo-vs-seo",
