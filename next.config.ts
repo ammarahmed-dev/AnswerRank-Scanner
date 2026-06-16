@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
         destination: "https://www.aeocheck.co/:path*",
         permanent: true,
       },
+      {
+        source: "/blog/what-is-aeo-answer-engine-optimization",
+        destination: "/blog/what-is-answer-engine-optimization",
+        permanent: true,
+      },
       { source: "/index.php", destination: "/", permanent: true },
       { source: "/logo.png", destination: "/icons/icon-512.png", permanent: true },
       { source: "/sitemap-html", destination: "/sitemap", permanent: true },
