@@ -52,15 +52,32 @@ No text, no letters anywhere. Output only the prompt, nothing else.`
   console.log(`  Prompt: ${imagePrompt}`);
 
   const client = new InferenceClient(hfToken);
-  const imageBlob = await client.textToImage({
-    model: 'black-forest-labs/FLUX.1-schnell',
-    inputs: imagePrompt,
-  });
-  const buffer = Buffer.from(await imageBlob.arrayBuffer());
 
-  fs.mkdirSync(COVERS_DIR, { recursive: true });
-  const imgPath = path.join(COVERS_DIR, `${slug}.jpg`);
-  fs.writeFileSync(imgPath, buffer);
+  let lastError;
+  let saved = false;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const imageBlob = await client.textToImage({
+        model: 'black-forest-labs/FLUX.1-schnell',
+        inputs: imagePrompt,
+        provider: 'hf-inference',
+      });
+      const buffer = Buffer.from(await imageBlob.arrayBuffer());
+      fs.mkdirSync(COVERS_DIR, { recursive: true });
+      const imgPath = path.join(COVERS_DIR, `${slug}.jpg`);
+      fs.writeFileSync(imgPath, buffer);
+      saved = true;
+      break;
+    } catch (err) {
+      lastError = err;
+      if (attempt < 3) {
+        console.log(`  Attempt ${attempt} failed: ${err.message} - retrying in 10s...`);
+        await new Promise(r => setTimeout(r, 10000));
+      }
+    }
+  }
+  if (lastError && !saved) throw lastError;
+
   return `/images/blog/${slug}.jpg`;
 }
 
