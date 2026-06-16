@@ -92,7 +92,8 @@
       "schemaTypes": [
         "Article",
         "FAQPage"
-      ]
+      ],
+      "publishedAt": "2026-05-24"
     },
     {
       "slug": "aeo-vs-geo",
@@ -1164,7 +1165,8 @@
         "FAQPage",
         "HowTo"
       ],
-      "notes": "EXISTING POST"
+      "notes": "Existing Webflow-specific checklist post",
+      "publishedAt": "2026-05-15"
     },
     {
       "slug": "best-aeo-tools-ai-search-visibility",
@@ -1183,7 +1185,8 @@
         "FAQPage",
         "ItemList"
       ],
-      "notes": "EXISTING POST"
+      "notes": "EXISTING POST",
+      "publishedAt": "2026-05-21"
     },
     {
       "slug": "chatgpt-product-recommendations",
@@ -1201,7 +1204,8 @@
         "Article",
         "FAQPage"
       ],
-      "notes": "EXISTING POST - link into chatgpt cluster per seo-system.md"
+      "notes": "EXISTING POST - link into chatgpt cluster per seo-system.md",
+      "publishedAt": "2026-06-05"
     },
     {
       "slug": "chatgpt-visibility-checker",
@@ -1219,7 +1223,8 @@
         "Article",
         "FAQPage"
       ],
-      "notes": "EXISTING POST"
+      "notes": "EXISTING POST",
+      "publishedAt": "2026-06-03"
     },
     {
       "slug": "free-aeo-checker",
@@ -1237,7 +1242,8 @@
         "Article",
         "FAQPage"
       ],
-      "notes": "EXISTING POST"
+      "notes": "EXISTING POST",
+      "publishedAt": "2026-05-24"
     },
     {
       "slug": "how-to-check-website-visible-chatgpt-perplexity",
@@ -1256,15 +1262,16 @@
         "FAQPage",
         "HowTo"
       ],
-      "notes": "EXISTING POST"
+      "notes": "EXISTING POST",
+      "publishedAt": "2026-05-15"
     },
     {
       "slug": "what-is-aeo-answer-engine-optimization",
       "title": "What is AEO (Answer Engine Optimization)? Complete 2026 Guide",
       "pillar": "aeo-core",
       "role": "spoke",
-      "tier": 1,
-      "status": "published",
+      "tier": 2,
+      "status": "redirected",
       "targetQueries": [
         "what is aeo",
         "answer engine optimization",
@@ -1274,7 +1281,9 @@
         "Article",
         "FAQPage"
       ],
-      "notes": "EXISTING POST - separate from planned comprehensive hub what-is-answer-engine-optimization"
+      "notes": "EXISTING POST - separate from planned comprehensive hub what-is-answer-engine-optimization",
+      "redirectsTo": "what-is-answer-engine-optimization",
+      "publishedAt": "2026-05-15"
     },
     {
       "slug": "why-chatgpt-is-not-citing-your-website",
@@ -1292,7 +1301,8 @@
         "Article",
         "FAQPage"
       ],
-      "notes": "EXISTING POST"
+      "notes": "EXISTING POST",
+      "publishedAt": "2026-05-24"
     }
   ]
 }
