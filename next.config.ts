@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
         destination: "/blog/what-is-answer-engine-optimization",
         permanent: true,
       },
+      { source: "/features", destination: "/pricing", permanent: true },
       { source: "/index.php", destination: "/", permanent: true },
       { source: "/logo.png", destination: "/icons/icon-512.png", permanent: true },
       { source: "/sitemap-html", destination: "/sitemap", permanent: true },

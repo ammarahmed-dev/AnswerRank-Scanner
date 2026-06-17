@@ -74,38 +74,6 @@ export default function SchemaMarkup() {
     },
     {
       "@context": "https://schema.org",
-      "@type": "HowTo",
-      name: "How to check your AEO readiness with AEOCheck",
-      description: "Get a scored AEO readiness report for any public website in 60 seconds.",
-      step: [
-        {
-          "@type": "HowToStep",
-          position: 1,
-          name: "Paste a public website URL",
-          text: "Paste any public URL and the scanner fetches the page content, metadata, and structure signals instantly.",
-        },
-        {
-          "@type": "HowToStep",
-          position: 2,
-          name: "Read every page signal",
-          text: "It reads metadata, headings, schema, internal links, and content depth across the full page.",
-        },
-        {
-          "@type": "HowToStep",
-          position: 3,
-          name: "Score your AI visibility",
-          text: "Every signal converts into a weighted 0-100 score with a plain-English verdict for each category.",
-        },
-        {
-          "@type": "HowToStep",
-          position: 4,
-          name: "Act on the highest-impact fixes",
-          text: "Copy the recommendations, implement schema fixes, or unlock the full Pro report for detailed guidance.",
-        },
-      ],
-    },
-    {
-      "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       name: "AEOCheck",
       applicationCategory: "SEOApplication",
