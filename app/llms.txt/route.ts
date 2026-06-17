@@ -28,16 +28,18 @@ AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) 
 
 ## Features
 - Scan: free for guests; limited monthly scans for free accounts
-- Full report: unlocked per URL ($14 one-time) - includes prioritized fixes, PDF export
-- Pro plan: unlimited scans, Compare (side-by-side competitor analysis), Monitor, Audit
+- Starter plan: $9 one-time - unlimited scans, PDF export, multi-page audit runs
+- Pro plan: $19/month - unlimited scans, Compare (side-by-side competitor analysis), Monitor, Audit
+- Agency plan: $49/month - everything in Pro, higher limits for managing multiple clients
 - Compare: runs AEO scans on two URLs and returns a category-by-category breakdown
 - PDF export: client-ready report export from any full report
 
 ## Pricing
 - Guest: 1 scan, preview score only
 - Free account: limited scans per month
-- Full report unlock: $14 one-time per URL
-- Pro: unlimited scans + Compare, Monitor, Audit features
+- Starter: $9 one-time - unlimited scans + PDF export
+- Pro: $19/month - unlimited scans + Compare, Monitor, Audit features
+- Agency: $49/month - unlimited scans + highest limits for agencies
 
 ## Key pages
 - Homepage and scanner: ${SITE_URL}
