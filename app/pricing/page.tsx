@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildPageMetadata } from "@/lib/seo";
+import { buildPageMetadata, SITE_URL } from "@/lib/seo";
 import { PLAN_LIMITS } from "@/lib/access";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
@@ -67,12 +67,81 @@ const faqSchema = {
   ],
 };
 
+const softwareAppSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "AEOCheck",
+  applicationCategory: "SEOApplication",
+  operatingSystem: "Web",
+  url: SITE_URL,
+  description:
+    "AI search readiness and AEO scanner for website visibility in ChatGPT, Perplexity, and Google AI results.",
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "AEOCheck Plans",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        name: "Free",
+        price: "0",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/pricing`,
+        description: `${PLAN_LIMITS.free.scanPerMonth} scans/month, ${PLAN_LIMITS.free.auditPages}-page audit runs.`,
+      },
+      {
+        "@type": "Offer",
+        name: "Starter",
+        price: "9",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/pricing`,
+        description: `One-time purchase. ${PLAN_LIMITS.onetime.auditPages}-page audit runs, PDF export, ${PLAN_LIMITS.onetime.monitorUrls} monitored URLs.`,
+      },
+      {
+        "@type": "Offer",
+        name: "Pro",
+        price: "19",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/pricing`,
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: "19",
+          priceCurrency: "USD",
+          unitCode: "MON",
+        },
+        description: `$19/month. Unlimited scans, ${PLAN_LIMITS.pro.auditPages}-page audit runs, ${PLAN_LIMITS.pro.monitorUrls} monitored URLs, PDF export, priority support.`,
+      },
+      {
+        "@type": "Offer",
+        name: "Agency",
+        price: "49",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+        url: `${SITE_URL}/pricing`,
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: "49",
+          priceCurrency: "USD",
+          unitCode: "MON",
+        },
+        description: `$49/month. Unlimited scans, ${PLAN_LIMITS.agency.auditPages}-page audit runs, ${PLAN_LIMITS.agency.monitorUrls} monitored URLs, for agencies managing multiple clients.`,
+      },
+    ],
+  },
+};
+
 export default function PricingPage() {
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareAppSchema) }}
       />
       <SiteHeader />
       <main>
