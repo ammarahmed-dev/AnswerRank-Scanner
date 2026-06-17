@@ -19,7 +19,11 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(git pull *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Read(//c/Users/ammar/.claude/skills//**)",
+      "Read(//c/Users/ammar/.claude/agents//**)",
+      "Bash(python3 \"C:/Users/ammar/.claude/skills/seo/scripts/google_auth.py\" --check)",
+      "Bash(py --version)"
     ],
     "additionalDirectories": [
       "\\tmp"
