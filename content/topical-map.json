@@ -2,7 +2,7 @@
   "$schema": "./topical-map.schema.json",
   "site": "https://www.aeocheck.co",
   "blogBasePath": "/blog/",
-  "updated": "2026-06-12",
+  "updated": "2026-06-17",
   "pillars": [
     {
       "id": "aeo-core",
@@ -1303,6 +1303,26 @@
       ],
       "notes": "EXISTING POST",
       "publishedAt": "2026-05-24"
+    },
+    {
+      "slug": "how-to-check-if-website-appears-in-chatgpt-recommendations",
+      "title": "How to Check If Your Website Appears in ChatGPT Recommendations",
+      "pillar": "chatgpt",
+      "role": "spoke",
+      "tier": 2,
+      "status": "published",
+      "targetQueries": [
+        "how to check if website appears in chatgpt product recommendations",
+        "check chatgpt product recommendations",
+        "does my website appear in chatgpt recommendations"
+      ],
+      "schemaTypes": [
+        "Article",
+        "FAQPage",
+        "BreadcrumbList"
+      ],
+      "draftedAt": "2026-06-17",
+      "publishedAt": "2026-06-17"
     }
   ]
 }

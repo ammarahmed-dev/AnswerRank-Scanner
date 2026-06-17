@@ -51,7 +51,7 @@ export default function TeamPage() {
               <p className="team-card-name">Ummar Ahmed</p>
               <p className="team-card-role">Founder and Developer</p>
               <p className="team-card-bio">
-                Ummar is the developer and founder of AEOCheck. He built the scanner to help teams understand how answer engine optimization and AI search readiness actually impact visibility in ChatGPT, Perplexity, and Google AI results. The goal is simple: convert scattered technical signals into clear AI visibility reports with prioritized fixes.
+                Ummar is the developer and founder of <a href="/">AEOCheck</a>. He built the scanner to help teams understand how answer engine optimization and AI search readiness actually impact visibility in ChatGPT, Perplexity, and Google AI results. The goal is simple: convert scattered technical signals into clear AI visibility reports with prioritized fixes.
               </p>
               <div className="team-card-links">
                 <a
