@@ -2,9 +2,17 @@ import type { MetadataRoute } from "next";
 import { getAllBlogPosts } from "@/lib/blog";
 import { COMPETITOR_SLUGS } from "@/app/vs/competitors";
 import { SITE_URL } from "@/lib/seo";
+import topicalMap from "@/content/topical-map.json";
+
+type TopicalSlot = { slug: string; status?: string };
+const redirectedSlugs = new Set(
+  (topicalMap.slots as TopicalSlot[])
+    .filter((entry) => entry.status === "redirected")
+    .map((entry) => entry.slug)
+);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const posts = getAllBlogPosts();
+  const posts = getAllBlogPosts().filter((post) => !redirectedSlugs.has(post.slug));
 
   const blogPosts = posts.map((post) => ({
     url: `${SITE_URL}/blog/${post.slug}`,
