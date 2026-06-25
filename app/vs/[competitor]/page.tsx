@@ -74,7 +74,7 @@ export default async function ComparisonPage({
           },
           {
             q: `Does AEOCheck include a free scan when compared to ${data.name}?`,
-            a: "Yes. AEOCheck includes a free scan with no signup required, and paid access is available through the contact flow.",
+            a: "Yes. AEOCheck includes a free scan with no signup required, and paid plans are available with instant self-serve checkout.",
           },
         ]).map((faq) => ({
           "@type": "Question",

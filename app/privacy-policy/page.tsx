@@ -34,7 +34,7 @@ export default function PrivacyPolicyPage() {
           <li>Email address and password when you create an account</li>
           <li>URLs you submit for scanning</li>
           <li>Name, email, subject, and message when you contact us</li>
-          <li>Billing details you share when requesting paid access through our contact flow</li>
+          <li>Billing details processed through Lemon Squeezy when purchasing a paid plan</li>
         </ul>
         <p><strong>Information collected automatically:</strong></p>
         <ul>

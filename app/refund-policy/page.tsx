@@ -6,7 +6,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Refund Policy | AEOCheck AI Scanner",
   description:
-    "Read AEOCheck's refund policy for manually activated Full Report access and Pro Monthly plans.",
+    "Read AEOCheck's refund policy for Starter ($9) and Pro ($19/month) plans.",
   path: "/refund-policy",
 });
 
@@ -56,9 +56,9 @@ export default function RefundPolicyPage() {
           <li>More than 7 days have passed since purchase</li>
         </ul>
 
-        <h2>Pro Monthly - $39/Month Subscription</h2>
+        <h2>Pro - $19/Month Subscription</h2>
         <ul>
-          <li>You may cancel your Pro Monthly subscription at any time through our support and billing contact flow</li>
+          <li>You may cancel your Pro subscription at any time through the billing portal in your account</li>
           <li>Cancellation takes effect at the end of your current billing period</li>
           <li>We do not offer partial month refunds for Pro Monthly subscriptions</li>
           <li>If you were charged after cancelling due to a technical error, contact us within 7 days for a full refund</li>

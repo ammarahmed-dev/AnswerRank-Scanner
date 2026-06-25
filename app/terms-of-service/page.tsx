@@ -66,24 +66,24 @@ export default function TermsOfServicePage() {
             Guest (no account): 1 free preview scan. No signup required. Results are limited to a basic score preview only.
           </li>
           <li>
-            Free account: 3 full scans per month. Resets on a rolling 30-day basis. Reports show overall score and top 3 issues only.
+            Free account: 3 scans per month (preview only). Reports show overall score and top 3 issues. Limits reset at the start of each calendar month.
           </li>
           <li>
             Full Report ($9 one-time): Unlocks the complete report for the specific URL that was scanned. Includes full issue breakdown, schema recommendations, AI Answer Snapshot, competitor takeaway, and client-ready PDF. This is a per-report unlock, not a general scan credit, and it applies to the scanned URL only.
           </li>
           <li>
-            Pro Monthly ($39/month): 30 full reports per month. Includes all Full Report features plus saved report history and priority scan access.
+            Pro ($19/month): Unlimited full reports on any URL. Includes saved report history, monitoring, compare, and PDF export.
           </li>
         </ul>
         <p>Scan limits are enforced server-side. We reserve the right to adjust limits with reasonable notice to registered users.</p>
 
         <h2>6. Payments</h2>
         <p>
-          Paid access is currently handled through our contact flow. When a paid plan is activated, you agree to provide accurate billing information and authorize the applicable charge.
+          Payments are processed securely through Lemon Squeezy. When a paid plan is activated, you agree to provide accurate billing information and authorize the applicable charge.
         </p>
         <ul>
           <li>Full Report ($9): One-time payment that unlocks the full report for the specific scanned URL</li>
-          <li>Pro Monthly ($39/month): Recurring subscription billed monthly. Contact us for billing support and activation details.</li>
+          <li>Pro ($19/month): Recurring subscription billed monthly. Manage your subscription through the billing portal in your account.</li>
         </ul>
         <p>For billing questions, contact <a href="mailto:hello@aeocheck.co">hello@aeocheck.co</a></p>
 

@@ -26,8 +26,8 @@ type AdminData = {
     email: string;
     role: string;
     plan: string;
-    freeScansUsed: number;
-    freeScansLeft: number | null;
+    scansUsed: number;
+    scansLeft: number | string | null;
     totalReports: number;
     createdAt: string;
     lastSignInAt: string | null;
@@ -217,8 +217,8 @@ export default function AdminClient() {
                       <th>Email</th>
                       <th>Role</th>
                       <th>Plan</th>
-                      <th>Free used</th>
-                      <th>Free left</th>
+                      <th>Scans used</th>
+                      <th>Scans left</th>
                       <th>Total reports</th>
                       <th>Created</th>
                       <th>Last sign in</th>
@@ -231,8 +231,8 @@ export default function AdminClient() {
                         <td>{user.email}</td>
                         <td>{user.role}</td>
                         <td>{user.plan}</td>
-                        <td>{user.freeScansUsed}</td>
-                        <td>{user.freeScansLeft ?? "Unlimited"}</td>
+                        <td>{user.scansUsed}</td>
+                        <td>{user.scansLeft ?? "Unlimited"}</td>
                         <td>{user.totalReports}</td>
                         <td>{formatDate(user.createdAt)}</td>
                         <td>{user.lastSignInAt ? formatDate(user.lastSignInAt) : "-"}</td>

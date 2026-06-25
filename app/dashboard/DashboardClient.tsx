@@ -157,7 +157,7 @@ function OverviewTab({
   const recentAudits = account.recentAudits;
   const currentPlan = account.profile.plan;
   const auditCountThisMonth = account.auditCountThisMonth ?? 0;
-  const auditLimit = currentPlan === "free" ? 3 : currentPlan === "onetime" ? 1 : -1;
+  const auditLimit = currentPlan === "free" ? 1 : currentPlan === "onetime" ? 1 : -1;
   const auditPagesPerRunText =
     currentPlan === "free" ? "5 pages/audit" :
     currentPlan === "onetime" ? "50 pages/audit" :
@@ -270,15 +270,17 @@ function OverviewTab({
 
         {currentPlan === "onetime" ? (
           <div style={card}>
-            <p style={cardLabel}>Retests</p>
+            <p style={cardLabel}>Retests remaining</p>
             <p style={cardValue}>
-              <span>{onetimeRetestCount}</span>
-              <span style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.4)" }}> / 3</span>
+              <span>{onetimeRetestsRemaining}</span>
             </p>
             <div className="dashboard-progress" style={{ marginTop: 4 }} aria-hidden="true">
-              <span style={{ width: `${Math.min((onetimeRetestCount / 3) * 100, 100)}%` }} />
+              <span style={{
+                width: `${Math.min((onetimeRetestsRemaining / 3) * 100, 100)}%`,
+                background: onetimeRetestsRemaining === 0 ? "#ef4444" : "#00e5a0",
+              }} />
             </div>
-            <p style={{ ...cardDesc, marginTop: 4 }}>on your locked URL</p>
+            <p style={{ ...cardDesc, marginTop: 4 }}>of 3 total · on your locked URL</p>
             {account.reports[0] && (
               <a href={`/report?id=${account.reports[0].id}`} style={{ ...cardLink, marginTop: 4 }}>View report →</a>
             )}
@@ -334,7 +336,7 @@ function OverviewTab({
           <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginTop: "4px" }}>
             {auditPagesPerRunText.replace("/audit", " per audit")}
           </div>
-          {currentPlan === "onetime" && auditCountThisMonth >= 1 ? (
+          {auditLimit !== -1 && auditCountThisMonth >= auditLimit ? (
             <button disabled className="btn btn-secondary" style={{ marginTop: 8, opacity: 0.45, cursor: "not-allowed" }}>Audit used</button>
           ) : (
             <a href="/audit" className="btn btn-secondary" style={{ marginTop: 8 }}>New audit →</a>
@@ -393,15 +395,6 @@ function OverviewTab({
                   {account.profile.onetimeUrl}
                 </a>
               </p>
-              <div style={{ display: "flex", gap: 24, marginTop: 8, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>
-                <span>
-                  Retests remaining:{" "}
-                  <strong style={{ color: onetimeRetestsRemaining > 0 ? "#00e5a0" : "#ef4444" }}>
-                    {onetimeRetestsRemaining}
-                  </strong>{" "}
-                  / 3
-                </span>
-              </div>
             </>
           ) : (
             <p style={{ ...cardDesc, marginTop: 4 }}>

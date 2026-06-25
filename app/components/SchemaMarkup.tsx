@@ -73,7 +73,7 @@ export default function SchemaMarkup() {
           name: "How do paid plans work right now?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Paid access is currently handled through our contact flow. Send us the plan you want and we will help activate access manually.",
+            text: "Plans start at $9 one-time. Secure self-serve checkout powered by Lemon Squeezy.",
           },
         },
         {
@@ -81,7 +81,7 @@ export default function SchemaMarkup() {
           name: "Do you store my scan data?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Scans are saved to your account when you are logged in. Free accounts see recent scans. Pro accounts keep full report history.",
+            text: "Scans are saved to your account when you are logged in. Free accounts see recent scans. Paid accounts keep full report history.",
           },
         },
       ],
@@ -109,7 +109,7 @@ export default function SchemaMarkup() {
           price: "9",
           priceCurrency: "USD",
           availability: "https://schema.org/InStock",
-          description: "One-time purchase - unlimited scans, PDF export, multi-page audit.",
+          description: "One-time purchase - 1 full report URL, 3 retests, 50-page audit runs, PDF export.",
         },
         {
           "@type": "Offer",

@@ -11,8 +11,9 @@ const supabaseUrl = getSupabaseServerUrl();
 type ProfileRow = {
   id: string;
   email: string | null;
-  plan: "free" | "pro" | "agency";
+  plan: "free" | "pro" | "agency" | "onetime";
   created_at: string;
+  onetime_scan_count?: number | null;
 };
 
 function todayKey() {
@@ -24,7 +25,7 @@ function todayKey() {
 
 async function getProfiles(limit: number, offset: number) {
   const params = new URLSearchParams({
-    select: "id,email,plan,created_at",
+    select: "id,email,plan,created_at,onetime_scan_count",
     order: "created_at.desc",
     limit: String(limit),
     offset: String(offset),
@@ -124,14 +125,18 @@ export async function GET(req: Request) {
       const todayUsed = usageTotals.get(profile.id) ?? 0;
       const planLimit = getPlanLimit(profile.plan);
       const unlimited = profile.plan === "pro" || profile.plan === "agency" || isMasterAdmin(profile.email);
+      const isOnetime = profile.plan === "onetime";
+      const onetimeScanCount = profile.onetime_scan_count ?? 0;
+      const onetimeRetestsUsed = Math.max(0, onetimeScanCount - 1);
+      const onetimeRetestsLeft = Math.max(0, 3 - onetimeRetestsUsed);
       const reportMeta = reportTotals.get(profile.id) ?? { total: 0, lastScan: null };
       return {
         id: profile.id,
         email: profile.email ?? "unknown",
         role: isMasterAdmin(profile.email) ? "master_admin" : "user",
         plan: profile.plan,
-        freeScansUsed: todayUsed,
-        freeScansLeft: unlimited ? null : Math.max(0, planLimit - todayUsed),
+        scansUsed: isOnetime ? onetimeRetestsUsed : todayUsed,
+        scansLeft: unlimited ? null : isOnetime ? `${onetimeRetestsLeft} retests left` : Math.max(0, planLimit - todayUsed),
         totalReports: reportMeta.total,
         createdAt: profile.created_at,
         lastSignInAt: authUsers.get(profile.id) ?? null,

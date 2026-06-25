@@ -47,7 +47,7 @@ const PLANS: PlanDef[] = [
     period: "one-time",
     description: "A single deep-dive audit - great for one-off projects or clients.",
     highlights: [
-      "Unlimited scans",
+      "1 full report URL · preview on all others",
       `${PLAN_LIMITS.onetime.auditPages}-page audit runs`,
       `${PLAN_LIMITS.onetime.monitorUrls} monitored URLs`,
       `${PLAN_LIMITS.onetime.auditRescans} re-scan snapshots`,
@@ -95,7 +95,7 @@ const FEATURE_ROWS: FeatureRow[] = [
     label: "Scans per month",
     values: [
       String(PLAN_LIMITS.free.scanPerMonth),
-      "Unlimited",
+      "1 full report URL",
       "Unlimited",
       "Unlimited",
     ],

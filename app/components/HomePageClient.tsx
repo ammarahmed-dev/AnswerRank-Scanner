@@ -115,7 +115,7 @@ const faqs = [
   ["Does it work without signup?", "Yes. Paste any public URL and run a free scan instantly. No account required."],
   ["What does the scanner check?", "It checks over 25 AEO and AI search readiness signals, including schema, metadata, headings, content clarity, and answer extraction structure."],
   ["Is this the same as a traditional SEO audit?", "No. Traditional SEO audits focus on keywords and backlinks. This scanner checks whether answer engines like ChatGPT and Perplexity can understand and cite your page."],
-  ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; Pro accounts keep full report history."],
+  ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; paid accounts keep full report history."],
 ];
 
 
@@ -965,7 +965,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
                   <h3>Starter</h3>
                   <p className="pricing-subline">A single deep-dive audit - great for one-off projects or clients.</p>
                   <ul>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited scans</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 full report URL · preview on all others</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> 50-page audit runs</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 monitored URL</li>
                     <li><CheckCircle weight="fill" className="h-4 w-4" /> 3 re-scan snapshots</li>
@@ -1142,7 +1142,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
                 {limitModalType === "guest"
                   ? "Create a free account to get 3 scans per month, then run a new scan and unlock the full report from your results."
                   : limitModalType === "competitor"
-                    ? "Upgrade to a Full Report or Pro Monthly to compare your site against competitors."
+                    ? "Upgrade to Starter or Pro to compare your site against competitors."
                     : "Unlock a full report or upgrade to continue scanning."}
               </p>
             </div>

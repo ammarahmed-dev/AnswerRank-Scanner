@@ -693,7 +693,7 @@ export default function AuditClient() {
                   <ul className="audit-limit-cta-features">
                     <li><CheckCircle2 className="audit-limit-check-icon" />Up to 100 pages per audit</li>
                     <li><CheckCircle2 className="audit-limit-check-icon" />Re-audit any time, on demand</li>
-                    <li><CheckCircle2 className="audit-limit-check-icon" />Priority scan queue</li>
+                    <li><CheckCircle2 className="audit-limit-check-icon" />10 monitored URLs included</li>
                   </ul>
                 </div>
                 <div className="audit-limit-cta-action">

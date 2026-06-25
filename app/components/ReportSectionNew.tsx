@@ -1152,21 +1152,20 @@ const downloadPdf = async () => {
             <article className="upgrade-choice-card is-recommended">
               <span className="upgrade-choice-badge upgrade-choice-badge-recommended">Recommended</span>
               <strong className="upgrade-choice-title">Pro Monthly</strong>
-              <span className="upgrade-choice-price">$39/month</span>
+              <span className="upgrade-choice-price">$19/month</span>
               <p className="upgrade-choice-description">Best if you scan websites regularly.</p>
               <ul className="upgrade-choice-features">
-                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">30 full reports per month</span></li>
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Unlimited full reports</span></li>
                 <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Saved report history</span></li>
                 <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Client-ready PDF reports</span></li>
                 <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Competitor comparisons</span></li>
-                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Priority scan access</span></li>
+                <li><CheckCircle2 className="upgrade-choice-feature-icon h-4 w-4" /><span className="upgrade-choice-feature-text">Unlimited scans, any URL</span></li>
               </ul>
               <UpgradeButton plan="pro" className="btn btn-primary upgrade-choice-button">
                 Get Pro Monthly
               </UpgradeButton>
             </article>
           </div>
-          <p className="upgrade-choice-note">Paid access is handled through our contact flow, and we will help activate the right plan for you.</p>
           <div className="upgrade-choice-actions">
             <button type="button" className="btn btn-secondary" onClick={() => setIsUpgradeModalOpen(false)}>Cancel</button>
           </div>
