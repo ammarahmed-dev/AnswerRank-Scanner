@@ -133,23 +133,65 @@ export default function ReportClient() {
         });
         clearTimeout(timeout);
 
-        const data = (await res.json()) as ScanResult & { error?: string };
-        if (!res.ok || data.error) {
-          setErrorMsg(data.error ?? "Something went wrong. Please try again.");
+        // Non-2xx errors return JSON before the stream starts
+        if (!res.ok) {
+          const errData = (await res.json()) as { error?: string };
+          setErrorMsg(errData.error ?? "Something went wrong. Please try again.");
+          setState("error");
+          return;
+        }
+
+        // Scan returns text/event-stream - read it like HomePageClient does
+        const reader = res.body?.getReader();
+        if (!reader) {
+          setErrorMsg("Could not read scan response.");
+          setState("error");
+          return;
+        }
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let result: ScanResult | null = null;
+
+        outer: while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split("\n\n");
+          buffer = parts.pop() ?? "";
+          for (const part of parts) {
+            const dataLine = part.split("\n").find((l) => l.startsWith("data:"));
+            if (!dataLine) continue;
+            try {
+              const event = JSON.parse(dataLine.slice(5).trim()) as { type: string; message?: string; result?: ScanResult };
+              if (event.type === "error") {
+                setErrorMsg(event.message ?? "Scan failed.");
+                setState("error");
+                return;
+              }
+              if (event.type === "result" && event.result) {
+                result = event.result;
+                break outer;
+              }
+            } catch { /* skip malformed line */ }
+          }
+        }
+
+        if (!result) {
+          setErrorMsg("Scan finished but no report was generated.");
           setState("error");
           return;
         }
 
         const cachedCompetitors = sessionStorage.getItem(`aeocheck_competitors:${sharedUrl}`);
         if (cachedCompetitors) {
-          data.competitorUrls = JSON.parse(cachedCompetitors) as string[];
+          result.competitorUrls = JSON.parse(cachedCompetitors) as string[];
         }
-        sessionStorage.setItem(`aeocheck_report:${data.url}`, JSON.stringify(data));
-        if (data.reportId) {
-          sessionStorage.setItem(`aeocheck_report:${data.reportId}`, JSON.stringify(data));
-          window.history.replaceState(null, "", `/report?id=${data.reportId}`);
+        sessionStorage.setItem(`aeocheck_report:${result.url}`, JSON.stringify(result));
+        if (result.reportId) {
+          sessionStorage.setItem(`aeocheck_report:${result.reportId}`, JSON.stringify(result));
+          window.history.replaceState(null, "", `/report?id=${result.reportId}`);
         }
-        setReport(data);
+        setReport(result);
         setState("done");
       } catch (err) {
         setErrorMsg(

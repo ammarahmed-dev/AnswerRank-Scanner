@@ -1,44 +1,28 @@
-/**
- * AI Provider Module
- * Handles Gemini â†’ OpenAI fallback chain
- */
-
 export async function generateAIInsights(prompt: string): Promise<string | null> {
   const deepseekKey = process.env.DEEPSEEK_API_KEY;
   const openRouterKey = process.env.OPENROUTER_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
-  const openaiKey = process.env.OPENAI_API_KEY;
-  const primaryProvider = process.env.AI_PROVIDER || "gemini";
+  const primaryProvider = process.env.AI_PROVIDER || "deepseek";
   const allowFallbacks = process.env.AI_PROVIDER_FALLBACKS !== "false";
 
-  // Determine provider order based on AI_PROVIDER setting
+  // Provider order: DeepSeek primary, OpenRouter + Gemini as optional fallbacks
   let providers =
-    primaryProvider === "deepseek"
-      ? [
-          { name: "DeepSeek", key: deepseekKey, call: callDeepSeek },
-          { name: "OpenRouter", key: openRouterKey, call: callOpenRouter },
-          { name: "OpenAI", key: openaiKey, call: callOpenAI },
-          { name: "Gemini", key: geminiKey, call: callGemini },
-        ]
-      : primaryProvider === "openrouter"
+    primaryProvider === "openrouter"
       ? [
           { name: "OpenRouter", key: openRouterKey, call: callOpenRouter },
-          { name: "DeepSeek", key: deepseekKey, call: callDeepSeek },
-          { name: "OpenAI", key: openaiKey, call: callOpenAI },
-          { name: "Gemini", key: geminiKey, call: callGemini },
+          { name: "DeepSeek",   key: deepseekKey,   call: callDeepSeek },
+          { name: "Gemini",     key: geminiKey,     call: callGemini },
         ]
-      : primaryProvider === "openai"
+      : primaryProvider === "gemini"
         ? [
-            { name: "OpenAI", key: openaiKey, call: callOpenAI },
-            { name: "DeepSeek", key: deepseekKey, call: callDeepSeek },
+            { name: "Gemini",     key: geminiKey,     call: callGemini },
+            { name: "DeepSeek",   key: deepseekKey,   call: callDeepSeek },
             { name: "OpenRouter", key: openRouterKey, call: callOpenRouter },
-            { name: "Gemini", key: geminiKey, call: callGemini },
           ]
         : [
-            { name: "Gemini", key: geminiKey, call: callGemini },
-            { name: "DeepSeek", key: deepseekKey, call: callDeepSeek },
+            { name: "DeepSeek",   key: deepseekKey,   call: callDeepSeek },
             { name: "OpenRouter", key: openRouterKey, call: callOpenRouter },
-            { name: "OpenAI", key: openaiKey, call: callOpenAI },
+            { name: "Gemini",     key: geminiKey,     call: callGemini },
           ];
 
   if (!allowFallbacks) {
@@ -70,10 +54,7 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    return await fetch(url, {
-      ...init,
-      signal: controller.signal,
-    });
+    return await fetch(url, { ...init, signal: controller.signal });
   } finally {
     clearTimeout(timeout);
   }
@@ -92,12 +73,7 @@ async function callDeepSeek(prompt: string, apiKey: string): Promise<string | nu
     },
     body: JSON.stringify({
       model,
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
       max_tokens: maxTokens,
       response_format: { type: "json_object" },
@@ -111,11 +87,7 @@ async function callDeepSeek(prompt: string, apiKey: string): Promise<string | nu
 
   const data = await response.json();
   const text = data?.choices?.[0]?.message?.content;
-
-  if (!text) {
-    throw new Error("DeepSeek returned empty response");
-  }
-
+  if (!text) throw new Error("DeepSeek returned empty response");
   return text;
 }
 
@@ -134,12 +106,7 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string | 
     },
     body: JSON.stringify({
       model,
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+      messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
       max_tokens: maxTokens,
       response_format: { type: "json_object" },
@@ -153,11 +120,7 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string | 
 
   const data = await response.json();
   const text = data?.choices?.[0]?.message?.content;
-
-  if (!text) {
-    throw new Error("OpenRouter returned empty response");
-  }
-
+  if (!text) throw new Error("OpenRouter returned empty response");
   return text;
 }
 
@@ -172,15 +135,8 @@ async function callGemini(prompt: string, apiKey: string): Promise<string | null
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [
-        {
-          parts: [{ text: prompt }],
-        },
-      ],
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: maxTokens,
-      },
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.2, maxOutputTokens: maxTokens },
     }),
   }, timeoutMs);
 
@@ -190,55 +146,7 @@ async function callGemini(prompt: string, apiKey: string): Promise<string | null
   }
 
   const data = await response.json();
-  const text =
-    data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (!text) {
-    throw new Error("Gemini returned empty response");
-  }
-
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("Gemini returned empty response");
   return text;
 }
-
-async function callOpenAI(prompt: string, apiKey: string): Promise<string | null> {
-  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
-  const maxTokens = Number(process.env.AI_MAX_OUTPUT_TOKENS ?? 600);
-  const timeoutMs = Number(process.env.AI_PROVIDER_TIMEOUT_MS ?? 5000);
-
-  const response = await fetchWithTimeout("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      temperature: 0.2,
-      max_tokens: maxTokens,
-      response_format: { type: "json_object" },
-    }),
-  }, timeoutMs);
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.error(`OpenAI error details:`, errorData);
-    throw new Error(`OpenAI API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const text = data?.choices?.[0]?.message?.content;
-
-  if (!text) {
-    throw new Error("OpenAI returned empty response");
-  }
-
-  return text;
-}
-
-

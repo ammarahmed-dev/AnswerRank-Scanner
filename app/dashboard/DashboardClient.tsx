@@ -149,7 +149,6 @@ function OverviewTab({
   shouldShowUpgradeCard,
   usagePercent,
 }: OverviewTabProps) {
-  console.log("[dashboard] auditCountThisMonth:", account.auditCountThisMonth);
   const portalUrl = account.profile.portalUrl;
   const recentScans = account.reports;
   const recentAudits = account.recentAudits;
