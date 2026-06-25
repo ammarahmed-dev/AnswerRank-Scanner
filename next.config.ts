@@ -52,7 +52,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://*.supabase.co https://api.openai.com https://generativelanguage.googleapis.com https://resend.com",
+      "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://*.supabase.co https://api.deepseek.com https://openrouter.ai https://generativelanguage.googleapis.com https://resend.com",
       "frame-src 'self'",
       "media-src 'self' blob:",
       "object-src 'none'",
