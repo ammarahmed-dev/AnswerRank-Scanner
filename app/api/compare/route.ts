@@ -81,12 +81,16 @@ export async function POST(req: Request) {
     ? `compare:user:${auth.user.id}`
     : `compare:${getClientKey(undefined, req)}`;
   const bypassLimit = isAdmin;
+  const compareLimit = effectivePlan === "onetime" ? 1 : getPlanLimit(effectivePlan);
   const usage = bypassLimit
     ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER }
-    : await checkUsageLimit(clientKey, getPlanLimit(effectivePlan));
+    : await checkUsageLimit(clientKey, compareLimit);
   if (!usage.allowed) {
+    const limitMsg = effectivePlan === "onetime"
+      ? "You've used your 1 compare for this month. Upgrade to Pro for unlimited comparisons."
+      : "Compare limit reached for this month.";
     return NextResponse.json(
-      { error: "Compare limit reached for this month.", limit: usage.limit, remaining: 0 },
+      { error: limitMsg, limit: usage.limit, remaining: 0 },
       { status: 429 }
     );
   }

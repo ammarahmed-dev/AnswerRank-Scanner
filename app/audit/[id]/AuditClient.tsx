@@ -1,4 +1,4 @@
-﻿"use client";
+﻿﻿"use client";
 
 import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -482,7 +482,7 @@ export default function AuditClient() {
           )}
         </div>
 
-        {/* â”€â”€ Scanning progress banner â”€â”€ */}
+        {/* â"€â"€ Scanning progress banner â"€â"€ */}
         {isRunning && (
           <>
             <div className="audit-scan-banner">
@@ -510,7 +510,7 @@ export default function AuditClient() {
           </>
         )}
 
-        {/* â”€â”€ Hero â”€â”€ */}
+        {/* â"€â"€ Hero â"€â"€ */}
         <section className="surface report-hero audit-report-hero print-section">
           <div className="report-hero-grid audit-hero-grid">
             {aggregateScore != null ? (
@@ -587,7 +587,7 @@ export default function AuditClient() {
           </div>
         </section>
 
-        {/* â”€â”€ Category score breakdown â”€â”€ */}
+        {/* â"€â"€ Category score breakdown â"€â"€ */}
         {avgCategoryScores && Object.keys(avgCategoryScores).length > 0 && (
           <section className="surface report-card print-section">
             <h3 className="section-heading">Score Breakdown</h3>
@@ -617,7 +617,7 @@ export default function AuditClient() {
           </section>
         )}
 
-        {/* â”€â”€ Site-wide patterns â”€â”€ */}
+        {/* â"€â"€ Site-wide patterns â"€â"€ */}
         <section className="surface report-card print-section">
           <h3 className="section-heading">Site-wide Patterns</h3>
           <p className="section-kicker mt-1">Issues appearing across multiple pages.</p>
@@ -669,7 +669,7 @@ export default function AuditClient() {
           )}
         </section>
 
-        {/* â”€â”€ Page results â”€â”€ */}
+        {/* â"€â"€ Page results â"€â"€ */}
         {audit.results.length > 0 && (
           <section className="surface report-card audit-results-section">
             <div className="audit-results-header">
@@ -946,7 +946,7 @@ export default function AuditClient() {
           </section>
         )}
 
-        {/* â”€â”€ Empty state while pending â”€â”€ */}
+        {/* â"€â"€ Empty state while pending â"€â"€ */}
         {!isRunning && audit.results.length === 0 && (
           <section className="surface report-card">
             <div className="audit-empty-state">
@@ -959,7 +959,7 @@ export default function AuditClient() {
 
       </section>
 
-      {/* â”€â”€ Print layout â”€â”€ */}
+      {/* â"€â"€ Print layout â"€â"€ */}
       <div className="audit-print-layout">
         <div className="apl-cover-page">
           <div className="apl-brand">AEOCheck</div>

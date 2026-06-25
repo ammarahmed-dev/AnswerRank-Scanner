@@ -273,10 +273,11 @@ function contradictsAboutContact(text: string, detail: string) {
 }
 
 export default function ReportSectionNew({ report, onReset }: Props) {
-  const { user, plan, isAdmin: ctxIsAdmin } = useAuth();
+  const { user, plan, isAdmin: ctxIsAdmin, onetimeScanCount } = useAuth();
   const [copyOk, setCopyOk] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [retestError, setRetestError] = useState("");
 
   useEffect(() => {
     if (!isUpgradeModalOpen) return;
@@ -299,8 +300,8 @@ export default function ReportSectionNew({ report, onReset }: Props) {
 
   const checks = report.checks;
   const isReportUnlocked = Boolean(report.unlocked || report.unlockedAt);
-  const hasFullReportAccess = ctxIsAdmin || canViewFullReport({ plan, isAdmin: ctxIsAdmin }) || isReportUnlocked;
-  const hasPdfAccess = plan === "onetime" || plan === "pro" || plan === "agency";
+  const hasFullReportAccess = ctxIsAdmin || canViewFullReport({ plan, isAdmin: ctxIsAdmin }) || isReportUnlocked || Boolean(report.isFullReport);
+  const hasPdfAccess = hasFullReportAccess && (plan === "onetime" || plan === "pro" || plan === "agency" || ctxIsAdmin);
   const canUnlockSpecificReport = Boolean(report.reportId);
 
   const isAdmin = ctxIsAdmin;
@@ -319,7 +320,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
   const critical = issues.filter((i) => i.priority === "critical");
   const high = issues.filter((i) => i.priority === "high");
   const nice = issues.filter((i) => i.priority === "medium" || i.priority === "low");
-  const isPaidPlan = isAdmin || plan === "onetime" || plan === "pro" || plan === "agency";
+  const isPaidPlan = hasFullReportAccess;
   const visibleHighImpact = isPaidPlan ? high : high.slice(0, 2);
   const hiddenHighCount = isPaidPlan ? 0 : Math.max(0, high.length - visibleHighImpact.length);
   const scoreStatus = statusLabel(report.score);
@@ -546,6 +547,22 @@ const downloadPdf = async () => {
           </div>
         </div>
       </section>
+
+      {report.onetimeLockMessage && (
+        <section className="surface report-card" style={{ borderColor: "rgba(255,184,48,0.3)", background: "rgba(255,184,48,0.05)" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <Lock className="h-4 w-4 flex-shrink-0" style={{ color: "#ffb830", marginTop: 2 }} />
+            <div>
+              <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.85)", lineHeight: 1.5 }}>
+                {report.onetimeLockMessage}
+              </p>
+              <a href="/pricing" style={{ fontSize: 13, color: "#00e5a0", textDecoration: "none", display: "inline-block", marginTop: 6 }}>
+                View Pro plans &rarr;
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="surface report-card print-section">
         <h3 className="section-heading">Score Breakdown</h3>
@@ -806,7 +823,7 @@ const downloadPdf = async () => {
         {!hasFullReportAccess && hiddenCount > 0 && (
           <>
             <p className="muted-copy report-gate-count">
-              Showing {visibleIssues.length} of {visibleIssues.length + hiddenCount} issues â€” {hiddenCount} more {hiddenCount === 1 ? "fix" : "fixes"} available.
+              Showing {visibleIssues.length} of {visibleIssues.length + hiddenCount} issues - {hiddenCount} more {hiddenCount === 1 ? "fix" : "fixes"} available.
             </p>
             {!user && (
               <div className="report-save-banner">
@@ -1037,25 +1054,67 @@ const downloadPdf = async () => {
         </div>
       )}
 
-      <div className="report-action-row flex flex-col justify-center gap-3 sm:flex-row print-hidden">
-        <button onClick={copyReport} className="btn btn-secondary">
-          <Copy className="h-4 w-4" /> {copyOk ? "Copied" : "Copy report summary"}
-        </button>
-        {report.reportId && (
-          <RetestButton
-            reportId={report.reportId}
-            url={report.url}
-            retestCount={report.retest_count ?? 0}
-            maxRetests={report.max_retests ?? 3}
-            isUnlocked={hasFullReportAccess}
-            isProMonthly={canViewFullReport(plan)}
-            isMasterAdmin={isAdmin}
-          />
-        )}
-        {!hasFullReportAccess && <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Request Full Report Access</button>}
-        <button onClick={onReset} className="btn btn-primary">
-          <RotateCcw className="h-4 w-4" /> Scan another URL
-        </button>
+      <div className="report-action-row print-hidden">
+        {(() => {
+          const isProOrAdmin = plan === "pro" || plan === "agency" || ctxIsAdmin;
+          // For onetime: derive remaining from profile scan count (always fresh on page load)
+          const onetimeRetestCount = Math.max(0, (onetimeScanCount ?? 0) - 1);
+          const onetimeRemaining = Math.max(0, 3 - onetimeRetestCount);
+          const showRetestBtn = report.reportId && hasFullReportAccess && (
+            isProOrAdmin ||
+            (plan === "onetime" && onetimeRemaining > 0) ||
+            (plan !== "onetime" && !isProOrAdmin && (report.retest_count ?? 0) < (report.max_retests ?? 3))
+          );
+          const retestCountMsg = (() => {
+            if (!hasFullReportAccess || !report.reportId) return "";
+            if (isProOrAdmin) return "Unlimited retests";
+            if (plan === "onetime") return onetimeRemaining > 0 ? `${onetimeRemaining} retest${onetimeRemaining === 1 ? "" : "s"} remaining` : "";
+            const rem = Math.max(0, (report.max_retests ?? 3) - (report.retest_count ?? 0));
+            return rem > 0 ? `${rem} retest${rem === 1 ? "" : "s"} remaining` : "";
+          })();
+          const onetimeExhausted = plan === "onetime" && hasFullReportAccess && onetimeRemaining === 0;
+          // Effective props for RetestButton (pro/admin: unlimited; onetime: use onetimeRemaining)
+          const effectiveRetestCount = plan === "onetime" ? onetimeRetestCount : (report.retest_count ?? 0);
+          const effectiveMaxRetests = isProOrAdmin ? 9999 : (plan === "onetime" ? 3 : (report.max_retests ?? 3));
+          return (
+            <>
+              <div className="report-action-btns">
+                <button onClick={copyReport} className="btn btn-secondary">
+                  <Copy className="h-4 w-4" /> {copyOk ? "Copied" : "Copy report summary"}
+                </button>
+                {showRetestBtn && (
+                  <RetestButton
+                    reportId={report.reportId!}
+                    url={report.url}
+                    retestCount={effectiveRetestCount}
+                    maxRetests={effectiveMaxRetests}
+                    isUnlocked={hasFullReportAccess}
+                    isProMonthly={isProOrAdmin}
+                    isMasterAdmin={isAdmin}
+                    onError={setRetestError}
+                  />
+                )}
+                {!hasFullReportAccess && <button type="button" className="btn btn-primary" onClick={() => setIsUpgradeModalOpen(true)}>Request Full Report Access</button>}
+                <button onClick={onReset} className="btn btn-primary">
+                  <RotateCcw className="h-4 w-4" /> Scan another URL
+                </button>
+              </div>
+              {onetimeExhausted && (
+                <p className="report-action-msg">
+                  You&apos;ve used all 3 retests.{" "}
+                  <a href="/pricing" style={{ color: "#00e5a0", textDecoration: "none" }}>Upgrade to Pro</a>
+                  {" "}for unlimited rescans.
+                </p>
+              )}
+              {retestCountMsg && !onetimeExhausted && (
+                <p className="report-action-msg">{retestCountMsg}</p>
+              )}
+              {retestError && (
+                <p className="report-action-msg report-action-msg--error">{retestError}</p>
+              )}
+            </>
+          );
+        })()}
       </div>
     </div>
     {!hasFullReportAccess && isUpgradeModalOpen && createPortal(

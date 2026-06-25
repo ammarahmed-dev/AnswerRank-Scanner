@@ -948,16 +948,11 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
                   <span className="pricing-badge pricing-badge-muted">Free forever</span>
                   <span className="price">$0</span>
                   <h3>Free</h3>
-                  <p className="pricing-subline">For testing your AI visibility score.</p>
+                  <p className="pricing-subline">Try AEO scanning on your most important pages - no commitment.</p>
                   <ul>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 guest preview scan</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 3 free scans per month</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Overall AI Visibility Score</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Basic score breakdown</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Top 3 issues</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Limited report preview</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 5-page site audit</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 monitor URL</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 3 scans per month</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 5-page audit runs</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 monitored URL</li>
                   </ul>
                   <a href="#scanner" className="btn btn-secondary">Start free scan</a>
                 </article>
@@ -967,16 +962,14 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
                     ? <span className="pricing-badge pricing-badge-blue">Current plan</span>
                     : <span className="pricing-badge pricing-badge-blue">One-time</span>}
                   <span className="price">$9 <small>one-time</small></span>
-                  <h3>Full Report</h3>
-                  <p className="pricing-subline">Best for a single website audit.</p>
+                  <h3>Starter</h3>
+                  <p className="pricing-subline">A single deep-dive audit - great for one-off projects or clients.</p>
                   <ul>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Full issue breakdown</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Fix recommendations for every issue</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Schema recommendations</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> AI Answer Snapshot</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 3 retests on same URL</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Client-ready PDF report</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Up to 50-page site audit</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited scans</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 50-page audit runs</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 1 monitored URL</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 3 re-scan snapshots</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> PDF export included</li>
                   </ul>
                   <UpgradeButton
                     plan="onetime"
@@ -984,7 +977,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
                     isCurrentPlan={plan === "onetime" || plan === "pro" || plan === "agency"}
                     includedInPlan={plan === "pro" || plan === "agency"}
                   >
-                    {plan === "onetime" ? "Active plan" : "Get Full Report"}
+                    {plan === "onetime" ? "Active plan" : "Buy once - $9"}
                   </UpgradeButton>
                 </article>
 
@@ -994,18 +987,16 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
                     : <span className="pricing-badge pricing-badge-purple">Best value</span>}
                   <span className="price">$19 <small>/month</small></span>
                   <h3>Pro</h3>
-                  <p className="pricing-subline">Best for regular scanning and client work.</p>
+                  <p className="pricing-subline">Ongoing monitoring and reports for growing businesses.</p>
                   <ul>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited full reports</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Saved report history</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Client-ready PDF reports</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Competitor comparisons</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 10 retests per URL</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Up to 100-page site audit</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Monitor up to 10 URLs</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited scans</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 100-page audit runs</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 10 monitored URLs</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 10 re-scan snapshots</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> PDF export + priority support</li>
                   </ul>
                   <UpgradeButton plan="pro" className="btn btn-primary" isCurrentPlan={plan === "pro" || plan === "agency"}>
-                    {plan === "pro" ? "Active plan" : plan === "agency" ? "Included" : "Get Pro"}
+                    {plan === "pro" ? "Active plan" : plan === "agency" ? "Included" : "Start Pro"}
                   </UpgradeButton>
                   {(plan === "pro" || plan === "agency") && portalUrl && (
                     <a
@@ -1016,7 +1007,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
                       onMouseEnter={e => (e.currentTarget.style.textDecoration = "underline")}
                       onMouseLeave={e => (e.currentTarget.style.textDecoration = "none")}
                     >
-                      Manage subscription ?
+                      Manage subscription
                     </a>
                   )}
                 </article>
@@ -1027,17 +1018,16 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
                     : <span className="pricing-badge pricing-badge-agency">Agency</span>}
                   <span className="price">$49 <small>/month</small></span>
                   <h3>Agency</h3>
-                  <p className="pricing-subline">For agencies auditing multiple client sites.</p>
+                  <p className="pricing-subline">Unlimited scale for agencies managing multiple clients.</p>
                   <ul>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Everything in Pro</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Up to 500-page site audits</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited monitor URLs</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 20 retests per URL</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Priority scan queue</li>
-                    <li><CheckCircle weight="fill" className="h-4 w-4" /> White-label PDF reports</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited scans</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 500-page audit runs</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> Unlimited monitored URLs</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> 20 re-scan snapshots</li>
+                    <li><CheckCircle weight="fill" className="h-4 w-4" /> PDF export + priority support</li>
                   </ul>
                   <UpgradeButton plan="agency" className="btn btn-outline-agency" isCurrentPlan={plan === "agency"}>
-                    {plan === "agency" ? "Active plan" : "Get Agency"}
+                    {plan === "agency" ? "Active plan" : "Start Agency"}
                   </UpgradeButton>
                 </article>
               </div>

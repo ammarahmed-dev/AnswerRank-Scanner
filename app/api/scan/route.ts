@@ -319,6 +319,18 @@ type ScanRequestBody = { url?: string; includeAI?: boolean; clientId?: string; c
 
 const supabaseUrl = getSupabaseServerUrl();
 
+async function patchOnetimeProfile(userId: string, fields: Record<string, unknown>) {
+  await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}`, {
+    method: "PATCH",
+    headers: {
+      ...getSupabaseServiceHeaders(),
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify(fields),
+  }).catch((err) => console.error("[scan] onetime profile patch failed:", err));
+}
+
 async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
   let normalizedUrl = rawUrl;
   try {
@@ -450,6 +462,32 @@ export async function POST(req: NextRequest) {
       retestSeed = null;
     }
   }
+  // Onetime plan gate: determine whether this scan gets full report or free preview
+  let isFullReport = true;
+  let onetimeLockMessage: string | undefined;
+
+  if (effectivePlan === "onetime" && !isAdmin) {
+    const storedUrl = authContext.onetimeUrl ?? null;
+    const scanCount = authContext.onetimeScanCount ?? 0;
+
+    if (storedUrl === null) {
+      // First scan: will lock this URL
+      isFullReport = true;
+    } else if (storedUrl === url) {
+      // Matches locked URL: allow up to 4 total scans (1 initial + 3 retests)
+      if (scanCount >= 4) {
+        isFullReport = false;
+        onetimeLockMessage = "You've used all 3 retests for your full report. Upgrade to Pro for unlimited rescans.";
+      } else {
+        isFullReport = true;
+      }
+    } else {
+      // Different URL: free preview only
+      isFullReport = false;
+      onetimeLockMessage = `Your full report is locked to ${storedUrl}. Upgrade to Pro to scan unlimited sites.`;
+    }
+  }
+
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -490,7 +528,11 @@ export async function POST(req: NextRequest) {
             },
           });
         } catch (err: unknown) {
-          const message = err instanceof Error ? err.message : "Could not scan this website.";
+          const raw = err instanceof Error ? err.message : "";
+          const isInternal = /scrape:|jina|http [45]\d\d|fetch failed|econnrefused|timeout|aborted|reader returned/i.test(raw);
+          const message = isInternal || !raw
+            ? "We couldn't scan this URL. The site may be blocking automated access. Try a different URL or check that the address is correct."
+            : raw;
           emitError(message);
           controller.close();
           return;
@@ -591,7 +633,20 @@ export async function POST(req: NextRequest) {
           unlocked: Boolean(retestSeed?.unlocked),
           retest_count: retestSeed?.retestCount ?? 0,
           max_retests: retestSeed?.maxRetests ?? 3,
+          isFullReport,
+          onetimeLockMessage,
         };
+
+        // Update onetime profile after successful scan
+        if (effectivePlan === "onetime" && !isAdmin && isFullReport && userId) {
+          if ((authContext.onetimeUrl ?? null) === null) {
+            await patchOnetimeProfile(userId, { onetime_url: url, onetime_scan_count: 1 });
+          } else {
+            await patchOnetimeProfile(userId, {
+              onetime_scan_count: (authContext.onetimeScanCount ?? 0) + 1,
+            });
+          }
+        }
 
         const savedResult = await saveReportRecord(result, userId);
         if (!bypassScanLimit && usageKey && usage) {

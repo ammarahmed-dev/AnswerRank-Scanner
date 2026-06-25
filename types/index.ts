@@ -101,6 +101,8 @@ export interface ScanResult {
   unlockedAt?: string;
   unlockSource?: "polar_checkout" | "admin" | "manual";
   polarOrderId?: string;
+  isFullReport?: boolean;
+  onetimeLockMessage?: string;
   competitorUrls?: string[];
   competitors?: CompetitorScanResult[];
   url: string;

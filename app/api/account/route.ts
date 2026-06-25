@@ -31,20 +31,35 @@ type RecentReport = {
   };
 };
 
-async function getPortalUrl(userId: string): Promise<string | null> {
-  if (!hasSupabaseConfig()) return null;
+type ProfileExtras = {
+  portalUrl: string | null;
+  onetimeUrl: string | null;
+  onetimeScanCount: number;
+};
+
+async function getProfileExtras(userId: string): Promise<ProfileExtras> {
+  if (!hasSupabaseConfig()) return { portalUrl: null, onetimeUrl: null, onetimeScanCount: 0 };
   const params = new URLSearchParams({
     id: `eq.${userId}`,
-    select: "lemonsqueezy_portal_url",
+    select: "lemonsqueezy_portal_url,onetime_url,onetime_scan_count",
     limit: "1",
   });
   const res = await fetch(`${supabaseUrl}/rest/v1/profiles?${params.toString()}`, {
     headers: getSupabaseServiceHeaders(),
     cache: "no-store",
   });
-  if (!res.ok) return null;
-  const rows = (await res.json()) as Array<{ lemonsqueezy_portal_url?: string | null }>;
-  return rows[0]?.lemonsqueezy_portal_url ?? null;
+  if (!res.ok) return { portalUrl: null, onetimeUrl: null, onetimeScanCount: 0 };
+  const rows = (await res.json()) as Array<{
+    lemonsqueezy_portal_url?: string | null;
+    onetime_url?: string | null;
+    onetime_scan_count?: number | null;
+  }>;
+  const row = rows[0];
+  return {
+    portalUrl: row?.lemonsqueezy_portal_url ?? null,
+    onetimeUrl: row?.onetime_url ?? null,
+    onetimeScanCount: row?.onetime_scan_count ?? 0,
+  };
 }
 
 async function getRecentReports(userId: string) {
@@ -128,14 +143,16 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [scanCount, reports, portalUrl, recentAudits, monitorCount, auditCountThisMonth] = await Promise.all([
+  const [scanCount, reports, profileExtras, recentAudits, monitorCount, auditCountThisMonth, compareCountThisMonth] = await Promise.all([
     getUsageCount(`user:${auth.user.id}`),
     getRecentReports(auth.user.id),
-    getPortalUrl(auth.user.id),
+    getProfileExtras(auth.user.id),
     getRecentAudits(auth.user.id),
     getMonitorCount(auth.user.id),
     getAuditCountThisMonth(auth.user.id),
+    getUsageCount(`compare:user:${auth.user.id}`),
   ]);
+  const { portalUrl, onetimeUrl, onetimeScanCount } = profileExtras;
   const isEmailAdmin = isMasterAdmin(auth.user.email);
   const profilePlan = normalizeUserPlan(auth.plan);
   // Email check is primary; agency plan in Supabase is the fallback
@@ -152,6 +169,8 @@ export async function GET(req: Request) {
       plan,
       isAdmin,
       portalUrl,
+      onetimeUrl,
+      onetimeScanCount,
     },
     usage: {
       count: scanCount,
@@ -163,6 +182,7 @@ export async function GET(req: Request) {
     recentAudits,
     monitorCount,
     auditCountThisMonth,
+    compareCountThisMonth,
   });
 }
 

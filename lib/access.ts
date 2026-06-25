@@ -2,7 +2,7 @@ export type UserPlan = "guest" | "free" | "onetime" | "pro" | "agency";
 
 export const PLAN_LIMITS = {
   free:    { auditPages: 5,   auditPerDay: 1,   monitorUrls: 1,  scanPerMonth: 3 },
-  onetime: { auditPages: 50,  auditRescans: 3,  monitorUrls: 5,  fullReport: true },
+  onetime: { auditPages: 50,  auditRescans: 3,  monitorUrls: 1,  fullReport: true },
   pro:     { auditPages: 100, auditRescans: 10, monitorUrls: 10, scanUnlimited: true },
   agency:  { auditPages: 500, auditRescans: 20, monitorUrls: -1, scanUnlimited: true },
 } as const;
@@ -43,7 +43,11 @@ export function canRunScan(profile: AccessProfile | UserPlan, remaining: number 
 }
 
 export function canViewFullReport(profile: AccessProfile | UserPlan) {
-  return isProUser(profile);
+  if (typeof profile === "string") {
+    return profile === "pro" || profile === "agency";
+  }
+  const plan = normalizeUserPlan(profile.plan);
+  return plan === "pro" || plan === "agency" || Boolean(profile.isAdmin);
 }
 
 export function canDownloadPdf(profile: AccessProfile | UserPlan) {

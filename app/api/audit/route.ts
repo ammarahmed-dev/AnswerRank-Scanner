@@ -17,7 +17,27 @@ export async function POST(req: Request) {
     if (!hasSupabaseConfig()) return NextResponse.json({ error: "Service unavailable." }, { status: 503 });
 
     const isAdmin = isAdminEmail(auth.user.email);
+    const effectivePlan = isAdmin ? "agency" : auth.plan;
     const tier = getAuditTier(isAdmin ? "agency" : auth);
+
+    // Onetime plan: 1 audit per calendar month
+    if (!isAdmin && effectivePlan === "onetime") {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      const monthlyRes = await fetch(
+        `${supabaseUrl}/rest/v1/audit_runs?user_id=eq.${auth.user.id}&created_at=gte.${startOfMonth.toISOString()}&select=id`,
+        { headers: { ...getSupabaseServiceHeaders(), Prefer: "count=exact" }, cache: "no-store" }
+      );
+      const range = monthlyRes.headers.get("content-range") ?? "";
+      const monthlyCount = parseInt(range.split("/")[1] ?? "0", 10);
+      if (monthlyCount >= 1) {
+        return NextResponse.json(
+          { error: "You've used your included audit. Upgrade to Pro for unlimited audits." },
+          { status: 429 }
+        );
+      }
+    }
 
     let body: { domain?: unknown };
     try {

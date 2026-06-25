@@ -13,6 +13,7 @@ type AuthState = {
   unlimited: boolean;
   loading: boolean;
   portalUrl: string | null;
+  onetimeScanCount: number;
 };
 
 type AuthContextValue = AuthState & {
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthContextValue>({
   unlimited: false,
   loading: true,
   portalUrl: null,
+  onetimeScanCount: 0,
   refresh: async () => {},
 });
 
@@ -43,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     unlimited: false,
     loading: true,
     portalUrl: null,
+    onetimeScanCount: 0,
   });
 
   const supabase = getSupabaseBrowserClient();
@@ -54,11 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         cache: "no-store",
       });
       if (!res.ok) {
-        setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null });
+        setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null, onetimeScanCount: 0 });
         return;
       }
       const data = (await res.json()) as {
-        profile: { id: string; email: string; plan: UserPlan; isAdmin?: boolean; portalUrl?: string | null };
+        profile: { id: string; email: string; plan: UserPlan; isAdmin?: boolean; portalUrl?: string | null; onetimeScanCount?: number };
         usage: { remaining: number | null; unlimited: boolean };
       };
       setState({
@@ -69,9 +72,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         unlimited: data.usage.unlimited,
         loading: false,
         portalUrl: data.profile.portalUrl ?? null,
+        onetimeScanCount: data.profile.onetimeScanCount ?? 0,
       });
     } catch {
-      setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null });
+      setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null, onetimeScanCount: 0 });
     }
   }, []);
 
@@ -79,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!supabase) return;
     const token = (await getSafeSupabaseSession(supabase))?.access_token;
     if (!token) {
-      setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null });
+      setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null, onetimeScanCount: 0 });
       return;
     }
     await fetchAccount(token);
@@ -97,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = client.auth.onAuthStateChange(async (_event, session) => {
       if (!session?.access_token) {
-        setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null });
+        setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null, onetimeScanCount: 0 });
         return;
       }
       await fetchAccount(session.access_token);

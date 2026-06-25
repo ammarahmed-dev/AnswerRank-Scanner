@@ -1,4 +1,4 @@
-const EXCLUDED_PATH_PREFIXES = [
+﻿const EXCLUDED_PATH_PREFIXES = [
   "/login",
   "/signup",
   "/register",
@@ -198,7 +198,7 @@ export async function discoverPages(
     for (const u of dedupeLocaleVariants(sitemapUrls)) enqueue(u);
   }
 
-  // 3. BFS — process queue in batches of CONCURRENCY
+  // 3. BFS - process queue in batches of CONCURRENCY
   //    BFS order = shallowest pages first because we enqueue children
   //    only after visiting the parent, and queue is FIFO.
   while (queue.length > 0 && visited.size < DISCOVERY_CAP) {

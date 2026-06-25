@@ -148,11 +148,11 @@ export async function fetchJinaReaderText(url: string): Promise<string> {
     });
 
     if (!res.ok) {
-      throw new Error(`Jina Reader returned HTTP ${res.status}.`);
+      throw new Error(`scrape:jina:http:${res.status}`);
     }
 
     const text = await res.text();
-    if (!text.trim()) throw new Error("Jina Reader returned empty content.");
+    if (!text.trim()) throw new Error("scrape:jina:empty");
     return text.slice(0, 50000);
   } finally {
     clearTimeout(timeout);

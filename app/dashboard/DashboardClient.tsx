@@ -27,6 +27,8 @@ type AccountData = {
     plan: "guest" | "free" | "onetime" | "pro" | "agency";
     isAdmin?: boolean;
     portalUrl?: string | null;
+    onetimeUrl?: string | null;
+    onetimeScanCount?: number;
   };
   usage: {
     count: number;
@@ -46,6 +48,7 @@ type AccountData = {
   recentAudits: RecentAudit[];
   monitorCount: number;
   auditCountThisMonth: number;
+  compareCountThisMonth: number;
 };
 
 function planLabel(plan: AccountData["profile"]["plan"]) {
@@ -154,7 +157,7 @@ function OverviewTab({
   const recentAudits = account.recentAudits;
   const currentPlan = account.profile.plan;
   const auditCountThisMonth = account.auditCountThisMonth ?? 0;
-  const auditLimit = currentPlan === "free" ? 3 : -1;
+  const auditLimit = currentPlan === "free" ? 3 : currentPlan === "onetime" ? 1 : -1;
   const auditPagesPerRunText =
     currentPlan === "free" ? "5 pages/audit" :
     currentPlan === "onetime" ? "50 pages/audit" :
@@ -162,13 +165,18 @@ function OverviewTab({
     "500 pages/audit";
   const auditProgress = auditLimit === -1 ? 0 : Math.min((auditCountThisMonth / auditLimit) * 100, 100);
   const auditRemaining = auditLimit === -1 ? null : Math.max(0, auditLimit - auditCountThisMonth);
-  const monitorLimitValue = currentPlan === "free" ? 1 : currentPlan === "onetime" ? 5 : currentPlan === "pro" ? 10 : -1;
+  const monitorLimitValue = currentPlan === "free" ? 1 : currentPlan === "onetime" ? 1 : currentPlan === "pro" ? 10 : -1;
   const monitorProgress = monitorLimitValue === -1 ? 0 : Math.min((account.monitorCount / monitorLimitValue) * 100, 100);
   const monitorRemaining = monitorLimitValue === -1 ? null : Math.max(0, monitorLimitValue - account.monitorCount);
+  const onetimeScanCount = account.profile.onetimeScanCount ?? 0;
+  const onetimeRetestCount = Math.max(0, onetimeScanCount - 1);
+  const onetimeRetestsRemaining = Math.max(0, 4 - onetimeScanCount);
   const compareLimitText =
     currentPlan === "free"
       ? "Scores only · upgrade for full breakdown"
-      : "Full breakdown · history saved";
+      : currentPlan === "onetime"
+        ? "1 per month · for your locked URL"
+        : "Full breakdown · history saved";
 
   return (
     <>
@@ -254,23 +262,42 @@ function OverviewTab({
         <div style={card}>
           <p style={cardLabel}>Plan</p>
           <p style={cardValue}>{planLabel(account.profile.plan)}</p>
-          <p style={cardDesc}>{masterAdmin ? "Master Admin · Unlimited access." : account.usage.unlimited ? "Unlimited scans active." : "3 scans per month included."}</p>
+          <p style={cardDesc}>{masterAdmin ? "Master Admin · Unlimited access." : currentPlan === "onetime" ? "1 full report URL · free preview on all others." : account.usage.unlimited ? "Unlimited scans active." : "3 scans per month included."}</p>
           {portalUrl
             ? <a href={portalUrl} target="_blank" rel="noopener noreferrer" style={{ ...cardLink, marginTop: 4 }}>Manage subscription →</a>
             : shouldShowUpgradeCard && <a href="/pricing" style={{ ...cardLink, marginTop: 4 }}>View pricing →</a>}
         </div>
 
-        <div style={card}>
-          <p style={cardLabel}>Scans this month</p>
-          <p style={cardValue}>
-            {account.usage.unlimited ? "∞" : account.usage.count}
-            {!account.usage.unlimited && <span style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.4)" }}> / {account.usage.limit}</span>}
-          </p>
-          <div className="dashboard-progress" style={{ marginTop: 4 }} aria-hidden="true">
-            <span style={{ width: `${usagePercent}%` }} />
+        {currentPlan === "onetime" ? (
+          <div style={card}>
+            <p style={cardLabel}>Retests</p>
+            <p style={cardValue}>
+              <span>{onetimeRetestCount}</span>
+              <span style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.4)" }}> / 3</span>
+            </p>
+            <div className="dashboard-progress" style={{ marginTop: 4 }} aria-hidden="true">
+              <span style={{ width: `${Math.min((onetimeRetestCount / 3) * 100, 100)}%` }} />
+            </div>
+            <p style={{ ...cardDesc, marginTop: 4 }}>on your locked URL</p>
+            {account.reports[0] && (
+              <a href={`/report?id=${account.reports[0].id}`} style={{ ...cardLink, marginTop: 4 }}>View report →</a>
+            )}
           </div>
-          <a href="/scan" style={{ ...cardLink, marginTop: 4 }}>View all scans →</a>
-        </div>
+        ) : (
+          <div style={card}>
+            <p style={cardLabel}>Scans this month</p>
+            <p style={cardValue}>
+              {account.usage.unlimited ? "∞" : account.usage.count}
+              {!account.usage.unlimited && <span style={{ fontSize: 16, fontWeight: 500, color: "rgba(255,255,255,0.4)" }}>{` / ${account.usage.limit}`}</span>}
+            </p>
+            {!account.usage.unlimited && (
+              <div className="dashboard-progress" style={{ marginTop: 4 }} aria-hidden="true">
+                <span style={{ width: `${usagePercent}%` }} />
+              </div>
+            )}
+            <a href="/scan" style={{ ...cardLink, marginTop: 4 }}>View all scans →</a>
+          </div>
+        )}
       </div>
 
       <div className="db-grid-3" style={{ ...grid3, marginTop: 16 }}>
@@ -301,13 +328,17 @@ function OverviewTab({
             {auditLimit === -1
               ? "Unlimited audits this month"
               : auditCountThisMonth >= auditLimit
-                ? "Limit reached · resets next month"
-                : `${auditRemaining} remaining · resets monthly`}
+                ? currentPlan === "onetime" ? "Audit used · upgrade for more" : "Limit reached · resets next month"
+                : currentPlan === "onetime" ? "1 included · 50 pages max" : `${auditRemaining} remaining · resets monthly`}
           </div>
           <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginTop: "4px" }}>
             {auditPagesPerRunText.replace("/audit", " per audit")}
           </div>
-          <a href="/audit" className="btn btn-secondary" style={{ marginTop: 8 }}>New audit →</a>
+          {currentPlan === "onetime" && auditCountThisMonth >= 1 ? (
+            <button disabled className="btn btn-secondary" style={{ marginTop: 8, opacity: 0.45, cursor: "not-allowed" }}>Audit used</button>
+          ) : (
+            <a href="/audit" className="btn btn-secondary" style={{ marginTop: 8 }}>New audit →</a>
+          )}
         </div>
 
         <div style={card}>
@@ -335,7 +366,7 @@ function OverviewTab({
           <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginTop: "4px" }}>
             {monitorLimitValue === -1 ? "Unlimited URLs" :
               account.monitorCount >= monitorLimitValue ? "Limit reached · upgrade for more" :
-              `${monitorRemaining} slots remaining`}
+              `${monitorRemaining} slot${monitorRemaining === 1 ? "" : "s"} remaining`}
           </div>
           <a href="/monitor" className="btn btn-secondary" style={{ marginTop: 8 }}>Open Monitor →</a>
         </div>
@@ -343,9 +374,47 @@ function OverviewTab({
         <div style={card}>
           <p style={cardLabel}>Compare</p>
           <p style={{ ...cardDesc, marginTop: 8 }}>{compareLimitText}</p>
+          {currentPlan === "onetime" && (
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 4 }}>
+              {account.compareCountThisMonth} / 1 used this month
+            </p>
+          )}
           <a href="/compare" className="btn btn-secondary" style={{ marginTop: 8 }}>Compare URLs →</a>
         </div>
       </div>
+
+      {currentPlan === "onetime" && (
+        <div style={{ ...card, marginTop: 16, borderColor: "rgba(0,229,160,0.2)" }}>
+          <p style={cardLabel}>Your full report URL</p>
+          {account.profile.onetimeUrl ? (
+            <>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.85)", wordBreak: "break-all", margin: "4px 0" }}>
+                <a href={`/report?url=${encodeURIComponent(account.profile.onetimeUrl)}`} style={{ color: "#00e5a0", textDecoration: "none" }}>
+                  {account.profile.onetimeUrl}
+                </a>
+              </p>
+              <div style={{ display: "flex", gap: 24, marginTop: 8, fontSize: 13, color: "rgba(255,255,255,0.45)" }}>
+                <span>
+                  Retests remaining:{" "}
+                  <strong style={{ color: onetimeRetestsRemaining > 0 ? "#00e5a0" : "#ef4444" }}>
+                    {onetimeRetestsRemaining}
+                  </strong>{" "}
+                  / 3
+                </span>
+              </div>
+            </>
+          ) : (
+            <p style={{ ...cardDesc, marginTop: 4 }}>
+              No URL locked yet. Scan any site to get your full report - that site becomes your locked URL.
+            </p>
+          )}
+          {onetimeRetestsRemaining === 0 && account.profile.onetimeUrl ? (
+            <a href="/pricing" style={{ ...cardLink, marginTop: 8, display: "inline-block" }}>Upgrade to Pro →</a>
+          ) : (
+            <a href="/" style={{ ...cardLink, marginTop: 8, display: "inline-block" }}>Scan a URL →</a>
+          )}
+        </div>
+      )}
     </>
   );
 }
@@ -516,9 +585,14 @@ export default function DashboardClient() {
             {account.reports.map(report => (
               <div className="dashboard-report-row" key={report.id}>
                 <a href={`/report?id=${report.id}`} className="dashboard-report-link">
-                  <div>
-                    <strong>{report.url}</strong>
-                    <span>{formatDate(report.created_at)}{report.unlocked ? " · Full Report" : ""}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div className="dashboard-url-row">
+                      <strong>{report.url}</strong>
+                      {account.profile.plan === "onetime" && account.profile.onetimeUrl && account.profile.onetimeUrl === report.url && (
+                        <span className="onetime-full-badge">Full Report</span>
+                      )}
+                    </div>
+                    <span>{formatDate(report.created_at)}{report.unlocked && !(account.profile.plan === "onetime" && account.profile.onetimeUrl === report.url) ? " · Full Report" : ""}</span>
                   </div>
                   <em>{report.score}</em>
                   <ArrowUpRight className="h-4 w-4" />

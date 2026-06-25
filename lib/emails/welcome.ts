@@ -1,4 +1,4 @@
-export const welcomeEmailSubject = "Welcome to AEOCheck - scan your first URL";
+﻿export const welcomeEmailSubject = "Welcome to AEOCheck - scan your first URL";
 
 export const welcomeEmailHtml = (_email: string): string => `<!DOCTYPE html>
 <html lang="en">
@@ -29,7 +29,7 @@ export const welcomeEmailHtml = (_email: string): string => `<!DOCTYPE html>
           <tr>
             <td style="background-color:#0d1117;border-radius:12px;padding:40px 36px;border:1px solid rgba(255,255,255,0.06);">
               <h1 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#ffffff;line-height:1.25;letter-spacing:-0.3px;">
-                You’re in. Let’s see how visible your site is.
+                You're in. Let's see how visible your site is.
               </h1>
 
               <p style="margin:0 0 28px;font-size:15px;color:rgba(255,255,255,0.7);line-height:1.65;">
@@ -66,7 +66,7 @@ export const welcomeEmailHtml = (_email: string): string => `<!DOCTYPE html>
               </table>
 
               <p style="margin:28px 0 0;font-size:13px;color:rgba(255,255,255,0.35);line-height:1.5;">
-                You’re on the <strong style="color:rgba(255,255,255,0.55);">Free plan</strong> &middot; 3 scans per month included
+                You're on the <strong style="color:rgba(255,255,255,0.55);">Free plan</strong> &middot; 3 scans per month included
               </p>
             </td>
           </tr>

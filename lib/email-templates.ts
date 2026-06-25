@@ -1,7 +1,7 @@
-/**
+﻿/**
  * AEOCheck auth email templates.
  *
- * These are NOT sent programmatically — they are pasted into:
+ * These are NOT sent programmatically - they are pasted into:
  *   Supabase Dashboard → Authentication → Email Templates
  *
  * Supabase injects {{ .ConfirmationURL }} automatically.

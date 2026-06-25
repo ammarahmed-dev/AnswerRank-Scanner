@@ -1,4 +1,4 @@
-﻿"use client";
+﻿﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -196,7 +196,7 @@ export default function CompareClient() {
               <button type="submit" className="btn btn-primary" disabled={loading} style={{ minWidth: "160px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, whiteSpace: "nowrap" }}>
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 <ArrowLeftRight className="h-4 w-4" />
-                {loading ? "Comparingâ€¦" : "Compare URLs"}
+                {loading ? "Comparing..." : "Compare URLs"}
               </button>
             </div>
           </form>
@@ -212,7 +212,7 @@ export default function CompareClient() {
                   <p style={{ margin: "0 0 8px", fontSize: 12, color: "var(--color-ink-muted)", wordBreak: "break-all" }}>{c.url}</p>
                   <strong style={{ fontSize: "2.5rem", color: "var(--color-primary)", lineHeight: 1 }}>{c.score}</strong>
                   <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--color-ink-muted)" }}>
-                    {result.comparison.winner === (i === 0 ? "primary" : "competitor") ? "ðŸ† Winner" : result.comparison.winner === "tie" ? "Tied" : ""}
+                    {result.comparison.winner === (i === 0 ? "primary" : "competitor") ? "Winner" : result.comparison.winner === "tie" ? "Tied" : ""}
                   </p>
                 </div>
               ))}
@@ -236,10 +236,10 @@ export default function CompareClient() {
                       {visibleCategories.map((row) => (
                         <tr key={row.category} style={{ borderBottom: "1px solid var(--color-line)" }}>
                           <td style={{ padding: "10px 0" }}>{toLabel(row.category)}</td>
-                          <td style={{ textAlign: "center", padding: "10px 0" }}>{row.primaryScore ?? "—"}</td>
-                          <td style={{ textAlign: "center", padding: "10px 0" }}>{row.competitorScore ?? "—"}</td>
+                          <td style={{ textAlign: "center", padding: "10px 0" }}>{row.primaryScore ?? "-"}</td>
+                          <td style={{ textAlign: "center", padding: "10px 0" }}>{row.competitorScore ?? "-"}</td>
                           <td style={{ textAlign: "center", padding: "10px 0", color: (row.gap ?? 0) > 0 ? "var(--color-primary)" : (row.gap ?? 0) < 0 ? "#f87171" : "var(--color-ink-muted)", fontWeight: 600 }}>
-                            {row.gap !== null ? (row.gap > 0 ? `+${row.gap}` : row.gap) : "—"}
+                            {row.gap !== null ? (row.gap > 0 ? `+${row.gap}` : row.gap) : "-"}
                           </td>
                         </tr>
                       ))}
@@ -295,7 +295,7 @@ export default function CompareClient() {
                       <div>
                         <strong style={{ fontSize: 13 }}>{run.url_a}</strong>
                         <span style={{ color: "var(--color-ink-muted)", fontSize: 12 }}>vs {run.url_b}</span>
-                        <span>{formatDate(run.created_at)} Â· {run.score_a ?? "â€”"} vs {run.score_b ?? "â€”"}</span>
+                        <span>{formatDate(run.created_at)} · {run.score_a ?? "-"} vs {run.score_b ?? "-"}</span>
                       </div>
                     </div>
                     <button type="button" className="btn btn-secondary" style={{ fontSize: 13, padding: "6px 14px" }} onClick={() => prefill(run)}>

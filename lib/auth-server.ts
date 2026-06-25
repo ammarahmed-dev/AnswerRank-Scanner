@@ -8,6 +8,8 @@ type AuthUser = {
 export type AuthContext = {
   user: AuthUser | null;
   plan: "guest" | "free" | "onetime" | "pro" | "agency";
+  onetimeUrl?: string | null;
+  onetimeScanCount?: number;
 };
 
 const supabaseUrl = getSupabaseServerUrl();
@@ -71,47 +73,63 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
     }),
   }).catch(() => null);
 
+  let onetimeUrl: string | null = null;
+  let onetimeScanCount = 0;
+  let resolvedPlan: AuthContext["plan"] = "free";
+
   try {
     const profileRes = await fetch(
-      `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=created_at,plan,welcome_email_sent`,
+      `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=plan,plan_expires_at,welcome_email_sent,onetime_url,onetime_scan_count`,
       {
         headers: getSupabaseServiceHeaders(),
         cache: "no-store",
       }
     );
     const profiles = profileRes.ok
-      ? ((await profileRes.json()) as Array<{ welcome_email_sent?: boolean | null }>)
+      ? ((await profileRes.json()) as Array<{
+          plan?: string;
+          plan_expires_at?: string | null;
+          welcome_email_sent?: boolean | null;
+          onetime_url?: string | null;
+          onetime_scan_count?: number | null;
+        }>)
       : [];
     const profile = profiles[0];
-    const shouldSendWelcome = profile && profile.welcome_email_sent === false;
 
-    if (shouldSendWelcome && user.email) {
-      await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`, {
-        method: "PATCH",
-        headers: {
-          ...getSupabaseServiceHeaders(),
-          "Content-Type": "application/json",
-          Prefer: "return=minimal",
-        },
-        body: JSON.stringify({ welcome_email_sent: true }),
-      });
+    if (profile) {
+      const expired = profile.plan_expires_at && new Date(profile.plan_expires_at) < new Date();
+      resolvedPlan = expired ? "free" : normalizePlan(profile.plan);
+      onetimeUrl = profile.onetime_url ?? null;
+      onetimeScanCount = profile.onetime_scan_count ?? 0;
 
-      const secret = process.env.INTERNAL_API_SECRET;
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.aeocheck.co";
-      if (secret) {
-        fetch(`${baseUrl}/api/emails/welcome`, {
-          method: "POST",
+      if (profile.welcome_email_sent === false && user.email) {
+        await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}`, {
+          method: "PATCH",
           headers: {
+            ...getSupabaseServiceHeaders(),
             "Content-Type": "application/json",
-            Authorization: `Bearer ${secret}`,
+            Prefer: "return=minimal",
           },
-          body: JSON.stringify({ email: user.email, userId: user.id }),
-        }).catch((err) => console.error("[welcome-email] failed:", err));
+          body: JSON.stringify({ welcome_email_sent: true }),
+        });
+
+        const secret = process.env.INTERNAL_API_SECRET;
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.aeocheck.co";
+        if (secret) {
+          fetch(`${baseUrl}/api/emails/welcome`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${secret}`,
+            },
+            body: JSON.stringify({ email: user.email, userId: user.id }),
+          }).catch((err) => console.error("[welcome-email] failed:", err));
+        }
       }
     }
   } catch (err) {
-    console.error("[welcome-email] trigger failed:", err);
+    console.error("[auth] profile fetch failed:", err);
   }
 
-  return { user, plan: await getUserPlan(user.id) };
+  return { user, plan: resolvedPlan, onetimeUrl, onetimeScanCount };
 }

@@ -22,6 +22,7 @@ type Props = {
   isProMonthly?: boolean;
   isMasterAdmin?: boolean;
   compact?: boolean;
+  onError?: (msg: string) => void;
 };
 
 export default function RetestButton({
@@ -33,9 +34,9 @@ export default function RetestButton({
   isProMonthly = false,
   isMasterAdmin = false,
   compact = false,
+  onError,
 }: Props) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [loaderProgress, setLoaderProgress] = useState<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
   const [isClient, setIsClient] = useState(false);
 
@@ -52,7 +53,7 @@ export default function RetestButton({
 
   const handleRetest = async () => {
     setLoading(true);
-    setError("");
+    onError?.("");
     setLoaderProgress({ step: 1, label: "Preparing scan", status: "started" });
 
     try {
@@ -63,10 +64,17 @@ export default function RetestButton({
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      const checkData = (await checkRes.json()) as { error?: string; message?: string };
+      let checkData: { error?: string; message?: string } = {};
+      try {
+        checkData = (await checkRes.json()) as { error?: string; message?: string };
+      } catch {
+        onError?.("Retest is currently unavailable. Please try again.");
+        setLoading(false);
+        return;
+      }
 
       if (!checkRes.ok) {
-        setError(checkData.message || checkData.error || "Retest is unavailable.");
+        onError?.(checkData.message || checkData.error || "Retest is unavailable.");
         setLoading(false);
         return;
       }
@@ -85,7 +93,7 @@ export default function RetestButton({
       });
 
       if (!scanRes.ok || !scanRes.body) {
-        setError("Scan failed. Please try again.");
+        onError?.("Scan failed. Please try again.");
         setLoading(false);
         return;
       }
@@ -142,7 +150,7 @@ export default function RetestButton({
             if (payload.type === "result") {
               newReport = payload.result ?? null;
               if (!newReport) {
-                setError("Scan completed, but the saved report was missing from the response.");
+                onError?.("Scan completed, but the saved report was missing from the response.");
                 setLoading(false);
                 return;
               }
@@ -157,7 +165,6 @@ export default function RetestButton({
                 null;
 
               if (!newReportId) {
-                // Scan saved a report but didn't return its ID — go to dashboard
                 console.warn("[retest] result event had no reportId, redirecting to dashboard");
                 window.location.assign("/dashboard");
                 return;
@@ -167,7 +174,7 @@ export default function RetestButton({
             }
 
             if (payload.type === "error") {
-              setError(payload.message || "Scan failed. Please try again.");
+              onError?.(payload.message || "Scan failed. Please try again.");
               setLoading(false);
               return;
             }
@@ -185,25 +192,24 @@ export default function RetestButton({
             sessionStorage.setItem(`aeocheck_report:${newReportId}`, JSON.stringify(newReport));
             sessionStorage.setItem(`aeocheck_report:${newReport.url}`, JSON.stringify(newReport));
           } catch {
-            // sessionStorage failure is non-fatal — the report page fetches from API anyway
+            // sessionStorage failure is non-fatal
           }
         }
         window.location.assign(`/report?id=${encodeURIComponent(newReportId)}`);
         return;
       }
 
-      // Stream ended without a result event — scan may have saved; go to dashboard
       console.warn("[retest] SSE stream ended without a result event, redirecting to dashboard");
       window.location.assign("/dashboard");
     } catch (err) {
       console.error("[retest] error:", err);
-      setError("Something went wrong. Please try again.");
+      onError?.("Something went wrong. Please try again.");
       setLoading(false);
     }
   };
 
   return (
-    <div className="retest-wrapper">
+    <>
       <button
         type="button"
         onClick={handleRetest}
@@ -236,15 +242,6 @@ export default function RetestButton({
         )}
       </button>
 
-      {!isMasterAdmin && !isProMonthly && isUnlocked && !compact && (
-        <span className="retest-count">
-          {remaining > 0 ? `${remaining} retest${remaining === 1 ? "" : "s"} remaining` : "No retests remaining"}
-        </span>
-      )}
-
-      {isProMonthly && !compact && <span className="retest-count">Unlimited retests</span>}
-      {error && <p className="retest-error">{error}</p>}
-
       {isClient && loading && createPortal(
         <div className="loading-overlay" role="dialog" aria-modal="true" aria-label="Running AI visibility scan">
           <div className="loading-dialog">
@@ -253,6 +250,6 @@ export default function RetestButton({
         </div>,
         document.body
       )}
-    </div>
+    </>
   );
 }

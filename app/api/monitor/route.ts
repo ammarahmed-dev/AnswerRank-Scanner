@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Monitor requires a Pro plan." }, { status: 403 });
   }
 
-  const monitorLimit = isAdmin || auth.plan === "agency" ? 999 : 10;
+  const monitorLimit = isAdmin || auth.plan === "agency" ? 999 : auth.plan === "pro" ? 10 : 1;
 
   if (!hasSupabaseConfig()) return NextResponse.json({ error: "Service unavailable." }, { status: 503 });
 

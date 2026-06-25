@@ -527,7 +527,7 @@ export default function MonitorClient() {
                   const isDeleting = deletingId === item.id;
                   const { grade, cls } = item.latest_score != null
                     ? scoreGrade(item.latest_score)
-                    : { grade: "—", cls: "" };
+                    : { grade: "-", cls: "" };
                   const snapshots = historyMap[item.id] ?? [];
                   const isHistLoading = historyLoading === item.id;
 

@@ -1,7 +1,7 @@
-"use client";
+﻿"use client";
 
 // OAuth callback handler for Google (and any other provider).
-// @supabase/ssr is not used in this project — the PKCE code exchange
+// @supabase/ssr is not used in this project - the PKCE code exchange
 // happens client-side using the standard @supabase/supabase-js client.
 
 import { useEffect } from "react";
@@ -66,7 +66,7 @@ export default function CallbackClient() {
       fontSize: 15,
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     }}>
-      Signing you in…
+      Signing you in...
     </div>
   );
 }
