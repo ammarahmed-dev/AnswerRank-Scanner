@@ -31,6 +31,18 @@ function verifySignature(rawBody: string, signature: string): boolean {
   }
 }
 
+const PLAN_RANK: Record<string, number> = { free: 0, onetime: 1, pro: 2, agency: 3 };
+
+async function fetchProfile(userId: string): Promise<{ plan: string } | null> {
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=plan`,
+    { headers: { ...getSupabaseServiceHeaders() }, cache: "no-store" }
+  );
+  if (!res.ok) return null;
+  const rows = (await res.json()) as Array<{ plan: string }>;
+  return rows[0] ?? null;
+}
+
 async function patchProfile(userId: string, fields: Record<string, unknown>) {
   const res = await fetch(
     `${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}`,
@@ -86,8 +98,19 @@ export async function POST(req: Request) {
       const variantId = String(firstItem.variant_id ?? "");
       const plan = variantToPlan(variantId);
       if (plan === "onetime") {
-        await patchProfile(userId, { plan: "onetime", plan_expires_at: null });
-        console.info("[ls-webhook] order_created → plan=onetime user:", userId);
+        const profile = await fetchProfile(userId);
+        const currentPlan = profile?.plan ?? "free";
+        const currentRank = PLAN_RANK[currentPlan] ?? 0;
+        const incomingRank = PLAN_RANK[plan] ?? 0;
+        if (currentRank <= incomingRank) {
+          await patchProfile(userId, { plan: "onetime", plan_expires_at: null });
+          console.info("[ls-webhook] order_created → plan=onetime user:", userId);
+        } else {
+          console.info(
+            `[ls-webhook] order_created skipped: user ${userId} is on ${currentPlan} ` +
+            `(rank ${currentRank}), incoming ${plan} (rank ${incomingRank}) is lower. No change.`
+          );
+        }
       }
     }
 
@@ -95,15 +118,26 @@ export async function POST(req: Request) {
       const variantId = String(attrs.variant_id ?? "");
       const plan = variantToPlan(variantId);
       if (plan === "pro" || plan === "agency") {
-        const subscriptionId = event.data?.id ?? null;
-        const portalUrl = (attrs.urls as Record<string, string> | undefined)?.customer_portal ?? null;
-        await patchProfile(userId, {
-          plan,
-          lemonsqueezy_subscription_id: subscriptionId,
-          lemonsqueezy_portal_url: portalUrl,
-          plan_expires_at: null,
-        });
-        console.info(`[ls-webhook] ${eventName} → plan=${plan} user:`, userId);
+        const profile = await fetchProfile(userId);
+        const currentPlan = profile?.plan ?? "free";
+        const currentRank = PLAN_RANK[currentPlan] ?? 0;
+        const incomingRank = PLAN_RANK[plan] ?? 0;
+        if (currentRank <= incomingRank) {
+          const subscriptionId = event.data?.id ?? null;
+          const portalUrl = (attrs.urls as Record<string, string> | undefined)?.customer_portal ?? null;
+          await patchProfile(userId, {
+            plan,
+            lemonsqueezy_subscription_id: subscriptionId,
+            lemonsqueezy_portal_url: portalUrl,
+            plan_expires_at: null,
+          });
+          console.info(`[ls-webhook] ${eventName} → plan=${plan} user:`, userId);
+        } else {
+          console.info(
+            `[ls-webhook] ${eventName} skipped: user ${userId} is on ${currentPlan} ` +
+            `(rank ${currentRank}), incoming ${plan} (rank ${incomingRank}) is lower. No change.`
+          );
+        }
       }
     }
 
