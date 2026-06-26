@@ -61,7 +61,15 @@ export async function POST(req: Request) {
 
     // Check audit limit for user
     if (!isAdmin && tier.auditLimit < 999) {
-      const windowStart = new Date(Date.now() - tier.windowHours * 60 * 60 * 1000).toISOString();
+      let windowStart: string;
+      if (effectivePlan === "free") {
+        const startOfMonth = new Date();
+        startOfMonth.setUTCDate(1);
+        startOfMonth.setUTCHours(0, 0, 0, 0);
+        windowStart = startOfMonth.toISOString();
+      } else {
+        windowStart = new Date(Date.now() - tier.windowHours * 60 * 60 * 1000).toISOString();
+      }
       const countRes = await fetch(
         `${supabaseUrl}/rest/v1/audit_runs?user_id=eq.${auth.user.id}&created_at=gte.${windowStart}&select=id`,
         { headers: { ...getSupabaseServiceHeaders(), Prefer: "count=exact" }, cache: "no-store" }
@@ -70,7 +78,9 @@ export async function POST(req: Request) {
       const recentCount = parseInt(contentRange.split("/")[1] ?? "0", 10);
       if (recentCount >= tier.auditLimit) {
         return NextResponse.json(
-          { error: `Audit limit reached (${tier.auditLimit} audits per ${tier.windowHours} hours).` },
+          { error: effectivePlan === "free"
+              ? "You've used your included audit for this month. It resets on the 1st of next month."
+              : `Audit limit reached (${tier.auditLimit} audits per ${tier.windowHours} hours).` },
           { status: 429 }
         );
       }
