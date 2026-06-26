@@ -31,10 +31,6 @@ export default function SchemaMarkup() {
         email: "hello@aeocheck.co",
         availableLanguage: "English",
       },
-      address: {
-        "@type": "PostalAddress",
-        addressCountry: "US",
-      },
     },
     {
       "@context": "https://schema.org",
