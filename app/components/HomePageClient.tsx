@@ -1065,6 +1065,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
                                 href="https://developers.google.com/search/docs/appearance/structured-data/intro-structured-data"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                tabIndex={activeFaq !== index ? -1 : undefined}
                               >
                                 Google Search Central structured data docs
                               </a>.
@@ -1072,7 +1073,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
                           )}
                           {question === "Is this the same as a traditional SEO audit?" && (
                             <>
-                              {" "}You can <a href="#scanner">run a free scan here</a> to see the difference.
+                              {" "}You can <a href="#scanner" tabIndex={activeFaq !== index ? -1 : undefined}>run a free scan here</a> to see the difference.
                             </>
                           )}
                         </p>

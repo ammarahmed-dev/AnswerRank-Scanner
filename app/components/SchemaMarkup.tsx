@@ -25,6 +25,16 @@ export default function SchemaMarkup() {
         "@type": "Person",
         name: "Ummar Ahmed",
       },
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        email: "hello@aeocheck.co",
+        availableLanguage: "English",
+      },
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: "US",
+      },
     },
     {
       "@context": "https://schema.org",
@@ -102,6 +112,8 @@ export default function SchemaMarkup() {
           price: "0",
           priceCurrency: "USD",
           availability: "https://schema.org/InStock",
+          url: "https://aeocheck.co/pricing",
+          priceValidUntil: "2027-12-31",
         },
         {
           "@type": "Offer",
@@ -110,6 +122,8 @@ export default function SchemaMarkup() {
           priceCurrency: "USD",
           availability: "https://schema.org/InStock",
           description: "One-time purchase - 1 full report URL, 3 retests, 50-page audit runs, PDF export.",
+          url: "https://aeocheck.co/pricing",
+          priceValidUntil: "2027-12-31",
         },
         {
           "@type": "Offer",
@@ -117,13 +131,9 @@ export default function SchemaMarkup() {
           price: "19",
           priceCurrency: "USD",
           availability: "https://schema.org/InStock",
-          priceSpecification: {
-            "@type": "UnitPriceSpecification",
-            price: "19",
-            priceCurrency: "USD",
-            unitCode: "MON",
-          },
           description: "Monthly subscription - unlimited scans, monitoring, Compare, Audit.",
+          url: "https://aeocheck.co/pricing",
+          priceValidUntil: "2027-12-31",
         },
         {
           "@type": "Offer",
@@ -131,13 +141,9 @@ export default function SchemaMarkup() {
           price: "49",
           priceCurrency: "USD",
           availability: "https://schema.org/InStock",
-          priceSpecification: {
-            "@type": "UnitPriceSpecification",
-            price: "49",
-            priceCurrency: "USD",
-            unitCode: "MON",
-          },
           description: "Monthly subscription - highest limits for agencies managing multiple clients.",
+          url: "https://aeocheck.co/pricing",
+          priceValidUntil: "2027-12-31",
         },
       ],
     },
@@ -208,6 +214,8 @@ export default function SchemaMarkup() {
           name: "Free Plan",
           price: "0",
           priceCurrency: "USD",
+          url: "https://aeocheck.co/pricing",
+          priceValidUntil: "2027-12-31",
         },
         {
           "@type": "Offer",
@@ -220,6 +228,8 @@ export default function SchemaMarkup() {
             priceCurrency: "USD",
             unitCode: "MON",
           },
+          url: "https://aeocheck.co/pricing",
+          priceValidUntil: "2027-12-31",
         },
         {
           "@type": "Offer",
@@ -232,6 +242,8 @@ export default function SchemaMarkup() {
             priceCurrency: "USD",
             unitCode: "MON",
           },
+          url: "https://aeocheck.co/pricing",
+          priceValidUntil: "2027-12-31",
         },
       ],
     },
