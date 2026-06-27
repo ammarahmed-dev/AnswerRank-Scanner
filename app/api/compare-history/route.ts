@@ -13,7 +13,17 @@ export type CompareRun = {
   url_b: string;
   score_a: number | null;
   score_b: number | null;
+  share_token: string | null;
   created_at: string;
+};
+
+type CompareRunRow = {
+  id: string;
+  url_a: string;
+  url_b: string;
+  share_token: string | null;
+  created_at: string;
+  result: { comparison?: { primaryScore?: number; competitorScore?: number } } | null;
 };
 
 export async function GET(req: Request) {
@@ -23,6 +33,7 @@ export async function GET(req: Request) {
 
   const params = new URLSearchParams({
     user_id: `eq.${auth.user.id}`,
+    select: "id,url_a,url_b,share_token,created_at,result",
     order: "created_at.desc",
     limit: "10",
   });
@@ -33,7 +44,16 @@ export async function GET(req: Request) {
       cache: "no-store",
     });
     if (!res.ok) return NextResponse.json({ runs: [] });
-    const runs = (await res.json()) as CompareRun[];
+    const rows = (await res.json()) as CompareRunRow[];
+    const runs: CompareRun[] = rows.map((row) => ({
+      id: row.id,
+      url_a: row.url_a,
+      url_b: row.url_b,
+      share_token: row.share_token ?? null,
+      score_a: row.result?.comparison?.primaryScore ?? null,
+      score_b: row.result?.comparison?.competitorScore ?? null,
+      created_at: row.created_at,
+    }));
     return NextResponse.json({ runs });
   } catch {
     return NextResponse.json({ runs: [] });

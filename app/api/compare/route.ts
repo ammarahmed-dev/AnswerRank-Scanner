@@ -216,9 +216,19 @@ export async function POST(req: Request) {
       summary,
     };
 
+    const userId = auth.user?.id ?? null;
+    console.log("[compare] starting save, user:", userId, "plan:", effectivePlan);
+
     let shareToken: string | null = null;
     if (hasSupabaseConfig()) {
       try {
+        const insertBody = {
+          user_id: userId,
+          url_a: primaryUrl,
+          url_b: competitorUrl,
+          result: { competitors: results, comparison: comparisonPayload },
+        };
+        console.log("[compare] inserting row:", JSON.stringify(insertBody).slice(0, 200));
         const saveRes = await fetch(`${supabaseUrl}/rest/v1/compare_runs`, {
           method: "POST",
           headers: {
@@ -226,22 +236,21 @@ export async function POST(req: Request) {
             "Content-Type": "application/json",
             Prefer: "return=representation",
           },
-          body: JSON.stringify({
-            user_id: auth.user?.id ?? null,
-            url_a: primaryUrl,
-            url_b: competitorUrl,
-            score_a: primaryScore,
-            score_b: competitorScore,
-            result: { competitors: results, comparison: comparisonPayload },
-          }),
+          body: JSON.stringify(insertBody),
         });
         if (saveRes.ok) {
           const [row] = (await saveRes.json()) as Array<{ share_token?: string }>;
           shareToken = row?.share_token ?? null;
+          console.log("[compare] insert ok, share_token:", shareToken);
+        } else {
+          const errBody = await saveRes.text().catch(() => "");
+          console.error("[compare] insert failed, status:", saveRes.status, "body:", errBody);
         }
-      } catch {
-        // Non-fatal: client will fall back to sessionStorage.
+      } catch (error) {
+        console.error("[compare] Failed to save to compare_runs:", error);
       }
+    } else {
+      console.log("[compare] skipping save - Supabase not configured");
     }
 
     return NextResponse.json({
