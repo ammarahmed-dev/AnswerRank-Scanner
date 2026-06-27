@@ -142,7 +142,7 @@ a { color: inherit; }
   border-bottom: 1px solid var(--color-line);
   background: rgba(5, 8, 18, 0.82);
   backdrop-filter: blur(10px);
-  will-change: transform;
+  will-change: auto;
 }
 
 .brand-lockup {
@@ -7378,6 +7378,20 @@ textarea.contact-control {
   }
 }
 
+/* Safety net: strip all remaining blur on mobile to prevent Android GPU compositing artifacts */
+@media (max-width: 768px) {
+  *,
+  *::before,
+  *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .site-header {
+    background: rgba(5, 8, 18, 0.97);
+  }
+}
+
 @media (max-width: 1024px) {
   body::before {
     display: none;
@@ -7388,6 +7402,7 @@ textarea.contact-control {
   .surface,
   .panel-soft,
   .hero-scanner,
+  .scanner-card,
   .answer-card-preview,
   .loading-overlay,
   .error-modal-overlay {
