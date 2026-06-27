@@ -51,7 +51,7 @@ export const COMPETITORS: Record<string, Competitor> = {
       "Multi-domain brand coverage in one dashboard",
     ],
     weWinAt: [
-      "Deep per-page AEO audit with 20+ checks",
+      "Deep per-page AEO audit with 25 AEO and GEO checks",
       "Schema detection and implementation guidance",
       "Client-ready PDF reports you can hand off immediately",
       "Self-serve access from $9 with no subscription required",

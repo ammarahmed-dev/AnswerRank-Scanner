@@ -16,13 +16,9 @@ export default function HomePage() {
   const heroContent = (
     <>
       <p className="hero-badge">25 AEO + GEO checks · Free · No signup</p>
-      <h1>
-        Free{" "}
-        <span style={{ color: "#00f0b4" }}>ChatGPT visibility checker</span>{" "}
-        for any website
-      </h1>
+      <h1>Fix the reasons AI search ignores your website</h1>
       <p className="hero-lede">
-        ChatGPT and Perplexity choose which websites to reference when answering questions. AEOCheck scans your page and shows whether your site qualifies - and exactly what to fix if it doesn&apos;t.
+        Paste any public URL. Get an AI visibility score, prioritized fixes, and a client-ready PDF - in 60 seconds.
       </p>
     </>
   );

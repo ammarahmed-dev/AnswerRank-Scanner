@@ -75,9 +75,9 @@ const STEP_ANIMATION_MS = 140;
 
 const trustStats = [
   { value: "5,700+", label: "Scans run", text: "Over 5,700 websites have been scanned for AEO and AI search readiness using AEOCheck." },
-  { value: "25", label: "Checks per scan", text: "Every scan covers 25 signals across schema, metadata, content clarity, trust signals, and AI readiness." },
-  { value: "60s", label: "Scan time", text: "Paste a URL and get a scored AI readiness report in under 60 seconds. No installation needed." },
-  { value: "$0", label: "To start", text: "Run a free scan without creating an account. No credit card, no trial period." },
+  { value: "25", label: "AI visibility checks", text: "Every scan covers 25 AEO and GEO checks across schema, metadata, content clarity, trust signals, and AI readiness." },
+  { value: "PDF", label: "Client-ready", text: "Every paid report exports as a branded PDF you can share with clients directly." },
+  { value: "Agencies", label: "& freelancers", text: "Built for agencies and freelancers who need fast, client-presentable AI visibility audits." },
 ];
 
 const auditSignals = [
@@ -96,7 +96,7 @@ const workflow = [
   },
   {
     title: "Read every page signal",
-    text: "The scanner reads your metadata, schema markup, and content structure. It checks over 20 signals that AI engines use to cite your page.",
+    text: "The scanner reads your metadata, schema markup, and content structure. It runs 25 AEO and GEO checks that AI engines use to cite your page.",
   },
   {
     title: "Score your AI visibility",
@@ -113,7 +113,7 @@ const faqs = [
   ["What is AEO and why does it matter?", "AEO (Answer Engine Optimization) is the practice of making your website understandable and citable by AI tools like ChatGPT, Perplexity, and Google AI Overviews. As more people get answers directly from AI instead of clicking search results, being a cited source is becoming as important as ranking on page one."],
   ["How is this different from Google Search Console?", "Google Search Console shows how your site performs in traditional Google search - rankings, clicks, and crawl errors. AEOCheck checks whether AI answer engines can read, understand, and cite your content. A site can rank well on Google and still be invisible to AI search. Different problem, different fixes."],
   ["Does it work without signup?", "Yes. Paste any public URL and run a free scan instantly. No account required."],
-  ["What does the scanner check?", "It checks over 25 AEO and AI search readiness signals, including schema, metadata, headings, content clarity, and answer extraction structure."],
+  ["What does the scanner check?", "It runs 25 AEO and GEO checks, including schema, metadata, headings, content clarity, and answer extraction structure."],
   ["Is this the same as a traditional SEO audit?", "No. Traditional SEO audits focus on keywords and backlinks. This scanner checks whether answer engines like ChatGPT and Perplexity can understand and cite your page."],
   ["Do you store my scan data?", "Scans are saved to your account when you're logged in. Free accounts see recent scans; paid accounts keep full report history."],
 ];
@@ -877,7 +877,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
             <div className="launch-container">
               <div className="section-intro">
                 <p className="launch-eyebrow">What the audit checks</p>
-                <h2>Six readiness areas, translated into business-friendly actions.</h2>
+                <h2>7 readiness areas, translated into business-friendly actions.</h2>
               </div>
               <div className="signal-grid">
                 {auditSignals.map(({ icon: Icon, title, text }) => (

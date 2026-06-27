@@ -63,7 +63,7 @@ export default function SchemaMarkup() {
           name: "What does the scanner check?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "It checks over 25 AEO and AI search readiness signals, including schema, metadata, headings, content clarity, and answer extraction structure.",
+            text: "It runs 25 AEO and GEO checks, including schema, metadata, headings, content clarity, and answer extraction structure.",
           },
         },
         {
