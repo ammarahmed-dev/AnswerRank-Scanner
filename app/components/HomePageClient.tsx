@@ -77,7 +77,7 @@ const trustStats = [
   { value: "5,700+", label: "Scans run", text: "Over 5,700 websites have been scanned for AEO and AI search readiness using AEOCheck." },
   { value: "25", label: "AI visibility checks", text: "Every scan covers 25 AEO and GEO checks across schema, metadata, content clarity, trust signals, and AI readiness." },
   { value: "PDF", label: "Client-ready", text: "Every paid report exports as a branded PDF you can share with clients directly." },
-  { value: "Agencies", label: "& freelancers", text: "Built for agencies and freelancers who need fast, client-presentable AI visibility audits." },
+  { value: "60s", label: "Scan time", text: "Paste a URL and get a scored AI readiness report in under 60 seconds. No installation needed." },
 ];
 
 const auditSignals = [
