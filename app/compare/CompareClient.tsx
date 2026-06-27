@@ -121,7 +121,7 @@ export default function CompareClient() {
         },
         body: JSON.stringify({ primaryUrl: normalizedA, competitorUrl: normalizedB }),
       });
-      const data = (await res.json()) as CompareResult & { error?: string };
+      const data = (await res.json()) as CompareResult & { shareToken?: string | null; error?: string };
       if (!res.ok || data.error) {
         setError(data.error ?? "Comparison failed. Please try again.");
         setLoading(false);
@@ -138,6 +138,13 @@ export default function CompareClient() {
           created_at: new Date().toISOString(),
         };
         setHistory(prev => [newRun, ...prev].slice(0, 10));
+      }
+      if (data.shareToken) {
+        sessionStorage.setItem("aeocheck_compare_result", JSON.stringify(data));
+        window.location.href = `/compare-report?token=${data.shareToken}`;
+      } else {
+        sessionStorage.setItem("aeocheck_compare_result", JSON.stringify(data));
+        window.location.href = "/compare-report";
       }
     } catch {
       setError("Comparison failed. Check both URLs and try again.");
