@@ -16,7 +16,7 @@ export default function HomePage() {
   const heroContent = (
     <>
       <p className="hero-badge">25 AEO + GEO checks · Free · No signup</p>
-      <h1>Fix the reasons AI search ignores your website</h1>
+      <h1>Fix the reasons <span style={{ color: "#00f0b4" }}>AI search</span> ignores your website</h1>
       <p className="hero-lede">
         Paste any public URL. Get an AI visibility score, prioritized fixes, and a client-ready PDF - in 60 seconds.
       </p>
