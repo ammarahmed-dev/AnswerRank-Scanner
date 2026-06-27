@@ -205,36 +205,49 @@ export async function POST(req: Request) {
 
     if (!bypassLimit) await incrementUsage(clientKey, usage.count + 1);
 
-    if (auth.user && (effectivePlan === "pro" || effectivePlan === "agency") && hasSupabaseConfig()) {
-      fetch(`${supabaseUrl}/rest/v1/compare_runs`, {
-        method: "POST",
-        headers: {
-          ...getSupabaseServiceHeaders(),
-          "Content-Type": "application/json",
-          Prefer: "return=minimal",
-        },
-        body: JSON.stringify({
-          user_id: auth.user.id,
-          url_a: primaryUrl,
-          url_b: competitorUrl,
-          score_a: primaryScore,
-          score_b: competitorScore,
-        }),
-      }).catch(() => {});
+    const comparisonPayload = {
+      primaryScore,
+      competitorScore,
+      scoreGap,
+      winner,
+      categoryBreakdown,
+      advantages,
+      gaps,
+      summary,
+    };
+
+    let shareToken: string | null = null;
+    if (hasSupabaseConfig()) {
+      try {
+        const saveRes = await fetch(`${supabaseUrl}/rest/v1/compare_runs`, {
+          method: "POST",
+          headers: {
+            ...getSupabaseServiceHeaders(),
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+          },
+          body: JSON.stringify({
+            user_id: auth.user?.id ?? null,
+            url_a: primaryUrl,
+            url_b: competitorUrl,
+            score_a: primaryScore,
+            score_b: competitorScore,
+            result: { competitors: results, comparison: comparisonPayload },
+          }),
+        });
+        if (saveRes.ok) {
+          const [row] = (await saveRes.json()) as Array<{ share_token?: string }>;
+          shareToken = row?.share_token ?? null;
+        }
+      } catch {
+        // Non-fatal: client will fall back to sessionStorage.
+      }
     }
 
     return NextResponse.json({
+      shareToken,
       competitors: results,
-      comparison: {
-        primaryScore,
-        competitorScore,
-        scoreGap,
-        winner,
-        categoryBreakdown,
-        advantages,
-        gaps,
-        summary,
-      },
+      comparison: comparisonPayload,
     });
   } catch {
     return NextResponse.json(

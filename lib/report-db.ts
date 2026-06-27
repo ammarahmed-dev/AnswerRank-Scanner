@@ -39,15 +39,15 @@ function getDb() {
 }
 
 export function saveReport(result: ScanResult): ScanResult {
+  if (process.env.NODE_ENV === "production") {
+    console.warn("[report-db] Falling back to local SQLite — report will not persist across serverless invocations. Check Supabase config.");
+  }
   const id = result.reportId ?? randomUUID();
   const report = { ...result, reportId: id };
   const createdAt = report.scannedAt || new Date().toISOString();
 
   getDb()
-    .prepare(`
-      INSERT OR REPLACE INTO reports (id, url, result_json, created_at)
-      VALUES (?, ?, ?, ?)
-    `)
+    .prepare("INSERT OR REPLACE INTO reports (id, url, result_json, created_at) VALUES (?, ?, ?, ?)")
     .run(id, report.url, JSON.stringify(report), createdAt);
 
   return report;
@@ -157,16 +157,11 @@ export async function getReportRecord(id: string): Promise<ScanResult | null> {
   return getReport(id);
 }
 
-export async function markReportUnlocked(reportId: string, polarOrderId?: string | null): Promise<boolean> {
+export async function markReportUnlocked(reportId: string): Promise<boolean> {
   const unlockedAt = new Date().toISOString();
 
   if (hasSupabaseConfig()) {
-    const params = new URLSearchParams({
-      id: `eq.${reportId}`,
-      select: "id,result",
-      limit: "1",
-    });
-
+    const params = new URLSearchParams({ id: `eq.${reportId}`, select: "id,result", limit: "1" });
     const readRes = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, {
       headers: getSupabaseServiceHeaders(),
       cache: "no-store",
@@ -184,22 +179,12 @@ export async function markReportUnlocked(reportId: string, polarOrderId?: string
           max_retests: typeof current.max_retests === "number" ? current.max_retests : 3,
           unlocked: true,
           unlockedAt,
-          unlockSource: "polar_checkout",
-          polarOrderId: polarOrderId ?? current.polarOrderId,
         };
-
         const patchRes = await fetch(`${supabaseUrl}/rest/v1/reports?id=eq.${encodeURIComponent(reportId)}`, {
           method: "PATCH",
-          headers: {
-            ...getSupabaseServiceHeaders(),
-            Prefer: "return=minimal",
-          },
-          body: JSON.stringify({
-            result: nextResult,
-            max_retests: typeof current.max_retests === "number" ? current.max_retests : 3,
-          }),
+          headers: { ...getSupabaseServiceHeaders(), Prefer: "return=minimal" },
+          body: JSON.stringify({ result: nextResult, max_retests: nextResult.max_retests }),
         });
-
         if (patchRes.ok) return true;
         const details = await patchRes.text().catch(() => "");
         console.error("Supabase report unlock patch failed:", details);
@@ -213,21 +198,10 @@ export async function markReportUnlocked(reportId: string, polarOrderId?: string
   try {
     const local = getReport(reportId);
     if (!local) return false;
-    const next: ScanResult = {
-      ...local,
-      unlocked: true,
-      unlockedAt,
-      unlockSource: "polar_checkout",
-      polarOrderId: polarOrderId ?? local.polarOrderId,
-    };
-
+    const next: ScanResult = { ...local, unlocked: true, unlockedAt };
     getDb()
-      .prepare(`
-        INSERT OR REPLACE INTO reports (id, url, result_json, created_at)
-        VALUES (?, ?, ?, ?)
-      `)
+      .prepare("INSERT OR REPLACE INTO reports (id, url, result_json, created_at) VALUES (?, ?, ?, ?)")
       .run(reportId, next.url, JSON.stringify(next), next.scannedAt || unlockedAt);
-
     return true;
   } catch (err: unknown) {
     console.error("Local report unlock failed:", err instanceof Error ? err.message : "Unknown error");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 
@@ -87,14 +87,32 @@ function gapRecs(breakdown: CategoryRow[] | undefined): Array<{ category: string
 
 export default function CompareReportPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<CompareResult | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("aeocheck_compare_result");
-    if (raw) { try { setData(JSON.parse(raw) as CompareResult); } catch {} }
-    setReady(true);
-  }, []);
+    const token = searchParams.get("token");
+    if (token) {
+      fetch(`/api/compare-result?token=${encodeURIComponent(token)}`)
+        .then((r) => r.ok ? r.json() : null)
+        .then((result: CompareResult | null) => {
+          if (result) { setData(result); setReady(true); return; }
+          const raw = sessionStorage.getItem("aeocheck_compare_result");
+          if (raw) { try { setData(JSON.parse(raw) as CompareResult); } catch {} }
+          setReady(true);
+        })
+        .catch(() => {
+          const raw = sessionStorage.getItem("aeocheck_compare_result");
+          if (raw) { try { setData(JSON.parse(raw) as CompareResult); } catch {} }
+          setReady(true);
+        });
+    } else {
+      const raw = sessionStorage.getItem("aeocheck_compare_result");
+      if (raw) { try { setData(JSON.parse(raw) as CompareResult); } catch {} }
+      setReady(true);
+    }
+  }, [searchParams]);
 
   if (!ready) return null;
 

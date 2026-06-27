@@ -16,3 +16,5 @@ tsconfig.tsbuildinfo
 .vercel
 .env*
 /aeocheck.co-audit
+AEOCHECK_CURRENT_STATE_AUDIT.md
+current_info.txt

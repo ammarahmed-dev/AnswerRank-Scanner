@@ -13,7 +13,6 @@
     "@huggingface/inference": "^4.13.19",
     "@phosphor-icons/react": "^2.1.10",
     "@polar-sh/nextjs": "^0.9.6",
-    "@polar-sh/sdk": "^0.47.1",
     "@supabase/supabase-js": "^2.105.1",
     "@tabler/icons-webfont": "^3.44.0",
     "@vercel/og": "^0.11.1",

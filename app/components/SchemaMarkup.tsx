@@ -23,7 +23,7 @@ export default function SchemaMarkup() {
       ],
       founder: {
         "@type": "Person",
-        name: "Ummar Ahmed",
+        name: "Ammar Ahmed",
       },
       contactPoint: {
         "@type": "ContactPoint",

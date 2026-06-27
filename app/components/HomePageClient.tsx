@@ -504,7 +504,8 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
       }
       document.body.style.overflow = "";
       sessionStorage.setItem("aeocheck_compare_result", JSON.stringify(payload));
-      router.push("/compare-report");
+      const shareToken = typeof payload.shareToken === "string" ? payload.shareToken : null;
+      router.push(shareToken ? `/compare-report?token=${shareToken}` : "/compare-report");
     } catch {
       stepTimers.forEach(clearTimeout);
       document.body.style.overflow = "";
