@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
@@ -85,7 +85,7 @@ function gapRecs(breakdown: CategoryRow[] | undefined): Array<{ category: string
   return (["schema","aiReadiness","metadata","performance"] as const).filter(k => losers.includes(k)).map(k => MAP[k]);
 }
 
-export default function CompareReportPage() {
+function CompareReportContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [data, setData] = useState<CompareResult | null>(null);
@@ -395,5 +395,17 @@ export default function CompareReportPage() {
       </main>
       <SiteFooter />
     </>
+  );
+}
+
+export default function CompareReportPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-ink-muted)", fontSize: 14 }}>
+        Loading report...
+      </div>
+    }>
+      <CompareReportContent />
+    </Suspense>
   );
 }
