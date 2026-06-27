@@ -1,0 +1,778 @@
+I want to improve and expand the existing production application AEOCheck, available at:
+
+https://www.aeocheck.co/
+
+Before proposing or implementing any changes, perform a complete discovery audit of the existing application, codebase, architecture, live website, scan engine, scoring system, report experience, SEO, AEO, GEO readiness, content system, authentication, payments, database, and deployment configuration.
+
+IMPORTANT: This phase is strictly for investigation and documentation.
+
+Do not modify, create, delete, rename, format, refactor, or install anything yet.
+
+Do not start implementation.
+
+Do not assume the application is a new project.
+
+Do not replace existing systems simply because another architecture appears cleaner.
+
+First understand what is already working, what is incomplete, what is duplicated, what is outdated, and what may break if changed.
+
+Create a detailed discovery report named:
+
+`AEOCHECK_CURRENT_STATE_AUDIT.md`
+
+---
+
+# PHASE 1 — Repository and Architecture Discovery
+
+Inspect the entire repository and document:
+
+## 1. Technology stack
+
+Identify the exact versions and usage of:
+
+* Next.js
+* React
+* TypeScript
+* Node.js
+* Supabase
+* Authentication libraries
+* Payment provider
+* CSS system
+* UI libraries
+* Charting libraries
+* PDF generation libraries
+* Testing tools
+* Analytics tools
+* Email services
+* Deployment platform
+* Any AI model or API integrations
+* PageSpeed or Lighthouse integrations
+* Crawling/scraping libraries
+* Background jobs
+* Rate limiting
+* Caching
+
+Read:
+
+* `package.json`
+* lock files
+* Next.js config
+* TypeScript config
+* environment examples
+* middleware
+* deployment files
+* database migrations
+* API route files
+
+Report exact versions where available.
+
+## 2. Application structure
+
+Map the application directory structure and explain the responsibility of each major area.
+
+Include:
+
+* public marketing pages
+* scan flow
+* loading experience
+* reports
+* comparison reports
+* PDF/print reports
+* authentication
+* user dashboard
+* pricing
+* payment and checkout
+* blog system
+* database layer
+* API routes
+* reusable components
+* utilities
+* scoring engine
+* AI analysis
+* background processes
+* admin/internal tools
+
+Create a high-level architecture diagram in Mermaid format.
+
+## 3. Data flow
+
+Trace the complete scan lifecycle from the moment a user submits a URL until the final report is displayed.
+
+Document:
+
+1. URL input and validation
+2. Authentication or usage-limit checks
+3. Scan request
+4. Page fetching
+5. Fallback fetching
+6. Deterministic checks
+7. PageSpeed checks
+8. Schema extraction
+9. AI analysis
+10. Score calculation
+11. Database persistence
+12. SSE or streaming response
+13. Browser report rendering
+14. PDF generation
+15. Retesting
+16. Comparison reports
+17. Paywall or unlocked states
+
+Name the exact files and functions involved in each step.
+
+## 4. External services
+
+List every third-party service and API used.
+
+For each one, document:
+
+* purpose
+* files where it is used
+* environment variables required
+* whether it is required or optional
+* fallback behavior
+* failure behavior
+* estimated cost exposure
+* whether secrets are safely server-side
+
+Do not reveal actual secret values.
+
+---
+
+# PHASE 2 — Scan Engine and Scoring Audit
+
+## 5. Scan checks inventory
+
+Build a complete inventory of every scan check currently implemented.
+
+For every check include:
+
+* check ID
+* display name
+* category
+* file/function
+* what is measured
+* pass criteria
+* warning criteria
+* fail criteria
+* score contribution
+* recommendation generated
+* applicability rules
+* confidence level
+* whether it is deterministic, API-based, heuristic, or AI-generated
+
+Organize checks under:
+
+* Schema
+* Content Clarity
+* Performance
+* AI Readiness
+* Technical SEO
+* AEO
+* GEO
+* Trust and authority
+* Crawlability
+* Other categories found in the code
+
+## 6. Score calculation
+
+Trace the exact score calculation logic.
+
+Document:
+
+* overall score formula
+* category score formula
+* category weights
+* issue severity weights
+* caps
+* deductions
+* bonuses
+* fallback logic
+* missing-data handling
+* PageSpeed failure handling
+* AI failure handling
+* schema applicability rules
+* homepage versus article-page rules
+* how critical, high-impact, and nice-to-have issues are determined
+
+Verify whether browser reports, comparison reports, database records, and PDF reports all use the same normalized source of truth.
+
+Identify every remaining path where:
+
+* scores are recalculated locally
+* fallback logic can diverge
+* issue filtering differs
+* schema recommendations differ
+* browser and PDF values may become inconsistent
+
+## 7. AEO and GEO methodology
+
+Document what AEOCheck currently means by:
+
+* AEO
+* AI readiness
+* GEO
+* citation readiness
+* content clarity
+* entity clarity
+* schema readiness
+
+Identify:
+
+* which signals are actually measured
+* which signals are inferred
+* which signals are AI-generated
+* which claims may be too strong
+* which checks are missing
+* whether the methodology is transparently documented for users
+
+Do not assume AEO and GEO are interchangeable.
+
+## 8. Reliability and error handling
+
+Inspect:
+
+* URL normalization
+* redirect handling
+* SSRF protections
+* localhost/private IP blocking
+* robots.txt fetching
+* sitemap fetching
+* HTML fetch limits
+* timeout behavior
+* rate limiting
+* malformed HTML handling
+* JavaScript-rendered websites
+* Cloudflare-protected websites
+* large pages
+* non-HTML URLs
+* PageSpeed throttling
+* Gemini/OpenAI model failures
+* database failures
+* duplicate scans
+* SSE disconnects
+
+Classify each area as:
+
+* robust
+* partially handled
+* missing
+* risky
+* unknown
+
+---
+
+# PHASE 3 — User Experience and Product Audit
+
+## 9. Public user journey
+
+Inspect the live website and local application.
+
+Document the journey for:
+
+* first-time visitor
+* anonymous user
+* authenticated free user
+* paid user
+* returning user
+* user comparing a competitor
+* user exporting a PDF
+* user retesting a website
+
+Identify:
+
+* confusing steps
+* dead ends
+* unclear CTAs
+* missing states
+* duplicated screens
+* mobile issues
+* trust concerns
+* conversion blockers
+* places where users may not understand scores
+
+## 10. Report experience
+
+Review all report sections and document:
+
+* hero/header
+* overall score
+* category scores
+* issues
+* passing checks
+* schema results
+* AI insights
+* recommendations
+* next steps
+* comparison reports
+* PDF export
+* print layout
+* locked/unlocked content
+* retest behavior
+* share behavior
+
+Check:
+
+* consistency
+* readability
+* hierarchy
+* duplicated information
+* actionable value
+* report length
+* mobile responsiveness
+* accessibility
+* whether users can understand what to do next
+
+## 11. Product functionality inventory
+
+Create a table of all existing features and assign each one a status:
+
+* fully working
+* partially working
+* UI only
+* backend only
+* incomplete
+* deprecated
+* duplicated
+* broken
+* unknown
+
+Include at minimum:
+
+* free scan
+* authenticated scans
+* scan limits
+* saved reports
+* retesting
+* comparison reports
+* PDF reports
+* payment
+* pricing
+* unlock/paywall
+* sample report
+* blog
+* SEO landing pages
+* account/dashboard
+* email flows
+* analytics
+* admin tools
+
+---
+
+# PHASE 4 — Database, Authentication, and Payments
+
+## 12. Supabase and database audit
+
+Inspect:
+
+* database schema
+* migrations
+* tables
+* relationships
+* row-level security
+* indexes
+* report storage
+* user storage
+* scan-limit tracking
+* payment status
+* retest counts
+* timestamps
+* cleanup policies
+
+Document:
+
+* what each table stores
+* which API routes access it
+* RLS status
+* potential security problems
+* missing indexes
+* stale or unused columns
+* data duplication
+* migration risks
+
+Create a simplified database relationship diagram.
+
+## 13. Authentication
+
+Document:
+
+* signup
+* login
+* logout
+* password reset
+* OAuth
+* session handling
+* protected routes
+* middleware
+* anonymous scans
+* transition from anonymous to authenticated
+* account deletion
+* data ownership
+
+Identify broken, missing, or insecure flows.
+
+## 14. Payments and monetization
+
+Document:
+
+* current payment provider
+* checkout flow
+* products/prices
+* one-time versus subscription logic
+* webhook handling
+* payment verification
+* report unlocking
+* failed payments
+* duplicate payments
+* refunds
+* user entitlements
+* test versus production configuration
+
+Identify what is live, mocked, incomplete, or not connected.
+
+---
+
+# PHASE 5 — SEO Audit of AEOCheck Itself
+
+Audit the public website as a search engine would.
+
+## 15. Crawlable route inventory
+
+List every public route and classify it as:
+
+* indexable
+* noindex
+* blocked
+* duplicate
+* orphaned
+* redirect
+* dynamic
+* missing canonical
+* thin content
+
+Include:
+
+* homepage
+* pricing
+* FAQ
+* free checker pages
+* scoring methodology
+* sample report
+* comparison pages
+* blog index
+* individual blogs
+* legal pages
+* auth pages
+* report pages
+
+## 16. On-page SEO
+
+For each public page inspect:
+
+* title
+* meta description
+* canonical
+* H1
+* heading hierarchy
+* crawlable copy
+* internal links
+* image alt text
+* structured data
+* Open Graph metadata
+* Twitter metadata
+* indexability
+* content depth
+* search intent
+* duplicate content
+* keyword overlap
+* weak or generic copy
+
+## 17. Technical SEO
+
+Inspect:
+
+* `robots.txt`
+* sitemap
+* canonical implementation
+* redirect consistency
+* trailing slash behavior
+* www versus non-www
+* HTTP versus HTTPS
+* status codes
+* custom 404
+* metadata generation
+* server rendering
+* JavaScript dependency
+* Core Web Vitals risks
+* image optimization
+* fonts
+* script loading
+* crawl traps
+* report indexing
+* blog pagination
+* structured-data validation
+
+## 18. Content and keyword architecture
+
+Create an inventory of:
+
+* existing landing pages
+* existing blogs
+* primary target keyword per page
+* search intent
+* content cluster
+* internal-link targets
+* overlapping keywords
+* missing topics
+* thin pages
+* outdated articles
+
+Do not create new articles yet.
+
+First identify the current topical map and content gaps.
+
+---
+
+# PHASE 6 — AEO and GEO Audit of AEOCheck Itself
+
+## 19. AEO readiness
+
+Evaluate whether AEOCheck’s own pages contain:
+
+* clear definitions
+* direct answers
+* question-based headings
+* concise summaries
+* step-by-step explanations
+* visible FAQs
+* comparison tables
+* methodology explanations
+* schema aligned with visible content
+* clear product entity
+* answerable passages
+* consistent terminology
+
+Identify pages where AI assistants may struggle to extract a clear answer.
+
+## 20. GEO and AI-search readiness
+
+Evaluate:
+
+* brand/entity consistency
+* organization details
+* authorship
+* editorial policy
+* methodology
+* primary-source citations
+* statistics and evidence
+* published and updated dates
+* author bios
+* original data
+* sample reports
+* trust signals
+* transparent limitations
+* quotable definitions
+* content provenance
+* source citations
+* internal entity linking
+
+Separate:
+
+* confirmed implementation
+* weak implementation
+* missing implementation
+* recommendations
+
+Do not claim that any GEO change guarantees citations.
+
+---
+
+# PHASE 7 — Code Quality and Maintainability
+
+## 21. Codebase health
+
+Inspect:
+
+* duplicated components
+* duplicated scoring logic
+* oversized files
+* dead code
+* stale comments
+* unused dependencies
+* unsafe type assertions
+* inconsistent naming
+* hard-coded values
+* repeated prompts
+* hidden fallback paths
+* environment-specific assumptions
+* client/server boundary violations
+* error handling
+* logging
+* test coverage
+
+Identify files that are high-risk to modify.
+
+## 22. Testing status
+
+Document existing:
+
+* unit tests
+* integration tests
+* end-to-end tests
+* scoring verification scripts
+* browser/PDF comparison scripts
+* API tests
+* schema tests
+* security tests
+* SEO tests
+
+Run only existing safe, documented verification commands.
+
+Do not install new tools or alter code.
+
+Report:
+
+* passing tests
+* failing tests
+* missing tests
+* commands that could not be run
+* reasons
+
+## 23. Deployment and production readiness
+
+Inspect:
+
+* Vercel configuration
+* environment variables
+* build scripts
+* runtime selection
+* serverless limitations
+* cron jobs
+* storage assumptions
+* caching
+* API timeouts
+* function size
+* logging
+* monitoring
+* analytics
+* error reporting
+* domain setup
+
+Identify anything that works locally but may fail in production.
+
+---
+
+# PHASE 8 — Live Website Versus Repository Comparison
+
+Compare the live production site at:
+
+https://www.aeocheck.co/
+
+against the current repository.
+
+Identify:
+
+* routes present in code but not live
+* live routes not found in code
+* UI differences
+* outdated deployment
+* missing content
+* stale assets
+* environment-dependent behavior
+* broken links
+* API errors
+* console errors
+* production-only failures
+* local-only features
+
+Do not assume the repository exactly matches production.
+
+---
+
+# REQUIRED DELIVERABLE
+
+Create `AEOCHECK_CURRENT_STATE_AUDIT.md` with these sections:
+
+1. Executive Summary
+2. Current Technology Stack
+3. Architecture Diagram
+4. Route and Feature Inventory
+5. Scan Lifecycle
+6. Scan Check Inventory
+7. Scoring Methodology
+8. Browser/PDF/Compare Consistency
+9. AEO and GEO Methodology
+10. User Journey
+11. Report UX
+12. Database and Supabase
+13. Authentication
+14. Payments and Monetization
+15. Current SEO Status
+16. Current AEO Status
+17. Current GEO Status
+18. Content and Keyword Inventory
+19. Security and Reliability
+20. Code Quality
+21. Testing Status
+22. Deployment Status
+23. Live Site vs Repository Differences
+24. Technical Debt
+25. Risks and Blockers
+26. Quick Wins
+27. Medium-Term Opportunities
+28. Major Strategic Opportunities
+29. Unknowns Requiring Human Confirmation
+30. Recommended Next Discovery Steps
+
+For every issue include:
+
+* severity: Critical / High / Medium / Low
+* evidence
+* affected files/routes
+* business impact
+* technical impact
+* confidence level
+* whether it is confirmed or inferred
+
+Also provide these summary tables:
+
+### Feature Status Table
+
+| Feature | Status | Files | Live? | Risk | Notes |
+
+### Public Route Inventory
+
+| Route | Purpose | Rendering | Indexable | Canonical | Schema | Content Status |
+
+### Scan Check Inventory
+
+| Check ID | Category | Source | Type | Weight | Applicability | Output |
+
+### Scoring Source-of-Truth Map
+
+| Report Value | Canonical Source | Browser Consumer | PDF Consumer | Compare Consumer | Divergence Risk |
+
+### External Services Table
+
+| Service | Purpose | Environment Variables | Fallback | Cost Risk | Failure Impact |
+
+### Priority Findings
+
+| Priority | Finding | Evidence | Impact | Recommended Direction |
+
+---
+
+# FINAL RESPONSE RULES
+
+After completing the audit:
+
+1. Do not implement any fixes.
+2. Do not create a new implementation plan yet.
+3. Do not rewrite the application.
+4. Do not install packages.
+5. Do not change dependencies.
+6. Do not make speculative claims without labeling them.
+7. Clearly state what could not be verified.
+8. Cite exact files, functions, routes, and line ranges where possible.
+9. Distinguish production evidence from local repository evidence.
+10. End by asking for human review of the discovery report before planning improvements.
