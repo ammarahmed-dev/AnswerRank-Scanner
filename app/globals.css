@@ -7378,19 +7378,6 @@ textarea.contact-control {
   }
 }
 
-/* Safety net: strip all remaining blur on mobile to prevent Android GPU compositing artifacts */
-@media (max-width: 768px) {
-  *,
-  *::before,
-  *::after {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-  }
-
-  .site-header {
-    background: rgba(5, 8, 18, 0.97);
-  }
-}
 
 @media (max-width: 1024px) {
   body::before {
@@ -12644,5 +12631,27 @@ textarea.contact-control {
   .compare-cta-card a {
     width: 100% !important;
     text-align: center !important;
+  }
+}
+
+/* ── Nuclear mobile GPU fix (must stay last in file) ──────────────────────
+   Strips every filter/blur/will-change on mobile to eliminate Android Chrome
+   compositor-layer tearing artifacts. Desktop (>1024px) keeps glass effects.
+   ────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  * {
+    filter: none !important;
+    -webkit-filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+  }
+
+  .site-header {
+    background: rgba(5, 8, 18, 0.97);
+  }
+
+  .nav-mobile-menu {
+    background: rgba(5, 8, 18, 0.99);
   }
 }
