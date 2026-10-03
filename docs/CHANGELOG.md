@@ -2,6 +2,15 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 3)
+
+- ESLint 9 with `eslint-config-next` (`npm run lint`), enforced in CI. 0 errors; 80 warnings of
+  existing debt (internal `<a>` links, React hook patterns) tracked in the ROADMAP.
+- Removed unused imports; escaped quotes in legal page text (rendered text unchanged).
+- Rewrote README for the current product, stack and scripts.
+- Found: marketing says "25 checks" while a scan returns 23; added to ROADMAP.
+- Verified: tsc, lint (exit 0), 52/52 tests, production build; previous CI run on main green.
+
 ## 2026-10-03 (session 2)
 
 - Security: `npm audit` now 0 vulnerabilities. Replaced `@vercel/og` with built-in `next/og`;

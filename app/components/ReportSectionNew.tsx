@@ -8,7 +8,7 @@ import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import PrintLayout from "./PrintLayout";
 import UpgradeButton from "./UpgradeButton";
-import { canViewFullReport, isMasterAdmin } from "@/lib/access";
+import { canViewFullReport } from "@/lib/access";
 import { useAuth } from "@/app/context/AuthContext";
 import { mapReportCategory, type ReportCategory } from "@/lib/report-category-scores";
 import { getNormalizedIssues } from "@/lib/report-issues";

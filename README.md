@@ -1,111 +1,68 @@
 # AEOCheck
 
-AEOCheck is a one-page SaaS MVP that scans a public website URL and generates an AI Visibility Readiness Report. It is designed for demos: no auth, no database, and no Stripe integration yet.
+[AEOCheck](https://www.aeocheck.co) scans a public web page and scores how ready it is to be
+found, understood and cited by AI answer engines (ChatGPT, Perplexity, Google AI Overviews,
+Gemini). It runs 20+ AEO/GEO checks across 7 readiness areas and turns them into a prioritized
+fix list.
 
-## What It Does
+## Features
 
-- Scores a page from 0-100 for AI visibility readiness
-- Extracts title, meta description, canonical URL, headings, schema, images, and links
-- Checks JSON-LD schema and answer-readiness signals
-- Generates high-impact recommendations and suggested FAQs
-- Shows a locked Pro Report teaser with an "Unlock Full Report - $9" button
+- **Scan**: score 0-100 with category scores (metadata, headings, schema, content clarity,
+  AI readiness, trust signals, performance), streamed live over SSE
+- **Report**: issues with priority and effort, schema recommendations, AI-generated insights,
+  competitor comparison, PDF export (paid plans)
+- **Compare**: side-by-side scan of two sites with a shareable link
+- **Audit**: multi-page site audit from the sitemap and internal links
+- **Monitor**: scheduled rescans with weekly/monthly score emails
+- **Blog**: MDX content in `content/blog/` with automated drafting workflows
 
-## Free Report Includes
+Plans: Free, Onetime (one full report), Pro and Agency, billed through Lemon Squeezy.
 
-- Overall score
-- Basic category scores
-- Extracted metadata
-- Schema found
-- Top 3 high-impact fixes
-- Recommended FAQs
-- Final verdict
-- Copy recommendations action
-- Scan another URL action
+## Tech stack
 
-## Pro Teaser Includes
+- Next.js 16 (App Router), React 19, TypeScript (strict), Tailwind CSS v4
+- Supabase (Postgres + Auth with Google OAuth and email)
+- Lemon Squeezy for payments, Resend for email, Vercel for hosting and cron
+- Cheerio scraping with a Jina reader fallback; Google PageSpeed Insights
+- AI insights via DeepSeek, with OpenRouter and Gemini fallbacks
 
-The Pro Report section is intentionally locked for now. The upgrade button only shows:
-
-```text
-Stripe checkout will be connected in the next step.
-```
-
-It teases the future paid report:
-
-- Full AI search breakdown
-- Competitor/entity comparison
-- Full schema recommendations
-- 10 recommended FAQs
-- Exportable PDF report
-- Priority implementation checklist
-
-## Tech Stack
-
-- Next.js 15 App Router
-- React 19
-- TypeScript
-- Tailwind CSS v4
-- Cheerio for HTML parsing
-- OpenAI GPT-4o-mini for optional AI analysis
-- Google PageSpeed Insights API for optional performance scoring
-
-## Environment Variables
-
-Create `.env.local` from `.env.example`:
-
-```env
-OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4o-mini
-GEMINI_API_KEY=
-GOOGLE_PAGESPEED_API_KEY=
-```
-
-All keys are optional. The app works without keys using deterministic fallback scoring and recommendations. Add `OPENAI_API_KEY` for AI-powered recommendations, or `GEMINI_API_KEY` as a fallback AI provider. When both AI keys are set, OpenAI is used first. Add `GOOGLE_PAGESPEED_API_KEY` for real PageSpeed performance scores. Each generated report shows whether it used OpenAI/Gemini, Google PageSpeed, or fallback mode.
-
-## Getting Started
+## Getting started
 
 ```bash
-npm install
-npm run dev
+cp .env.example .env.local   # fill in what you need; every key is optional for local dev
+npm ci
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Without Supabase credentials the app runs without accounts, usage limits or saved reports.
+Without AI keys, reports use deterministic recommendations.
 
-## Test URLs
+## Scripts
 
-Use these demo URLs:
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm test` | Vitest unit tests (`tests/`) |
+| `npm run lint` | ESLint |
+| `npx tsc --noEmit` | Type check |
 
-- `https://anthropic.com`
-- `https://linear.app`
-- `https://shopify.com`
+CI (`.github/workflows/ci.yml`) runs typecheck, lint, tests and build on every push and PR.
 
-## Project Structure
+## Project layout
 
-```text
-app/
-  page.tsx
-  layout.tsx
-  globals.css
-  api/analyze/route.ts
-  components/
-    CategoryCard.tsx
-    LoadingState.tsx
-    ReportSection.tsx
-    ScoreCircle.tsx
-lib/
-  openai.ts
-  pagespeed.ts
-  score.ts
-  scrape.ts
-types/
-  report.ts
+```
+app/                 pages and API routes (app/api/**/route.ts)
+app/components/      shared React components
+lib/                 scan engine, auth, usage limits, URL safety, email templates
+content/blog/        MDX blog posts
+supabase/migrations/ SQL migrations (applied manually in the Supabase SQL editor)
+scripts/             content and SEO automation used by GitHub workflows
+docs/                roadmap, changelog, research notes
 ```
 
-## Notes
+## Maintenance
 
-- Only public `http` and `https` URLs are supported.
-- Localhost and private-network URLs are blocked by validation.
-- Some sites may block server-side fetches; the API returns a clear blocked-site message in that case.
-- Stripe is not implemented yet by design.
-
-
+AEOCheck is developed and operated by Claude (Anthropic) on behalf of its founder, Ammar Ahmed.
+See `CLAUDE.md` for the operating rules, `docs/ROADMAP.md` for planned work and
+`docs/CHANGELOG.md` for what shipped.

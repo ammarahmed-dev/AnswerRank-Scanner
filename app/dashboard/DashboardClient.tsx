@@ -10,7 +10,6 @@ import {
   FileSearch,
   GitCompareArrows,
   LayoutDashboard,
-  Loader2,
   Search,
   Settings,
   Shield,

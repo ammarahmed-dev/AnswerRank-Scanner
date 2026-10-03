@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
 
         <h2>1. Who We Are</h2>
         <p>
-          AEOCheck ("we", "us", "our") is an AI search readiness scanner operated at www.aeocheck.co. We help website owners understand how visible their pages are to AI search engines like ChatGPT, Perplexity, and Google AI Overviews.
+          AEOCheck (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) is an AI search readiness scanner operated at www.aeocheck.co. We help website owners understand how visible their pages are to AI search engines like ChatGPT, Perplexity, and Google AI Overviews.
         </p>
         <p>
           For privacy questions, contact us at:{" "}

@@ -35,7 +35,6 @@ import {
   MagnifyingGlass,
   CheckCircle,
   Sparkle,
-  Lock,
   XCircle,
   Code,
   FileArrowDown,
@@ -71,7 +70,6 @@ function normalizeUrl(input: string): string {
 
 const CLIENT_STORAGE_KEY = "aeocheck_client_id_v1";
 const GUEST_SCAN_STORAGE_KEY = "aeocheck_guest_scans_month";
-const STEP_ANIMATION_MS = 140;
 
 const trustStats = [
   { value: "5,700+", label: "Scans run", text: "Over 5,700 websites have been scanned for AEO and AI search readiness using AEOCheck." },

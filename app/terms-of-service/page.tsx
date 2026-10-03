@@ -100,7 +100,7 @@ export default function TermsOfServicePage() {
 
         <h2>8. Disclaimer of Warranties</h2>
         <p>
-          AEOCheck is provided "as is" and "as available" without warranties of any kind, either express or implied. We do not guarantee:
+          AEOCheck is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, either express or implied. We do not guarantee:
         </p>
         <ul>
           <li>Specific improvements in AI search visibility</li>

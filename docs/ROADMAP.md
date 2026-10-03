@@ -27,11 +27,11 @@ Based on the full code review from 2026-10-03.
 - [x] CI workflow: typecheck + build on every push and PR (`.github/workflows/ci.yml`)
 - [x] Rewrite `CLAUDE.md` so it matches the real stack (Next 16, Supabase auth, root `app/` + `lib/`, DeepSeek/OpenRouter/Gemini)
 - [x] Add a test runner (Vitest) and unit tests for `lib/url-safety.ts`, `lib/usage-limits.ts` (key derivation), the webhook plan mapping and `lib/score-engine.ts`; run them in CI (`npm test`, `tests/`)
-- [ ] Add ESLint (`eslint-config-next`) and run it in CI
+- [x] Add ESLint (`eslint-config-next`) and run it in CI (`npm run lint`, 0 errors)
 - [x] Remove dead code: `/api/analyze`, `lib/score.ts`, `lib/openai.ts`, `lib/polar.ts`, `/api/stats/increment`, unused deps (`@polar-sh/nextjs`, `zod`, `openai`, `@google/genai`)
 - [x] Remove committed logs (`dev.log`, `.next-dev-vs.log`) and `current_info.txt`; untrack `.claude/settings.local.json`
 - [x] Fix `.env.example` (document `*_MONTHLY_*` limits, Lemon Squeezy vars, `CRON_SECRET`; remove Polar)
-- [ ] Rewrite `README.md` to describe the current product
+- [x] Rewrite `README.md` to describe the current product
 - [x] Fix workflow script injection: inputs/step outputs passed via `env:` in blog-generate, backfill-images, content-draft and on-publish (pushing content to `main` is fine under the ownership model)
 
 ## Phase 3 - Correctness and reliability
@@ -49,6 +49,8 @@ Based on the full code review from 2026-10-03.
 - [ ] `UpgradeButton`: show checkout errors to the user; remove dead `/upgrade/success` confirm call
 - [ ] Encode all PostgREST filter values built from route params (`audit_runs?id=eq.${id}` etc.)
 - [ ] Remove debug `console.log` calls in `/api/compare`
+- [ ] Lint debt (currently warnings): replace 53 internal `<a href>` with `next/link` `<Link>`; fix `react-hooks/set-state-in-effect` (10), `static-components` in DashboardClient (2), `immutability` in AuditClient (1); then promote these rules back to errors
+- [ ] Marketing copy says "25 AEO and GEO checks" but a scan of example.com returns 23 checks: count the real checks and make the copy match
 
 ## Phase 4 - Product upgrades
 

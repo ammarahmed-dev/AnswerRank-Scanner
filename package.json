@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "verify:scan": "node scripts/verify-scan-runtime.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@huggingface/inference": "^4.13.19",
@@ -29,6 +30,8 @@
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
     "postcss": "^8.5.13",
     "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3",
