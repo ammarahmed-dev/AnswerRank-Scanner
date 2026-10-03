@@ -4,7 +4,8 @@
  * and otherwise the "*" group, and the longest matching rule wins (Allow wins ties).
  */
 
-// Crawlers that feed AI answers and AI search (lowercase robots.txt tokens).
+// Crawlers that feed AI answers and AI search (lowercase robots.txt tokens). Sources: OpenAI,
+// Anthropic, Perplexity and Google crawler documentation (see docs/RESEARCH.md).
 export const AI_CRAWLERS: Record<string, string> = {
   gptbot: "GPTBot (OpenAI)",
   "oai-searchbot": "OAI-SearchBot (ChatGPT search)",
@@ -19,6 +20,13 @@ export const AI_CRAWLERS: Record<string, string> = {
   "applebot-extended": "Applebot-Extended",
   "cohere-ai": "cohere-ai",
 };
+
+// Crawlers that decide whether a site can appear (and be cited) in AI search answers.
+// Blocking these removes the site from that engine's answers.
+export const AI_SEARCH_CRAWLERS = ["oai-searchbot", "claude-searchbot", "perplexitybot"];
+// Training-focused tokens: blocking opts content out of model training but does not remove the
+// site from AI search answers (Google-Extended also covers grounding in Gemini apps).
+export const AI_TRAINING_CRAWLERS = ["gptbot", "claudebot", "anthropic-ai", "google-extended", "applebot-extended", "cohere-ai"];
 
 type Rule = { allow: boolean; path: string };
 type Group = { agents: string[]; rules: Rule[] };
@@ -84,9 +92,19 @@ export function analyzeAiCrawlerAccess(robotsBody: string): {
     return { status: "fail", detail: "robots.txt blocks all AI crawlers - this site is invisible to AI search engines", blocked };
   }
   if (blocked.length) {
-    const majors = ["gptbot", "oai-searchbot", "claudebot", "perplexitybot"];
-    const status = blocked.some((agent) => majors.includes(agent)) ? "fail" : "warn";
-    return { status, detail: `AI crawlers blocked: ${names.join(", ")}`, blocked };
+    const searchBlocked = blocked.filter((agent) => AI_SEARCH_CRAWLERS.includes(agent));
+    if (searchBlocked.length) {
+      return {
+        status: "fail",
+        detail: `AI search crawlers blocked: ${searchBlocked.map((a) => AI_CRAWLERS[a]).join(", ")} - this site cannot appear in those AI answers`,
+        blocked,
+      };
+    }
+    return {
+      status: "warn",
+      detail: `Blocked for AI training only: ${names.join(", ")} - AI search crawlers are still allowed`,
+      blocked,
+    };
   }
   const explicit = groups.some((g) => g.agents.some((agent) => agent in AI_CRAWLERS));
   return {

@@ -11,7 +11,19 @@ describe("robots.txt AI crawler access", () => {
   it("detects crawlers blocked in a grouped user-agent block (old parser missed GPTBot)", () => {
     const r = analyzeAiCrawlerAccess(robots("User-agent: GPTBot", "User-agent: CCBot", "Disallow: /"));
     expect(r.blocked).toContain("gptbot");
+    expect(r.status).toBe("warn"); // training-only block
+  });
+
+  it("fails when an AI search crawler is blocked", () => {
+    const r = analyzeAiCrawlerAccess(robots("User-agent: OAI-SearchBot", "User-agent: PerplexityBot", "Disallow: /"));
     expect(r.status).toBe("fail");
+    expect(r.detail).toContain("OAI-SearchBot");
+  });
+
+  it("treats a publisher that blocks training but allows search as a warning (NYT pattern)", () => {
+    const r = analyzeAiCrawlerAccess(robots("User-agent: GPTBot", "Disallow: /", "", "User-agent: Google-Extended", "Disallow: /", "", "User-agent: *", "Allow: /"));
+    expect(r.status).toBe("warn");
+    expect(r.detail).toMatch(/training only/);
   });
 
   it("uses the real Google-Extended token", () => {

@@ -2,6 +2,20 @@
 
 Market and product research that feeds `docs/ROADMAP.md`. Newest first. Cite sources.
 
+## 2026-10-03 - AI crawler roles (drives the AI crawler check)
+
+- OpenAI: OAI-SearchBot decides inclusion in ChatGPT search answers; GPTBot is training only;
+  ChatGPT-User fetches on a user's request and robots.txt may not apply. Settings are independent.
+  ([OpenAI crawlers](https://developers.openai.com/api/docs/bots))
+- Anthropic: ClaudeBot (training), Claude-SearchBot (search quality), Claude-User (user fetches),
+  each with its own token. ([Claude help center](https://support.claude.com/en/articles/8896518-what-is-claude-bot))
+- Perplexity: PerplexityBot surfaces sites in Perplexity answers and respects robots.txt;
+  Perplexity-User is user-initiated and generally ignores robots.txt; neither trains models.
+  ([Perplexity crawlers](https://docs.perplexity.ai/docs/resources/perplexity-crawlers.md))
+- Google: Google-Extended is a robots.txt token (no crawler of its own) covering Gemini training
+  and grounding in Gemini apps/Vertex; AI Overviews use regular Googlebot, so blocking
+  Google-Extended does not remove a site from AI Overviews. ([summary](https://trakkr.ai/bots/google-extended/))
+
 ## 2026-10-03 - AI visibility tracking (the gap between the pitch and the product)
 
 **Finding.** AEOCheck markets itself as tracking brand visibility across ChatGPT, Perplexity and

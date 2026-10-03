@@ -2,6 +2,16 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 16)
+
+- AI crawler check severity now follows the vendors' documentation: blocking an AI *search*
+  crawler (OAI-SearchBot, Claude-SearchBot, PerplexityBot) fails, because the site cannot appear
+  in those answers; blocking only *training* crawlers (GPTBot, ClaudeBot, Google-Extended,
+  Applebot-Extended, ...) is a warning, because AI search visibility is unaffected. Previously a
+  GPTBot-only block was reported as invisibility to ChatGPT, which is wrong.
+- Verified: 100/100 tests (search vs training cases), tsc, lint, build; checked against the real
+  nytimes.com robots.txt (blocks the search crawlers too -> fail, correctly).
+
 ## 2026-10-03 (session 15)
 
 - Research: AI visibility tool market and engine costs recorded in docs/RESEARCH.md, with a spec
