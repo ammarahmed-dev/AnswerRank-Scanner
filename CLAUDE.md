@@ -55,7 +55,9 @@ continuously; if a session runs out of budget, the next scheduled session picks 
 2. Coordinate with other sessions (several may overlap): list remote branches
    `git ls-remote --heads origin 'claude/wip-*'`. A branch pushed in the last 3 hours claims its item;
    pick something else. Claim your item immediately by pushing an empty-diff branch
-   `claude/wip-<short-slug>` (delete it when done). Resume your own stale branch if one is unfinished.
+   `claude/wip-<short-slug>`. A wip branch whose head is already contained in `origin/main`
+   (`git merge-base --is-ancestor`) is released/done. When finished, release your claim by pushing
+   the shipped `main` commit to it (branch deletion may be refused by the git proxy).
 3. Choose work in this order:
    a. Production broken or CI red on `main` -> fix or revert first.
    b. First unchecked item in the lowest-numbered phase of `docs/ROADMAP.md`.
