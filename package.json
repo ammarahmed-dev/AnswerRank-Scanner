@@ -9,10 +9,8 @@
     "verify:scan": "node scripts/verify-scan-runtime.mjs"
   },
   "dependencies": {
-    "@google/genai": "^1.51.0",
     "@huggingface/inference": "^4.13.19",
     "@phosphor-icons/react": "^2.1.10",
-    "@polar-sh/nextjs": "^0.9.6",
     "@supabase/supabase-js": "^2.105.1",
     "@tabler/icons-webfont": "^3.44.0",
     "@vercel/og": "^0.11.1",
@@ -20,13 +18,12 @@
     "critters": "^0.0.23",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.14.0",
-    "next": "^16.2.4",
+    "next": "^16.3.8",
     "next-mdx-remote": "^6.0.0",
-    "openai": "^6.35.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "resend": "^6.12.3",
-    "zod": "^4.4.2"
+    "undici": "^7.30.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.4",

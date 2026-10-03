@@ -7,6 +7,7 @@ import {
   validateUrl,
 } from "@/lib/scrape";
 import { getPageSpeedScore } from "@/lib/pagespeed";
+import { assertPublicUrl, pinnedFetch, safeFetch, type SafeResponse } from "@/lib/url-safety";
 import { calculateScore, runDeterministicChecks } from "@/lib/score-engine";
 import { CheckResult, ScrapedData, ScanMetadata, ScanResult } from "@/types/index";
 
@@ -149,15 +150,14 @@ async function fetchWithTimeoutAndRedirects(
   targetUrl: string,
   timeoutMs = 5000,
   maxRedirects = 2
-): Promise<{ response: Response; body: string; finalUrl: string }> {
+): Promise<{ response: SafeResponse; body: string; finalUrl: string }> {
   let currentUrl = targetUrl;
   for (let redirectCount = 0; redirectCount <= maxRedirects; redirectCount++) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch(currentUrl, {
+      const response = await pinnedFetch(currentUrl, {
         method: "GET",
-        redirect: "manual",
         signal: controller.signal,
         headers: {
           "User-Agent": "AEOCheckScanner/1.0 (+https://www.aeocheck.co)",
@@ -310,6 +310,8 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
   if (normalizeAndValidate && !validateUrl(url)) {
     throw new Error("Invalid URL. Only public http(s) URLs are supported.");
   }
+  // Single choke point for every caller (scan, competitors, monitors, cron, audits).
+  await assertPublicUrl(url);
 
   options.onProgress?.("fetch_started");
   const scrapedData = await scrapeUrlWithFallback(url);
@@ -366,7 +368,7 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
   let llmsTxtDetail = "No llms.txt file found - add one to guide AI crawlers";
   try {
     const llmsUrl = new URL("/llms.txt", robotsCheck.finalUrl ?? url).toString();
-    const llmsRes = await fetch(llmsUrl, {
+    const { response: llmsRes } = await safeFetch(llmsUrl, {
       method: "GET",
       signal: AbortSignal.timeout(5000),
       headers: { "User-Agent": "AEOCheckScanner/1.0 (+https://www.aeocheck.co)" },

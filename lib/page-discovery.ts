@@ -1,4 +1,5 @@
-﻿const EXCLUDED_PATH_PREFIXES = [
+import { safeFetch } from "@/lib/url-safety";
+const EXCLUDED_PATH_PREFIXES = [
   "/login",
   "/signup",
   "/register",
@@ -78,7 +79,7 @@ async function fetchHtml(url: string, timeoutMs = 10000): Promise<string | null>
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-    const res = await fetch(url, {
+    const { response: res } = await safeFetch(url, {
       signal: ctrl.signal,
       headers: { "User-Agent": "AEOCheck-Audit/1.0 (+https://www.aeocheck.co/)" },
     });

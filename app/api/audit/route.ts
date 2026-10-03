@@ -4,7 +4,7 @@ import { isMasterAdmin as isAdminEmail } from "@/lib/admin";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 import { getAuditTier } from "@/lib/audit-access";
 import { discoverPages } from "@/lib/page-discovery";
-import { validatePublicUrl } from "@/lib/url-safety";
+import { assertPublicUrl } from "@/lib/url-safety";
 
 export const runtime = "nodejs";
 
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     }
 
     try {
-      await validatePublicUrl(baseUrl);
+      await assertPublicUrl(baseUrl);
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 400 });
     }

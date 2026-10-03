@@ -18,3 +18,7 @@ tsconfig.tsbuildinfo
 /aeocheck.co-audit
 AEOCHECK_CURRENT_STATE_AUDIT.md
 current_info.txt
+
+# Local tooling / logs
+.claude/settings.local.json
+*.log

@@ -46,7 +46,11 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
-const TEST_PASSWORD = "TestAEO2024!";
+const TEST_PASSWORD = process.env.TEST_ACCOUNT_PASSWORD;
+if (!TEST_PASSWORD || TEST_PASSWORD.length < 12) {
+  console.error("Set TEST_ACCOUNT_PASSWORD (12+ chars) before running this script");
+  process.exit(1);
+}
 
 const ACCOUNTS = [
   {
