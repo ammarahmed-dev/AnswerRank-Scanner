@@ -9,6 +9,7 @@ import {
 import { getPageSpeedScore } from "@/lib/pagespeed";
 import { assertPublicUrl, pinnedFetch, safeFetch, type SafeResponse } from "@/lib/url-safety";
 import { calculateScore, runDeterministicChecks } from "@/lib/score-engine";
+import { analyzeAiCrawlerAccess } from "@/lib/robots";
 import { CheckResult, ScrapedData, ScanMetadata, ScanResult } from "@/types/index";
 
 type TrustValidationStatus = "pass" | "warn" | "fail";
@@ -331,41 +332,17 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
   const sitemapCheck = await checkSitemapXml(url, robotsCheck.body);
 
   const robotsBody = robotsCheck.body ?? "";
-  const robotsLower = robotsBody.toLowerCase();
-  const aiBots = ["gptbot", "claudebot", "perplexitybot", "googlebot-extended", "anthropic-ai", "cohere-ai"];
-  let currentAgent = "";
-  const blockedBots: string[] = [];
-  let allAgentBlocked = false;
-
-  for (const line of robotsBody.split(/\r?\n/)) {
-    const trimmed = line.trim().toLowerCase();
-    if (trimmed.startsWith("user-agent:")) {
-      currentAgent = trimmed.replace("user-agent:", "").trim();
-    } else if (trimmed.startsWith("disallow:")) {
-      const path = trimmed.replace("disallow:", "").trim();
-      if (path === "/" || path === "/*") {
-        if (currentAgent === "*") allAgentBlocked = true;
-        if (aiBots.includes(currentAgent)) blockedBots.push(currentAgent);
-      }
-    }
-  }
-
-  let aiBotStatus: "pass" | "warn" | "fail" = "pass";
-  let aiBotDetail = "AI crawlers have access to this page";
-  if (blockedBots.length > 0) {
-    aiBotStatus = "fail";
-    aiBotDetail = `AI bots blocked: ${blockedBots.join(", ")} - invisible to these AI search engines`;
-  } else if (allAgentBlocked) {
-    aiBotStatus = "warn";
-    aiBotDetail = "All bots blocked by default - verify AI crawlers are explicitly allowed";
-  } else if (!robotsBody) {
+  let aiBotStatus: "pass" | "warn" | "fail";
+  let aiBotDetail: string;
+  if (!robotsBody) {
     aiBotStatus = "warn";
     aiBotDetail = robotsCheck.status === "fail"
       ? "robots.txt not found - AI bot access cannot be verified"
       : "robots.txt found but has no explicit AI crawler directives";
-  } else if (robotsLower.includes("gptbot") && !robotsLower.includes("disallow")) {
-    aiBotStatus = "pass";
-    aiBotDetail = "GPTBot explicitly allowed in robots.txt";
+  } else {
+    const access = analyzeAiCrawlerAccess(robotsBody);
+    aiBotStatus = access.status;
+    aiBotDetail = access.detail;
   }
 
   let llmsTxtStatus: "pass" | "warn" | "fail" = "warn";

@@ -55,7 +55,7 @@ Based on the full code review from 2026-10-03.
 ## Phase 4 - Product upgrades
 
 - [ ] Real AI visibility tracking: query AI engines (Perplexity API, OpenAI with web search, Gemini grounding) with category prompts and record whether the brand is mentioned/cited; store per-run results; Pro/Agency feature
-- [ ] Score `llms.txt` presence and AI crawler access (GPTBot, ClaudeBot, PerplexityBot, Google-Extended) explicitly
+- [x] AI crawler access: new robots.txt parser (`lib/robots.ts`) with correct grouping, wildcard fallback, comments, longest-match; covers 12 AI crawlers incl. OAI-SearchBot, Claude-SearchBot, Perplexity-User, Google-Extended (was a wrong `googlebot-extended` token). `llms.txt` was already scored
 - [ ] Monitor history chart and score-drop email alerts
 - [ ] "Limit reached" email and a 3-step onboarding sequence via Resend
 - [ ] Split `HomePageClient.tsx`, `ReportSectionNew.tsx`, `DashboardClient.tsx` into smaller components

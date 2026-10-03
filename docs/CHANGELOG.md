@@ -2,6 +2,18 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 14)
+
+- AI crawler check rewritten (`lib/robots.ts`). The old parser missed crawlers listed in grouped
+  `User-agent` blocks (so a blocked GPTBot could show as allowed), used the wrong Google token
+  (`googlebot-extended` instead of `Google-Extended`), did not strip comments, and treated a
+  site-wide `Disallow: /` as a warning. Now: proper robots.txt grouping and precedence, and 12 AI
+  crawlers including OAI-SearchBot, ChatGPT-User, Claude-SearchBot, Perplexity-User,
+  Applebot-Extended. Blocking a major AI search crawler fails the check; minor ones warn.
+- Verified: 90/90 tests (7 robots cases), tsc, lint, build; real robots.txt files: cnn.com
+  (blocks all AI crawlers -> fail), nytimes.com file (GPTBot + Google-Extended blocked),
+  aeocheck.co (explicitly allowed), stripe.com (open).
+
 ## 2026-10-03 (session 13)
 
 - Dashboard: sidebar, tabs and mobile bottom nav were components declared inside the dashboard
