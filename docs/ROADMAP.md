@@ -97,6 +97,13 @@ Based on the full code review from 2026-10-03.
 - Set `CRON_SECRET`, `RESEND_API_KEY`, `INTERNAL_API_SECRET` in Vercel
 - Run new migrations in `supabase/migrations/` against production (Supabase SQL editor), in order:
   `20261003_drop_public_compare_runs_policy.sql`, `20261003_atomic_scan_usage.sql`
+- Google Search Console automation is broken: the GSC service account is rejected
+  ("invalid_grant: account not found"), so on-publish and the weekly gsc-feedback job cannot submit
+  sitemaps or read data. Create a new service account key, add it as a user in Search Console, and
+  update the `GSC_CLIENT_EMAIL` / `GSC_PRIVATE_KEY` GitHub secrets. IndexNow (Bing) still works.
+- Optional: AI cover images stopped working (Hugging Face no longer serves FLUX.1-schnell via the
+  free `hf-inference` provider). Covers now fall back to branded images automatically. To get AI
+  illustrations back, add Hugging Face inference credits (the script tries provider "auto" first).
 - Export the production schema so Claude can write the base migration and use `webhook_events`:
   `npx supabase db dump --schema-only > supabase/schema.sql` (or Supabase dashboard > Database > Schema), then commit it
 - In Lemon Squeezy, make sure the webhook subscribes to: `order_created`, `order_refunded`, `subscription_created`, `subscription_updated`, `subscription_cancelled`, `subscription_resumed`, `subscription_expired`, `subscription_payment_failed`

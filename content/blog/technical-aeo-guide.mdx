@@ -1,23 +1,57 @@
 ---
-title: "Technical AEO: How to Make Your Site Machine-Readable for AI Search"
-description: "A practical technical AEO guide: crawler access, rendering, metadata, schema, structure and trust signals that help AI engines read and cite your site."
-date: 2026-10-03
+title: 'Technical AEO: How to Make Your Site Machine-Readable for AI Search'
+description: >-
+  A practical technical AEO guide: crawler access, rendering, metadata, schema,
+  structure and trust signals that help AI engines read and cite your site.
+date: 2026-10-03T00:00:00.000Z
 slug: technical-aeo-guide
-tags: [technical-aeo, ai-search, schema, robots-txt, llms-txt, crawlers]
+tags:
+  - technical-aeo
+  - ai-search
+  - schema
+  - robots-txt
+  - llms-txt
+  - crawlers
 author: AEOCheck
-coverImage: ""
-coverImageAlt: Diagram of a web page being read by AI crawlers, with metadata, schema and headings highlighted
+coverImage: /images/blog/technical-aeo-guide.png
+coverImageAlt: >-
+  Diagram of a web page being read by AI crawlers, with metadata, schema and
+  headings highlighted
 faqs:
-  - question: "What is technical AEO?"
-    answer: "Technical AEO is the work of making your pages easy for AI answer engines to fetch, parse and trust. It covers crawler access in robots.txt, server-rendered content, clean metadata, structured data, a logical heading structure and clear trust signals. It is the foundation that content-focused AEO builds on."
-  - question: "Is technical AEO different from technical SEO?"
-    answer: "They overlap heavily. Both need crawlable, fast, well-structured pages. Technical AEO adds AI-specific concerns: allowing the right AI search crawlers, avoiding content that only appears after JavaScript runs, publishing an llms.txt file, and structuring pages so answers can be extracted as self-contained passages."
-  - question: "Which AI crawlers should I allow?"
-    answer: "If you want to appear in AI search answers, allow the search and retrieval crawlers: OAI-SearchBot for ChatGPT search, PerplexityBot for Perplexity and Claude-SearchBot for Claude. Training crawlers such as GPTBot and Google-Extended are a separate decision; blocking them opts you out of model training without removing you from those AI search results."
-  - question: "Does structured data help with AI search?"
-    answer: "Structured data gives AI systems explicit facts about your page: what it is, who publishes it, and which questions it answers. Organization, WebSite, FAQPage and Article markup are the most useful starting points. It is not a guarantee of citation, but it removes ambiguity that otherwise leads engines to guess or skip your page."
-  - question: "How do I check my site's technical AEO?"
-    answer: "Run a free AEOCheck scan. It tests 25 AEO and GEO signals, including AI crawler access, llms.txt, metadata, canonical URLs, schema, heading structure, readability and trust signals, and gives you a prioritized fix list for the page."
+  - question: What is technical AEO?
+    answer: >-
+      Technical AEO is the work of making your pages easy for AI answer engines
+      to fetch, parse and trust. It covers crawler access in robots.txt,
+      server-rendered content, clean metadata, structured data, a logical
+      heading structure and clear trust signals. It is the foundation that
+      content-focused AEO builds on.
+  - question: Is technical AEO different from technical SEO?
+    answer: >-
+      They overlap heavily. Both need crawlable, fast, well-structured pages.
+      Technical AEO adds AI-specific concerns: allowing the right AI search
+      crawlers, avoiding content that only appears after JavaScript runs,
+      publishing an llms.txt file, and structuring pages so answers can be
+      extracted as self-contained passages.
+  - question: Which AI crawlers should I allow?
+    answer: >-
+      If you want to appear in AI search answers, allow the search and retrieval
+      crawlers: OAI-SearchBot for ChatGPT search, PerplexityBot for Perplexity
+      and Claude-SearchBot for Claude. Training crawlers such as GPTBot and
+      Google-Extended are a separate decision; blocking them opts you out of
+      model training without removing you from those AI search results.
+  - question: Does structured data help with AI search?
+    answer: >-
+      Structured data gives AI systems explicit facts about your page: what it
+      is, who publishes it, and which questions it answers. Organization,
+      WebSite, FAQPage and Article markup are the most useful starting points.
+      It is not a guarantee of citation, but it removes ambiguity that otherwise
+      leads engines to guess or skip your page.
+  - question: How do I check my site's technical AEO?
+    answer: >-
+      Run a free AEOCheck scan. It tests 25 AEO and GEO signals, including AI
+      crawler access, llms.txt, metadata, canonical URLs, schema, heading
+      structure, readability and trust signals, and gives you a prioritized fix
+      list for the page.
 ---
 
 AI answer engines can only cite what they can fetch, read and trust. Before content quality even enters the picture, a surprising number of sites fail at the technical layer: AI search crawlers are blocked by an old robots.txt rule, key content only appears after JavaScript runs, or the page sends conflicting signals about what it is.

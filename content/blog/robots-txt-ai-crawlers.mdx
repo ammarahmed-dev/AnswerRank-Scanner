@@ -1,23 +1,56 @@
 ---
-title: "robots.txt for AI Crawlers: What to Allow, What to Block"
-description: "How to configure robots.txt for GPTBot, OAI-SearchBot, PerplexityBot, ClaudeBot and Google-Extended, with copy-paste rules for every AI crawler policy."
-date: 2026-10-03
+title: 'robots.txt for AI Crawlers: What to Allow, What to Block'
+description: >-
+  How to configure robots.txt for GPTBot, OAI-SearchBot, PerplexityBot,
+  ClaudeBot and Google-Extended, with copy-paste rules for every AI crawler
+  policy.
+date: 2026-10-03T00:00:00.000Z
 slug: robots-txt-ai-crawlers
-tags: [robots-txt, ai-crawlers, gptbot, technical-aeo, perplexity, chatgpt]
+tags:
+  - robots-txt
+  - ai-crawlers
+  - gptbot
+  - technical-aeo
+  - perplexity
+  - chatgpt
 author: AEOCheck
-coverImage: ""
-coverImageAlt: A robots.txt file with rules for GPTBot, OAI-SearchBot and PerplexityBot
+coverImage: /images/blog/robots-txt-ai-crawlers.png
+coverImageAlt: 'A robots.txt file with rules for GPTBot, OAI-SearchBot and PerplexityBot'
 faqs:
-  - question: "Should I block GPTBot?"
-    answer: "Blocking GPTBot tells OpenAI not to use your content to train its models. It does not remove you from ChatGPT search, which is controlled by a separate crawler, OAI-SearchBot. If you want to appear in ChatGPT answers but keep your content out of training, block GPTBot and allow OAI-SearchBot."
-  - question: "Does blocking Google-Extended remove me from AI Overviews?"
-    answer: "No. Google-Extended is a robots.txt token that controls whether your content is used for Gemini model training and grounding in Gemini apps. AI Overviews in Google Search use the regular Googlebot crawl, so blocking Google-Extended does not affect your Google Search rankings or AI Overviews."
-  - question: "How do I allow all AI crawlers?"
-    answer: "If your robots.txt has no rules that block them, AI crawlers are already allowed. Check that you do not have a site-wide 'User-agent: *' with 'Disallow: /', and that no AI crawler is listed in a group that disallows the whole site. Adding explicit Allow rules for the AI search crawlers makes your policy clear."
-  - question: "How long do robots.txt changes take to apply?"
-    answer: "Crawlers re-read robots.txt regularly. OpenAI says changes for its search crawler can take about 24 hours to take effect. Other engines are similar, so allow a day or two before checking whether your pages appear in AI answers again."
-  - question: "Do AI crawlers actually respect robots.txt?"
-    answer: "The automated crawlers from OpenAI, Anthropic, Perplexity and Google document robots.txt support. User-initiated agents such as ChatGPT-User and Perplexity-User are different: they fetch a page because a person asked about it, and the companies note that robots.txt may not apply to those requests."
+  - question: Should I block GPTBot?
+    answer: >-
+      Blocking GPTBot tells OpenAI not to use your content to train its models.
+      It does not remove you from ChatGPT search, which is controlled by a
+      separate crawler, OAI-SearchBot. If you want to appear in ChatGPT answers
+      but keep your content out of training, block GPTBot and allow
+      OAI-SearchBot.
+  - question: Does blocking Google-Extended remove me from AI Overviews?
+    answer: >-
+      No. Google-Extended is a robots.txt token that controls whether your
+      content is used for Gemini model training and grounding in Gemini apps. AI
+      Overviews in Google Search use the regular Googlebot crawl, so blocking
+      Google-Extended does not affect your Google Search rankings or AI
+      Overviews.
+  - question: How do I allow all AI crawlers?
+    answer: >-
+      If your robots.txt has no rules that block them, AI crawlers are already
+      allowed. Check that you do not have a site-wide 'User-agent: *' with
+      'Disallow: /', and that no AI crawler is listed in a group that disallows
+      the whole site. Adding explicit Allow rules for the AI search crawlers
+      makes your policy clear.
+  - question: How long do robots.txt changes take to apply?
+    answer: >-
+      Crawlers re-read robots.txt regularly. OpenAI says changes for its search
+      crawler can take about 24 hours to take effect. Other engines are similar,
+      so allow a day or two before checking whether your pages appear in AI
+      answers again.
+  - question: Do AI crawlers actually respect robots.txt?
+    answer: >-
+      The automated crawlers from OpenAI, Anthropic, Perplexity and Google
+      document robots.txt support. User-initiated agents such as ChatGPT-User
+      and Perplexity-User are different: they fetch a page because a person
+      asked about it, and the companies note that robots.txt may not apply to
+      those requests.
 ---
 
 Your robots.txt file has quietly become one of the most important files for AI search. A single line can decide whether ChatGPT, Perplexity and Claude can cite your site at all. Yet most robots.txt files were written years ago for Google, and many now block AI crawlers by accident, or block the wrong ones on purpose.

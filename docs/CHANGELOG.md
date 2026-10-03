@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 18)
+
+- Blog covers: AI cover generation fails (Hugging Face dropped FLUX.1-schnell from its free
+  provider). Added a branded cover route (`/api/og/post?title=&tag=`) and made the backfill
+  script fall back to it, so every new post gets a cover with no API keys. Generated covers for
+  the two new posts.
+- Workflows: content jobs rebase before pushing, so two publish runs no longer race on `git push`.
+- Found (owner action): Google Search Console service account is rejected ("account not found").
+- Verified: tsc, lint, tests, build; covers render on both posts and the blog index, og:image
+  points at the new covers.
+
 ## 2026-10-03 (session 17)
 
 - Blog: published "Technical AEO: How to Make Your Site Machine-Readable for AI Search" (technical
