@@ -1,0 +1,119 @@
+---
+title: "Technical AEO: How to Make Your Site Machine-Readable for AI Search"
+description: "A practical technical AEO guide: crawler access, rendering, metadata, schema, structure and trust signals that help AI engines read and cite your site."
+date: 2026-10-03
+slug: technical-aeo-guide
+tags: [technical-aeo, ai-search, schema, robots-txt, llms-txt, crawlers]
+author: AEOCheck
+coverImage: ""
+coverImageAlt: Diagram of a web page being read by AI crawlers, with metadata, schema and headings highlighted
+faqs:
+  - question: "What is technical AEO?"
+    answer: "Technical AEO is the work of making your pages easy for AI answer engines to fetch, parse and trust. It covers crawler access in robots.txt, server-rendered content, clean metadata, structured data, a logical heading structure and clear trust signals. It is the foundation that content-focused AEO builds on."
+  - question: "Is technical AEO different from technical SEO?"
+    answer: "They overlap heavily. Both need crawlable, fast, well-structured pages. Technical AEO adds AI-specific concerns: allowing the right AI search crawlers, avoiding content that only appears after JavaScript runs, publishing an llms.txt file, and structuring pages so answers can be extracted as self-contained passages."
+  - question: "Which AI crawlers should I allow?"
+    answer: "If you want to appear in AI search answers, allow the search and retrieval crawlers: OAI-SearchBot for ChatGPT search, PerplexityBot for Perplexity and Claude-SearchBot for Claude. Training crawlers such as GPTBot and Google-Extended are a separate decision; blocking them opts you out of model training without removing you from those AI search results."
+  - question: "Does structured data help with AI search?"
+    answer: "Structured data gives AI systems explicit facts about your page: what it is, who publishes it, and which questions it answers. Organization, WebSite, FAQPage and Article markup are the most useful starting points. It is not a guarantee of citation, but it removes ambiguity that otherwise leads engines to guess or skip your page."
+  - question: "How do I check my site's technical AEO?"
+    answer: "Run a free AEOCheck scan. It tests 25 AEO and GEO signals, including AI crawler access, llms.txt, metadata, canonical URLs, schema, heading structure, readability and trust signals, and gives you a prioritized fix list for the page."
+---
+
+AI answer engines can only cite what they can fetch, read and trust. Before content quality even enters the picture, a surprising number of sites fail at the technical layer: AI search crawlers are blocked by an old robots.txt rule, key content only appears after JavaScript runs, or the page sends conflicting signals about what it is.
+
+This guide walks through the technical side of answer engine optimization, in the order AI systems encounter your site: access, rendering, metadata, structure and trust. If you are new to the topic, start with [what answer engine optimization is](/blog/what-is-answer-engine-optimization), then come back here to fix the foundation.
+
+## Why technical AEO comes first
+
+Traditional search engines are forgiving. Googlebot renders JavaScript, follows redirects patiently and has decades of heuristics for messy pages. AI answer engines work under tighter constraints. Their retrieval systems fetch pages on demand, often with short timeouts, and then extract passages to quote or summarize. If any step fails, your page is simply not in the candidate set for the answer.
+
+That makes technical problems disproportionately expensive in AI search. A blocked crawler does not cost you a few ranking positions. It removes you from that engine's answers entirely.
+
+## Step 1: Let AI search crawlers in
+
+Every major AI company now publishes separate crawlers for different jobs, and robots.txt controls each one independently. The distinction that matters most is **search versus training**:
+
+| Crawler | Company | Job | Blocking it means |
+| --- | --- | --- | --- |
+| OAI-SearchBot | OpenAI | ChatGPT search results | Your site cannot appear in ChatGPT search answers |
+| GPTBot | OpenAI | Model training | Content is not used to train OpenAI models |
+| PerplexityBot | Perplexity | Perplexity answers | Your site cannot be surfaced in Perplexity |
+| Claude-SearchBot | Anthropic | Claude search | Reduced visibility in Claude search results |
+| ClaudeBot | Anthropic | Model training | Content is not used to train Claude |
+| Google-Extended | Google | Gemini training and Gemini app grounding | Not used for Gemini; AI Overviews are unaffected |
+
+Two details trip up even experienced teams. First, robots.txt groups: several `User-agent` lines stacked above one `Disallow: /` all share that rule, so a line you thought only blocked a scraper may also block an AI crawler listed next to it. Second, a site-wide `User-agent: *` / `Disallow: /` blocks every AI crawler that does not have its own group.
+
+We cover the allow-or-block decision in depth in [robots.txt for AI crawlers](/blog/robots-txt-ai-crawlers), including copy-paste configurations for common policies.
+
+### Publish an llms.txt file
+
+An `llms.txt` file at your domain root is a short Markdown summary of your site written for language models: what you do, who it is for and links to your most important pages. It is a young convention and not every engine reads it yet, but it is cheap to add and gives AI systems an authoritative description in your own words instead of one inferred from navigation menus.
+
+## Step 2: Make sure the content is in the HTML
+
+AI retrieval systems typically fetch your page and read the HTML that comes back. Many do not run JavaScript the way a browser does. If your main content, pricing table or FAQ is injected client-side, the crawler may see an empty shell.
+
+Check this yourself: load the page with JavaScript disabled, or view the raw page source rather than the rendered DOM. If the important text is missing, move it to server-side rendering or static generation. Frameworks such as Next.js, Nuxt and Astro make this the default; single-page apps usually need a pre-rendering step.
+
+Also watch for content hidden behind interactions. Text inside tabs and accordions is fine as long as it exists in the HTML on load. Content that is fetched only after a click is invisible to most crawlers.
+
+## Step 3: Send clean, consistent metadata
+
+Metadata is the first summary an engine reads, and it shapes how your page is labeled when it is cited.
+
+- **Title tag:** 30 to 60 characters, naming the specific offer and audience. "Payroll Software for Small Businesses | Acme" beats "Home | Acme".
+- **Meta description:** 120 to 160 characters that state the problem, the solution and a proof point.
+- **Canonical URL:** a `rel="canonical"` link pointing to the one authoritative version of the page on your own domain. Without it, tracking parameters and www/non-www variants split your signals, and an engine may cite the wrong URL.
+- **Open Graph tags:** `og:title`, `og:description` and an absolute `og:image` URL. These control how the page appears when it is shared and previewed inside AI tools.
+
+## Step 4: Add structured data that describes the page
+
+JSON-LD structured data turns implicit facts into explicit ones. Instead of hoping an engine infers that your page is a software product from a company with a specific name, you state it.
+
+Start with the types that establish identity and answer questions:
+
+1. **Organization** and **WebSite** on your homepage, with your name, logo, URL and social profiles. This anchors your brand as an entity.
+2. **FAQPage** wherever you have genuine question-and-answer content. Each question needs a matching visible answer on the page.
+3. **Article** or **BlogPosting** on editorial content, including author, datePublished and dateModified.
+4. **Product**, **SoftwareApplication** or **Service** on offer pages, and **BreadcrumbList** for site structure.
+
+Validate every block with the Schema.org validator before publishing. Invalid markup is ignored, and markup that contradicts the visible page erodes trust.
+
+## Step 5: Structure pages so answers can be extracted
+
+AI engines quote passages, not whole pages. Structure determines whether your best answer can be lifted cleanly.
+
+- Use **one H1** that states what the page offers, then a logical H2 and H3 hierarchy.
+- Phrase key section headings as the **questions your buyers ask**, such as "How does usage-based pricing work?", and answer each one in the first 40 to 60 words beneath it.
+- Keep paragraphs short and lead with the direct answer, then the detail. Aim for plain language; dense, jargon-heavy prose is harder to extract and paraphrase accurately.
+- Give pages enough depth to be worth citing. Thin pages with a few sentences rarely become a source for detailed answers.
+
+## Step 6: Show who stands behind the content
+
+When engines choose between sources, trust signals break ties. Make them easy to find:
+
+- Visible links to an **About** page and a **Contact** page in your navigation or footer.
+- **Author bylines** on editorial content, linked to a bio, ideally with Person schema.
+- **Dates:** show when content was published and last updated, and mirror them in your schema. Stale pages lose out to fresher sources on time-sensitive questions.
+- **HTTPS everywhere**, a working **XML sitemap** and fast pages. Slow responses can time out AI fetches before the content is read.
+
+## A technical AEO checklist
+
+Use this as a quick audit for each important page:
+
+1. AI search crawlers (OAI-SearchBot, PerplexityBot, Claude-SearchBot) are allowed in robots.txt
+2. An llms.txt file exists at the domain root
+3. Main content is present in the raw HTML without JavaScript
+4. Title and meta description are specific and the right length
+5. A canonical URL points to the preferred version on your domain
+6. Organization and WebSite schema are present and valid
+7. FAQPage or Article schema matches the visible content
+8. One H1, logical H2/H3 hierarchy, and question-style headings for key sections
+9. About, Contact, author and date signals are visible
+10. HTTPS, sitemap and acceptable page speed
+
+## Check your site in 60 seconds
+
+Working through that list by hand takes time, and robots.txt rules are easy to misread. [Run a free AEOCheck scan](/#scanner) to test 25 AEO and GEO signals on any page, including AI crawler access, llms.txt, metadata, canonical URLs, schema, headings and trust signals. You get a score, the issues ranked by impact and the exact fix for each. Want to see the output first? Browse the [sample report](/sample-report), and when you are ready to track progress across pages, compare [plans and pricing](/pricing).
