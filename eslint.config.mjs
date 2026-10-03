@@ -12,8 +12,6 @@ const config = [
       ],
       // Existing debt, tracked in docs/ROADMAP.md: downgraded so CI can enforce everything else.
       "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/static-components": "warn",
-      "react-hooks/immutability": "warn",
     },
   },
   {

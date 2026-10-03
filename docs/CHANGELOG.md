@@ -2,6 +2,15 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 13)
+
+- Dashboard: sidebar, tabs and mobile bottom nav were components declared inside the dashboard
+  component, so React remounted them on every render; they are now plain render functions
+  (same output, no remounts). AuditClient: scan loop declared before the effect that starts it.
+- ESLint: `static-components` and `immutability` back to errors (0 errors, 24 warnings).
+- Verified: tsc, lint, 83/83 tests, build; dashboard and audit pages load without errors
+  logged out (desktop + mobile). Logged-in tab behavior could not be exercised without an account.
+
 ## 2026-10-03 (session 12)
 
 - Navigation: 53 internal links converted from `<a>` to Next.js `<Link>` (client-side navigation,

@@ -49,7 +49,7 @@ Based on the full code review from 2026-10-03.
 - [x] `UpgradeButton`: show checkout errors to the user; `/upgrade/success` now redirects to `/dashboard?upgraded=1`
 - [x] Encode PostgREST filter values built from route params (audit scan, monitor scan); the rest use URLSearchParams
 - [x] Remove debug `console.log` calls in `/api/compare`
-- [~] Lint debt: 53 internal `<a href>` converted to `next/link` (rule back to error). Remaining: `react-hooks/set-state-in-effect` (10), `static-components` in DashboardClient (2), `immutability` in AuditClient (1); then promote these rules back to errors
+- [~] Lint debt: internal links -> `next/link`; dashboard inner components no longer remount every render; AuditClient declaration order fixed (all three rules back to error). Remaining: `react-hooks/set-state-in-effect` (10 warnings, mostly fetch-then-set patterns)
 - [x] "25 AEO and GEO checks" is now true: added Canonical URL and Answer-Ready Headings (question-style H2/H3) checks; the engine runs exactly 25 (test-guarded)
 
 ## Phase 4 - Product upgrades

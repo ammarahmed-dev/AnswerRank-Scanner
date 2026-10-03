@@ -522,7 +522,7 @@ export default function DashboardClient() {
 
   // ── Sidebar ────────────────────────────────────────────────────
 
-  function Sidebar() {
+  function renderSidebar() {
     if (!account) return null;
     const initial = account.profile.email.charAt(0).toUpperCase();
     const isPaidPlan = account.profile.plan === "pro" || account.profile.plan === "agency";
@@ -577,7 +577,7 @@ export default function DashboardClient() {
 
   // ── Tab content ────────────────────────────────────────────────
 
-  function ScansTab() {
+  function renderScansTab() {
     if (!account) return null;
     return (
       <>
@@ -639,7 +639,7 @@ export default function DashboardClient() {
     );
   }
 
-  function AuditsTab() {
+  function renderAuditsTab() {
     if (!account) return null;
     return (
       <>
@@ -673,7 +673,7 @@ export default function DashboardClient() {
     );
   }
 
-  function SettingsTab() {
+  function renderSettingsTab() {
     if (!account) return null;
     const portalUrl = account.profile.portalUrl;
     return (
@@ -718,7 +718,7 @@ export default function DashboardClient() {
     );
   }
 
-  function AdminTab() {
+  function renderAdminTab() {
     return (
       <>
         <div style={{ marginBottom: 24 }}>
@@ -734,7 +734,7 @@ export default function DashboardClient() {
 
   // ── Bottom nav (mobile only) ──────────────────────────────────
 
-  function BottomNav() {
+  function renderBottomNav() {
     if (!mounted || !isMobile) return null;
 
     const navStyle: React.CSSProperties = {
@@ -803,10 +803,10 @@ export default function DashboardClient() {
         />
       );
     }
-    if (activeTab === "scans")    return <ScansTab />;
-    if (activeTab === "audits")   return <AuditsTab />;
-    if (activeTab === "settings") return <SettingsTab />;
-    if (activeTab === "admin")    return <AdminTab />;
+    if (activeTab === "scans")    return renderScansTab();
+    if (activeTab === "audits")   return renderAuditsTab();
+    if (activeTab === "settings") return renderSettingsTab();
+    if (activeTab === "admin")    return renderAdminTab();
     return null;
   }
 
@@ -828,7 +828,7 @@ export default function DashboardClient() {
       ) : account && (
         <div className="app-container db-layout">
           <aside className="db-sidebar">
-            <Sidebar />
+            {renderSidebar()}
           </aside>
           <div className="db-content">
             {renderContent()}
@@ -836,7 +836,7 @@ export default function DashboardClient() {
         </div>
       )}
 
-      <BottomNav />
+      {renderBottomNav()}
       <SiteFooter />
     </main>
   );

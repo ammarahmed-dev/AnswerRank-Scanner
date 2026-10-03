@@ -222,41 +222,6 @@ export default function AuditClient() {
     return (await getSafeSupabaseSession(supabase))?.access_token ?? null;
   }
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.replace(`/login?next=/audit/${auditId}`);
-      return;
-    }
-    let active = true;
-
-    async function loadAudit() {
-      const token = await getToken();
-      if (!token) { router.replace(`/login?next=/audit/${auditId}`); return; }
-
-      const res = await fetch(`/api/audit/${auditId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-      if (!active) return;
-      if (!res.ok) {
-        setError("Audit not found or you don't have access.");
-        setLoading(false);
-        return;
-      }
-      const data = (await res.json()) as AuditRun;
-      setAudit(data);
-      setLoading(false);
-      if (data.status !== "completed" && data.status !== "failed" && !scanningRef.current) {
-        startScanLoop(data, token);
-      }
-    }
-
-    loadAudit();
-    return () => { active = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user, auditId]);
-
   async function startScanLoop(initialAudit: AuditRun, token: string) {
     if (scanningRef.current) return;
     scanningRef.current = true;
@@ -306,6 +271,41 @@ export default function AuditClient() {
     scanningRef.current = false;
     setScanning(false);
   }
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.replace(`/login?next=/audit/${auditId}`);
+      return;
+    }
+    let active = true;
+
+    async function loadAudit() {
+      const token = await getToken();
+      if (!token) { router.replace(`/login?next=/audit/${auditId}`); return; }
+
+      const res = await fetch(`/api/audit/${auditId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      if (!active) return;
+      if (!res.ok) {
+        setError("Audit not found or you don't have access.");
+        setLoading(false);
+        return;
+      }
+      const data = (await res.json()) as AuditRun;
+      setAudit(data);
+      setLoading(false);
+      if (data.status !== "completed" && data.status !== "failed" && !scanningRef.current) {
+        startScanLoop(data, token);
+      }
+    }
+
+    loadAudit();
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user, auditId]);
 
   function handleDownloadPdf() {
     document.body.classList.add("pdf-export-mode");
