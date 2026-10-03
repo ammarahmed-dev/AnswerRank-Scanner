@@ -2,6 +2,15 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 19)
+
+- Fixed 404s from published posts: `/blog/best-aeo-tools` now redirects permanently to the real
+  post; the planned hubs `how-to-get-cited-by-chatgpt` and `measure-ai-search-traffic` redirect
+  temporarily to the closest existing posts until they are written.
+- Uptime monitoring: GitHub Actions checks `/`, `/pricing`, `/blog`, `/api/stats` every 15 minutes
+  (3 attempts each) and opens an "uptime" issue on failure, closing it on recovery.
+- Verified: build, lint; redirects (308/307) on a local production build; manual uptime run.
+
 ## 2026-10-03 (session 18)
 
 - Blog covers: AI cover generation fails (Hugging Face dropped FLUX.1-schnell from its free

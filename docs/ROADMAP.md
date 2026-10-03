@@ -64,7 +64,7 @@ Based on the full code review from 2026-10-03.
 - [ ] "Limit reached" email and a 3-step onboarding sequence via Resend
 - [ ] Split `HomePageClient.tsx`, `ReportSectionNew.tsx`, `DashboardClient.tsx` into smaller components
 - [~] Consolidate icon libraries: Tabler webfont dropped; Lucide and Phosphor both remain (standardize on one)
-- [ ] Error monitoring (Sentry) and uptime check
+- [~] Uptime check: `.github/workflows/uptime.yml` every 15 min, opens/closes a `uptime` GitHub issue (owner gets GitHub notifications). Error monitoring (Sentry) still needs an account (owner)
 
 ## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)
 
@@ -74,7 +74,7 @@ Based on the full code review from 2026-10-03.
   Lighthouse and fix regressions.
 - Blog: up to 2 useful posts per weekend from `content/topical-map.json` and research.
   - [x] 2026-10-03: `technical-aeo-guide` (technical pillar hub), `robots-txt-ai-crawlers`
-  - [ ] Next: `how-to-get-cited-by-chatgpt` (ChatGPT pillar hub; already linked from a published post, currently 404), `ai-crawlers-list`, `llms-txt-guide`
+  - [ ] Next: `how-to-get-cited-by-chatgpt` and `measure-ai-search-traffic` (pillar hubs already linked from published posts; temporary redirects in `next.config.ts` until written - remove the redirect when publishing), `ai-crawlers-list`, `llms-txt-guide`
 - Research: weekly scan of AI search changes and competitor tools; update `docs/RESEARCH.md`.
 - Maintenance: dependency updates (minor/patch weekly, majors with care), `npm audit`, runtime errors.
 

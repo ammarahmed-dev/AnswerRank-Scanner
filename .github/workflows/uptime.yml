@@ -1,0 +1,61 @@
+name: Uptime
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check key pages
+        id: check
+        run: |
+          set +e
+          failures=""
+          for path in / /pricing /blog /api/stats; do
+            ok=0
+            for attempt in 1 2 3; do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "https://www.aeocheck.co${path}")
+              if [ "$code" = "200" ]; then ok=1; break; fi
+              sleep 20
+            done
+            if [ "$ok" = "0" ]; then failures="${failures}${path} (HTTP ${code}) "; fi
+          done
+          echo "failures=${failures}" >> "$GITHUB_OUTPUT"
+          if [ -n "$failures" ]; then echo "DOWN: $failures"; else echo "All pages OK"; fi
+
+      - name: Open or update incident issue
+        if: steps.check.outputs.failures != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILURES: ${{ steps.check.outputs.failures }}
+        run: |
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --label uptime --state open --json number --jq '.[0].number')
+          body="Uptime check failed at $(date -u +'%Y-%m-%d %H:%M UTC'): ${FAILURES}"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh label create uptime --repo "$GITHUB_REPOSITORY" --color B60205 --description "Site down alerts" 2>/dev/null || true
+            gh issue create --repo "$GITHUB_REPOSITORY" --label uptime --title "Site down: www.aeocheck.co" --body "$body"
+          fi
+
+      - name: Close incident issue when recovered
+        if: steps.check.outputs.failures == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --label uptime --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --repo "$GITHUB_REPOSITORY" --comment "Recovered at $(date -u +'%Y-%m-%d %H:%M UTC'): all pages return 200."
+          fi
