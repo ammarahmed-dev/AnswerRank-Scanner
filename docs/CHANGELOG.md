@@ -2,6 +2,15 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 10)
+
+- Monitor cron scales: scans run 4 at a time inside a 230 s budget, most overdue first; anything
+  left over is deferred to the next run instead of being dropped by the 300 s timeout. The cron
+  now runs daily (09:15 UTC) so a backlog never waits a week; weekly/monthly email cadence is
+  unchanged because monitors are only scanned when due.
+- Verified: 79/79 tests (budget helper; cron route with mocked DB and scanner: auth, ordering,
+  snapshots, failure isolation), tsc, lint, build.
+
 ## 2026-10-03 (session 9)
 
 - Fixed: the reader fallback for sites that block direct scraping never worked. It sent

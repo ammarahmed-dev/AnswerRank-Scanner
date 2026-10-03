@@ -1,14 +1,21 @@
-// NOTE: Vercel cron jobs require a Pro/paid Vercel plan.
 // Add CRON_SECRET to Vercel environment variables (any random string).
-// Schedule: every Monday at 9am UTC (see vercel.json).
+// Schedule: daily at 9am UTC (see vercel.json). Each monitor is still scanned and emailed only
+// when due (weekly: 6+ days, monthly: 28+ days since the last scan); running daily spreads the
+// work so a backlog never waits a whole week.
 
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { runScanCore } from "@/lib/scan-core";
+import { runWithBudget } from "@/lib/batch";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
+
+// Leave headroom under maxDuration for in-flight scans and emails to finish.
+const SCAN_BUDGET_MS = 230_000;
+const SCAN_CONCURRENCY = 4;
+const DUE_FETCH_LIMIT = "100";
 
 const supabaseUrl = getSupabaseServerUrl();
 
@@ -63,7 +70,8 @@ async function getDueUrls(): Promise<MonitorRow[]> {
         frequency: "eq.weekly",
         or: `(last_scanned_at.is.null,last_scanned_at.lt.${weeklyThreshold})`,
         select: "id,url,label,user_id,frequency,last_scanned_at",
-        limit: "50",
+        order: "last_scanned_at.asc.nullsfirst",
+        limit: DUE_FETCH_LIMIT,
       }).toString()}`,
       { headers: getSupabaseServiceHeaders(), cache: "no-store" }
     ),
@@ -72,7 +80,8 @@ async function getDueUrls(): Promise<MonitorRow[]> {
         frequency: "eq.monthly",
         or: `(last_scanned_at.is.null,last_scanned_at.lt.${monthlyThreshold})`,
         select: "id,url,label,user_id,frequency,last_scanned_at",
-        limit: "50",
+        order: "last_scanned_at.asc.nullsfirst",
+        limit: DUE_FETCH_LIMIT,
       }).toString()}`,
       { headers: getSupabaseServiceHeaders(), cache: "no-store" }
     ),
@@ -81,7 +90,10 @@ async function getDueUrls(): Promise<MonitorRow[]> {
   const weekly: MonitorRow[] = weeklyRes.ok ? ((await weeklyRes.json()) as MonitorRow[]) : [];
   const monthly: MonitorRow[] = monthlyRes.ok ? ((await monthlyRes.json()) as MonitorRow[]) : [];
 
-  return [...weekly, ...monthly].slice(0, 50);
+  // Most overdue first, so anything left over when the time budget runs out is picked up next run.
+  return [...weekly, ...monthly].sort(
+    (a, b) => new Date(a.last_scanned_at ?? 0).getTime() - new Date(b.last_scanned_at ?? 0).getTime()
+  );
 }
 
 async function getUserEmail(userId: string): Promise<string | null> {
@@ -264,12 +276,12 @@ export async function GET(req: Request) {
   const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
   const dueUrls = await getDueUrls();
-  console.log(`[cron/monitor-emails] ${dueUrls.length} URLs due for scan`);
+  console.info(`[cron/monitor-emails] ${dueUrls.length} URLs due for scan`);
 
   const errors: string[] = [];
   let processed = 0;
 
-  for (const row of dueUrls) {
+  async function processRow(row: MonitorRow) {
     try {
       // 1. Run scan
       let scanResult: Awaited<ReturnType<typeof runScanCore>>;
@@ -278,7 +290,7 @@ export async function GET(req: Request) {
       } catch (err) {
         console.error(`[cron/monitor-emails] scan failed for ${row.url}:`, err);
         errors.push(`scan:${row.url}`);
-        continue;
+        return;
       }
 
       const { score, categoryScores } = scanResult;
@@ -336,6 +348,11 @@ export async function GET(req: Request) {
     }
   }
 
-  console.log(`[cron/monitor-emails] done - processed: ${processed}, errors: ${errors.length}`);
-  return NextResponse.json({ processed, errors });
+  const { skipped } = await runWithBudget(dueUrls, processRow, {
+    concurrency: SCAN_CONCURRENCY,
+    budgetMs: SCAN_BUDGET_MS,
+  });
+
+  console.info(`[cron/monitor-emails] done - processed: ${processed}, errors: ${errors.length}, deferred: ${skipped}`);
+  return NextResponse.json({ processed, errors, deferred: skipped });
 }
