@@ -113,6 +113,11 @@ Triggers: "write a blog post about X", "generate blog for X".
   date, author "Ammar Ahmed", tags), internal links to `/pricing` and the scanner, FAQ section,
   no em dashes. Run `node scripts/link-lint.mjs`.
 - Note: `/features` redirects to `/pricing` (see `next.config.ts`), so link `/pricing` directly.
+- Publishing: commit each new post on its own (separate from other content edits). The
+  on-publish workflow only reads the last commit and generates a cover image for the first
+  changed post with `coverImage: ""`, then pings IndexNow/GSC. Spokes must link their pillar hub
+  (link-lint) - never link a planned post that does not exist yet; write the hub first.
+- MDX supports GitHub-flavored Markdown (tables, task lists) via remark-gfm.
 
 ## TASK: SEO check
 - `npx tsc --noEmit && npm run build`
