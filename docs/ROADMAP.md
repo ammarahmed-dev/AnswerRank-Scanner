@@ -17,7 +17,7 @@ Based on the full code review from 2026-10-03.
 - [x] Drop the `USING (true)` select policy on `compare_runs` (all reads go through the service role)
 - [x] Remove committed test-account passwords from `AUDIT.md` (owner must still rotate/delete the accounts)
 - [x] `/api/cron/followup-email` accepted `Bearer undefined` when `CRON_SECRET` was unset
-- [x] SSRF hardening: shared `assertPublicUrl` (IPv6 brackets, mapped IPv4, CGNAT, 0.0.0.0, ULA), applied to competitor URLs, monitor URLs, audit crawler and every redirect hop
+- [x] SSRF hardening: shared `assertPublicUrl` (IPv6 brackets, mapped IPv4, CGNAT, 0.0.0.0, ULA), applied to competitor URLs, monitor URLs, audit crawler and every redirect hop; DNS re-checked at connect time (rebinding-safe undici agent)
 - [x] Upgrade `next` to the patched 16.x release and apply non-breaking `npm audit fix`
 - [ ] Remaining high advisories: `sharp` via `@vercel/og` 0.x (upgrade to `@vercel/og` 1.x and re-test `/api/og*` routes) and the `@tabler/icons-webfont` build chain (dropping the webfont fixes it, see Phase 4)
 

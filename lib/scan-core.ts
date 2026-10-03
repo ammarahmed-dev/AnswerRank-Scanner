@@ -7,7 +7,7 @@ import {
   validateUrl,
 } from "@/lib/scrape";
 import { getPageSpeedScore } from "@/lib/pagespeed";
-import { assertPublicUrl, safeFetch } from "@/lib/url-safety";
+import { assertPublicUrl, pinnedFetch, safeFetch, type SafeResponse } from "@/lib/url-safety";
 import { calculateScore, runDeterministicChecks } from "@/lib/score-engine";
 import { CheckResult, ScrapedData, ScanMetadata, ScanResult } from "@/types/index";
 
@@ -150,16 +150,14 @@ async function fetchWithTimeoutAndRedirects(
   targetUrl: string,
   timeoutMs = 5000,
   maxRedirects = 2
-): Promise<{ response: Response; body: string; finalUrl: string }> {
+): Promise<{ response: SafeResponse; body: string; finalUrl: string }> {
   let currentUrl = targetUrl;
   for (let redirectCount = 0; redirectCount <= maxRedirects; redirectCount++) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      await assertPublicUrl(currentUrl);
-      const response = await fetch(currentUrl, {
+      const response = await pinnedFetch(currentUrl, {
         method: "GET",
-        redirect: "manual",
         signal: controller.signal,
         headers: {
           "User-Agent": "AEOCheckScanner/1.0 (+https://www.aeocheck.co)",

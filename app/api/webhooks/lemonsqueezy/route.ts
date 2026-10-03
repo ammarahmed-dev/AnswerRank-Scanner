@@ -11,6 +11,7 @@ type PaidPlan = "onetime" | "pro" | "agency";
 
 type Profile = {
   plan: string;
+  plan_expires_at: string | null;
   lemonsqueezy_subscription_id: string | null;
 };
 
@@ -43,14 +44,18 @@ function verifySignature(rawBody: string, signature: string): boolean {
 
 async function fetchProfile(userId: string): Promise<Profile | null> {
   const res = await fetch(
-    `${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=plan,lemonsqueezy_subscription_id`,
+    `${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=plan,plan_expires_at,lemonsqueezy_subscription_id`,
     { headers: getSupabaseServiceHeaders(), cache: "no-store" }
   );
   if (!res.ok) throw new Error(`profile fetch failed: ${res.status}`);
   const rows = (await res.json()) as Array<Partial<Profile>>;
   const row = rows[0];
   if (!row) return null;
-  return { plan: row.plan ?? "free", lemonsqueezy_subscription_id: row.lemonsqueezy_subscription_id ?? null };
+  return {
+    plan: row.plan ?? "free",
+    plan_expires_at: row.plan_expires_at ?? null,
+    lemonsqueezy_subscription_id: row.lemonsqueezy_subscription_id ?? null,
+  };
 }
 
 async function patchProfile(userId: string, fields: Record<string, unknown>) {
@@ -89,6 +94,11 @@ async function handleOrderRefunded(userId: string, attrs: Record<string, unknown
   const firstItem = (attrs.first_order_item ?? {}) as Record<string, unknown>;
   const plan = variantToPlan(String(firstItem.variant_id ?? ""));
   if (plan !== "onetime") return; // subscription refunds arrive as subscription status changes
+  // order_refunded also fires for partial refunds (status "partial_refund"); only a full refund revokes access.
+  if (attrs.status !== "refunded" && attrs.refunded !== true) {
+    console.info("[ls-webhook] order_refunded is partial, access kept for user:", userId);
+    return;
+  }
 
   const profile = await fetchProfile(userId);
   if (profile?.plan !== "onetime") return;
@@ -114,13 +124,23 @@ async function handleSubscriptionEvent(
 
   const profile = await fetchProfile(userId);
   const storedSubscriptionId = profile?.lemonsqueezy_subscription_id ?? null;
-  // Ignore events for an older subscription once the user has moved to a new one.
   const isCurrentSubscription = !storedSubscriptionId || !subscriptionId || storedSubscriptionId === subscriptionId;
 
   if (ACTIVE_STATUSES.has(status)) {
-    if (!isCurrentSubscription && (PLAN_RANK[profile?.plan ?? "free"] ?? 0) > PLAN_RANK[plan]) {
-      console.info(`[ls-webhook] ${eventName} skipped: stale subscription ${subscriptionId} for user ${userId}`);
-      return;
+    // A different subscription may only take over through its own subscription_created event, and only
+    // when the stored one is no longer an active paid plan (cancelled, or the user is on free/onetime)
+    // or it is an upgrade. Delayed or retried events for an older subscription are ignored, so they
+    // cannot overwrite the stored subscription ID.
+    if (!isCurrentSubscription) {
+      const currentPlan = profile?.plan ?? "free";
+      const storedStillActive = (currentPlan === "pro" || currentPlan === "agency") && !profile?.plan_expires_at;
+      const canReplace =
+        eventName === "subscription_created" &&
+        (!storedStillActive || (PLAN_RANK[plan] ?? 0) > (PLAN_RANK[currentPlan] ?? 0));
+      if (!canReplace) {
+        console.info(`[ls-webhook] ${eventName} skipped: subscription ${subscriptionId} is not the current one for user ${userId}`);
+        return;
+      }
     }
     await patchProfile(userId, {
       plan,

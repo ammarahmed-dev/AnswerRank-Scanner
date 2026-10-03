@@ -1,8 +1,12 @@
+import { lookup as dnsLookup, type LookupAddress } from "dns";
 import { lookup } from "dns/promises";
 import { isIP } from "net";
+import { Agent, fetch as undiciFetch, type RequestInit as UndiciRequestInit } from "undici";
 
 // Guards outbound requests to user-supplied URLs (SSRF protection).
-// Every hop of a redirect chain must pass assertPublicUrl; use safeFetch for that.
+// assertPublicUrl validates a URL up front; pinnedFetch/safeFetch additionally re-check every
+// address at connect time, so a DNS answer that changes between check and connect
+// (DNS rebinding) cannot reach a private address.
 
 const BLOCKED_HOSTNAMES = new Set(["localhost", "localhost.localdomain", "metadata.google.internal"]);
 const BLOCKED_SUFFIXES = [".localhost", ".local", ".internal", ".lan", ".home.arpa"];
@@ -109,23 +113,57 @@ export async function assertPublicUrl(input: string): Promise<URL> {
   return parsed;
 }
 
-type SafeFetchInit = Omit<RequestInit, "redirect"> & { maxRedirects?: number };
+// Runs inside the socket connect, on the exact addresses the connection will use.
+type LookupCallback = (err: Error | null, address: string | LookupAddress[], family?: number) => void;
+
+function guardedLookup(hostname: string, options: { all?: boolean }, callback: LookupCallback) {
+  dnsLookup(hostname, { all: true, verbatim: true }, (err, addresses) => {
+    if (err) return callback(err, "");
+    if (!addresses.length || addresses.some(({ address }) => isPrivateAddress(address))) {
+      return callback(new Error("URL resolves to private IP range"), "");
+    }
+    if (options.all) return callback(null, addresses);
+    callback(null, addresses[0].address, addresses[0].family);
+  });
+}
+
+const guardedAgent = new Agent({ connect: { lookup: guardedLookup } });
+
+export type SafeResponse = {
+  ok: boolean;
+  status: number;
+  statusText: string;
+  headers: { get(name: string): string | null };
+  text(): Promise<string>;
+  body: { cancel(reason?: unknown): Promise<void> } | null;
+};
+
+type SafeFetchInit = Omit<UndiciRequestInit, "redirect" | "dispatcher">;
+
+/** Single request (no redirect following) to a validated URL over the rebinding-safe agent. */
+export async function pinnedFetch(input: string, init: SafeFetchInit = {}): Promise<SafeResponse> {
+  await assertPublicUrl(input);
+  return undiciFetch(input, { ...init, redirect: "manual", dispatcher: guardedAgent });
+}
 
 /**
- * fetch() that validates the initial URL and every redirect target before requesting it.
- * Returns the final response; `response.url` may be empty, so the final URL is returned too.
+ * Like fetch(), but validates the initial URL and every redirect target, and pins DNS checks
+ * to connect time. Returns the final response plus the final URL.
  */
-export async function safeFetch(input: string, init: SafeFetchInit = {}): Promise<{ response: Response; finalUrl: string }> {
+export async function safeFetch(
+  input: string,
+  init: SafeFetchInit & { maxRedirects?: number } = {}
+): Promise<{ response: SafeResponse; finalUrl: string }> {
   const { maxRedirects = 5, ...rest } = init;
   let currentUrl = input;
 
   for (let hop = 0; hop <= maxRedirects; hop++) {
-    await assertPublicUrl(currentUrl);
-    const response = await fetch(currentUrl, { ...rest, redirect: "manual" });
+    const response = await pinnedFetch(currentUrl, rest);
+    const location = response.headers.get("location");
 
-    if (response.status >= 300 && response.status < 400 && response.headers.get("location")) {
+    if (response.status >= 300 && response.status < 400 && location) {
       if (hop === maxRedirects) throw new Error("Redirect limit reached");
-      currentUrl = new URL(response.headers.get("location") as string, currentUrl).toString();
+      currentUrl = new URL(location, currentUrl).toString();
       await response.body?.cancel().catch(() => undefined);
       continue;
     }
