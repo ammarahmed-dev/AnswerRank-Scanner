@@ -5,6 +5,8 @@ import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase
 
 export type UpgradePlan = "onetime" | "pro" | "agency";
 
+const CHECKOUT_ERROR = "We couldn't open checkout. Please try again in a moment, or email hello@aeocheck.co if it keeps happening.";
+
 type Props = {
   children?: React.ReactNode;
   className?: string;
@@ -25,10 +27,12 @@ export default function UpgradeButton({
   style,
 }: Props) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleUpgrade = async () => {
     if (loading || disabled || isCurrentPlan) return;
     setLoading(true);
+    setError("");
     try {
       const supabase = getSupabaseBrowserClient();
       const token = (await getSafeSupabaseSession(supabase))?.access_token;
@@ -50,6 +54,7 @@ export default function UpgradeButton({
       const data = (await res.json()) as { checkoutUrl?: string; error?: string };
       if (!res.ok || !data.checkoutUrl) {
         console.error("[upgrade] Checkout error:", data.error);
+        setError(CHECKOUT_ERROR);
         setLoading(false);
         return;
       }
@@ -61,16 +66,19 @@ export default function UpgradeButton({
         window.location.href = data.checkoutUrl;
       } catch (e) {
         console.error("[upgrade] Invalid checkout URL:", e);
+        setError(CHECKOUT_ERROR);
         setLoading(false);
         return;
       }
     } catch (err) {
       console.error("[upgrade] Unexpected error:", err);
+      setError(CHECKOUT_ERROR);
       setLoading(false);
     }
   };
 
   return (
+    <>
     <button
       type="button"
       onClick={isCurrentPlan ? undefined : handleUpgrade}
@@ -80,5 +88,11 @@ export default function UpgradeButton({
     >
       {loading ? "Opening checkout…" : (isCurrentPlan && includedInPlan ? "Included in Pro" : children)}
     </button>
+    {error && (
+      <p role="alert" style={{ margin: "8px 0 0", fontSize: 13, lineHeight: 1.4, color: "#ff8fa3" }}>
+        {error}
+      </p>
+    )}
+    </>
   );
 }

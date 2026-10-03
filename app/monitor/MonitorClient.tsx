@@ -347,9 +347,7 @@ export default function MonitorClient() {
       ? null
       : plan === "pro"
         ? 10
-        : plan === "onetime"
-          ? 5
-          : 1;
+        : 1; // matches /api/monitor and PLAN_LIMITS (onetime and free: 1)
   const hasReachedLimit = currentPlanLimit !== null && items.length >= currentPlanLimit;
 
   // ── Render ────────────────────────────────────────────────────────────────────

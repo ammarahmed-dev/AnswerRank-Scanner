@@ -41,14 +41,14 @@ Based on the full code review from 2026-10-03.
 - [x] Public share links: "Copy share link" on reports (`/report?id=<uuid>`); `/api/reports/[id]` serves anyone with the link, owner-only unlocks, preview for everyone else; recipients do not trigger a scan or spend quota
 - [ ] Monitor cron: process in batches with a time budget, resume next run; parallelize with a small concurrency limit
 - [ ] Jina fallback: mark reports scanned via reader fallback and skip/neutralize meta+schema checks instead of failing them
-- [ ] Unify `isMasterAdmin` (remove the plan-based version in `lib/access.ts`; expose admin flag from `/api/account`)
+- [x] Unify `isMasterAdmin`: admin only from MASTER_ADMIN_EMAILS via `/api/account` `isAdmin`; Agency customers no longer see the Admin tab / Master Admin badge
 - [ ] `getAuthContext`: avoid the profile upsert on every request (only when the profile read returns nothing)
 - [ ] Persist webhook events in `webhook_events` for idempotency and audit
 - [ ] Base-schema migration that recreates `profiles`, `webhook_events`, `app_stats` from scratch; retire `supabase-schema.sql`
-- [ ] Fix stale copy: welcome email scan count from config, remove fake "87/100" stat, scraper User-Agent domain, single `NEXT_PUBLIC_APP_URL` with `www`
-- [ ] `UpgradeButton`: show checkout errors to the user; remove dead `/upgrade/success` confirm call
-- [ ] Encode all PostgREST filter values built from route params (`audit_runs?id=eq.${id}` etc.)
-- [ ] Remove debug `console.log` calls in `/api/compare`
+- [x] Fix stale copy: welcome email scan count from config, removed fake "87/100" stat (UA domain and APP_URL fixed earlier)
+- [x] `UpgradeButton`: show checkout errors to the user; `/upgrade/success` now redirects to `/dashboard?upgraded=1`
+- [x] Encode PostgREST filter values built from route params (audit scan, monitor scan); the rest use URLSearchParams
+- [x] Remove debug `console.log` calls in `/api/compare`
 - [ ] Lint debt (currently warnings): replace 53 internal `<a href>` with `next/link` `<Link>`; fix `react-hooks/set-state-in-effect` (10), `static-components` in DashboardClient (2), `immutability` in AuditClient (1); then promote these rules back to errors
 - [ ] Marketing copy says "25 AEO and GEO checks" but a scan of example.com returns 23 checks: count the real checks and make the copy match
 
@@ -75,6 +75,11 @@ Based on the full code review from 2026-10-03.
 ---
 
 ## Owner actions (need dashboard/credential access Claude does not have)
+
+- DECISION NEEDED (plan limits, hard limit): the pricing page lists "1 monitored URL" for Free
+  (`PLAN_LIMITS.free.monitorUrls`), but `/api/monitor` rejects all Free users ("Monitor requires a
+  Pro plan"). Either let Free monitor 1 URL (server change) or remove it from the Free plan copy.
+  Claude recommends allowing 1 monitored URL on Free: it matches what is advertised and drives retention.
 
 - Rotate or delete the test accounts whose passwords were committed in `AUDIT.md` (still in git history)
 - Set `CRON_SECRET`, `RESEND_API_KEY`, `INTERNAL_API_SECRET` in Vercel

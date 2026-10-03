@@ -71,7 +71,7 @@ export async function POST(req: Request, { params }: RouteContext) {
   }
 
   // Update last_scanned_at on the monitored URL (non-fatal if it fails)
-  await fetch(`${supabaseUrl}/rest/v1/monitored_urls?id=eq.${id}`, {
+  await fetch(`${supabaseUrl}/rest/v1/monitored_urls?id=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",
     headers: { ...getSupabaseServiceHeaders(), Prefer: "return=minimal" },
     body: JSON.stringify({ last_scanned_at: now }),

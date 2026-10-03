@@ -1,25 +1,7 @@
-import { Suspense } from "react";
-import SiteFooter from "../../components/SiteFooter";
-import SiteHeader from "../../components/SiteHeader";
-import UpgradeSuccessClient from "./UpgradeSuccessClient";
+import { redirect } from "next/navigation";
 
+// Legacy Polar return URL. Lemon Squeezy checkouts return to /dashboard?upgraded=1,
+// so keep old links working by sending them there.
 export default function UpgradeSuccessPage() {
-  return (
-    <main className="min-h-screen">
-      <SiteHeader />
-      <Suspense fallback={
-        <section className="auth-page">
-          <div className="surface dashboard-error">
-            <strong>Upgrade successful</strong>
-            <p>We are confirming your payment and unlocking your report.</p>
-          </div>
-        </section>
-      }
-      >
-        <UpgradeSuccessClient />
-      </Suspense>
-      <SiteFooter />
-    </main>
-  );
+  redirect("/dashboard?upgraded=1");
 }
-

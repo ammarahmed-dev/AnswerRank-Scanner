@@ -220,7 +220,6 @@ export async function POST(req: Request) {
     };
 
     const userId = auth.user?.id ?? null;
-    console.log("[compare] starting save, user:", userId, "plan:", effectivePlan);
 
     let shareToken: string | null = null;
     if (hasSupabaseConfig()) {
@@ -231,7 +230,6 @@ export async function POST(req: Request) {
           url_b: competitorUrl,
           result: { competitors: results, comparison: comparisonPayload },
         };
-        console.log("[compare] inserting row:", JSON.stringify(insertBody).slice(0, 200));
         const saveRes = await fetch(`${supabaseUrl}/rest/v1/compare_runs`, {
           method: "POST",
           headers: {
@@ -244,7 +242,6 @@ export async function POST(req: Request) {
         if (saveRes.ok) {
           const [row] = (await saveRes.json()) as Array<{ share_token?: string }>;
           shareToken = row?.share_token ?? null;
-          console.log("[compare] insert ok, share_token:", shareToken);
         } else {
           const errBody = await saveRes.text().catch(() => "");
           console.error("[compare] insert failed, status:", saveRes.status, "body:", errBody);
@@ -252,8 +249,6 @@ export async function POST(req: Request) {
       } catch (error) {
         console.error("[compare] Failed to save to compare_runs:", error);
       }
-    } else {
-      console.log("[compare] skipping save - Supabase not configured");
     }
 
     return NextResponse.json({

@@ -59,7 +59,7 @@ export async function POST(req: Request, ctx: RouteContext) {
     if (!pageUrl) return NextResponse.json({ error: "url is required." }, { status: 400 });
 
     const auditRes = await fetch(
-      `${supabaseUrl}/rest/v1/audit_runs?id=eq.${id}&user_id=eq.${auth.user.id}&select=id,status,scanned_pages,total_pages,results`,
+      `${supabaseUrl}/rest/v1/audit_runs?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(auth.user.id)}&select=id,status,scanned_pages,total_pages,results`,
       { headers: getSupabaseServiceHeaders(), cache: "no-store" }
     );
 
@@ -136,7 +136,7 @@ export async function POST(req: Request, ctx: RouteContext) {
         ? Math.round(successfulScores.reduce((a, b) => a + b, 0) / successfulScores.length)
         : null;
 
-    const patchRes = await fetch(`${supabaseUrl}/rest/v1/audit_runs?id=eq.${id}`, {
+    const patchRes = await fetch(`${supabaseUrl}/rest/v1/audit_runs?id=eq.${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { ...getSupabaseServiceHeaders(), Prefer: "return=minimal" },
       body: JSON.stringify({

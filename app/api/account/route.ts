@@ -155,10 +155,9 @@ export async function GET(req: Request) {
   const { portalUrl, onetimeUrl, onetimeScanCount } = profileExtras;
   const isEmailAdmin = isMasterAdmin(auth.user.email);
   const profilePlan = normalizeUserPlan(auth.plan);
-  // Email check is primary; agency plan in Supabase is the fallback
-  // (covers cases where MASTER_ADMIN_EMAILS is missing but profile was already set to "agency")
+  // Admins (MASTER_ADMIN_EMAILS) get agency-level access. Agency customers are not admins.
   const plan = isEmailAdmin ? "agency" : profilePlan;
-  const isAdmin = isEmailAdmin || plan === "agency";
+  const isAdmin = isEmailAdmin;
   const limit = getPlanLimit(plan);
   const unlimited = plan === "onetime" || plan === "pro" || plan === "agency";
 

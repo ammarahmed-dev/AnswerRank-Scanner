@@ -38,7 +38,7 @@ export const followupEmailHtml = (_email: string): string => `<!DOCTYPE html>
 
               <div style="margin:0 0 24px;background:#0a0f15;border:1px solid rgba(0,229,160,0.35);border-radius:10px;padding:14px 16px;">
                 <p style="margin:0;font-size:14px;color:#d7fff3;line-height:1.5;">
-                  <strong style="color:#00e5a0;">87/100</strong> - average score for optimized pages on AEOCheck
+                  <strong style="color:#00e5a0;">20+ checks</strong> - the signals AI engines use to understand, trust and cite a page
                 </p>
               </div>
 

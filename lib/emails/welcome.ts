@@ -1,4 +1,6 @@
-﻿export const welcomeEmailSubject = "Welcome to AEOCheck - scan your first URL";
+import { FREE_MONTHLY_SCAN_LIMIT } from "@/lib/usage-limits";
+
+export const welcomeEmailSubject = "Welcome to AEOCheck - scan your first URL";
 
 export const welcomeEmailHtml = (_email: string): string => `<!DOCTYPE html>
 <html lang="en">
@@ -66,7 +68,7 @@ export const welcomeEmailHtml = (_email: string): string => `<!DOCTYPE html>
               </table>
 
               <p style="margin:28px 0 0;font-size:13px;color:rgba(255,255,255,0.35);line-height:1.5;">
-                You're on the <strong style="color:rgba(255,255,255,0.55);">Free plan</strong> &middot; 3 scans per month included
+                You're on the <strong style="color:rgba(255,255,255,0.55);">Free plan</strong> &middot; ${FREE_MONTHLY_SCAN_LIMIT} scans per month included
               </p>
             </td>
           </tr>

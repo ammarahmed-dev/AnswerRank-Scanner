@@ -23,9 +23,10 @@ export function normalizeUserPlan(plan: unknown): UserPlan {
   return "free";
 }
 
+/** Admin status comes only from the server (`isAdmin`, from MASTER_ADMIN_EMAILS), never from the plan. */
 export function isMasterAdmin(profile: AccessProfile | UserPlan) {
-  if (typeof profile === "string") return profile === "agency";
-  return normalizeUserPlan(profile.plan) === "agency" || Boolean(profile.isAdmin);
+  if (typeof profile === "string") return false;
+  return Boolean(profile.isAdmin);
 }
 
 export function isProUser(profile: AccessProfile | UserPlan) {

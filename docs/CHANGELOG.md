@@ -2,6 +2,20 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 7)
+
+- Checkout failures now show an error message under the upgrade button (previously silent).
+- Admin UI (Admin tab, "Master Admin" badge) only for MASTER_ADMIN_EMAILS; Agency customers
+  were shown it because `/api/account` treated the agency plan as admin.
+- Monitor page showed a 5-URL limit for Onetime; server and pricing allow 1. UI now matches.
+- Email copy: welcome email uses the configured free scan limit; removed an invented "87/100"
+  statistic from the follow-up email. Tests guard both.
+- Legacy `/upgrade/success` (Polar) redirects to `/dashboard?upgraded=1`; removed its dead
+  `/api/checkout/confirm` call. Encoded route params in PostgREST filters; removed compare debug logs.
+- Found (needs owner decision): Free plan advertises 1 monitored URL but the API blocks Free users.
+- Verified: 66/66 tests, tsc, lint, build; local smoke (pages 200, redirect 307, compare works,
+  no compare debug output).
+
 ## 2026-10-03 (session 6)
 
 - Share links: reports have a "Copy share link" button. Anyone with the link sees the report
