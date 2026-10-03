@@ -38,7 +38,8 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           BLOG_DIR: content/blog
-        run: node scripts/backfill-images.mjs --slug ${{ steps.gen.outputs.slug }}
+          DRAFT_SLUG: ${{ steps.gen.outputs.slug }}
+        run: node scripts/backfill-images.mjs --slug "$DRAFT_SLUG"
 
       - name: Lint internal links
         env:

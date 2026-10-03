@@ -2,7 +2,21 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
-## 2026-10-03
+## 2026-10-03 (session 2)
+
+- Security: `npm audit` now 0 vulnerabilities. Replaced `@vercel/og` with built-in `next/og`;
+  removed `@tabler/icons-webfont` (dashboard nav icons switched to Lucide). 204 packages fewer.
+- Fixed: report share images (`/api/og/report`) returned an empty body in production
+  (satori rejected divs without explicit `display: flex`).
+- Tests: added Vitest (`npm test`) with 52 unit tests covering URL safety (SSRF), usage-limit keys,
+  the score engine and the Lemon Squeezy webhook (signature, cancel/expire/downgrade, stale
+  subscriptions, refunds, retry on DB failure). CI now runs them.
+- Security: GitHub workflows pass inputs/step outputs via `env:` instead of interpolating into shell.
+- Verified: clean `npm ci`, tsc, 52/52 tests, production build; local `next start` smoke test
+  (pages 200, all OG images render and were visually checked, live scan returns a result).
+- Follow-ups: ESLint (Phase 2), README rewrite; standardize on one icon library (Lucide vs Phosphor).
+
+## 2026-10-03 (session 1)
 
 - Shipped PR #3: paywall fix (guests/free got the full report), Lemon Squeezy webhook rewrite
   (status-driven plans, refunds, retries), SSRF protection with connect-time DNS checks, removal

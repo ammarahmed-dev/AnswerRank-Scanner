@@ -20,19 +20,19 @@ Based on the full code review from 2026-10-03.
 - [x] `/api/cron/followup-email` accepted `Bearer undefined` when `CRON_SECRET` was unset
 - [x] SSRF hardening: shared `assertPublicUrl` (IPv6 brackets, mapped IPv4, CGNAT, 0.0.0.0, ULA), applied to competitor URLs, monitor URLs, audit crawler and every redirect hop; DNS re-checked at connect time (rebinding-safe undici agent)
 - [x] Upgrade `next` to the patched 16.x release and apply non-breaking `npm audit fix`
-- [ ] Remaining high advisories: `sharp` via `@vercel/og` 0.x (upgrade to `@vercel/og` 1.x and re-test `/api/og*` routes) and the `@tabler/icons-webfont` build chain (dropping the webfont fixes it, see Phase 4)
+- [x] Remaining high advisories: replaced `@vercel/og` with built-in `next/og`, dropped `@tabler/icons-webfont` (dashboard icons now Lucide); `npm audit` reports 0 vulnerabilities
 
 ## Phase 2 - Foundations for safe automation
 
 - [x] CI workflow: typecheck + build on every push and PR (`.github/workflows/ci.yml`)
 - [x] Rewrite `CLAUDE.md` so it matches the real stack (Next 16, Supabase auth, root `app/` + `lib/`, DeepSeek/OpenRouter/Gemini)
-- [ ] Add a test runner (Vitest) and unit tests for `lib/url-safety.ts`, `lib/usage-limits.ts` (key derivation), the webhook plan mapping and `lib/score-engine.ts`; run them in CI
+- [x] Add a test runner (Vitest) and unit tests for `lib/url-safety.ts`, `lib/usage-limits.ts` (key derivation), the webhook plan mapping and `lib/score-engine.ts`; run them in CI (`npm test`, `tests/`)
 - [ ] Add ESLint (`eslint-config-next`) and run it in CI
 - [x] Remove dead code: `/api/analyze`, `lib/score.ts`, `lib/openai.ts`, `lib/polar.ts`, `/api/stats/increment`, unused deps (`@polar-sh/nextjs`, `zod`, `openai`, `@google/genai`)
 - [x] Remove committed logs (`dev.log`, `.next-dev-vs.log`) and `current_info.txt`; untrack `.claude/settings.local.json`
 - [x] Fix `.env.example` (document `*_MONTHLY_*` limits, Lemon Squeezy vars, `CRON_SECRET`; remove Polar)
 - [ ] Rewrite `README.md` to describe the current product
-- [ ] Fix `blog-generate.yml` script injection (pass `inputs.keyword` via `env:`), and make content workflows open PRs instead of pushing to `main`
+- [x] Fix workflow script injection: inputs/step outputs passed via `env:` in blog-generate, backfill-images, content-draft and on-publish (pushing content to `main` is fine under the ownership model)
 
 ## Phase 3 - Correctness and reliability
 
@@ -57,7 +57,7 @@ Based on the full code review from 2026-10-03.
 - [ ] Monitor history chart and score-drop email alerts
 - [ ] "Limit reached" email and a 3-step onboarding sequence via Resend
 - [ ] Split `HomePageClient.tsx`, `ReportSectionNew.tsx`, `DashboardClient.tsx` into smaller components
-- [ ] Consolidate icon libraries (drop the global Tabler webfont)
+- [~] Consolidate icon libraries: Tabler webfont dropped; Lucide and Phosphor both remain (standardize on one)
 - [ ] Error monitoring (Sentry) and uptime check
 
 ## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)

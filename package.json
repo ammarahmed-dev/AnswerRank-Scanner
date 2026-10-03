@@ -6,14 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "verify:scan": "node scripts/verify-scan-runtime.mjs"
+    "verify:scan": "node scripts/verify-scan-runtime.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@huggingface/inference": "^4.13.19",
     "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.105.1",
-    "@tabler/icons-webfont": "^3.44.0",
-    "@vercel/og": "^0.11.1",
     "cheerio": "^1.2.0",
     "critters": "^0.0.23",
     "gray-matter": "^4.0.3",
@@ -32,7 +31,8 @@
     "@types/react-dom": "^19.2.3",
     "postcss": "^8.5.13",
     "tailwindcss": "^4.2.4",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.7"
   },
   "overrides": {
     "postcss": "^8.5.13"

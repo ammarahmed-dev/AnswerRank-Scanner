@@ -3,7 +3,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
-import { ArrowUpRight, FileSearch, Loader2 } from "lucide-react";
+import {
+  Activity,
+  ArrowUpRight,
+  ClipboardList,
+  FileSearch,
+  GitCompareArrows,
+  LayoutDashboard,
+  Loader2,
+  Search,
+  Settings,
+  Shield,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
 import UpgradeButton from "../components/UpgradeButton";
@@ -62,11 +74,11 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
 }
 
-const NAV_TABS: Array<{ id: Tab; icon: string; label: string }> = [
-  { id: "overview", icon: "ti ti-layout-dashboard", label: "Overview" },
-  { id: "scans",    icon: "ti ti-search",            label: "Scans" },
-  { id: "audits",   icon: "ti ti-clipboard-list",    label: "Audits" },
-  { id: "settings", icon: "ti ti-settings",          label: "Settings" },
+const NAV_TABS: Array<{ id: Tab; icon: LucideIcon; label: string }> = [
+  { id: "overview", icon: LayoutDashboard, label: "Overview" },
+  { id: "scans",    icon: Search,            label: "Scans" },
+  { id: "audits",   icon: ClipboardList,    label: "Audits" },
+  { id: "settings", icon: Settings,          label: "Settings" },
 ];
 
 // ── Shared inline style helpers ──────────────────────────────────
@@ -465,7 +477,7 @@ export default function DashboardClient() {
 
   const visibleTabs = [
     ...NAV_TABS,
-    ...(masterAdmin ? [{ id: "admin" as Tab, icon: "ti ti-shield", label: "Admin" }] : []),
+    ...(masterAdmin ? [{ id: "admin" as Tab, icon: Shield, label: "Admin" }] : []),
   ];
 
   function tabStyle(id: Tab): React.CSSProperties {
@@ -536,7 +548,7 @@ export default function DashboardClient() {
         <nav className="db-nav" style={{ display: "flex", flexDirection: "column", flex: 1 }}>
           {visibleTabs.map(tab => (
             <button key={tab.id} type="button" className={`db-tab${activeTab === tab.id ? " is-active" : ""}`} style={tabStyle(tab.id)} onClick={() => handleTabChange(tab.id)}>
-              <i className={tab.icon} aria-hidden="true" style={{ fontSize: 16, width: 20, textAlign: "center", flexShrink: 0 }} />
+              <tab.icon size={16} aria-hidden="true" style={{ width: 20, flexShrink: 0 }} />
               {tab.label}
             </button>
           ))}
@@ -544,11 +556,11 @@ export default function DashboardClient() {
           <div className="db-nav-divider" style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "8px 8px" }} />
 
           <button type="button" className="db-tab" style={externalTabStyle()} onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/monitor"); }}>
-            <i className="ti ti-activity" aria-hidden="true" style={{ fontSize: 16, width: 20, textAlign: "center", flexShrink: 0 }} />
+            <Activity size={16} aria-hidden="true" style={{ width: 20, flexShrink: 0 }} />
             Monitor
           </button>
           <button type="button" className="db-tab" style={externalTabStyle()} onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/compare"); }}>
-            <i className="ti ti-arrows-diff" aria-hidden="true" style={{ fontSize: 16, width: 20, textAlign: "center", flexShrink: 0 }} />
+            <GitCompareArrows size={16} aria-hidden="true" style={{ width: 20, flexShrink: 0 }} />
             Compare
           </button>
         </nav>
@@ -744,9 +756,9 @@ export default function DashboardClient() {
     const nav = (
       <nav className="db-bottom-nav" style={navStyle}>
         {([
-          { id: "overview" as Tab, icon: "ti ti-layout-dashboard", label: "Home" },
-          { id: "scans"    as Tab, icon: "ti ti-search",            label: "Scans" },
-          { id: "audits"   as Tab, icon: "ti ti-clipboard-list",    label: "Audits" },
+          { id: "overview" as Tab, icon: LayoutDashboard, label: "Home" },
+          { id: "scans"    as Tab, icon: Search,            label: "Scans" },
+          { id: "audits"   as Tab, icon: ClipboardList,    label: "Audits" },
         ] as const).map(item => (
           <button
             key={item.id}
@@ -755,20 +767,20 @@ export default function DashboardClient() {
             onClick={() => handleTabChange(item.id)}
           >
             <span className="db-bottom-nav-emoji">
-              <i className={item.icon} aria-hidden="true" />
+              <item.icon size={20} aria-hidden="true" />
             </span>
             <span className="db-bottom-nav-label">{item.label}</span>
           </button>
         ))}
         <button type="button" className="db-bottom-nav-item" onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/monitor"); }}>
           <span className="db-bottom-nav-emoji">
-            <i className="ti ti-activity" aria-hidden="true" />
+            <Activity size={20} aria-hidden="true" />
           </span>
           <span className="db-bottom-nav-label">Monitor</span>
         </button>
         <button type="button" className="db-bottom-nav-item" onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); router.push("/compare"); }}>
           <span className="db-bottom-nav-emoji">
-            <i className="ti ti-arrows-diff" aria-hidden="true" />
+            <GitCompareArrows size={20} aria-hidden="true" />
           </span>
           <span className="db-bottom-nav-label">Compare</span>
         </button>

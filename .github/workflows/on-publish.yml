@@ -47,8 +47,9 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           BLOG_DIR: content/blog
+          CHANGED_SLUGS: ${{ steps.changed.outputs.slugs }}
         run: |
-          SLUG="${{ steps.changed.outputs.slugs }}"
+          SLUG="$CHANGED_SLUGS"
           if [ -z "$SLUG" ]; then exit 0; fi
           # Only generate if coverImage is empty in frontmatter
           MDX="content/blog/${SLUG%% *}.mdx"

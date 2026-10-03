@@ -32,8 +32,9 @@ operation"). Vercel auto-deploys `main` to production.
 npm ci
 npx tsc --noEmit      # must pass
 npm run build         # must pass
+npm test              # Vitest unit tests in tests/, must pass
 ```
-There is no test runner or ESLint config yet (tracked in docs/ROADMAP.md Phase 2).
+There is no ESLint config yet (tracked in docs/ROADMAP.md Phase 2).
 Playwright + Chromium are available in cloud sessions for visual checks.
 
 ## Environment

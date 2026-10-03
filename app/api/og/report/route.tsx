@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
       >
         <div
           style={{
+            display: "flex",
             color: "#00f0b4",
             fontSize: "22px",
             letterSpacing: "0.15em",
@@ -40,6 +41,7 @@ export async function GET(req: NextRequest) {
 
         <div
           style={{
+            display: "flex",
             color: "#ffffff",
             fontSize: "44px",
             fontWeight: "bold",
@@ -61,6 +63,7 @@ export async function GET(req: NextRequest) {
         >
           <div
             style={{
+            display: "flex",
               fontSize: "112px",
               fontWeight: "bold",
               color: scoreColor,
@@ -78,6 +81,7 @@ export async function GET(req: NextRequest) {
           >
             <div
               style={{
+            display: "flex",
                 color: "#6b6b80",
                 fontSize: "22px",
               }}
@@ -86,6 +90,7 @@ export async function GET(req: NextRequest) {
             </div>
             <div
               style={{
+            display: "flex",
                 color: scoreColor,
                 fontSize: "28px",
                 fontWeight: "bold",
@@ -98,6 +103,7 @@ export async function GET(req: NextRequest) {
 
         <div
           style={{
+            display: "flex",
             color: "#4a4a5a",
             fontSize: "20px",
           }}
