@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import { ExtractedData } from "@/types/report";
 import { ScrapedData } from "@/types/index";
+import { safeFetch } from "@/lib/url-safety";
 
 function normalizeSchemaTypeLabel(value: string): string {
   const trimmed = value.trim();
@@ -90,19 +91,18 @@ export async function fetchHtml(url: string): Promise<string> {
   const timeout = setTimeout(() => controller.abort(), 12000);
 
   try {
-    const res = await fetch(url, {
+    const { response: res, finalUrl } = await safeFetch(url, {
       signal: controller.signal,
-      redirect: "follow",
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (compatible; AEOCheckScanner/1.0; +https://aeocheckscanner.com)",
+          "Mozilla/5.0 (compatible; AEOCheckScanner/1.0; +https://www.aeocheck.co)",
         Accept:
           "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
       },
     });
 
-    if (!validateUrl(res.url || url)) {
+    if (!validateUrl(finalUrl)) {
       throw new Error("Invalid URL. Only public http(s) URLs are supported.");
     }
 

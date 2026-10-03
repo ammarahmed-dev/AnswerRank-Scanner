@@ -7,10 +7,12 @@
 
 ## Test Accounts Created
 
-| Email | Plan | Password |
-|-------|------|----------|
-| onetime@test.aeocheck.co | **free** (stuck - see Critical #1) | TestAEO2024! |
-| pro@test.aeocheck.co | **pro** | TestAEO2024! |
+| Email | Plan |
+|-------|------|
+| onetime@test.aeocheck.co | **free** (stuck - see Critical #1) |
+| pro@test.aeocheck.co | **pro** |
+
+> Passwords removed from this file (2026-10-03). They remain in git history: rotate or delete these accounts.
 
 > NOTE: The onetime account is currently at `free` because the DB constraint blocks `onetime` plan. Fix Critical #1 first, then re-run `node scripts/create-test-accounts.mjs`.
 

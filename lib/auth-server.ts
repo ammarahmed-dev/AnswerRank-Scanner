@@ -114,7 +114,7 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
         });
 
         const secret = process.env.INTERNAL_API_SECRET;
-        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.aeocheck.co";
+        const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://www.aeocheck.co").replace(/\/$/, "");
         if (secret) {
           fetch(`${baseUrl}/api/emails/welcome`, {
             method: "POST",

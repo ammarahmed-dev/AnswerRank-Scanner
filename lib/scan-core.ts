@@ -7,6 +7,7 @@ import {
   validateUrl,
 } from "@/lib/scrape";
 import { getPageSpeedScore } from "@/lib/pagespeed";
+import { assertPublicUrl, safeFetch } from "@/lib/url-safety";
 import { calculateScore, runDeterministicChecks } from "@/lib/score-engine";
 import { CheckResult, ScrapedData, ScanMetadata, ScanResult } from "@/types/index";
 
@@ -155,6 +156,7 @@ async function fetchWithTimeoutAndRedirects(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
+      await assertPublicUrl(currentUrl);
       const response = await fetch(currentUrl, {
         method: "GET",
         redirect: "manual",
@@ -310,6 +312,8 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
   if (normalizeAndValidate && !validateUrl(url)) {
     throw new Error("Invalid URL. Only public http(s) URLs are supported.");
   }
+  // Single choke point for every caller (scan, competitors, monitors, cron, audits).
+  await assertPublicUrl(url);
 
   options.onProgress?.("fetch_started");
   const scrapedData = await scrapeUrlWithFallback(url);
@@ -366,7 +370,7 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
   let llmsTxtDetail = "No llms.txt file found - add one to guide AI crawlers";
   try {
     const llmsUrl = new URL("/llms.txt", robotsCheck.finalUrl ?? url).toString();
-    const llmsRes = await fetch(llmsUrl, {
+    const { response: llmsRes } = await safeFetch(llmsUrl, {
       method: "GET",
       signal: AbortSignal.timeout(5000),
       headers: { "User-Agent": "AEOCheckScanner/1.0 (+https://www.aeocheck.co)" },

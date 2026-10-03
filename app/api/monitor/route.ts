@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isProUser } from "@/lib/access";
+import { assertPublicUrl } from "@/lib/url-safety";
 import { isMasterAdmin } from "@/lib/admin";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
@@ -122,6 +123,11 @@ export async function POST(req: Request) {
     normalized = new URL(rawUrl.startsWith("http") ? rawUrl : `https://${rawUrl}`).toString();
   } catch {
     return NextResponse.json({ error: "Invalid URL." }, { status: 400 });
+  }
+  try {
+    await assertPublicUrl(normalized);
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 400 });
   }
 
   // Count existing entries to enforce cap

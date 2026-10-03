@@ -6,7 +6,7 @@ import { runScanCore } from "@/lib/scan-core";
 import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { checkUsageLimit, getClientKey, getPlanLimit, incrementUsage } from "@/lib/usage-limits";
-import { validatePublicUrl } from "@/lib/url-safety";
+import { assertPublicUrl } from "@/lib/url-safety";
 import { isMasterAdmin } from "@/lib/admin";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 import { ScrapedData, ScanResult, AIInsights, CompetitorScanResult, SchemaRecommendation } from "@/types/index";
@@ -336,13 +336,15 @@ async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
   try {
     normalizedUrl = normalizeUrl(rawUrl);
     if (!validateUrl(normalizedUrl)) throw new Error("Invalid competitor URL");
+    await assertPublicUrl(normalizedUrl);
   } catch {
     return { url: rawUrl, error: "Could not scan competitor URL" };
   }
 
   const timeoutMs = Number(process.env.COMPETITOR_SCAN_TIMEOUT_MS ?? 25000);
+  let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error("Competitor scan timed out")), timeoutMs);
+    timer = setTimeout(() => reject(new Error("Competitor scan timed out")), timeoutMs);
   });
 
   const work = (async (): Promise<CompetitorScanResult> => {
@@ -366,6 +368,8 @@ async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
     return await Promise.race([work, timeout]);
   } catch {
     return { url: normalizedUrl, error: "Could not scan competitor URL" };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -394,7 +398,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await validatePublicUrl(url);
+    await assertPublicUrl(url);
   } catch (e) {
     return errorResponse((e as Error).message, 400);
   }
@@ -411,7 +415,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         type: "limit_reached",
-        error: `You've used your ${usage.limit} free scan${usage.limit === 1 ? "" : "s"} this month.`,
+        error: `You've used your ${usage.limit} scan${usage.limit === 1 ? "" : "s"} for this month.`,
         limit: usage.limit,
         remaining: usage.remaining,
       },
@@ -462,8 +466,9 @@ export async function POST(req: NextRequest) {
       retestSeed = null;
     }
   }
-  // Onetime plan gate: determine whether this scan gets full report or free preview
-  let isFullReport = true;
+  // Full report only for paid plans (pro/agency/admin), onetime users on their locked URL,
+  // or a retest of a report that was already unlocked. Guests and free users get the preview.
+  let isFullReport = isAdmin || effectivePlan === "pro" || effectivePlan === "agency" || Boolean(retestSeed?.unlocked);
   let onetimeLockMessage: string | undefined;
 
   if (effectivePlan === "onetime" && !isAdmin) {
