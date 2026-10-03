@@ -2,6 +2,12 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 11)
+
+- Auth: removed a database write from every authenticated API request; the profile is created
+  only on a user's first request. Covered by new tests (guest, existing user, new user, expiry).
+- Verified: 83/83 tests, tsc, lint, build.
+
 ## 2026-10-03 (session 10)
 
 - Monitor cron scales: scans run 4 at a time inside a 230 s budget, most overdue first; anything

@@ -60,31 +60,29 @@ export async function getAuthContext(req: Request): Promise<AuthContext> {
 
   const user: AuthUser = { id: userData.id, email: userData.email };
 
-  await fetch(`${supabaseUrl}/rest/v1/profiles`, {
-    method: "POST",
-    headers: {
-      ...getSupabaseServiceHeaders(),
-      Prefer: "resolution=ignore-duplicates",
-    },
-    body: JSON.stringify({
-      id: user.id,
-      email: user.email ?? null,
-      plan: "free",
-    }),
-  }).catch(() => null);
-
   let onetimeUrl: string | null = null;
   let onetimeScanCount = 0;
   let resolvedPlan: AuthContext["plan"] = "free";
 
   try {
-    const profileRes = await fetch(
-      `${supabaseUrl}/rest/v1/profiles?id=eq.${user.id}&select=plan,plan_expires_at,welcome_email_sent,onetime_url,onetime_scan_count`,
-      {
-        headers: getSupabaseServiceHeaders(),
-        cache: "no-store",
+    const profileUrl =
+      `${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(user.id)}` +
+      "&select=plan,plan_expires_at,welcome_email_sent,onetime_url,onetime_scan_count";
+    let profileRes = await fetch(profileUrl, { headers: getSupabaseServiceHeaders(), cache: "no-store" });
+
+    // First request from a new user: create the profile, then read it back. Existing users skip
+    // this write (it used to run on every authenticated request).
+    if (profileRes.ok) {
+      const existing = (await profileRes.clone().json()) as unknown[];
+      if (existing.length === 0) {
+        await fetch(`${supabaseUrl}/rest/v1/profiles`, {
+          method: "POST",
+          headers: { ...getSupabaseServiceHeaders(), Prefer: "resolution=ignore-duplicates" },
+          body: JSON.stringify({ id: user.id, email: user.email ?? null, plan: "free" }),
+        }).catch(() => null);
+        profileRes = await fetch(profileUrl, { headers: getSupabaseServiceHeaders(), cache: "no-store" });
       }
-    );
+    }
     const profiles = profileRes.ok
       ? ((await profileRes.json()) as Array<{
           plan?: string;

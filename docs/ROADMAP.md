@@ -42,7 +42,7 @@ Based on the full code review from 2026-10-03.
 - [x] Monitor cron: 4 concurrent scans within a 230 s budget (`lib/batch.ts`), oldest first, leftovers deferred to the next run; cron now daily (due thresholds unchanged, so email cadence is the same)
 - [x] Reader fallback: fixed (it always failed: `X-Respond-With: no-content` made Jina return 400); HTML-only checks are "Not verified" (warn) on fallback scans, readability computed, CAPTCHA walls reported as blocked, report shows a limited-scan notice
 - [x] Unify `isMasterAdmin`: admin only from MASTER_ADMIN_EMAILS via `/api/account` `isAdmin`; Agency customers no longer see the Admin tab / Master Admin badge
-- [ ] `getAuthContext`: avoid the profile upsert on every request (only when the profile read returns nothing)
+- [x] `getAuthContext`: profile is created only when missing (was a write on every authenticated request)
 - [ ] Persist webhook events in `webhook_events` for idempotency and audit
 - [ ] Base-schema migration that recreates `profiles`, `webhook_events`, `app_stats` from scratch; retire `supabase-schema.sql`
 - [x] Fix stale copy: welcome email scan count from config, removed fake "87/100" stat (UA domain and APP_URL fixed earlier)
