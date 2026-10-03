@@ -1,8 +1,9 @@
 # AEOCheck Roadmap
 
-Source of truth for planned fixes and upgrades. Autonomous sessions (weekend routine)
-pick the first unchecked item in the lowest-numbered phase, ship it, and tick it here
-in the same pull request. Keep items small enough to land in one PR.
+Source of truth for planned work. Claude owns and operates AEOCheck (see CLAUDE.md,
+"Autonomous operation"): sessions pick the first unchecked item in the lowest-numbered phase,
+ship it to production, and tick it here in the same change. Keep items small enough to ship
+in one session. Claimed items have a `claude/wip-*` branch.
 
 Status legend: `[ ]` todo, `[x]` done, `[~]` in progress / partially done (add a note).
 
@@ -59,9 +60,19 @@ Based on the full code review from 2026-10-03.
 - [ ] Consolidate icon libraries (drop the global Tabler webfont)
 - [ ] Error monitoring (Sentry) and uptime check
 
+## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)
+
+- Features: grow AEOCheck into the best AEO/GEO tool for its price. Source ideas from
+  `docs/RESEARCH.md`, add each as a concrete item here, then build it.
+- UI/UX: polish the scan flow, report, dashboard and marketing pages; mobile first; measure with
+  Lighthouse and fix regressions.
+- Blog: up to 2 useful posts per weekend from `content/topical-map.json` and research.
+- Research: weekly scan of AI search changes and competitor tools; update `docs/RESEARCH.md`.
+- Maintenance: dependency updates (minor/patch weekly, majors with care), `npm audit`, runtime errors.
+
 ---
 
-## Owner actions (cannot be done from code)
+## Owner actions (need dashboard/credential access Claude does not have)
 
 - Rotate or delete the test accounts whose passwords were committed in `AUDIT.md` (still in git history)
 - Set `CRON_SECRET`, `RESEND_API_KEY`, `INTERNAL_API_SECRET` in Vercel

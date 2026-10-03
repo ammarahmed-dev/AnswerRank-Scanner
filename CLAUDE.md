@@ -3,7 +3,8 @@
 ## Project
 AEOCheck (www.aeocheck.co) is a SaaS that scans a public URL and scores its readiness for AI answer
 engines (ChatGPT, Perplexity, Google AI Overviews). Plans: Free / Onetime / Pro / Agency.
-Built and owned by Ammar Ahmed (solo). Vercel auto-deploys `main` to production.
+Founded by Ammar Ahmed; operated and developed by Claude since 2026-10-03 (see "Autonomous
+operation"). Vercel auto-deploys `main` to production.
 
 ## Stack (verify in package.json before assuming)
 - Next.js 16 App Router, React 19, TypeScript (strict), Tailwind CSS v4
@@ -33,6 +34,7 @@ npx tsc --noEmit      # must pass
 npm run build         # must pass
 ```
 There is no test runner or ESLint config yet (tracked in docs/ROADMAP.md Phase 2).
+Playwright + Chromium are available in cloud sessions for visual checks.
 
 ## Environment
 Never hardcode secrets. See `.env.example` for the full list. Server code reads env at runtime;
@@ -40,20 +42,51 @@ the build succeeds without any env vars set.
 
 ---
 
-## Autonomous work (weekend routine)
+## Autonomous operation (Claude owns this project)
 
-When a session is started to "continue the roadmap":
-1. Read `docs/ROADMAP.md`. Pick the first unchecked item in the lowest-numbered phase
-   (skip items marked as owner actions or blocked). Do 1-3 items per session, smallest first.
-2. Branch from latest `main`: `claude/roadmap-<short-slug>`. Never push to `main` directly,
-   never merge your own PR, never force-push someone else's branch.
-3. Implement with minimal, focused diffs that match the surrounding code style.
-4. Verify: `npx tsc --noEmit` and `npm run build` must pass (and tests once they exist).
-5. Tick the item in `docs/ROADMAP.md` in the same PR. Add any newly discovered issues as new items.
-6. Open a PR against `main` with: what changed, why, how it was verified, and any owner actions
-   (env vars to set, migrations to run). Migrations are never applied automatically.
-7. Stop and leave a note in the PR instead of guessing when a change needs a product decision,
-   touches pricing/plan limits, deletes user data, or needs production credentials.
+On 2026-10-03 the owner, Ammar Ahmed, handed full ownership of AEOCheck to Claude: product
+direction, fixes, upgrades, UI, content (blog), market research and shipping straight to the
+live site. A scheduled routine starts sessions every hour on Saturdays and Sundays (UTC). Work
+continuously; if a session runs out of budget, the next scheduled session picks up from git state.
+
+### Each session
+1. `git fetch origin`; start from latest `origin/main`. Read this file and `docs/ROADMAP.md`.
+2. Coordinate with other sessions (several may overlap): list remote branches
+   `git ls-remote --heads origin 'claude/wip-*'`. A branch pushed in the last 3 hours claims its item;
+   pick something else. Claim your item immediately by pushing an empty-diff branch
+   `claude/wip-<short-slug>` (delete it when done). Resume your own stale branch if one is unfinished.
+3. Choose work in this order:
+   a. Production broken or CI red on `main` -> fix or revert first.
+   b. First unchecked item in the lowest-numbered phase of `docs/ROADMAP.md`.
+   c. When phases 1-3 are done or blocked, the continuous streams in Phase 5 (features, UI, blog,
+      research). Add concrete items to the ROADMAP before implementing them.
+4. Implement with focused diffs that match the surrounding code. Tick/add ROADMAP items.
+5. Verify before shipping: `npm ci`, `npx tsc --noEmit`, `npm run build`, tests/lint once they
+   exist. For scan/API/UI changes, also run `npx next start` and smoke-test with curl (and
+   Playwright screenshots for visual changes, desktop + mobile widths).
+6. Ship: merge your branch into `main` (merge commit or fast-forward) and `git push origin main`.
+   Opening a PR first is optional (use one when GitHub tools are available, for the record).
+   Never force-push `main`; never rewrite published history.
+7. After pushing, confirm production: wait for the deploy, then check https://www.aeocheck.co/,
+   `/pricing`, `/blog`, `/api/stats` return 200 and that the shipped change behaves as intended.
+   If production is broken, `git revert` the merge on `main` and push immediately, then fix forward.
+8. Log the session at the top of `docs/CHANGELOG.md` (date, what shipped, verification, follow-ups).
+
+### Hard limits (stop and write it under "Owner actions" in the ROADMAP instead)
+- Changing prices, plan limits, refunds or billing behavior visible to paying customers
+- Destructive data changes (DROP/DELETE/rewrite of user data) or irreversible migrations
+- Anything needing credentials or dashboards Claude does not have (Supabase SQL, Vercel env,
+  Lemon Squeezy, Google Search Console)
+- Legal pages (terms, privacy, refund policy) beyond typo fixes
+Additive migrations go in `supabase/migrations/`; code must keep working before they are applied.
+
+### Content and research
+- Blog: write posts directly as MDX in `content/blog/` following the Blog task below (you can
+  write them yourself; no API key needed). Pick topics from `content/topical-map.json` and from
+  research. At most 2 posts per weekend, each genuinely useful, factually careful, no invented stats.
+- Research: use web search to track AI search changes (ChatGPT, Perplexity, Google AI Overviews,
+  Gemini, Claude), competitor AEO/GEO tools and their features. Record findings and resulting
+  feature ideas in `docs/RESEARCH.md`, then turn the best ones into ROADMAP items.
 
 Safety rules:
 - Treat payments (`app/api/webhooks/lemonsqueezy`, `app/api/checkout`), auth (`lib/auth-server.ts`)
