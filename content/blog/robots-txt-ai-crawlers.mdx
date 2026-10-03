@@ -1,0 +1,126 @@
+---
+title: "robots.txt for AI Crawlers: What to Allow, What to Block"
+description: "How to configure robots.txt for GPTBot, OAI-SearchBot, PerplexityBot, ClaudeBot and Google-Extended, with copy-paste rules for every AI crawler policy."
+date: 2026-10-03
+slug: robots-txt-ai-crawlers
+tags: [robots-txt, ai-crawlers, gptbot, technical-aeo, perplexity, chatgpt]
+author: AEOCheck
+coverImage: ""
+coverImageAlt: A robots.txt file with rules for GPTBot, OAI-SearchBot and PerplexityBot
+faqs:
+  - question: "Should I block GPTBot?"
+    answer: "Blocking GPTBot tells OpenAI not to use your content to train its models. It does not remove you from ChatGPT search, which is controlled by a separate crawler, OAI-SearchBot. If you want to appear in ChatGPT answers but keep your content out of training, block GPTBot and allow OAI-SearchBot."
+  - question: "Does blocking Google-Extended remove me from AI Overviews?"
+    answer: "No. Google-Extended is a robots.txt token that controls whether your content is used for Gemini model training and grounding in Gemini apps. AI Overviews in Google Search use the regular Googlebot crawl, so blocking Google-Extended does not affect your Google Search rankings or AI Overviews."
+  - question: "How do I allow all AI crawlers?"
+    answer: "If your robots.txt has no rules that block them, AI crawlers are already allowed. Check that you do not have a site-wide 'User-agent: *' with 'Disallow: /', and that no AI crawler is listed in a group that disallows the whole site. Adding explicit Allow rules for the AI search crawlers makes your policy clear."
+  - question: "How long do robots.txt changes take to apply?"
+    answer: "Crawlers re-read robots.txt regularly. OpenAI says changes for its search crawler can take about 24 hours to take effect. Other engines are similar, so allow a day or two before checking whether your pages appear in AI answers again."
+  - question: "Do AI crawlers actually respect robots.txt?"
+    answer: "The automated crawlers from OpenAI, Anthropic, Perplexity and Google document robots.txt support. User-initiated agents such as ChatGPT-User and Perplexity-User are different: they fetch a page because a person asked about it, and the companies note that robots.txt may not apply to those requests."
+---
+
+Your robots.txt file has quietly become one of the most important files for AI search. A single line can decide whether ChatGPT, Perplexity and Claude can cite your site at all. Yet most robots.txt files were written years ago for Google, and many now block AI crawlers by accident, or block the wrong ones on purpose.
+
+This guide explains which AI crawlers exist, what each one does, and exactly what to put in your robots.txt for the policy you want. It is part of our [technical AEO guide](/blog/technical-aeo-guide), which covers the rest of the machine-readability checklist.
+
+## The key idea: search crawlers vs training crawlers
+
+AI companies now run separate crawlers for separate jobs, and robots.txt controls each one independently. The distinction you need to understand is simple:
+
+- **Search crawlers** fetch pages so the engine can show and cite them in answers. Block these and your site disappears from that engine's answers.
+- **Training crawlers** collect content to train future models. Block these and your content stays out of training, but your visibility in AI search answers is unaffected.
+- **User agents** fetch a page in real time because someone asked about it. These are not automated crawls, and robots.txt may not apply to them.
+
+That means you do not have to choose between "visible in AI search" and "my content is not used for training". You can have both.
+
+## The AI crawlers that matter
+
+| Token | Company | Type | What it controls |
+| --- | --- | --- | --- |
+| `OAI-SearchBot` | OpenAI | Search | Inclusion in ChatGPT search answers |
+| `GPTBot` | OpenAI | Training | Use of your content to train OpenAI models |
+| `ChatGPT-User` | OpenAI | User agent | Pages fetched when a user asks ChatGPT |
+| `PerplexityBot` | Perplexity | Search | Surfacing and citing your site in Perplexity |
+| `Perplexity-User` | Perplexity | User agent | Pages fetched for a user's question |
+| `Claude-SearchBot` | Anthropic | Search | Claude's search results |
+| `ClaudeBot` | Anthropic | Training | Use of your content to train Claude |
+| `Claude-User` | Anthropic | User agent | Pages fetched when a user asks Claude |
+| `Google-Extended` | Google | Training and grounding | Gemini training and grounding in Gemini apps |
+| `Applebot-Extended` | Apple | Training | Use of content for Apple's AI models |
+
+Two Google details are worth repeating because they cause so much confusion. `Google-Extended` is not a crawler that visits your site; it is a token Google checks when deciding how content its normal crawlers fetched may be used. And AI Overviews in Google Search come from regular Googlebot, so blocking `Google-Extended` does not remove you from AI Overviews or affect your rankings.
+
+## Copy-paste robots.txt configurations
+
+### Policy 1: Maximum AI visibility (recommended for most businesses)
+
+If you want to be found and cited everywhere, allow everything and say so explicitly:
+
+```txt
+User-agent: OAI-SearchBot
+User-agent: PerplexityBot
+User-agent: Claude-SearchBot
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: Google-Extended
+Allow: /
+
+User-agent: *
+Allow: /
+
+Sitemap: https://www.example.com/sitemap.xml
+```
+
+### Policy 2: Visible in AI search, opted out of training
+
+This is the most common choice for publishers and companies with proprietary content. You stay citable in ChatGPT, Perplexity and Claude answers while keeping content out of model training:
+
+```txt
+# AI search: allowed
+User-agent: OAI-SearchBot
+User-agent: PerplexityBot
+User-agent: Claude-SearchBot
+Allow: /
+
+# AI training: blocked
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: *
+Allow: /
+```
+
+### Policy 3: Block all AI crawlers
+
+Only choose this if you have decided AI search is not a channel for you. Your site will not appear in ChatGPT search, Perplexity or Claude answers:
+
+```txt
+User-agent: OAI-SearchBot
+User-agent: GPTBot
+User-agent: PerplexityBot
+User-agent: Claude-SearchBot
+User-agent: ClaudeBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+Disallow: /
+```
+
+## Common mistakes that block AI crawlers by accident
+
+**Grouped user agents.** In robots.txt, consecutive `User-agent` lines share the rules that follow them. Teams often add a new bot to an existing "block scrapers" group without realizing that every agent in that group, including an AI search crawler someone added months ago, now shares the `Disallow: /`.
+
+**A site-wide wildcard block.** `User-agent: *` followed by `Disallow: /` blocks every crawler that does not have its own group. This is common on staging sites and occasionally ships to production. Any AI crawler without an explicit group inherits the block.
+
+**Blocking GPTBot to "stay out of ChatGPT".** As covered above, GPTBot is the training crawler. If the goal is to stay out of ChatGPT search, the token is `OAI-SearchBot`. If the goal is to appear in ChatGPT while staying out of training, blocking only GPTBot is exactly right.
+
+**Firewall rules that override robots.txt.** A CDN or bot-protection rule that challenges or blocks unknown bots can stop AI crawlers even when robots.txt allows them. If you allow AI crawlers in robots.txt, check that your firewall allows them too.
+
+## How to check your current setup
+
+Open `https://yourdomain.com/robots.txt` and read it top to bottom, grouping each block of `User-agent` lines with the rules beneath it. For each AI search crawler, ask: does it have its own group? If not, what does the `*` group say?
+
+Or let a tool do it. [Run a free AEOCheck scan](/#scanner) and the AI crawler access check parses your robots.txt the way crawlers do, including grouped user agents and wildcard fallbacks, and tells you which AI search crawlers are blocked versus which are only opted out of training. The same scan covers llms.txt, schema, metadata and the rest of its 25 AEO and GEO checks. See an example in the [sample report](/sample-report), or compare [plans](/pricing) to monitor your pages over time.
