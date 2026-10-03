@@ -2,6 +2,18 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 17)
+
+- Blog: published "Technical AEO: How to Make Your Site Machine-Readable for AI Search" (technical
+  pillar hub) and "robots.txt for AI Crawlers: What to Allow, What to Block", fact-checked against
+  OpenAI, Anthropic, Perplexity and Google crawler docs (docs/RESEARCH.md).
+- Fixed: Markdown tables rendered as raw `|---|` text on live posts (no GFM support in the MDX
+  renderer); added remark-gfm and table styles. Removed an unused stylesheet.
+- Fixed: blog bylines, author schema and the team page said "Ummar Ahmed"; corrected to Ammar
+  Ahmed (completing the June fix that only covered the Organization schema).
+- Verified: build, tests, lint, link-lint for new posts; Playwright render of both posts and the
+  previously broken table (real table, FAQ schema present, all internal links 200).
+
 ## 2026-10-03 (session 16)
 
 - AI crawler check severity now follows the vendors' documentation: blocking an AI *search*

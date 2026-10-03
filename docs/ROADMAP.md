@@ -73,6 +73,8 @@ Based on the full code review from 2026-10-03.
 - UI/UX: polish the scan flow, report, dashboard and marketing pages; mobile first; measure with
   Lighthouse and fix regressions.
 - Blog: up to 2 useful posts per weekend from `content/topical-map.json` and research.
+  - [x] 2026-10-03: `technical-aeo-guide` (technical pillar hub), `robots-txt-ai-crawlers`
+  - [ ] Next: `how-to-get-cited-by-chatgpt` (ChatGPT pillar hub; already linked from a published post, currently 404), `ai-crawlers-list`, `llms-txt-guide`
 - Research: weekly scan of AI search changes and competitor tools; update `docs/RESEARCH.md`.
 - Maintenance: dependency updates (minor/patch weekly, majors with care), `npm audit`, runtime errors.
 

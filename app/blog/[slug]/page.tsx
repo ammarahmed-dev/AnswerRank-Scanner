@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import remarkGfm from "remark-gfm";
 import SiteFooter from "../../components/SiteFooter";
 import SiteHeader from "../../components/SiteHeader";
 import { getAllBlogPosts, getBlogPost } from "@/lib/blog";
@@ -96,7 +97,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         dateModified: post.date,
         author: {
           "@type": "Person",
-          name: "Ummar Ahmed",
+          name: "Ammar Ahmed",
           url: "https://www.linkedin.com/in/ummar-ahmed/",
           sameAs: ["https://www.linkedin.com/in/ummar-ahmed/"],
         },
@@ -147,7 +148,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <header className="blog-post-header">
           <Link href="/blog" className="blog-back-link">Blog</Link>
           <time dateTime={post.date}>{formatDate(post.date)}</time>
-          <p className="blog-post-author">By Ummar Ahmed</p>
+          <p className="blog-post-author">By Ammar Ahmed</p>
           <h1>{post.title}</h1>
           <p>{post.description}</p>
           {post.tags.length > 0 && (
@@ -166,7 +167,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         )}
 
         <div className="blog-post-prose">
-          <MDXRemote source={post.content} />
+          <MDXRemote source={post.content} options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }} />
         </div>
       </article>
       <SiteFooter />

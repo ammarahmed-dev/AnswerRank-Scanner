@@ -69,7 +69,7 @@ export default function BlogPage() {
                   )}
                   <div className="blog-index-card-body">
                     <time dateTime={post.date}>{formatDate(post.date)}</time>
-                    <p className="blog-card-author">By Ummar Ahmed</p>
+                    <p className="blog-card-author">By Ammar Ahmed</p>
                     <h2>{post.title}</h2>
                     <p>{post.description}</p>
                     {post.tags.length > 0 && (

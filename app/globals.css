@@ -10452,6 +10452,30 @@ textarea.contact-control {
   color: var(--color-primary);
 }
 
+.blog-post-prose table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  margin: 24px 0;
+  border-collapse: collapse;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.blog-post-prose th,
+.blog-post-prose td {
+  border: 1px solid var(--color-line);
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.blog-post-prose th {
+  background: rgba(2, 6, 23, 0.58);
+  color: white;
+  font-weight: 800;
+}
+
 .blog-post-prose a {
   color: var(--color-primary);
   font-weight: 850;

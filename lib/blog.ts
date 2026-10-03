@@ -49,7 +49,7 @@ function readPostFile(fileName: string): BlogPost {
     date: ensureDateString(parsed.data.date),
     slug,
     description: ensureString(parsed.data.description),
-    author: ensureString(parsed.data.author) || "Ummar Ahmed",
+    author: ensureString(parsed.data.author) || "Ammar Ahmed",
     tags: ensureTags(parsed.data.tags),
     coverImage: ensureString(parsed.data.coverImage) || undefined,
     coverImageAlt: ensureString(parsed.data.coverImageAlt) || undefined,

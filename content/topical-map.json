@@ -2,7 +2,7 @@
   "$schema": "./topical-map.schema.json",
   "site": "https://www.aeocheck.co",
   "blogBasePath": "/blog/",
-  "updated": "2026-06-17",
+  "updated": "2026-10-03",
   "pillars": [
     {
       "id": "aeo-core",
@@ -604,7 +604,7 @@
       "pillar": "technical",
       "role": "hub",
       "tier": 1,
-      "status": "planned",
+      "status": "published",
       "targetQueries": [
         "technical aeo",
         "technical seo for ai",
@@ -678,7 +678,7 @@
       "pillar": "technical",
       "role": "spoke",
       "tier": 2,
-      "status": "planned",
+      "status": "published",
       "targetQueries": [
         "robots.txt ai crawlers",
         "block ai bots robots.txt",
