@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, LayoutGrid, Loader2 } from "lucide-react";
@@ -86,7 +87,7 @@ export default function AuditHistoryClient() {
             <h1>Multi-page AEO audit.</h1>
             <p>Scan every important page on your site and get a site-wide AEO score.</p>
           </div>
-          <a href="/?tab=audit" className="btn btn-primary">Start New Audit</a>
+          <Link href="/?tab=audit" className="btn btn-primary">Start New Audit</Link>
         </div>
 
         {loading && (
@@ -121,7 +122,7 @@ export default function AuditHistoryClient() {
                 <LayoutGrid className="h-8 w-8 audit-empty-icon" />
                 <strong>No audits yet</strong>
                 <p>Scan every page on your site and get a site-wide AEO score with per-page breakdowns.</p>
-                <a href="/?tab=audit" className="btn btn-primary">Start your first audit</a>
+                <Link href="/?tab=audit" className="btn btn-primary">Start your first audit</Link>
               </div>
             ) : (
               <div className="audit-history-list">

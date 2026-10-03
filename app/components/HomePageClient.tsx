@@ -926,7 +926,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
               </div>
 
               <div className="featured-guides-cta-row">
-                <a href="/blog" className="btn btn-secondary featured-guides-cta-link">Read more AI search guides</a>
+                <Link href="/blog" className="btn btn-secondary featured-guides-cta-link">Read more AI search guides</Link>
               </div>
             </div>
           </section>

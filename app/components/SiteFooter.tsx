@@ -1,3 +1,4 @@
+import Link from "next/link";
 export default function SiteFooter() {
   return (
     <footer className="site-footer">
@@ -19,12 +20,12 @@ export default function SiteFooter() {
           <div className="footer-link-group">
             <p className="footer-group-label">PRODUCT</p>
             <div className="footer-link-list">
-              <a href="/">Home</a>
-              <a href="/blog">Blog</a>
-              <a href="/#scanner">Scanner</a>
-              <a href="/#how">How It Works</a>
+              <Link href="/">Home</Link>
+              <Link href="/blog">Blog</Link>
+              <Link href="/#scanner">Scanner</Link>
+              <Link href="/#how">How It Works</Link>
               <a href="/pricing">Pricing</a>
-              <a href="/#faq">FAQ</a>
+              <Link href="/#faq">FAQ</Link>
               <a href="/contact">Contact</a>
             </div>
           </div>
@@ -40,10 +41,10 @@ export default function SiteFooter() {
           <div className="footer-link-group">
             <p className="footer-group-label">COMPARE</p>
             <div className="footer-link-list">
-              <a href="/vs/otterly">vs Otterly</a>
-              <a href="/vs/semrush-ai">vs Semrush AI</a>
-              <a href="/vs/peec-ai">vs Peec AI</a>
-              <a href="/vs/profound">vs Profound</a>
+              <Link href="/vs/otterly">vs Otterly</Link>
+              <Link href="/vs/semrush-ai">vs Semrush AI</Link>
+              <Link href="/vs/peec-ai">vs Peec AI</Link>
+              <Link href="/vs/profound">vs Profound</Link>
             </div>
           </div>
           <div className="footer-link-group">

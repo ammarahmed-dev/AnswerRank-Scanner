@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
@@ -25,9 +26,9 @@ export default function ComparisonPageClient({ data }: Props) {
           <h1 className="vs-hero-heading">{data.heroHeading}</h1>
           <p className="vs-hero-sub">{data.heroSubheading}</p>
           <div className="vs-hero-ctas">
-            <a href="/#scanner" className="btn btn-primary">
+            <Link href="/#scanner" className="btn btn-primary">
               Run Free Scan <ArrowRight className="h-4 w-4" />
-            </a>
+            </Link>
             {data.url && (
               <a href={data.url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
                 Visit {data.name}
@@ -267,11 +268,11 @@ export default function ComparisonPageClient({ data }: Props) {
           <p>Run a free AEOCheck scan to see whether your website gives ChatGPT, Perplexity, and Google AI enough context to understand and cite your page.</p>
           {data.ctaSupportLine && <p className="vs-cta-support">{data.ctaSupportLine}</p>}
           <p>
-            <a href="/sample-report">View sample report</a> | <a href="/blog/what-is-aeo-answer-engine-optimization">Read what AEO means</a> | <a href="/blog/best-aeo-tools-ai-search-visibility">Compare AEO tools</a> | <a href="/pricing">See pricing</a>
+            <a href="/sample-report">View sample report</a> | <Link href="/blog/what-is-aeo-answer-engine-optimization">Read what AEO means</Link> | <Link href="/blog/best-aeo-tools-ai-search-visibility">Compare AEO tools</Link> | <a href="/pricing">See pricing</a>
           </p>
-          <a href="/#scanner" className="btn btn-primary">
+          <Link href="/#scanner" className="btn btn-primary">
             Run Free Scan <ArrowRight className="h-4 w-4" />
-          </a>
+          </Link>
         </div>
       </section>
 

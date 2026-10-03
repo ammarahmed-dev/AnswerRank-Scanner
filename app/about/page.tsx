@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
@@ -49,7 +50,7 @@ export default function AboutPage() {
           AEOCheck is an AEO scanner and AI search readiness tool that helps websites understand how visible they are to AI search engines like ChatGPT, Perplexity, and Google AI results. We built it after seeing strong websites miss AI citations because they lacked clear machine-readable signals.
           </p>
           <p>
-            We are a small, independent product built and operated by <a href="/team">a developer focused on practical AEO and AI discoverability</a>. AEOCheck gives teams an <a href="/">AI search visibility checker</a>, clear answer engine optimization guidance, schema and metadata checks, and client-ready reports they can share internally or with clients.
+            We are a small, independent product built and operated by <a href="/team">a developer focused on practical AEO and AI discoverability</a>. AEOCheck gives teams an <Link href="/">AI search visibility checker</Link>, clear answer engine optimization guidance, schema and metadata checks, and client-ready reports they can share internally or with clients.
           </p>
 
           <h2>What AEOCheck does</h2>
@@ -68,7 +69,7 @@ export default function AboutPage() {
             Once the scanner was reliable enough to catch real issues consistently, it made sense to open it up. Hundreds of marketers, developers, and agency teams now use AEOCheck to understand how AI engines see their pages - and what to fix to show up in AI-generated answers.
           </p>
           <p>
-            If you want to test your own site, start with the <a href="/#scanner">free homepage scanner</a>. You can also <a href="/sample-report">view a sample report</a> before running your first scan.
+            If you want to test your own site, start with the <Link href="/#scanner">free homepage scanner</Link>. You can also <a href="/sample-report">view a sample report</a> before running your first scan.
           </p>
 
           <h2>Our commitment</h2>

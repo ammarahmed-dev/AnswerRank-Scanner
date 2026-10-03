@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -144,7 +145,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <SiteHeader />
       <article className="launch-container blog-post-page">
         <header className="blog-post-header">
-          <a href="/blog" className="blog-back-link">Blog</a>
+          <Link href="/blog" className="blog-back-link">Blog</Link>
           <time dateTime={post.date}>{formatDate(post.date)}</time>
           <p className="blog-post-author">By Ummar Ahmed</p>
           <h1>{post.title}</h1>

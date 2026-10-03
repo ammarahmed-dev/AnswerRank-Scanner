@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Link from "next/link";
 import { CheckResult, CompetitorScanResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
 import { AlertCircle, BarChart2, Bot, Check, CheckCircle2, ChevronDown, Code, Copy, Download, ExternalLink, FileText, Link2, Lock, RotateCcw, Search, Sparkles, TrendingUp, Zap } from "lucide-react";
@@ -630,7 +631,7 @@ const downloadPdf = async () => {
           {competitorRows.length === 0 ? (
             <div className="competitor-empty-state mt-4">
               <p>Competitor comparison is ready in the scanner, but this report does not include competitor scan data yet.</p>
-              <a href="/#scanner" className="btn btn-secondary">Run a comparison scan</a>
+              <Link href="/#scanner" className="btn btn-secondary">Run a comparison scan</Link>
             </div>
           ) : (
             <div className="competitor-analysis-grid mt-4">

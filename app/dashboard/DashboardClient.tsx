@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -350,7 +351,7 @@ function OverviewTab({
           {auditLimit !== -1 && auditCountThisMonth >= auditLimit ? (
             <button disabled className="btn btn-secondary" style={{ marginTop: 8, opacity: 0.45, cursor: "not-allowed" }}>Audit used</button>
           ) : (
-            <a href="/audit" className="btn btn-secondary" style={{ marginTop: 8 }}>New audit →</a>
+            <Link href="/audit" className="btn btn-secondary" style={{ marginTop: 8 }}>New audit →</Link>
           )}
         </div>
 
@@ -415,7 +416,7 @@ function OverviewTab({
           {onetimeRetestsRemaining === 0 && account.profile.onetimeUrl ? (
             <a href="/pricing" style={{ ...cardLink, marginTop: 8, display: "inline-block" }}>Upgrade to Pro →</a>
           ) : (
-            <a href="/" style={{ ...cardLink, marginTop: 8, display: "inline-block" }}>Scan a URL →</a>
+            <Link href="/" style={{ ...cardLink, marginTop: 8, display: "inline-block" }}>Scan a URL →</Link>
           )}
         </div>
       )}
@@ -644,7 +645,7 @@ export default function DashboardClient() {
       <>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, gap: 12 }}>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#fff", margin: 0 }}>Site audits</h1>
-          <a href="/audit" className="btn btn-secondary">New audit</a>
+          <Link href="/audit" className="btn btn-secondary">New audit</Link>
         </div>
         {account.recentAudits.length ? (
           <div className="dashboard-report-list">

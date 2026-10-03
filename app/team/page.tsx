@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
@@ -51,7 +52,7 @@ export default function TeamPage() {
               <p className="team-card-name">Ummar Ahmed</p>
               <p className="team-card-role">Founder and Developer</p>
               <p className="team-card-bio">
-                Ummar is the developer and founder of <a href="/">AEOCheck</a>. He built the scanner to help teams understand how answer engine optimization and AI search readiness actually impact visibility in ChatGPT, Perplexity, and Google AI results. The goal is simple: convert scattered technical signals into clear AI visibility reports with prioritized fixes.
+                Ummar is the developer and founder of <Link href="/">AEOCheck</Link>. He built the scanner to help teams understand how answer engine optimization and AI search readiness actually impact visibility in ChatGPT, Perplexity, and Google AI results. The goal is simple: convert scattered technical signals into clear AI visibility reports with prioritized fixes.
               </p>
               <div className="team-card-links">
                 <a
@@ -70,7 +71,7 @@ export default function TeamPage() {
             AEOCheck is intentionally a small, focused product. A lean team means every feature gets real attention, support responses come from someone who built the tool, and product decisions stay grounded in what agencies, Webflow developers, SEO freelancers, and founders need from AI visibility reports.
           </p>
           <p>
-            If you are evaluating the product, run the <a href="/#scanner">free AEOCheck scan</a> or <a href="/sample-report">review a sample AI visibility report</a>.
+            If you are evaluating the product, run the <Link href="/#scanner">free AEOCheck scan</Link> or <a href="/sample-report">review a sample AI visibility report</a>.
           </p>
           <p>
             Questions, feedback, or ideas: <a href="mailto:hello@aeocheck.co">hello@aeocheck.co</a>

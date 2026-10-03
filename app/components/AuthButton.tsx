@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, Menu, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -117,9 +118,9 @@ export default function AuthButton() {
             <>
               <a href="/login" className="nav-mobile-link" onClick={close}>Login</a>
               <a href="/signup" className="nav-mobile-link" onClick={close}>Register</a>
-              <a href="/#scanner" className="nav-mobile-cta" onClick={close}>
+              <Link href="/#scanner" className="nav-mobile-cta" onClick={close}>
                 <Sparkles className="h-4 w-4" /> Scan My Website
-              </a>
+              </Link>
             </>
           ) : (
             <>
@@ -133,9 +134,9 @@ export default function AuthButton() {
               <button type="button" className="nav-mobile-signout" onClick={handleLogout}>
                 <LogOut className="h-3.5 w-3.5" /> Sign out
               </button>
-              <a href="/#scanner" className="nav-mobile-cta" onClick={close}>
+              <Link href="/#scanner" className="nav-mobile-cta" onClick={close}>
                 <Sparkles className="h-4 w-4" /> Scan My Website
-              </a>
+              </Link>
             </>
           )}
         </div>

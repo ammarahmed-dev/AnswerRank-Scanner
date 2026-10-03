@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import ReportSectionNew from "@/app/components/ReportSectionNew";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
@@ -14,7 +15,7 @@ export default function SampleReportClient() {
       <div className="sample-report-banner">
         <span>
           This is a sample report.{" "}
-          <a href="/">Scan your own website free at AEOCheck.</a>
+          <Link href="/">Scan your own website free at AEOCheck.</Link>
         </span>
       </div>
       <ReportSectionNew report={SAMPLE_REPORT} onReset={() => router.push("/")} />

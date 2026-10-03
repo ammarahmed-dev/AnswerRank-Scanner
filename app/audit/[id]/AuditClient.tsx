@@ -443,7 +443,7 @@ export default function AuditClient() {
               <strong>Audit unavailable</strong>
               <p>{error || "Audit not found."}</p>
             </div>
-            <a href="/audit" className="btn btn-secondary">Back to audits</a>
+            <Link href="/audit" className="btn btn-secondary">Back to audits</Link>
           </div>
         </section>
         <SiteFooter />
@@ -460,7 +460,7 @@ export default function AuditClient() {
 
       <section className="audit-page app-container">
         <div className="audit-page-topbar">
-          <a href="/audit" className="btn btn-secondary">All audits</a>
+          <Link href="/audit" className="btn btn-secondary">All audits</Link>
           <Link href="/dashboard" className="btn btn-secondary">Dashboard</Link>
           {audit.status === "completed" && (
             hasPdfAccess ? (

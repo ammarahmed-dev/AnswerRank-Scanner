@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
@@ -149,7 +150,7 @@ export default function AuthPageClient({ mode }: Props) {
       {/* ── Left branding panel ───────────────────────── */}
       <div className="auth-split-left">
         <div className="auth-split-brand">
-          <a href="/" className="auth-split-brand-name">AEOCheck</a>
+          <Link href="/" className="auth-split-brand-name">AEOCheck</Link>
           <p className="auth-split-tagline">Know how AI sees your website.</p>
         </div>
 
@@ -210,7 +211,7 @@ export default function AuthPageClient({ mode }: Props) {
         <div className="auth-split-form">
 
           <div className="auth-mobile-logo">
-            <a href="/">AEOCheck</a>
+            <Link href="/">AEOCheck</Link>
           </div>
 
           <div className="auth-split-heading">
@@ -306,7 +307,7 @@ export default function AuthPageClient({ mode }: Props) {
 
           </form>
 
-          <p className="auth-back-link"><a href="/">← Back to home</a></p>
+          <p className="auth-back-link"><Link href="/">← Back to home</Link></p>
 
         </div>
       </div>

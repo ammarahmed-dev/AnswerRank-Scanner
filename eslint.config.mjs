@@ -11,7 +11,6 @@ const config = [
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_", destructuredArrayIgnorePattern: "^_", caughtErrors: "none" },
       ],
       // Existing debt, tracked in docs/ROADMAP.md: downgraded so CI can enforce everything else.
-      "@next/next/no-html-link-for-pages": "warn",
       "react-hooks/set-state-in-effect": "warn",
       "react-hooks/static-components": "warn",
       "react-hooks/immutability": "warn",

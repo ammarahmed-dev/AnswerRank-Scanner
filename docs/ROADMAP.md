@@ -43,13 +43,13 @@ Based on the full code review from 2026-10-03.
 - [x] Reader fallback: fixed (it always failed: `X-Respond-With: no-content` made Jina return 400); HTML-only checks are "Not verified" (warn) on fallback scans, readability computed, CAPTCHA walls reported as blocked, report shows a limited-scan notice
 - [x] Unify `isMasterAdmin`: admin only from MASTER_ADMIN_EMAILS via `/api/account` `isAdmin`; Agency customers no longer see the Admin tab / Master Admin badge
 - [x] `getAuthContext`: profile is created only when missing (was a write on every authenticated request)
-- [ ] Persist webhook events in `webhook_events` for idempotency and audit
-- [ ] Base-schema migration that recreates `profiles`, `webhook_events`, `app_stats` from scratch; retire `supabase-schema.sql`
+- [ ] BLOCKED (needs production schema): persist webhook events in `webhook_events` for idempotency and audit. The table exists in production but no migration defines its columns
+- [ ] BLOCKED (needs production schema): base-schema migration that recreates `profiles`, `webhook_events`, `app_stats` from scratch; retire `supabase-schema.sql`
 - [x] Fix stale copy: welcome email scan count from config, removed fake "87/100" stat (UA domain and APP_URL fixed earlier)
 - [x] `UpgradeButton`: show checkout errors to the user; `/upgrade/success` now redirects to `/dashboard?upgraded=1`
 - [x] Encode PostgREST filter values built from route params (audit scan, monitor scan); the rest use URLSearchParams
 - [x] Remove debug `console.log` calls in `/api/compare`
-- [ ] Lint debt (currently warnings): replace 53 internal `<a href>` with `next/link` `<Link>`; fix `react-hooks/set-state-in-effect` (10), `static-components` in DashboardClient (2), `immutability` in AuditClient (1); then promote these rules back to errors
+- [~] Lint debt: 53 internal `<a href>` converted to `next/link` (rule back to error). Remaining: `react-hooks/set-state-in-effect` (10), `static-components` in DashboardClient (2), `immutability` in AuditClient (1); then promote these rules back to errors
 - [x] "25 AEO and GEO checks" is now true: added Canonical URL and Answer-Ready Headings (question-style H2/H3) checks; the engine runs exactly 25 (test-guarded)
 
 ## Phase 4 - Product upgrades
@@ -85,4 +85,6 @@ Based on the full code review from 2026-10-03.
 - Set `CRON_SECRET`, `RESEND_API_KEY`, `INTERNAL_API_SECRET` in Vercel
 - Run new migrations in `supabase/migrations/` against production (Supabase SQL editor), in order:
   `20261003_drop_public_compare_runs_policy.sql`, `20261003_atomic_scan_usage.sql`
+- Export the production schema so Claude can write the base migration and use `webhook_events`:
+  `npx supabase db dump --schema-only > supabase/schema.sql` (or Supabase dashboard > Database > Schema), then commit it
 - In Lemon Squeezy, make sure the webhook subscribes to: `order_created`, `order_refunded`, `subscription_created`, `subscription_updated`, `subscription_cancelled`, `subscription_resumed`, `subscription_expired`, `subscription_payment_failed`

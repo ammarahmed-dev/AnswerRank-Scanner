@@ -1,3 +1,4 @@
+import Link from "next/link";
 import AuthButton from "./AuthButton";
 import FeaturesDropdown from "./FeaturesDropdown";
 
@@ -8,22 +9,22 @@ type Props = {
 export default function SiteHeader({ scanCountLabel: _ }: Props) {
   return (
     <header className="site-header">
-      <a href="/" className="brand-lockup" aria-label="AEOCheck home">
+      <Link href="/" className="brand-lockup" aria-label="AEOCheck home">
         <span className="brand-mark" aria-hidden="true">A</span>
         <span className="brand-name">AEOCheck</span>
-      </a>
+      </Link>
       <nav className="site-nav" aria-label="Primary navigation">
-        <a href="/#how">How it works</a>
+        <Link href="/#how">How it works</Link>
         <FeaturesDropdown />
-        <a href="/blog">Blog</a>
+        <Link href="/blog">Blog</Link>
         <a href="/pricing">Pricing</a>
-        <a href="/#faq">FAQ</a>
+        <Link href="/#faq">FAQ</Link>
       </nav>
       <div className="header-actions">
         <div className="header-action-buttons">
           <AuthButton />
           <span className="hidden md:inline-flex">
-            <a href="/#scanner" className="btn btn-primary header-cta">Scan My Website</a>
+            <Link href="/#scanner" className="btn btn-primary header-cta">Scan My Website</Link>
           </span>
         </div>
       </div>

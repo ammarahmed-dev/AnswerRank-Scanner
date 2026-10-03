@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
@@ -26,7 +27,7 @@ export default function HtmlSitemapPage() {
 
           <h2>Main</h2>
           <ul>
-            <li><a href="/">Home</a> - Free AEO and AI search readiness scanner</li>
+            <li><Link href="/">Home</Link> - Free AEO and AI search readiness scanner</li>
             <li><a href="/about">About</a> - Who we are and what AEOCheck does</li>
             <li><a href="/team">Team</a> - Meet the people behind AEOCheck</li>
             <li><a href="/contact">Contact</a> - Get in touch with the AEOCheck team</li>
@@ -35,7 +36,7 @@ export default function HtmlSitemapPage() {
 
           <h2>Blog</h2>
           <ul>
-            <li><a href="/blog">All Articles</a> - AEO guides, tips, and research</li>
+            <li><Link href="/blog">All Articles</Link> - AEO guides, tips, and research</li>
             {posts.map((post) => (
               <li key={post.slug}>
                 <a href={`/blog/${post.slug}`}>{post.title}</a>
@@ -46,10 +47,10 @@ export default function HtmlSitemapPage() {
 
           <h2>Compare</h2>
           <ul>
-            <li><a href="/vs/otterly">AEOCheck vs Otterly</a></li>
-            <li><a href="/vs/semrush-ai">AEOCheck vs Semrush AI</a></li>
-            <li><a href="/vs/peec-ai">AEOCheck vs Peec AI</a></li>
-            <li><a href="/vs/profound">AEOCheck vs Profound</a></li>
+            <li><Link href="/vs/otterly">AEOCheck vs Otterly</Link></li>
+            <li><Link href="/vs/semrush-ai">AEOCheck vs Semrush AI</Link></li>
+            <li><Link href="/vs/peec-ai">AEOCheck vs Peec AI</Link></li>
+            <li><Link href="/vs/profound">AEOCheck vs Profound</Link></li>
           </ul>
 
           <h2>Legal</h2>

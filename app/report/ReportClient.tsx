@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle } from "lucide-react";
@@ -240,7 +241,7 @@ export default function ReportClient() {
                   <p>{errorMsg}</p>
                   <small>Open a valid report link or scan the URL again from the homepage.</small>
                 </div>
-                <a href="/#scanner" className="btn btn-danger">Scan a URL</a>
+                <Link href="/#scanner" className="btn btn-danger">Scan a URL</Link>
               </div>
             </div>
           </div>

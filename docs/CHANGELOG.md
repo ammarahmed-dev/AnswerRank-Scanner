@@ -2,6 +2,18 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 12)
+
+- Navigation: 53 internal links converted from `<a>` to Next.js `<Link>` (client-side navigation,
+  no full page reloads); ESLint now errors on new plain internal links.
+- Fixed (pre-existing, confirmed on production): links to homepage sections from other pages
+  (e.g. "FAQ" from /pricing -> /#faq) landed at the top of the page because ScrollToTop ran on
+  every route change. It now scrolls to the linked section; normal navigation still starts at top.
+- Marked webhook-event persistence and the base-schema migration as blocked on a production
+  schema export (owner action added).
+- Verified: tsc, lint (0 errors), 83/83 tests, build; Playwright: cross-page hash link, same-page
+  hash link, direct /#faq load on mobile, normal footer link, compared against production.
+
 ## 2026-10-03 (session 11)
 
 - Auth: removed a database write from every authenticated API request; the profile is created
