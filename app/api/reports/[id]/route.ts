@@ -6,6 +6,9 @@ import { reportForViewer } from "@/lib/report-access";
 
 export const runtime = "nodejs";
 
+// Report IDs are random UUIDs and act as share links: anyone with the link can view the report.
+// Only the owner (or a Pro/Agency/admin viewer) gets the paid sections; everyone else gets the
+// free preview, so sharing an unlocked report never gives the paid content away.
 export async function GET(
   req: Request,
   context: { params: Promise<{ id: string }> }
@@ -18,17 +21,12 @@ export async function GET(
   }
 
   const auth = await getAuthContext(req);
-  if (!auth.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { user_id: reportUserId, ...responseReport } = report as typeof report & { user_id?: string | null };
-  const isAdmin = isMasterAdmin(auth.user.email);
-  // guest scans (null user_id) are viewable by any authenticated user
-  if (!isAdmin && reportUserId !== null && reportUserId !== auth.user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const isAdmin = auth.user ? isMasterAdmin(auth.user.email) : false;
+  const isOwner = Boolean(auth.user && reportUserId && reportUserId === auth.user.id);
 
-  return NextResponse.json(reportForViewer(responseReport, { plan: auth.plan, isAdmin }), { status: 200 });
+  return NextResponse.json(
+    reportForViewer(responseReport, { plan: auth.plan, isAdmin, isOwner }),
+    { status: 200, headers: { "Cache-Control": "private, no-store" } }
+  );
 }
-

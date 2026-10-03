@@ -666,7 +666,7 @@ export async function POST(req: NextRequest) {
         emitProgress(6, "Preparing report", "complete");
         await sleep(220);
         // The stored report stays complete; preview viewers get the paid sections removed.
-        emit({ type: "result", result: reportForViewer(savedResult, { plan: effectivePlan, isAdmin }) });
+        emit({ type: "result", result: reportForViewer(savedResult, { plan: effectivePlan, isAdmin, isOwner: true }) });
         controller.close();
       } catch (err: unknown) {
         console.error("Stream error:", err);

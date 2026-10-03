@@ -22,17 +22,17 @@ const report: ScanResult = {
 
 describe("report access", () => {
   it("grants full access to pro, agency, admins and unlocked/full reports", () => {
-    expect(hasFullReportAccess(report, { plan: "pro", isAdmin: false })).toBe(true);
-    expect(hasFullReportAccess(report, { plan: "agency", isAdmin: false })).toBe(true);
-    expect(hasFullReportAccess(report, { plan: "guest", isAdmin: true })).toBe(true);
-    expect(hasFullReportAccess({ ...report, isFullReport: true }, { plan: "onetime", isAdmin: false })).toBe(true);
-    expect(hasFullReportAccess({ ...report, unlocked: true }, { plan: "free", isAdmin: false })).toBe(true);
+    expect(hasFullReportAccess(report, { plan: "pro", isAdmin: false, isOwner: true })).toBe(true);
+    expect(hasFullReportAccess(report, { plan: "agency", isAdmin: false, isOwner: true })).toBe(true);
+    expect(hasFullReportAccess(report, { plan: "guest", isAdmin: true, isOwner: false })).toBe(true);
+    expect(hasFullReportAccess({ ...report, isFullReport: true }, { plan: "onetime", isAdmin: false, isOwner: true })).toBe(true);
+    expect(hasFullReportAccess({ ...report, unlocked: true }, { plan: "free", isAdmin: false, isOwner: true })).toBe(true);
   });
 
   it("denies guests, free users and onetime users on other reports", () => {
-    expect(hasFullReportAccess(report, { plan: "guest", isAdmin: false })).toBe(false);
-    expect(hasFullReportAccess(report, { plan: "free", isAdmin: false })).toBe(false);
-    expect(hasFullReportAccess({ ...report, isFullReport: false }, { plan: "onetime", isAdmin: false })).toBe(false);
+    expect(hasFullReportAccess(report, { plan: "guest", isAdmin: false, isOwner: true })).toBe(false);
+    expect(hasFullReportAccess(report, { plan: "free", isAdmin: false, isOwner: true })).toBe(false);
+    expect(hasFullReportAccess({ ...report, isFullReport: false }, { plan: "onetime", isAdmin: false, isOwner: true })).toBe(false);
   });
 
   it("redacts paid sections but keeps what the preview renders", () => {
@@ -49,12 +49,21 @@ describe("report access", () => {
   });
 
   it("does not mutate the stored report", () => {
-    reportForViewer(report, { plan: "free", isAdmin: false });
+    reportForViewer(report, { plan: "free", isAdmin: false, isOwner: true });
     expect(report.competitors).toHaveLength(1);
     expect(report.aiInsights?.quickWin).toBe("Add an FAQ block");
   });
 
+  it("never extends the owner's report-level unlock to shared viewers", () => {
+    const unlocked = { ...report, isFullReport: true, unlocked: true };
+    expect(hasFullReportAccess(unlocked, { plan: "guest", isAdmin: false, isOwner: false })).toBe(false);
+    const shared = reportForViewer(unlocked, { plan: "free", isAdmin: false, isOwner: false });
+    expect(shared).toMatchObject({ redacted: true, isFullReport: false, unlocked: false });
+    expect(shared.competitors).toBeUndefined();
+    expect(reportForViewer(unlocked, { plan: "pro", isAdmin: false, isOwner: false })).toBe(unlocked);
+  });
+
   it("returns the report unchanged for full-access viewers", () => {
-    expect(reportForViewer(report, { plan: "pro", isAdmin: false })).toBe(report);
+    expect(reportForViewer(report, { plan: "pro", isAdmin: false, isOwner: true })).toBe(report);
   });
 });

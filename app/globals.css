@@ -3832,6 +3832,19 @@ textarea.contact-control {
   text-decoration: none;
 }
 .report-open-link:hover { color: white; }
+.report-hero-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+}
+.report-share-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
 .report-meta-line {
   color: var(--color-ink-muted);
   font-size: 0.84rem;
@@ -7118,6 +7131,7 @@ textarea.contact-control {
     justify-content: center;
     margin-inline: auto;
   }
+  .report-hero-links { justify-content: center; }
   .report-save-panel {
     grid-template-columns: 1fr;
     text-align: center;

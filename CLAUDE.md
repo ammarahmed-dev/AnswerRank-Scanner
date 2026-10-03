@@ -35,7 +35,12 @@ npm run build         # must pass
 npm test              # Vitest unit tests in tests/, must pass
 ```
 There is no ESLint config yet (tracked in docs/ROADMAP.md Phase 2).
-Playwright + Chromium are available in cloud sessions for visual checks.
+Playwright + Chromium are available in cloud sessions for visual checks: install `playwright-core`
+in a scratch dir and launch `/opt/pw-browsers/chromium-*/chrome-linux/chrome`. Against the live site,
+route through the sandbox proxy (`proxy: { server: process.env.HTTPS_PROXY }`) and trust its CA with
+`--ignore-certificate-errors-spki-list=<sha256 SPKI of /root/.ccr/agent-proxy-ca.crt>`.
+Stop local servers with `kill $(pgrep -f "[n]ext-server")` (a plain `pkill -f "next start"` also
+matches and kills your own shell).
 
 ## Environment
 Never hardcode secrets. See `.env.example` for the full list. Server code reads env at runtime;

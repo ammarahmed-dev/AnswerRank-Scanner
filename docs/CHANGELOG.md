@@ -2,6 +2,16 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 6)
+
+- Share links: reports have a "Copy share link" button. Anyone with the link sees the report
+  without logging in; non-owners get the free preview (with upgrade CTA), so sharing an unlocked
+  report never gives away the paid sections. Recipients no longer re-run a scan or spend quota.
+  Link previews use the (now working) score OG image.
+- Verified: 63/63 tests, tsc, lint, build; Playwright end-to-end: guest scan -> copy link ->
+  fresh browser opens link, sees preview, correct page title, zero scan requests, no errors.
+- Documented the browser-testing recipe (proxy + CA) in CLAUDE.md.
+
 ## 2026-10-03 (session 5)
 
 - Server-side paywall: preview viewers (guest/free, onetime off their locked URL) no longer

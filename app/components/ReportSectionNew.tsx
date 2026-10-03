@@ -2,7 +2,7 @@
 
 import { CheckResult, CompetitorScanResult, ScanResult } from "@/types/index";
 import ScoreCircle from "./ScoreCircle";
-import { AlertCircle, BarChart2, Bot, CheckCircle2, ChevronDown, Code, Copy, Download, ExternalLink, FileText, Lock, RotateCcw, Search, Sparkles, TrendingUp, Zap } from "lucide-react";
+import { AlertCircle, BarChart2, Bot, Check, CheckCircle2, ChevronDown, Code, Copy, Download, ExternalLink, FileText, Link2, Lock, RotateCcw, Search, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { CSSProperties, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
@@ -275,6 +275,7 @@ function contradictsAboutContact(text: string, detail: string) {
 export default function ReportSectionNew({ report, onReset }: Props) {
   const { user, plan, isAdmin: ctxIsAdmin, onetimeScanCount } = useAuth();
   const [copyOk, setCopyOk] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [retestError, setRetestError] = useState("");
@@ -507,6 +508,21 @@ const downloadPdf = async () => {
     window.print();
   };
 
+  // Report IDs are unguessable and the API serves non-owners the free preview, so the id link
+  // is safe to share and does not spend the recipient's scan quota.
+  const copyShareLink = async () => {
+    if (!report.reportId) return;
+    const shareUrl = `${window.location.origin}/report?id=${encodeURIComponent(report.reportId)}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+    } catch {
+      window.prompt("Copy this link to share the report:", shareUrl);
+      return;
+    }
+    setShareCopied(true);
+    window.setTimeout(() => setShareCopied(false), 2500);
+  };
+
   return (
     <>
     <div className="report-shell report-stack pb-8 premium-report">
@@ -521,9 +537,16 @@ const downloadPdf = async () => {
               <span className="badge">AI Visibility Readiness Report</span>
             </div>
             <h2 className="report-title">{report.url}</h2>
-            <a href={report.url} target="_blank" rel="noreferrer" className="report-open-link">
-              Open page <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            <div className="report-hero-links">
+              <a href={report.url} target="_blank" rel="noreferrer" className="report-open-link">
+                Open page <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+              {report.reportId && (
+                <button type="button" className="report-open-link report-share-button" onClick={copyShareLink}>
+                  {shareCopied ? <>Link copied <Check className="h-3.5 w-3.5" /></> : <>Copy share link <Link2 className="h-3.5 w-3.5" /></>}
+                </button>
+              )}
+            </div>
             <p className="report-meta-line">
               Scanned {new Date(report.scannedAt).toLocaleDateString()} - Score {report.score}/100 - Status {scoreStatus}
             </p>

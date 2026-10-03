@@ -38,7 +38,7 @@ Based on the full code review from 2026-10-03.
 
 - [x] Atomic usage counting: `reserve_scan_usage` / `release_scan_usage` (migration `20261003_atomic_scan_usage.sql`, tested on Postgres 16: 50 concurrent requests at limit 5 -> exactly 5 granted). Scan and compare reserve up front, release on failure; legacy fallback until the migration is applied
 - [x] Server-side paywall: `/api/scan` and `/api/reports/[id]` remove AI guidance (recommendations, quick win, content gap) and competitor results for viewers without full access (`lib/report-access.ts`); stored reports stay complete. Issue list stays (preview counts need it; fix text is static client content)
-- [ ] Public share links: tokenized read-only report view (`/r/[token]`) that does not require login and does not re-run a scan; stop `/report?url=` from spending the recipient's quota
+- [x] Public share links: "Copy share link" on reports (`/report?id=<uuid>`); `/api/reports/[id]` serves anyone with the link, owner-only unlocks, preview for everyone else; recipients do not trigger a scan or spend quota
 - [ ] Monitor cron: process in batches with a time budget, resume next run; parallelize with a small concurrency limit
 - [ ] Jina fallback: mark reports scanned via reader fallback and skip/neutralize meta+schema checks instead of failing them
 - [ ] Unify `isMasterAdmin` (remove the plan-based version in `lib/access.ts`; expose admin flag from `/api/account`)
