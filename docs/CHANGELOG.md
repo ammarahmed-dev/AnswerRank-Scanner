@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 15)
+
+- Research: AI visibility tool market and engine costs recorded in docs/RESEARCH.md, with a spec
+  for an AI Visibility Tracker (the feature the marketing already promises).
+- Shipped dark: `lib/ai-visibility.ts` asks Perplexity (Sonar) and Gemini (Google Search
+  grounding) buyer questions and records brand mention, domain citation and list position, with
+  mention/citation rates. `POST /api/ai-visibility` is admin-only and returns 404 unless
+  `AI_VISIBILITY_ENABLED=true`. No customer-facing change until the owner picks plan placement.
+- Verified: 98/98 tests (answer analysis, both engine parsers, failure isolation), tsc, lint,
+  build; route returns 404 with the flag off.
+
 ## 2026-10-03 (session 14)
 
 - AI crawler check rewritten (`lib/robots.ts`). The old parser missed crawlers listed in grouped

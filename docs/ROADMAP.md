@@ -54,7 +54,11 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 4 - Product upgrades
 
-- [ ] Real AI visibility tracking: query AI engines (Perplexity API, OpenAI with web search, Gemini grounding) with category prompts and record whether the brand is mentioned/cited; store per-run results; Pro/Agency feature
+- [~] Real AI visibility tracking (spec in docs/RESEARCH.md): engine library (`lib/ai-visibility.ts`, Perplexity Sonar + Gemini grounded search: mention, citation, list position, rates) and admin-only `POST /api/ai-visibility` behind `AI_VISIBILITY_ENABLED` shipped. Next, once the owner decides plan placement:
+  - [ ] `ai_visibility_runs` table (additive migration) and history
+  - [ ] Tracker UI on the report/dashboard (prompts editor, per-engine results, trend)
+  - [ ] Weekly runs for monitored brands via the monitor cron
+  - [ ] Add OpenAI (Responses API web search) and Google AI Overviews (SERP API) engines
 - [x] AI crawler access: new robots.txt parser (`lib/robots.ts`) with correct grouping, wildcard fallback, comments, longest-match; covers 12 AI crawlers incl. OAI-SearchBot, Claude-SearchBot, Perplexity-User, Google-Extended (was a wrong `googlebot-extended` token). `llms.txt` was already scored
 - [ ] Monitor history chart and score-drop email alerts
 - [ ] "Limit reached" email and a 3-step onboarding sequence via Resend
@@ -75,6 +79,12 @@ Based on the full code review from 2026-10-03.
 ---
 
 ## Owner actions (need dashboard/credential access Claude does not have)
+
+- DECISION NEEDED (what plans include): AI Visibility Tracker placement. Claude recommends: Pro =
+  10 prompts tracked weekly on 2 engines, Agency = 50 prompts, Free = one-off 3-prompt sample on
+  the report as an upgrade hook. Cost ~ $1 per tracked brand per month (docs/RESEARCH.md).
+  To try it now as admin: set `AI_VISIBILITY_ENABLED=true` plus `PERPLEXITY_API_KEY` and/or
+  `GEMINI_API_KEY` in Vercel, then POST /api/ai-visibility.
 
 - DECISION NEEDED (plan limits, hard limit): the pricing page lists "1 monitored URL" for Free
   (`PLAN_LIMITS.free.monitorUrls`), but `/api/monitor` rejects all Free users ("Monitor requires a
