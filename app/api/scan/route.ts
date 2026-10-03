@@ -5,7 +5,7 @@ import { generateAIInsights } from "@/lib/ai-provider";
 import { runScanCore } from "@/lib/scan-core";
 import { saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
-import { checkUsageLimit, getClientKey, getPlanLimit, incrementUsage } from "@/lib/usage-limits";
+import { commitUsage, getClientKey, getPlanLimit, releaseUsage, reserveUsage, type UsageReservation } from "@/lib/usage-limits";
 import { assertPublicUrl } from "@/lib/url-safety";
 import { isMasterAdmin } from "@/lib/admin";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
@@ -408,9 +408,10 @@ export async function POST(req: NextRequest) {
   const effectivePlan = isAdmin ? "agency" : authContext.plan;
   const usageKey = authContext.user ? `user:${authContext.user.id}` : getClientKey(body.clientId, req);
   const bypassScanLimit = isAdmin || isDevScanLimitBypassEnabled();
-  const usage = bypassScanLimit
-    ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER }
-    : await checkUsageLimit(usageKey, getPlanLimit(effectivePlan));
+  // Reserved atomically up front; committed on success and released on any failure below.
+  const usage: UsageReservation = bypassScanLimit
+    ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER, reserved: false, usageDate: "" }
+    : await reserveUsage(usageKey, getPlanLimit(effectivePlan));
   if (usage && !usage.allowed) {
     return NextResponse.json(
       {
@@ -494,6 +495,7 @@ export async function POST(req: NextRequest) {
   }
 
   const encoder = new TextEncoder();
+  let usageSettled = false;
 
   const stream = new ReadableStream({
     cancel() {
@@ -538,6 +540,7 @@ export async function POST(req: NextRequest) {
           const message = isInternal || !raw
             ? "We couldn't scan this URL. The site may be blocking automated access. Try a different URL or check that the address is correct."
             : raw;
+          await releaseUsage(usageKey, usage);
           emitError(message);
           controller.close();
           return;
@@ -654,9 +657,10 @@ export async function POST(req: NextRequest) {
         }
 
         const savedResult = await saveReportRecord(result, userId);
-        if (!bypassScanLimit && usageKey && usage) {
-          await incrementUsage(usageKey, usage.count + 1);
+        if (!bypassScanLimit) {
+          await commitUsage(usageKey, usage);
         }
+        usageSettled = true;
 
         emitProgress(6, "Preparing report", "complete");
         await sleep(220);
@@ -664,6 +668,7 @@ export async function POST(req: NextRequest) {
         controller.close();
       } catch (err: unknown) {
         console.error("Stream error:", err);
+        if (!usageSettled) await releaseUsage(usageKey, usage).catch(() => undefined);
         try {
           emitError("An unexpected error occurred. Please try again.");
           controller.close();

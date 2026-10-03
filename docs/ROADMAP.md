@@ -36,7 +36,7 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
-- [ ] Atomic usage counting: Postgres function `increment_scan_usage(client_key, usage_date, limit)` returning the new count, called via RPC; replace read-then-write in `lib/usage-limits.ts`
+- [x] Atomic usage counting: `reserve_scan_usage` / `release_scan_usage` (migration `20261003_atomic_scan_usage.sql`, tested on Postgres 16: 50 concurrent requests at limit 5 -> exactly 5 granted). Scan and compare reserve up front, release on failure; legacy fallback until the migration is applied
 - [ ] Server-side paywall: strip paid sections (full issue list beyond top 3, AI insights detail, competitor rows) from `/api/scan` and `/api/reports/[id]` responses when the viewer lacks full access
 - [ ] Public share links: tokenized read-only report view (`/r/[token]`) that does not require login and does not re-run a scan; stop `/report?url=` from spending the recipient's quota
 - [ ] Monitor cron: process in batches with a time budget, resume next run; parallelize with a small concurrency limit
@@ -78,5 +78,6 @@ Based on the full code review from 2026-10-03.
 
 - Rotate or delete the test accounts whose passwords were committed in `AUDIT.md` (still in git history)
 - Set `CRON_SECRET`, `RESEND_API_KEY`, `INTERNAL_API_SECRET` in Vercel
-- Run new migrations in `supabase/migrations/` against production (Supabase SQL editor)
+- Run new migrations in `supabase/migrations/` against production (Supabase SQL editor), in order:
+  `20261003_drop_public_compare_runs_policy.sql`, `20261003_atomic_scan_usage.sql`
 - In Lemon Squeezy, make sure the webhook subscribes to: `order_created`, `order_refunded`, `subscription_created`, `subscription_updated`, `subscription_cancelled`, `subscription_resumed`, `subscription_expired`, `subscription_payment_failed`

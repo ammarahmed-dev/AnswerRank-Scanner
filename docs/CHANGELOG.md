@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 4)
+
+- Atomic usage limits: scans and compares now reserve a unit up front through the
+  `reserve_scan_usage` Postgres function (released if the work fails), so parallel requests can no
+  longer exceed plan limits. Falls back to the previous logic until the migration is applied.
+- Compare: usage is reserved after input validation (invalid input no longer touches the counter).
+- Verified: migration tested on a local Postgres 16 (sequential limit, release, limit 0,
+  50 concurrent requests at limit 5 -> exactly 5 granted, anon denied, service_role allowed);
+  57/57 unit tests, tsc, lint, build; local scan + compare smoke tests.
+- Owner action: apply `supabase/migrations/20261003_atomic_scan_usage.sql`.
+
 ## 2026-10-03 (session 3)
 
 - ESLint 9 with `eslint-config-next` (`npm run lint`), enforced in CI. 0 errors; 80 warnings of

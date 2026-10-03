@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { runScanCore } from "@/lib/scan-core";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { getAuthContext } from "@/lib/auth-server";
-import { getClientKey, getPlanLimit, checkUsageLimit, incrementUsage } from "@/lib/usage-limits";
+import { commitUsage, getClientKey, getPlanLimit, releaseUsage, reserveUsage, type UsageReservation } from "@/lib/usage-limits";
 import { isMasterAdmin } from "@/lib/admin";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 import type { CheckResult } from "@/types/index";
@@ -82,19 +82,6 @@ export async function POST(req: Request) {
     : `compare:${getClientKey(undefined, req)}`;
   const bypassLimit = isAdmin;
   const compareLimit = effectivePlan === "onetime" ? 1 : getPlanLimit(effectivePlan);
-  const usage = bypassLimit
-    ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER }
-    : await checkUsageLimit(clientKey, compareLimit);
-  if (!usage.allowed) {
-    const limitMsg = effectivePlan === "onetime"
-      ? "You've used your 1 compare for this month. Upgrade to Pro for unlimited comparisons."
-      : "Compare limit reached for this month.";
-    return NextResponse.json(
-      { error: limitMsg, limit: usage.limit, remaining: 0 },
-      { status: 429 }
-    );
-  }
-
   const body = (await req.json().catch(() => ({}))) as CompareBody;
   const candidatePrimary = typeof body.primaryUrl === "string" ? body.primaryUrl.trim() : "";
   const candidateCompetitor = typeof body.competitorUrl === "string" ? body.competitorUrl.trim() : "";
@@ -128,6 +115,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Please provide two different URLs for comparison." }, { status: 400 });
   }
 
+  // Reserved atomically after validation; committed on success, released on failure.
+  const usage: UsageReservation = bypassLimit
+    ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER, reserved: false, usageDate: "" }
+    : await reserveUsage(clientKey, compareLimit);
+  if (!usage.allowed) {
+    const limitMsg = effectivePlan === "onetime"
+      ? "You've used your 1 compare for this month. Upgrade to Pro for unlimited comparisons."
+      : "Compare limit reached for this month.";
+    return NextResponse.json(
+      { error: limitMsg, limit: usage.limit, remaining: 0 },
+      { status: 429 }
+    );
+  }
+
+  let usageSettled = false;
   try {
     const [primaryCore, competitorCore] = await Promise.all([runScanCore(primaryUrl, {
       includePageSpeed: true,
@@ -203,7 +205,8 @@ export async function POST(req: Request) {
           ? `Your site is ${scoreGap} points ahead of ${competitorDomain}.`
           : `Your site is ${Math.abs(scoreGap)} points behind ${competitorDomain}.`;
 
-    if (!bypassLimit) await incrementUsage(clientKey, usage.count + 1);
+    if (!bypassLimit) await commitUsage(clientKey, usage);
+    usageSettled = true;
 
     const comparisonPayload = {
       primaryScore,
@@ -259,6 +262,7 @@ export async function POST(req: Request) {
       comparison: comparisonPayload,
     });
   } catch {
+    if (!usageSettled) await releaseUsage(clientKey, usage);
     return NextResponse.json(
       { error: "Comparison failed. Please make sure both URLs are publicly accessible and try again." },
       { status: 500 }

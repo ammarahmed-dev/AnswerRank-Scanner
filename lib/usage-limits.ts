@@ -14,6 +14,12 @@ type UsageResult = {
   limit: number;
 };
 
+export type UsageReservation = UsageResult & {
+  /** True when the unit was reserved atomically in the database and must be released on failure. */
+  reserved: boolean;
+  usageDate: string;
+};
+
 function currentMonthUsageDateKey() {
   const now = new Date();
   const year = now.getUTCFullYear();
@@ -118,3 +124,65 @@ export async function getUsageCount(clientKey: string) {
   return readUsageCount(clientKey);
 }
 
+
+async function callRpc(name: string, args: Record<string, unknown>): Promise<Response> {
+  return fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
+    method: "POST",
+    headers: getSupabaseServiceHeaders(),
+    body: JSON.stringify(args),
+    cache: "no-store",
+  });
+}
+
+/**
+ * Atomically reserves one unit of usage before doing the work, so concurrent requests cannot
+ * exceed the limit. Call commitUsage() on success and releaseUsage() on failure.
+ * Falls back to the legacy read-then-write check while the `reserve_scan_usage` function
+ * (supabase/migrations/20261003_atomic_scan_usage.sql) is not installed.
+ */
+export async function reserveUsage(clientKey: string, limit: number): Promise<UsageReservation> {
+  const usageDate = currentMonthUsageDateKey();
+  if (!hasSupabaseConfig()) {
+    return { allowed: true, count: 0, remaining: limit, limit, reserved: false, usageDate };
+  }
+
+  try {
+    const res = await callRpc("reserve_scan_usage", {
+      p_client_key: clientKey,
+      p_usage_date: usageDate,
+      p_limit: limit,
+    });
+    if (res.ok) {
+      const count = Number(await res.json());
+      if (!Number.isFinite(count) || count < 0) {
+        return { allowed: false, count: limit, remaining: 0, limit, reserved: false, usageDate };
+      }
+      return { allowed: true, count, remaining: Math.max(0, limit - count), limit, reserved: true, usageDate };
+    }
+    if (res.status !== 404) {
+      console.error("Supabase reserve_scan_usage failed:", res.status);
+    }
+  } catch (err) {
+    console.error("Supabase reserve_scan_usage error:", err instanceof Error ? err.message : err);
+  }
+
+  const legacy = await checkUsageLimit(clientKey, limit);
+  return { ...legacy, reserved: false, usageDate };
+}
+
+/** Records successful usage. A no-op for atomic reservations (already counted). */
+export async function commitUsage(clientKey: string, reservation: UsageReservation): Promise<void> {
+  if (reservation.reserved) return;
+  await incrementUsage(clientKey, reservation.count + 1);
+}
+
+/** Gives back an atomic reservation when the work failed. */
+export async function releaseUsage(clientKey: string, reservation: UsageReservation): Promise<void> {
+  if (!reservation.reserved || !hasSupabaseConfig()) return;
+  try {
+    const res = await callRpc("release_scan_usage", { p_client_key: clientKey, p_usage_date: reservation.usageDate });
+    if (!res.ok) console.error("Supabase release_scan_usage failed:", res.status);
+  } catch (err) {
+    console.error("Supabase release_scan_usage error:", err instanceof Error ? err.message : err);
+  }
+}
