@@ -151,7 +151,9 @@ export async function getReportRecord(id: string): Promise<ScanResult | null> {
         max_retests: typeof row.max_retests === "number" ? row.max_retests : row.result.max_retests ?? 3,
       } as ScanResult;
     }
-    return getReport(id);
+    // Not found in Supabase. The local SQLite store is a dev-only fallback and is not
+    // available on serverless hosts, so do not consult it here.
+    return null;
   }
 
   return getReport(id);

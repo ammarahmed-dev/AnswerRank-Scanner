@@ -11,6 +11,8 @@ Newest first. Every autonomous session adds an entry: date, what shipped, how it
 - Verified: 63/63 tests, tsc, lint, build; Playwright end-to-end: guest scan -> copy link ->
   fresh browser opens link, sees preview, correct page title, zero scan requests, no errors.
 - Documented the browser-testing recipe (proxy + CA) in CLAUDE.md.
+- Fixed: unknown report IDs returned 500 in production (fell through to the dev-only SQLite
+  store); they now return 404.
 
 ## 2026-10-03 (session 5)
 
