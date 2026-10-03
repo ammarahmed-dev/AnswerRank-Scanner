@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { runScanCore } from "@/lib/scan-core";
 import { runWithBudget } from "@/lib/batch";
+import { buildMonitorEmail } from "@/lib/monitor-email";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
@@ -18,30 +19,6 @@ const SCAN_CONCURRENCY = 4;
 const DUE_FETCH_LIMIT = "100";
 
 const supabaseUrl = getSupabaseServerUrl();
-
-const CATEGORY_LABELS: Record<string, string> = {
-  schema: "Schema",
-  metadata: "Metadata",
-  contentClarity: "Content Clarity",
-  performance: "Performance",
-  trustSignals: "Trust Signals",
-  aiReadiness: "AI Readiness",
-  headings: "Headings",
-};
-
-function scoreGrade(score: number): string {
-  if (score >= 85) return "A";
-  if (score >= 70) return "B";
-  if (score >= 50) return "C";
-  return "D";
-}
-
-function gradeColor(score: number): string {
-  if (score >= 85) return "#00d68f";
-  if (score >= 70) return "#00f0b4";
-  if (score >= 50) return "#ffb830";
-  return "#ff4d6a";
-}
 
 type MonitorRow = {
   id: string;
@@ -141,120 +118,6 @@ async function saveSnapshot(monitoredUrlId: string, score: number, categoryScore
   }).catch(() => null);
 }
 
-function buildEmailHtml(opts: {
-  domain: string;
-  url: string;
-  score: number;
-  previousScore: number | null;
-  categoryScores: Record<string, number>;
-}): string {
-  const { domain, score, previousScore, categoryScores } = opts;
-  const grade = scoreGrade(score);
-  const color = gradeColor(score);
-
-  const delta =
-    previousScore === null
-      ? null
-      : score - previousScore;
-
-  const deltaHtml =
-    delta === null
-      ? `<span style="color:#8a9ab0;font-size:14px;">First scan</span>`
-      : delta === 0
-      ? `<span style="color:#8a9ab0;font-size:14px;">No change from last scan</span>`
-      : delta > 0
-      ? `<span style="color:#00d68f;font-size:14px;">▲ +${delta} from last scan</span>`
-      : `<span style="color:#ff4d6a;font-size:14px;">▼ ${delta} from last scan</span>`;
-
-  const catRows = Object.entries(categoryScores)
-    .filter(([, v]) => typeof v === "number")
-    .map(
-      ([key, val]) => `
-      <tr>
-        <td style="padding:6px 12px;color:#8a9ab0;font-size:13px;border-bottom:1px solid #1e2a3a;">${CATEGORY_LABELS[key] ?? key}</td>
-        <td style="padding:6px 12px;color:#e2e8f0;font-size:13px;font-weight:700;text-align:right;border-bottom:1px solid #1e2a3a;">${val}</td>
-      </tr>`
-    )
-    .join("");
-
-  return `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#0a1628;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a1628;padding:32px 16px;">
-    <tr><td align="center">
-      <table width="100%" style="max-width:560px;background:#0d1e35;border:1px solid #1e2a3a;border-radius:12px;overflow:hidden;">
-
-        <!-- Header -->
-        <tr>
-          <td style="padding:24px 28px 16px;border-bottom:1px solid #1e2a3a;">
-            <span style="color:#00f0b4;font-size:15px;font-weight:800;letter-spacing:0.04em;">AEOCheck</span>
-          </td>
-        </tr>
-
-        <!-- Domain + score -->
-        <tr>
-          <td style="padding:28px 28px 20px;">
-            <p style="margin:0 0 6px;color:#8a9ab0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">
-              ${opts.url.replace(/^https?:\/\//, "").split("/")[0]}
-            </p>
-            <h1 style="margin:0 0 16px;color:#f0f4f8;font-size:22px;font-weight:800;">${domain}</h1>
-
-            <table cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="padding-right:20px;vertical-align:middle;">
-                  <div style="width:72px;height:72px;border-radius:50%;background:rgba(0,240,180,0.1);border:2px solid ${color};display:flex;align-items:center;justify-content:center;text-align:center;line-height:1;">
-                    <span style="color:${color};font-size:26px;font-weight:900;">${score}</span>
-                  </div>
-                </td>
-                <td style="vertical-align:middle;">
-                  <div style="background:${color}22;border:1px solid ${color}55;border-radius:6px;padding:3px 10px;display:inline-block;margin-bottom:6px;">
-                    <span style="color:${color};font-size:13px;font-weight:700;">Grade ${grade}</span>
-                  </div>
-                  <br>${deltaHtml}
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-
-        <!-- Category scores -->
-        ${catRows ? `
-        <tr>
-          <td style="padding:0 28px 20px;">
-            <p style="margin:0 0 10px;color:#8a9ab0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Category Breakdown</p>
-            <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #1e2a3a;border-radius:8px;overflow:hidden;">
-              ${catRows}
-            </table>
-          </td>
-        </tr>` : ""}
-
-        <!-- CTA -->
-        <tr>
-          <td style="padding:8px 28px 28px;">
-            <a href="https://aeocheck.co/monitor"
-               style="display:inline-block;background:#00f0b4;color:#0a1628;font-size:14px;font-weight:800;padding:12px 24px;border-radius:8px;text-decoration:none;">
-              View monitor dashboard →
-            </a>
-          </td>
-        </tr>
-
-        <!-- Footer -->
-        <tr>
-          <td style="padding:16px 28px;border-top:1px solid #1e2a3a;">
-            <p style="margin:0;color:#4a5568;font-size:12px;line-height:1.6;">
-              You're receiving this because you added this URL to AEOCheck Monitor.
-              To stop, remove the URL from your <a href="https://aeocheck.co/monitor" style="color:#00f0b4;">monitor dashboard</a>.
-            </p>
-          </td>
-        </tr>
-
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-}
 
 export async function GET(req: Request) {
   // Verify cron secret (required in production, optional in development)
@@ -317,22 +180,21 @@ export async function GET(req: Request) {
               domain = row.label ?? row.url;
             }
 
-            const subject =
-              row.frequency === "monthly"
-                ? `Your AEO score for ${domain} this month`
-                : `Your AEO score for ${domain} this week`;
+            const { subject, html } = buildMonitorEmail({
+              name: row.label ?? domain,
+              url: row.url,
+              frequency: row.frequency,
+              score,
+              previousScore,
+              categoryScores: categoryScores as Record<string, number>,
+              previousCategoryScores: previousSnapshots[0]?.category_scores ?? null,
+            });
 
             await resend.emails.send({
               from: "AEOCheck <hello@aeocheck.co>",
               to: email,
               subject,
-              html: buildEmailHtml({
-                domain: row.label ?? domain,
-                url: row.url,
-                score,
-                previousScore,
-                categoryScores: categoryScores as Record<string, number>,
-              }),
+              html,
             });
           } catch (err) {
             console.error(`[cron/monitor-emails] email send failed for ${row.url}:`, err);

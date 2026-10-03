@@ -2,6 +2,15 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 20)
+
+- Monitor emails: a score drop of 5+ points now sends an alert ("Alert: your AEO score for X
+  dropped N points") with the categories that fell and a re-scan button; every email shows
+  per-category changes since the last scan. Monitor labels are now HTML-escaped in emails
+  (they were inserted raw), and links point at www.aeocheck.co directly.
+- Verified: 106/106 tests (subjects, alert threshold, category drops, escaping), tsc, lint,
+  build; alert email rendered and checked visually. Uptime workflow first run: success.
+
 ## 2026-10-03 (session 19)
 
 - Fixed 404s from published posts: `/blog/best-aeo-tools` now redirects permanently to the real

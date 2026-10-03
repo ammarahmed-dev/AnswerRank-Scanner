@@ -60,7 +60,7 @@ Based on the full code review from 2026-10-03.
   - [ ] Weekly runs for monitored brands via the monitor cron
   - [ ] Add OpenAI (Responses API web search) and Google AI Overviews (SERP API) engines
 - [x] AI crawler access: new robots.txt parser (`lib/robots.ts`) with correct grouping, wildcard fallback, comments, longest-match; covers 12 AI crawlers incl. OAI-SearchBot, Claude-SearchBot, Perplexity-User, Google-Extended (was a wrong `googlebot-extended` token). `llms.txt` was already scored
-- [ ] Monitor history chart and score-drop email alerts
+- [x] Monitor history chart (sparkline already existed) and score-drop email alerts: drops of 5+ points get an alert subject, a banner naming the categories that fell, per-category deltas and a re-scan link (`lib/monitor-email.ts`)
 - [ ] "Limit reached" email and a 3-step onboarding sequence via Resend
 - [ ] Split `HomePageClient.tsx`, `ReportSectionNew.tsx`, `DashboardClient.tsx` into smaller components
 - [~] Consolidate icon libraries: Tabler webfont dropped; Lucide and Phosphor both remain (standardize on one)
