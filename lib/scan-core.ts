@@ -110,7 +110,11 @@ async function scrapeUrlWithFallback(url: string): Promise<ScrapedData> {
     return parseHtmlToScrapedData(html, url);
   } catch {
     const readerText = await fetchJinaReaderText(url);
-    return parseReaderTextToScrapedData(readerText, url);
+    const data = parseReaderTextToScrapedData(readerText, url);
+    // A CAPTCHA/bot wall comes back as a title with (almost) no content: report it as blocked
+    // instead of scoring an empty page.
+    if (data.wordCount < 40) throw new Error("scrape:jina:thin");
+    return data;
   }
 }
 

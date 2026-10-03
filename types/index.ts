@@ -24,6 +24,8 @@ export interface ScrapedData {
   allowsAiBots?: boolean;
   hasRobotsTxt?: boolean;
   hasSitemap?: boolean;
+  /** "reader" when direct HTML access was blocked and only text from the reader fallback is available. */
+  source?: "html" | "reader";
 }
 
 export interface ScanMetadata {
@@ -102,6 +104,8 @@ export interface ScanResult {
   unlockSource?: "polar_checkout" | "admin" | "manual";
   polarOrderId?: string;
   isFullReport?: boolean;
+  /** True when the site blocked direct HTML access and HTML-only signals could not be verified. */
+  limitedScan?: boolean;
   /** True when paid sections were removed server-side because the viewer lacks full access. */
   redacted?: boolean;
   onetimeLockMessage?: string;

@@ -510,16 +510,45 @@ const CHECKS_CONFIG: CheckConfig[] = [
   },
 ];
 
+/**
+ * Signals that only exist in the raw HTML (head tags, JSON-LD, links, images). When a site blocks
+ * direct access and only reader-fallback text is available, these cannot be verified, so they get
+ * a neutral "warn" instead of a false "fail".
+ */
+export const HTML_ONLY_CHECK_IDS = new Set([
+  "meta_desc",
+  "og_tags",
+  "og_image",
+  "canonical",
+  "schema_present",
+  "faq_schema",
+  "article_schema",
+  "structured_density",
+  "alt_text",
+  "internal_links",
+  "eeat_author",
+  "eeat_about",
+  "eeat_freshness",
+]);
+
+const NOT_VERIFIED_DETAIL = "Not verified - this site blocked direct page access, so this signal could not be read";
+
 export function runDeterministicChecks(
   data: ScrapedData
 ): CheckResult[] {
-  return CHECKS_CONFIG.map((config) => ({
-    id: config.id,
-    label: config.label,
-    status: config.check(data),
-    detail: config.detail(data),
-    weight: config.weight,
-  }));
+  const limited = data.source === "reader";
+  return CHECKS_CONFIG.map((config) => {
+    if (limited && HTML_ONLY_CHECK_IDS.has(config.id)) {
+      return { id: config.id, label: config.label, status: "warn" as const, detail: NOT_VERIFIED_DETAIL, weight: config.weight };
+    }
+    return {
+      id: config.id,
+      label: config.label,
+      status: config.check(data),
+      detail: config.detail(data),
+      weight: config.weight,
+    };
+  });
 }
 
 export function calculateScore(checks: CheckResult[]): number {

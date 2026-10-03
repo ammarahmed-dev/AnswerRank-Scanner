@@ -2,6 +2,19 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 9)
+
+- Fixed: the reader fallback for sites that block direct scraping never worked. It sent
+  `X-Respond-With: no-content`, which Jina rejects with HTTP 400, so every such site failed with
+  "We couldn't scan this URL". Sites like Indeed and Glassdoor now scan.
+- Fairer scores for those scans: signals that only exist in page code (meta tags, schema, links,
+  images, author/date markup) are "Not verified" (neutral) instead of failed; readability is now
+  computed from the reader text; the report explains the limited scan.
+- CAPTCHA walls (reader returns a title and no content) are reported as blocked instead of
+  producing a report about an empty page.
+- Verified: 73/73 tests, tsc, lint, build; real scans: indeed.com and glassdoor.com (limited
+  scans), g2.com and medium.com (honest blocked error), crunchbase.com (normal); notice rendered.
+
 ## 2026-10-03 (session 8)
 
 - Scanner: two new checks, bringing the engine to the 25 checks the site advertises:

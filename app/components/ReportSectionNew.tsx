@@ -575,6 +575,19 @@ const downloadPdf = async () => {
         </div>
       </section>
 
+      {report.limitedScan && (
+        <section className="surface report-card" role="note" style={{ borderColor: "rgba(125,211,252,0.3)", background: "rgba(125,211,252,0.05)" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+            <AlertCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#7dd3fc", marginTop: 2 }} />
+            <p style={{ margin: 0, fontSize: 14, color: "rgba(255,255,255,0.85)", lineHeight: 1.5 }}>
+              This site blocked direct access from our scanner, so we analyzed a text-only version of the page.
+              Signals that live in the page code (meta tags, schema, links, images) are marked &quot;Not verified&quot;
+              rather than failed. If you own the site, allow the AEOCheckScanner user agent for a complete scan.
+            </p>
+          </div>
+        </section>
+      )}
+
       {report.onetimeLockMessage && (
         <section className="surface report-card" style={{ borderColor: "rgba(255,184,48,0.3)", background: "rgba(255,184,48,0.05)" }}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>

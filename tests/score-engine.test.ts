@@ -98,3 +98,41 @@ describe("score engine", () => {
     expect(checks.find((c) => c.id === "meta_desc")?.status).not.toBe("pass");
   });
 });
+
+describe("reader fallback", () => {
+  const readerPage: ScrapedData = { ...weakPage, title: "Example Analytics - Product analytics for SaaS", bodyText: "Example Analytics is a product analytics platform. ".repeat(80), wordCount: 480, headings: ["H1: Product analytics", "H2: What is it?", "H2: How does it work?"], source: "reader" };
+
+  it("marks HTML-only signals as not verified instead of failing them", () => {
+    const checks = runDeterministicChecks(readerPage);
+    for (const id of ["meta_desc", "schema_present", "og_tags", "canonical", "alt_text"]) {
+      const check = checks.find((c) => c.id === id);
+      expect(check?.status, id).toBe("warn");
+      expect(check?.detail, id).toMatch(/Not verified/);
+    }
+  });
+
+  it("still scores text signals normally", () => {
+    const checks = runDeterministicChecks(readerPage);
+    expect(checks.find((c) => c.id === "title")?.status).toBe("pass");
+    expect(checks.find((c) => c.id === "qa_structure")?.status).toBe("pass");
+  });
+
+  it("scores a blocked page higher than the same data treated as real HTML", () => {
+    const limited = calculateScore(runDeterministicChecks(readerPage));
+    const asHtml = calculateScore(runDeterministicChecks({ ...readerPage, source: "html" }));
+    expect(limited).toBeGreaterThan(asHtml);
+  });
+});
+
+describe("reader text parsing", () => {
+  it("parses reader markdown into scraped data marked as reader source", async () => {
+    const { parseReaderTextToScrapedData } = await import("@/lib/scrape");
+    const text = ["Title: Stripe | Payments", "", "URL Source: https://stripe.com/", "", "Markdown Content:", "## What is Stripe?", "Stripe is a payments platform used by millions of businesses to accept payments online and in person."].join("\n");
+    const data = parseReaderTextToScrapedData(text, "https://stripe.com/");
+    expect(data.source).toBe("reader");
+    expect(data.title).toBe("Stripe | Payments");
+    expect(data.headings).toContain("H2: What is Stripe?");
+    expect(data.wordCount).toBeGreaterThan(10);
+    expect(typeof data.readabilityScore).toBe("number");
+  });
+});

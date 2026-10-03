@@ -644,6 +644,7 @@ export async function POST(req: NextRequest) {
           max_retests: retestSeed?.maxRetests ?? 3,
           isFullReport,
           onetimeLockMessage,
+          limitedScan: scrapedData.source === "reader" || undefined,
         };
 
         // Update onetime profile after successful scan

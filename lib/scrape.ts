@@ -131,9 +131,9 @@ export async function fetchJinaReaderText(url: string): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   const readerUrl = `https://r.jina.ai/${url}`;
+  // Default markdown output. ("X-Respond-With: no-content" made the reader reject every request.)
   const headers: Record<string, string> = {
     Accept: "text/plain",
-    "X-Respond-With": "no-content",
   };
 
   if (process.env.JINA_API_KEY) {
@@ -199,6 +199,8 @@ export function parseReaderTextToScrapedData(
     ogTitle: "",
     ogDescription: "",
     ogImage: "",
+    readabilityScore: bodyText ? calculateFleschScore(bodyText) : undefined,
+    source: "reader",
   };
 }
 
