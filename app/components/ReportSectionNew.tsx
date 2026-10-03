@@ -124,6 +124,8 @@ function whyItMattersById(id: string): string {
     eeat_author: "AI engines use author attribution as a trust signal. Pages with clear author bylines, Person schema, or expert attribution are significantly more likely to be cited as credible sources.",
     eeat_about: "About and Contact pages signal that a real organization stands behind the content. AI engines like ChatGPT and Perplexity factor in entity clarity and organizational trust when deciding which sources to cite.",
     eeat_freshness: "AI engines prioritize fresh, recently updated content. Stale pages without dateModified schema are deprioritized in AI-generated answers, even if they rank well in traditional search.",
+    canonical: "A canonical URL tells AI engines and search crawlers which version of a page is authoritative. Without one, duplicate URLs (tracking parameters, www vs non-www) split signals and the wrong version may be cited.",
+    qa_structure: "Answer engines look for sections that pose a question and answer it directly. Question-style H2/H3 headings make it easy for ChatGPT, Perplexity and AI Overviews to lift your answer verbatim and cite you.",
     readability: "AI engines like ChatGPT and Perplexity prefer content that is easy to parse and extract. Research shows readability (Flesch score) positively correlates with AI citation frequency - simpler, clearer writing gets cited more.",
     core_web_vitals: "Core Web Vitals directly affect how reliably AI crawlers can index your content. Slow LCP means AI bots may time out before reading your page. High CLS indicates unstable layouts that confuse both users and crawlers.",
     cwv_lcp: "Largest Contentful Paint affects how quickly the main content becomes available to users and crawlers. Slow LCP can cause visitors and bots to abandon the page before the content is fully usable.",
@@ -148,6 +150,8 @@ function recommendedFix(check: CheckResult) {
   if (check.id === "ai_bot_access") return "Check your robots.txt and ensure GPTBot, ClaudeBot, and PerplexityBot are not blocked. Add explicit allow rules for AI crawlers.";
   if (check.id === "sitemap") return "Create a sitemap.xml listing all important pages and submit it in Google Search Console under Sitemaps. Most CMS platforms (Webflow, WordPress) generate this automatically - check your settings.";
   if (check.id === "llms_txt") return "Create a /llms.txt file at your domain root. Visit llmstxt.org for the standard format and generator tools.";
+  if (check.id === "canonical") return "Add <link rel=\"canonical\" href=\"https://yourdomain.com/this-page\"> in the page head, pointing to the preferred URL of this page on your own domain.";
+  if (check.id === "qa_structure") return "Add 2-3 H2/H3 headings phrased as the questions your buyers ask (for example \"How does X work?\"), each followed by a 40-60 word direct answer.";
   if (check.id === "eeat_author") return "Add an author byline with a link to an author bio page. Implement Person schema with name, url, and jobTitle fields.";
   if (check.id === "eeat_about") return "Add visible links to an About page and Contact page in your navigation or footer. These are fundamental E-E-A-T trust signals.";
   if (check.id === "eeat_freshness") return "Add datePublished and dateModified fields to your page schema. Update the dateModified value whenever you meaningfully update content.";

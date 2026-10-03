@@ -34,6 +34,33 @@ function hasArticleContent(data: ScrapedData): boolean {
   return false;
 }
 
+const QUESTION_HEADING = /\?\s*$|^(what|how|why|when|where|who|which|can|does|do|is|are|should|will)\b/i;
+
+function questionHeadingCount(data: ScrapedData): number {
+  return data.headings
+    .filter((h) => /^H[23]:/.test(h))
+    .map((h) => h.replace(/^H\d+:\s*/, "").trim())
+    .filter((text) => QUESTION_HEADING.test(text)).length;
+}
+
+function canonicalStatus(data: ScrapedData): { status: CheckStatus; detail: string } {
+  const raw = (data.canonical ?? "").trim();
+  if (!raw) return { status: "fail", detail: "No canonical URL - AI engines may index duplicate versions of this page" };
+  let canonical: URL;
+  let page: URL;
+  try {
+    page = new URL(data.url);
+    canonical = new URL(raw, page);
+  } catch {
+    return { status: "warn", detail: "Canonical URL is malformed" };
+  }
+  const host = (u: URL) => u.hostname.replace(/^www\./, "");
+  if (host(canonical) !== host(page)) {
+    return { status: "warn", detail: `Canonical points to another domain (${canonical.hostname})` };
+  }
+  return { status: "pass", detail: "Canonical URL set - one authoritative version for AI engines to cite" };
+}
+
 type CheckConfig = {
   id: string;
   label: string;
@@ -444,6 +471,30 @@ const CHECKS_CONFIG: CheckConfig[] = [
       if (score >= 60) return `Good readability (Flesch score: ${score}/100) - content is clear for AI extraction`;
       if (score >= 40) return `Moderate readability (Flesch score: ${score}/100) - simplify sentences for better AI citation`;
       return `Poor readability (Flesch score: ${score}/100) - content is too complex for AI engines to cite effectively`;
+    },
+  },
+  {
+    id: "canonical",
+    label: "Canonical URL",
+    weight: 4,
+    check: (data: ScrapedData) => canonicalStatus(data).status,
+    detail: (data: ScrapedData) => canonicalStatus(data).detail,
+  },
+  {
+    id: "qa_structure",
+    label: "Answer-Ready Headings",
+    weight: 5,
+    check: (data: ScrapedData) => {
+      const count = questionHeadingCount(data);
+      if (count >= 2) return "pass";
+      if (count === 1) return "warn";
+      return "fail";
+    },
+    detail: (data: ScrapedData) => {
+      const count = questionHeadingCount(data);
+      if (count >= 2) return `${count} question-style headings - answer engines can lift these sections directly`;
+      if (count === 1) return "1 question-style heading - add more sections that answer real buyer questions";
+      return "No question-style headings - AI engines look for clear question and answer sections to cite";
     },
   },
   {

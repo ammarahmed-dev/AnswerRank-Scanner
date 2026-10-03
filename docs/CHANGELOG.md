@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 8)
+
+- Scanner: two new checks, bringing the engine to the 25 checks the site advertises:
+  - Canonical URL (metadata): pass when set on the same domain, warn for cross-domain, fail if missing.
+  - Answer-Ready Headings (AI readiness): question-style H2/H3 headings that answer engines can quote
+    (pass >= 2, warn 1, fail 0). Backs the "answer extraction structure" claim in the copy.
+- Scores shift slightly for pages missing these signals (example.com 43 -> 40; aeocheck.co 96,
+  stripe.com 87 pass both).
+- Verified: 69/69 tests (count, canonical and heading cases), tsc, lint, build; real scans of three
+  sites; report renders with the larger issue list and no errors.
+
 ## 2026-10-03 (session 7)
 
 - Checkout failures now show an error message under the upgrade button (previously silent).

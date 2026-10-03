@@ -63,11 +63,11 @@ function checkScore(status: CheckResult["status"]): number {
 
 function categoryScoresFromChecks(checks: CheckResult[], pagespeed: { score: number } | null) {
   const byCategory = {
-    metadata: checks.filter((c) => c.id === "title" || c.id === "meta_desc" || c.id.includes("og")),
+    metadata: checks.filter((c) => c.id === "title" || c.id === "meta_desc" || c.id === "canonical" || c.id.includes("og")),
     headings: checks.filter((c) => c.id.includes("heading") || c.id === "h1"),
     schema: checks.filter((c) => c.id.includes("schema")),
     contentClarity: checks.filter((c) => c.id === "word_count" || c.id === "internal_links" || c.id === "alt_text" || c.id === "readability"),
-    aiReadiness: checks.filter((c) => !["title", "meta_desc", "h1", "heading_structure", "https", "robots", "sitemap", "word_count", "internal_links", "alt_text"].includes(c.id) && !c.id.includes("schema") && !c.id.includes("og")),
+    aiReadiness: checks.filter((c) => !["title", "meta_desc", "canonical", "h1", "heading_structure", "https", "robots", "sitemap", "word_count", "internal_links", "alt_text"].includes(c.id) && !c.id.includes("schema") && !c.id.includes("og")),
     trustSignals: checks.filter((c) => c.id === "https" || c.id === "robots" || c.id === "sitemap"),
   };
   const avg = (rows: CheckResult[]) => rows.length ? Math.round(rows.reduce((sum, row) => sum + checkScore(row.status), 0) / rows.length) : undefined;

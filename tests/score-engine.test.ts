@@ -72,6 +72,26 @@ describe("score engine", () => {
     expect(strong).toBeGreaterThan(weak + 20);
   });
 
+  it("runs 25 checks (the number the marketing copy promises)", () => {
+    expect(runDeterministicChecks(strongPage)).toHaveLength(25); // scan-core only overrides statuses, it adds none
+  });
+
+  it("scores canonical URLs", () => {
+    const status = (canonical: string) => runDeterministicChecks({ ...strongPage, canonical }).find((c) => c.id === "canonical")?.status;
+    expect(status("https://example.com/")).toBe("pass");
+    expect(status("/")).toBe("pass");
+    expect(status("https://www.example.com/")).toBe("pass");
+    expect(status("https://other.com/")).toBe("warn");
+    expect(status("")).toBe("fail");
+  });
+
+  it("scores question-style headings", () => {
+    const status = (headings: string[]) => runDeterministicChecks({ ...strongPage, headings }).find((c) => c.id === "qa_structure")?.status;
+    expect(status(["H1: Analytics", "H2: What is Example?", "H3: How much does it cost"])).toBe("pass");
+    expect(status(["H1: Analytics", "H2: Why teams switch?"])).toBe("warn");
+    expect(status(["H1: What is Example?", "H2: Features", "H2: Pricing"])).toBe("fail");
+  });
+
   it("flags a missing title and meta description", () => {
     const checks = runDeterministicChecks(weakPage);
     expect(checks.find((c) => c.id === "title")?.status).not.toBe("pass");

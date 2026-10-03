@@ -82,6 +82,14 @@ const FIX_MAP: Record<string, { why: string; fix: string }> = {
     why: "Open Graph tags improve page interpretation across previews and shared contexts.",
     fix: "Add og:title, og:description, og:image, and og:url on each page.",
   },
+  canonical: {
+    why: "A canonical URL tells AI engines which version of the page is authoritative.",
+    fix: "Add a rel=canonical link in the head pointing to this page's preferred URL.",
+  },
+  qa_structure: {
+    why: "Question-style headings give answer engines clear sections to quote and cite.",
+    fix: "Add 2-3 H2/H3 headings phrased as buyer questions, each followed by a short direct answer.",
+  },
   og_image: {
     why: "A clear OG image provides useful context in link and citation previews.",
     fix: "Add a 1200x630 OG image URL that is absolute and publicly accessible.",

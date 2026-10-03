@@ -27,7 +27,7 @@ function scoreFromStatus(status: CheckResult["status"]): number {
 
 export function mapReportCategory(id: string): ReportCategory {
   if (id.includes("schema")) return "schema";
-  if (id === "title" || id === "meta_desc" || id.includes("og")) return "metadata";
+  if (id === "title" || id === "meta_desc" || id === "canonical" || id.includes("og")) return "metadata";
   if (id.includes("heading") || id === "h1") return "headings";
   if (id === "https" || id === "robots" || id === "sitemap") return "trust";
   if (id === "core_web_vitals" || id.startsWith("cwv_")) return "performance";

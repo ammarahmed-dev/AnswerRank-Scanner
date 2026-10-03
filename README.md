@@ -2,7 +2,7 @@
 
 [AEOCheck](https://www.aeocheck.co) scans a public web page and scores how ready it is to be
 found, understood and cited by AI answer engines (ChatGPT, Perplexity, Google AI Overviews,
-Gemini). It runs 20+ AEO/GEO checks across 7 readiness areas and turns them into a prioritized
+Gemini). It runs 25 AEO/GEO checks across 7 readiness areas and turns them into a prioritized
 fix list.
 
 ## Features
