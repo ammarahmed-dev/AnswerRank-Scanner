@@ -102,6 +102,8 @@ export interface ScanResult {
   unlockSource?: "polar_checkout" | "admin" | "manual";
   polarOrderId?: string;
   isFullReport?: boolean;
+  /** True when paid sections were removed server-side because the viewer lacks full access. */
+  redacted?: boolean;
   onetimeLockMessage?: string;
   competitorUrls?: string[];
   competitors?: CompetitorScanResult[];

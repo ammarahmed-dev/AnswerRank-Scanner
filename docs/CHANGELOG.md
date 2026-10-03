@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-03 (session 5)
+
+- Server-side paywall: preview viewers (guest/free, onetime off their locked URL) no longer
+  receive paid AI guidance or competitor results from `/api/scan` or `/api/reports/[id]`.
+  Stored reports stay complete so upgrades unlock everything. Responses carry `redacted: true`.
+- Report page: a cached redacted preview is shown instantly and refetched for signed-in users
+  (so an upgrade takes effect); guests keep the cached preview. Caught in browser testing: an
+  earlier version of this change showed guests "Report unavailable" after scanning.
+- Verified: 62/62 tests (5 new), tsc, lint, build; guest scan API returns redacted result;
+  Playwright render of the report preview on desktop and mobile with no console errors.
+
 ## 2026-10-03 (session 4)
 
 - Atomic usage limits: scans and compares now reserve a unit up front through the

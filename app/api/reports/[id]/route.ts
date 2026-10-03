@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
+import { reportForViewer } from "@/lib/report-access";
 
 export const runtime = "nodejs";
 
@@ -28,6 +29,6 @@ export async function GET(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json(responseReport, { status: 200 });
+  return NextResponse.json(reportForViewer(responseReport, { plan: auth.plan, isAdmin }), { status: 200 });
 }
 

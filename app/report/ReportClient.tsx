@@ -46,11 +46,16 @@ export default function ReportClient() {
         sessionStorage.removeItem(`aeocheck_report:${reportId}`);
       }
       const cachedById = sessionStorage.getItem(`aeocheck_report:${reportId}`);
+      // A redacted preview is shown right away but may be stale after an upgrade, so signed-in
+      // viewers also refetch it and the server decides. Guests keep the cached preview.
+      let redactedFallback: ScanResult | null = null;
       if (cachedById && !forceRefresh) {
         try {
-          setReport(JSON.parse(cachedById) as ScanResult);
+          const cachedReport = JSON.parse(cachedById) as ScanResult;
+          setReport(cachedReport);
           setState("done");
-          return;
+          if (!cachedReport.redacted) return;
+          redactedFallback = cachedReport;
         } catch {
           sessionStorage.removeItem(`aeocheck_report:${reportId}`);
         }
@@ -59,12 +64,15 @@ export default function ReportClient() {
       const controller = new AbortController();
 
       async function loadSavedReport() {
-        setState("loading");
-        setErrorMsg("");
+        if (!redactedFallback) {
+          setState("loading");
+          setErrorMsg("");
+        }
 
         try {
           const supabase = getSupabaseBrowserClient();
           const token = (await getSafeSupabaseSession(supabase))?.access_token;
+          if (redactedFallback && !token) return;
           const res = await fetch(`/api/reports/${encodeURIComponent(reportId)}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
             signal: controller.signal,
@@ -72,6 +80,7 @@ export default function ReportClient() {
           const data = (await res.json()) as ScanResult & { error?: string };
 
           if (!res.ok || data.error) {
+            if (redactedFallback) return;
             setErrorMsg(data.error ?? "Report not found.");
             setState("error");
             return;
@@ -86,6 +95,7 @@ export default function ReportClient() {
           setState("done");
         } catch (err) {
           if (err instanceof DOMException && err.name === "AbortError") return;
+          if (redactedFallback) return;
           setErrorMsg("Could not load this report. Please try again.");
           setState("error");
         }

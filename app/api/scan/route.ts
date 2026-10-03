@@ -8,6 +8,7 @@ import { getAuthContext } from "@/lib/auth-server";
 import { commitUsage, getClientKey, getPlanLimit, releaseUsage, reserveUsage, type UsageReservation } from "@/lib/usage-limits";
 import { assertPublicUrl } from "@/lib/url-safety";
 import { isMasterAdmin } from "@/lib/admin";
+import { reportForViewer } from "@/lib/report-access";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 import { ScrapedData, ScanResult, AIInsights, CompetitorScanResult, SchemaRecommendation } from "@/types/index";
 
@@ -664,7 +665,8 @@ export async function POST(req: NextRequest) {
 
         emitProgress(6, "Preparing report", "complete");
         await sleep(220);
-        emit({ type: "result", result: savedResult });
+        // The stored report stays complete; preview viewers get the paid sections removed.
+        emit({ type: "result", result: reportForViewer(savedResult, { plan: effectivePlan, isAdmin }) });
         controller.close();
       } catch (err: unknown) {
         console.error("Stream error:", err);
