@@ -17,8 +17,8 @@ describe("tool links", () => {
     }
   });
 
-  it("returns null for checks without a tool", () => {
-    expect(toolsForCheck("title")).toEqual([]);
+  it("returns no tools for checks without one", () => {
+    expect(toolsForCheck("https")).toEqual([]);
     expect(toolsForCheck("llms_txt")[0]?.href).toBe("/tools/llms-txt-generator");
     expect(toolsForCheck("ai_bot_access").map((t) => t.href)).toEqual(["/tools/ai-crawler-checker", "/tools/robots-txt-generator"]);
   });

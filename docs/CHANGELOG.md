@@ -2,6 +2,20 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 48)
+
+- New free tool: meta tag checker at `/tools/meta-tag-checker` (`lib/meta-check.ts`,
+  `/api/tools/meta-tag-checker`). Grades title, meta description, canonical and Open Graph tags
+  with the scanner's own checks (same thresholds and wording as the report), adds robots meta
+  (noindex fails), viewport, page language, Twitter card and og:url vs canonical, and shows a
+  search-result preview and a social-card preview. 30 per month per client/IP; `assertPublicUrl` +
+  `fetchHtml`. Report issues for Page Title, Meta Description, Canonical and OG tags now link to it.
+- Real runs: aeocheck.co (all pass), apple.com (title fail for the brand-only title, description
+  warn), example.com (bare page), `[::1]` rejected.
+- Verified: 178 tests, tsc, lint (0 errors), build; Playwright desktop + mobile, no errors or
+  overflow (the og:image preview could not load inside the sandbox browser, which has no internet;
+  the tool shows a placeholder in that case).
+
 ## 2026-10-04 (session 47)
 
 - New free tool: sitemap checker at `/tools/sitemap-checker` (`lib/sitemap-check.ts`,

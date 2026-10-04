@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bot, Building2, Code2, FileSearch, FileText, ListChecks, Map, ShieldCheck } from "lucide-react";
+import { Bot, Building2, Code2, FileSearch, FileText, ListChecks, Map, ShieldCheck, Tags } from "lucide-react";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 import { buildPageMetadata } from "@/lib/seo";
@@ -36,6 +36,12 @@ const TOOLS = [
     icon: Code2,
     name: "Schema Markup Checker",
     text: "Inspect a page's JSON-LD: which types it has, which required properties are missing.",
+  },
+  {
+    href: "/tools/meta-tag-checker",
+    icon: Tags,
+    name: "Meta Tag Checker",
+    text: "Check title, description, canonical and social tags with live search and social previews.",
   },
   {
     href: "/tools/sitemap-checker",

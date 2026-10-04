@@ -43,6 +43,7 @@ export default function SiteFooter() {
               <Link href="/tools/schema-checker">Schema Checker</Link>
               <Link href="/tools/robots-txt-generator">robots.txt Generator</Link>
               <Link href="/tools/sitemap-checker">Sitemap Checker</Link>
+              <Link href="/tools/meta-tag-checker">Meta Tag Checker</Link>
               <Link href="/tools/organization-schema-generator">Organization Schema</Link>
               <a href="/sitemap">Sitemap</a>
             </div>

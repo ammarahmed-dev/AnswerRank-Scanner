@@ -6,6 +6,7 @@ const EXTRACTABILITY_TOOL: ToolLink = { href: "/tools/content-extractability", l
 
 const ROBOTS_GENERATOR: ToolLink = { href: "/tools/robots-txt-generator", label: "Generate a robots.txt with an AI crawler policy" };
 const ORG_SCHEMA_TOOL: ToolLink = { href: "/tools/organization-schema-generator", label: "Generate Organization schema free" };
+const META_TOOL: ToolLink = { href: "/tools/meta-tag-checker", label: "Check this page's meta tags with live previews" };
 const SCHEMA_TOOL: ToolLink = { href: "/tools/schema-checker", label: "Inspect this page's schema markup" };
 
 export const TOOLS_FOR_CHECK: Record<string, ToolLink[]> = {
@@ -17,6 +18,11 @@ export const TOOLS_FOR_CHECK: Record<string, ToolLink[]> = {
   article_schema: [SCHEMA_TOOL],
   structured_density: [SCHEMA_TOOL, ORG_SCHEMA_TOOL],
   sitemap: [{ href: "/tools/sitemap-checker", label: "Validate your sitemap.xml free" }],
+  title: [META_TOOL],
+  meta_desc: [META_TOOL],
+  canonical: [META_TOOL],
+  og_tags: [META_TOOL],
+  og_image: [META_TOOL],
   qa_structure: [EXTRACTABILITY_TOOL],
   heading_structure: [EXTRACTABILITY_TOOL],
 };
