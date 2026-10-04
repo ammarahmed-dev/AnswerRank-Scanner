@@ -6,9 +6,9 @@ import { buildPageMetadata } from "@/lib/seo";
 import { getLatestPosts } from "@/lib/blog";
 
 export const metadata = buildPageMetadata({
-  title: "Free ChatGPT Visibility Checker | AEOCheck",
+  title: "Free AEO Checker & ChatGPT Visibility Scanner | AEOCheck",
   description:
-    "Run a free ChatGPT visibility check on any URL. AEOCheck scans 25+ AI search signals and shows exactly what to fix to appear in ChatGPT and Perplexity answers.",
+    "Free AEO checker: scan any URL for 25+ AI search signals and see exactly what to fix to appear in ChatGPT, Perplexity and Google AI Overviews answers.",
   path: "/",
 });
 

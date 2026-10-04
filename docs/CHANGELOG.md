@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 45)
+
+- First data-driven SEO work from Search Console (see the ROADMAP entry for the numbers). The
+  homepage title is now "Free AEO Checker & ChatGPT Visibility Scanner | AEOCheck" (56 chars) with
+  a description built around "AEO checker". The best AEO tools post (484 impressions, ranks 10-12
+  for "aeo checker") got a direct answer section, a 2026 title (it said 2025) and the stale "20+
+  signals" corrected to 25; three em dashes removed. Post edited in its own last commit so the
+  on-publish workflow resubmits the sitemap (last submitted 2026-06-27) and pings IndexNow.
+- Verified: tsc; link-lint unchanged (only the known missing hub link); homepage title 56 chars.
+  Live effect waits on Vercel's deployment rate limit (session 43).
+
 ## 2026-10-04 (session 44)
 
 - Google Search Console is connected again. The owner created a service account, added it to the
