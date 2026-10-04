@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 23)
+
+- New free tool: llms.txt generator at `/tools/llms-txt-generator`. Enter a URL; it reads the
+  homepage and sitemap, ranks up to 20 key pages (key paths first, max 3 per folder, legal/login
+  pages under "Optional") and returns a ready-to-publish llms.txt to copy or download. Every fetch
+  goes through `assertPublicUrl`/`safeFetch`; usage is capped at 10 per month per client/IP via
+  the existing atomic usage reservation. Page has WebApplication + FAQPage JSON-LD, is in the
+  sitemap and footer, and links to the scanner and technical AEO guide.
+- Verified: 116/116 tests, tsc, lint (0 errors), build; local runs on stripe.com (9 s),
+  linear.app (10 s) and aeocheck.co (2 s); `http://[::1]/` rejected; Playwright desktop + mobile.
+
 ## 2026-10-04 (session 22)
 
 - Homepage honesty: the top bar counter no longer adds +1 at random every 6-18 s (a simulated

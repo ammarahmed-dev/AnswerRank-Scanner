@@ -12707,3 +12707,29 @@ textarea.contact-control {
     background: rgba(5, 8, 18, 0.99);
   }
 }
+
+/* ── llms.txt generator tool ── */
+.llms-tool-intro { max-width: 760px; margin: 0 auto 28px; text-align: center; }
+.llms-tool-intro .launch-eyebrow { display: inline-flex; margin-bottom: 16px; }
+.llms-tool-intro h1 { color: white; font-size: clamp(2.3rem, 6vw, 4rem); font-weight: 950; line-height: 1; letter-spacing: 0; margin: 0 0 18px; }
+.llms-tool-intro p:not(.launch-eyebrow) { color: var(--color-ink-soft); font-size: 1.08rem; line-height: 1.7; margin: 0; }
+.llms-tool { max-width: 860px; margin: 0 auto; padding: 24px; border: 1px solid var(--color-line); background: rgba(2, 6, 23, 0.45); }
+.llms-tool-form { display: flex; gap: 12px; flex-wrap: wrap; }
+.llms-tool-form .hero-input-wrap { flex: 1 1 320px; }
+.llms-tool-form .btn { flex: 0 0 auto; }
+.llms-tool-error { margin: 14px 0 0; color: #ff8fa3; font-size: 0.95rem; }
+.llms-tool-result { margin-top: 22px; display: grid; gap: 14px; }
+.llms-tool-result-head { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.llms-tool-result-head p { margin: 0; color: var(--color-ink-soft); font-size: 0.95rem; max-width: 520px; }
+.llms-tool-actions { display: flex; gap: 8px; }
+.llms-tool-output { width: 100%; min-height: 360px; resize: vertical; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: rgba(2, 6, 23, 0.72); color: #e2e8f0; padding: 16px; font: 0.88rem/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.llms-tool-cta { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; border-top: 1px solid var(--color-line); padding-top: 16px; }
+.llms-tool-cta p { margin: 0; color: var(--color-ink-soft); }
+.llms-tool-faq { max-width: 760px; margin: 56px auto 0; color: var(--color-ink-soft); line-height: 1.7; }
+.llms-tool-faq h2 { color: white; font-size: 1.6rem; margin-bottom: 18px; }
+.llms-tool-faq h3 { color: white; font-size: 1.08rem; margin: 22px 0 6px; }
+.llms-tool-faq a { color: var(--color-primary); font-weight: 800; text-decoration: none; }
+@media (max-width: 640px) {
+  .llms-tool { padding: 16px; }
+  .llms-tool-form .btn { width: 100%; justify-content: center; }
+}
