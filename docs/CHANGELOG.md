@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 27)
+
+- Homepage refactor: the static sections (stats, what we do, why it matters, how it works, who
+  uses it, AI snapshot, audit signals, latest guides) moved out of the 1,300-line client component
+  into the server component `app/components/HomeStaticSections.tsx` and are passed in as a prop.
+  Same markup and styling (section heights identical to the previous build at 1280 and 390 px);
+  `HomePageClient.tsx` 1,308 -> 1,112 lines; initial homepage JS 727 KB -> 689 KB raw.
+  Lighthouse mobile lab score is unchanged within noise (0.75-0.76 both builds), so this is
+  code-health plus a small bundle win, not a speed fix.
+- Verified: tsc, lint, build; `/#how` anchor scroll, FAQ accordion, guide cards, no page errors.
+
 ## 2026-10-04 (session 26)
 
 - New free tool: FAQ schema generator at `/tools/faq-schema-generator`. Runs fully in the browser

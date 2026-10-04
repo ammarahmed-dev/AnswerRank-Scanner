@@ -1,4 +1,5 @@
 import HomePageClient from "./components/HomePageClient";
+import HomeStaticSections from "./components/HomeStaticSections";
 import SchemaMarkup from "./components/SchemaMarkup";
 import SiteFooter from "./components/SiteFooter";
 import { buildPageMetadata } from "@/lib/seo";
@@ -26,7 +27,7 @@ export default function HomePage() {
   return (
     <>
       <SchemaMarkup />
-      <HomePageClient heroContent={heroContent} latestPosts={latestPosts} />
+      <HomePageClient heroContent={heroContent} staticSections={<HomeStaticSections latestPosts={latestPosts} />} />
       <SiteFooter />
     </>
   );
