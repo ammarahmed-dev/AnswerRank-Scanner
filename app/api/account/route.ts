@@ -3,6 +3,7 @@ import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
 import { getPlanLimit, getUsageCount } from "@/lib/usage-limits";
 import { normalizeUserPlan } from "@/lib/access";
+import { toAccountReport, type AccountReport, type AccountReportRow } from "@/lib/account-reports";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
@@ -15,20 +16,6 @@ type RecentAudit = {
   aggregate_score: number | null;
   status: string;
   created_at: string;
-};
-
-type RecentReport = {
-  id: string;
-  url: string;
-  score: number;
-  created_at: string;
-  retest_count?: number;
-  max_retests?: number;
-  unlocked?: boolean;
-  result?: {
-    unlocked?: boolean;
-    unlockedAt?: string;
-  };
 };
 
 type ProfileExtras = {
@@ -62,8 +49,8 @@ async function getProfileExtras(userId: string): Promise<ProfileExtras> {
   };
 }
 
-async function getRecentReports(userId: string) {
-  if (!hasSupabaseConfig()) return [] as RecentReport[];
+async function getRecentReports(userId: string): Promise<AccountReport[]> {
+  if (!hasSupabaseConfig()) return [];
 
   const params = new URLSearchParams({
     user_id: `eq.${userId}`,
@@ -77,15 +64,10 @@ async function getRecentReports(userId: string) {
     cache: "no-store",
   });
 
-  if (!res.ok) return [] as RecentReport[];
+  if (!res.ok) return [];
 
-  const rows = (await res.json()) as RecentReport[];
-  return rows.map((row) => ({
-    ...row,
-    unlocked: Boolean(row.result?.unlocked || row.result?.unlockedAt),
-    retest_count: typeof row.retest_count === "number" ? row.retest_count : 0,
-    max_retests: typeof row.max_retests === "number" ? row.max_retests : 3,
-  }));
+  const rows = (await res.json()) as AccountReportRow[];
+  return rows.map(toAccountReport);
 }
 
 async function getRecentAudits(userId: string): Promise<RecentAudit[]> {

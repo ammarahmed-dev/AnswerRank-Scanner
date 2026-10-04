@@ -57,6 +57,8 @@ type AccountData = {
     retest_count?: number;
     max_retests?: number;
     unlocked?: boolean;
+    /** Score of the earlier scan of the same URL, when this report was a rescan. */
+    previousScore?: number | null;
   }>;
   recentAudits: RecentAudit[];
   monitorCount: number;
@@ -597,7 +599,17 @@ export default function DashboardClient() {
                         <span className="onetime-full-badge">Full Report</span>
                       )}
                     </div>
-                    <span>{formatDate(report.created_at)}{report.unlocked && !(account.profile.plan === "onetime" && account.profile.onetimeUrl === report.url) ? " · Full Report" : ""}</span>
+                    <span>
+                      {formatDate(report.created_at)}{report.unlocked && !(account.profile.plan === "onetime" && account.profile.onetimeUrl === report.url) ? " · Full Report" : ""}
+                      {typeof report.previousScore === "number" && report.score !== report.previousScore && (
+                        <b
+                          className={`dashboard-delta ${report.score > report.previousScore ? "dashboard-delta-up" : "dashboard-delta-down"}`}
+                          title={`Previous scan of this URL: ${report.previousScore}`}
+                        >
+                          {report.score > report.previousScore ? "▲ +" : "▼ "}{report.score - report.previousScore}
+                        </b>
+                      )}
+                    </span>
                   </div>
                   <em>{report.score}</em>
                   <ArrowUpRight className="h-4 w-4" />

@@ -2,6 +2,24 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 52)
+
+- SECURITY / paywall fix: `GET /api/account` returned each recent report's complete stored
+  `result` (selected from `reports` and spread into the response). That JSON holds the paid
+  sections, so any logged-in free user could read their own scans' AI recommendations, quick win,
+  content gap and schema guidance in the dashboard request, without buying the full report. The
+  route now returns an explicit summary per report (`lib/account-reports.ts`: id, url, score, date,
+  retest counts, `unlocked`, `previousScore`) and never `result`. Regression tests: a route-level
+  test with a secret marker in a mocked stored result (fails on the old code, passes now) plus
+  mapper tests. Only the owner's own reports were exposed, and only through this endpoint (checked
+  the other routes that select `result`: admin-only, Pro-gated or owner-scoped). Not exploited as far
+  as is known; no access logs to check. No billing, price or plan-limit behavior changed.
+- Dashboard trend: recent scans show a small green or red delta (for example "+9" or "-7") against
+  the earlier scan of the same URL, from `previousScore` (derived from the stored comparison, no
+  extra query). Hidden for first scans and unchanged scores. Verified at 1280 and 390 px with mocked
+  account data.
+- Verified: 190 tests, tsc, lint (0 errors), build.
+
 ## 2026-10-04 (session 51)
 
 - Design fix from owner feedback on the live report: the "Since your last scan" card used a custom

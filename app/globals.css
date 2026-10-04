@@ -10636,3 +10636,7 @@ textarea.contact-control {
 .report-diff-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .report-diff-pill-up { background: rgba(0, 240, 180, 0.12); border-color: rgba(0, 240, 180, 0.28); color: #00f0b4; }
 .report-diff-pill-down { background: rgba(255, 77, 106, 0.12); border-color: rgba(255, 77, 106, 0.3); color: #ff8fa3; }
+
+.dashboard-delta { margin-left: 8px; font-size: 0.74rem; font-weight: 900; letter-spacing: 0.02em; }
+.dashboard-delta-up { color: #00f0b4; }
+.dashboard-delta-down { color: #ff8fa3; }
