@@ -2,6 +2,11 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 55)
+
+- Fix Pack: "Download all (.zip)" bundles every generated file. Uses a small store-only ZIP writer (`lib/zip.ts`, no dependency); tests check the standard CRC-32 vector and that `unzip -t` accepts the archive and reads files back. Article/FAQ schema prefill was deliberately not added: it would need an author and publish date the scan cannot know, and placeholder values pasted unreviewed would be wrong markup.
+- Verified: tsc, 198 tests, eslint, build.
+
 ## 2026-10-04 (session 54)
 
 - New report feature "Fix Pack" (`lib/fix-pack.ts`, `FixPackSection`): ready-to-paste files generated from the scan itself, only for checks that did not pass: robots.txt welcoming AI crawlers (only when a block is confirmed or robots.txt is missing; "unverified" never triggers it), Organization + WebSite JSON-LD, an llms.txt starter, and canonical/Open Graph head tags with escaped values. Built with the same builders as the free tools; a test round-trips the robots.txt through the scanner's own parser. Copy and Download buttons. Full-report viewers see the code; free viewers see a locked teaser listing what is ready (no plan or price change; the section is client-side from fields already in the report, so nothing new is stored).

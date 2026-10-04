@@ -87,7 +87,7 @@ Based on the full code review from 2026-10-03.
   - [x] (2026-10-04) Article schema generator (`/tools/article-schema-generator`: Article/BlogPosting/NewsArticle with author, dates, image, publisher; validates dates and URLs; output passes the schema checker in tests). The report's Article Schema issue links to it.
   - [ ] Next tool candidates from GSC queries ("aeo score checker", "aeo tools", "aeo keyword tracker"): sitemap checker (parse sitemap.xml, lastmod, robots reference), meta tag / Open Graph preview checker, Article schema generator. Check /tools impressions in the GSC Overview first.
   - [x] `/tools` index page
-  - [x] (2026-10-04) Report "Fix Pack": generated robots.txt, Organization schema, llms.txt starter and head tags from the scan (full-report viewers). Next: article/FAQ schema prefill when the page looks like an article, and a Fix Pack zip download.
+  - [x] (2026-10-04) Report "Fix Pack": generated robots.txt, Organization schema, llms.txt starter and head tags from the scan (full-report viewers). Zip download shipped. Article/FAQ prefill skipped on purpose (author and dates unknown).
   - [x] (market research 2026-10-04, see docs/RESEARCH.md) Reposition homepage/tools copy and metadata from "AEO" jargon toward "AI SEO / AI visibility" (keep AEO as secondary); no claims change.
   - [ ] Free AI brand-mention check (is my brand named in AI answers for 3 prompts): the biggest query family, but costs LLM calls. Blocked on owner: Perplexity/Gemini keys and budget (see Owner actions).
   - [ ] Affiliate slots (Semrush, HubSpot) on tool/blog pages with disclosure component. Blocked on owner: program sign-up IDs.

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Copy, Download, Lock } from "lucide-react";
 import { buildFixPack, type FixPackItem } from "@/lib/fix-pack";
+import { buildZip } from "@/lib/zip";
 import type { ScanResult } from "@/types/index";
 
 function FixItem({ item }: { item: FixPackItem }) {
@@ -65,6 +66,15 @@ export default function FixPackSection({ report, hasFullReportAccess, onUpgrade 
   const items = buildFixPack(report);
   if (!items.length) return null;
 
+  function downloadAll() {
+    const blob = new Blob([buildZip(items.map((i) => ({ name: i.filename, content: i.content })))], { type: "application/zip" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "aeocheck-fix-pack.zip";
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
   return (
     <section className="surface report-card" aria-label="Fix pack">
       <h3 className="section-heading">Fix Pack</h3>
@@ -73,6 +83,13 @@ export default function FixPackSection({ report, hasFullReportAccess, onUpgrade 
       </p>
       {hasFullReportAccess ? (
         <div className="fix-pack-list mt-4">
+          {items.length > 1 && (
+            <div>
+              <button type="button" className="btn btn-primary" onClick={downloadAll}>
+                <Download className="h-4 w-4" /> Download all ({items.length} files, .zip)
+              </button>
+            </div>
+          )}
           {items.map((item) => <FixItem key={item.id} item={item} />)}
         </div>
       ) : (
