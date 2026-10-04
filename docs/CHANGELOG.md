@@ -2,6 +2,18 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 32)
+
+- Site sweep: loaded all 34 sitemap URLs at 390 px and checked status, console/page errors,
+  failed requests, horizontal overflow, H1 count, image alt text and titles. Two findings, both
+  fixed: `/blog/aeo-for-saas` had two H1s (a duplicate `# Title` in the MDX body under the page
+  heading) and `/sample-report` had none (added a visually hidden H1). Everything else was clean.
+- Known, not fixed: `node scripts/link-lint.mjs` reports the spoke
+  `how-to-check-if-website-appears-in-chatgpt-recommendations` missing a link to its pillar hub
+  `/blog/how-to-get-cited-by-chatgpt`, which is not written yet (temporary redirect in place). It
+  clears when the hub post is published (blog cap for this weekend already used).
+- Verified: build, H1 counts re-checked on a fresh build.
+
 ## 2026-10-04 (session 31)
 
 - Lint cleanup: removed dead code and unused variables flagged by ESLint (an unused `handleReset`

@@ -12,6 +12,7 @@ export default function SampleReportClient() {
   return (
     <main className="min-h-screen">
       <SiteHeader />
+      <h1 className="visually-hidden">Sample AEO Report</h1>
       <div className="sample-report-banner">
         <span>
           This is a sample report.{" "}
