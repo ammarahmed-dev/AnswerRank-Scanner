@@ -12815,3 +12815,5 @@ textarea.contact-control {
 .issue-tool-link { margin: 12px 0 0; font-size: 0.92rem; color: var(--color-ink-soft); }
 .issue-tool-link a { color: var(--color-primary); font-weight: 800; text-decoration: none; }
 .issue-tool-link a:hover { text-decoration: underline; }
+
+.vs-table-footnote { margin: 12px 0 0; color: var(--color-ink-muted); font-size: 0.82rem; line-height: 1.5; }

@@ -226,6 +226,9 @@ export default function ComparisonPageClient({ data }: Props) {
               </tbody>
             </table>
           </div>
+          <p className="vs-table-footnote">
+            Competitor details are taken from their public websites and were last checked in October 2026. Plans, prices and features change, so confirm on their site.
+          </p>
           {data.tableTakeaway && (
             <div className="vs-table-takeaway-card">
               <p className="vs-table-takeaway">{data.tableTakeaway}</p>

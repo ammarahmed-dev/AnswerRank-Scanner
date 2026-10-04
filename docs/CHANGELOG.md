@@ -2,6 +2,19 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 39)
+
+- Comparison page accuracy: `/vs/profound` said Profound is "Enterprise only, no self-serve",
+  but Profound's own pricing page now shows a free self-serve trial plus a custom-priced
+  Enterprise plan. Corrected the price note, the meta description wording, the "Free scan" and
+  "Self-serve access" rows, and a "no sales call" line. Every comparison page now carries a
+  footnote that competitor details come from their public sites and were last checked in
+  October 2026.
+- Not changed: the other three competitors' claims (Otterly $29+, Semrush AI $99+, Peec $95+)
+  match the October research notes in `docs/RESEARCH.md`; their "free scan: no" rows were not
+  re-verified one by one. Re-check all four pages whenever the footnote date is bumped.
+- Verified: tsc, build; footnote present on /vs/profound and /vs/otterly, "no self-serve" gone.
+
 ## 2026-10-04 (session 38)
 
 - Alt text check: an image with `alt=""` (the correct way to mark a decorative image), a

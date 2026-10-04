@@ -92,6 +92,7 @@ Based on the full code review from 2026-10-03.
   - [x] 2026-10-03: `technical-aeo-guide` (technical pillar hub), `robots-txt-ai-crawlers`
   - [ ] Next: `how-to-get-cited-by-chatgpt` and `measure-ai-search-traffic` (pillar hubs already linked from published posts; temporary redirects in `next.config.ts` until written - remove the redirect when publishing), `ai-crawlers-list`, `llms-txt-guide`
 - Research: weekly scan of AI search changes and competitor tools; update `docs/RESEARCH.md`.
+  - [ ] Re-verify the claims on all four `/vs/*` pages (prices, free trial, features) against each competitor's public pricing page, then bump the "last checked" month in `ComparisonPageClient.tsx`. Last full check: Profound 2026-10-04; others rely on the 2026-10-03 research notes
 - Maintenance: dependency updates (minor/patch weekly, majors with care), `npm audit`, runtime errors.
 
 ---
