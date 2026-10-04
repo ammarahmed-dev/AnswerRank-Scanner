@@ -42,6 +42,28 @@ route through the sandbox proxy (`proxy: { server: process.env.HTTPS_PROXY }`) a
 Stop local servers with `kill $(pgrep -f "[n]ext-server")` (a plain `pkill -f "next start"` also
 matches and kills your own shell).
 
+## Verification recipes (learned the hard way)
+- Auth UI (header menu, dashboard, audit, admin) renders nothing useful unless the build has
+  `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`. The public anon key is in the live
+  site's JS chunks (`role: anon`). Env vars do not persist between Bash calls: export them in the
+  same command as `npm run build` and `next start`.
+- Logged-in pages: set `localStorage["sb-<project-ref>-auth-token"]` with a fake session via
+  `addInitScript` and mock `/api/account`, `/api/audit/**` etc. with `page.route`. No real login.
+- Stale `.next` can serve an old CSS chunk locally: `rm -rf .next` before judging a CSS change.
+- Refactors that must not change visuals: build `origin/main` in a `git worktree` (run `npm ci`
+  there, a symlinked node_modules breaks Turbopack), serve both on different ports, screenshot
+  full pages at 1280 and 390 px with animations disabled and compare with `pixelmatch` (install
+  `pngjs pixelmatch` next to `playwright-core`). Zero differing pixels is the bar.
+- Moving CSS between files changes cascade order: check shorthand vs longhand (`padding` vs
+  `padding-top`) and media-query overrides, not just class names.
+- Lighthouse lab scores swing 0.1+ between runs and cannot see Google Fonts from the sandbox: use
+  several runs and report ranges, never a single number. Check HTML/bundle bytes for real wins.
+- curl cannot see client-rendered text (`isClient &&` blocks, hover menus): verify those with
+  Playwright against the live site, not by polling curl.
+- Scanner changes: scan a spread of real sites before and after (`POST /api/scan` streams SSE;
+  take the `event: result` block) and compare against the raw HTML. Scoring changes move
+  monitored scores, so only ship changes that cannot lower a score or say so in the changelog.
+
 ## Environment
 Never hardcode secrets. See `.env.example` for the full list. Server code reads env at runtime;
 the build succeeds without any env vars set.
