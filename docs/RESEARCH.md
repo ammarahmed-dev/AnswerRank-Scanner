@@ -2,6 +2,40 @@
 
 Market and product research that feeds `docs/ROADMAP.md`. Newest first. Cite sources.
 
+## 2026-10-04 - Demand, competitors and monetization (Google Trends + public pages)
+
+Method: Google Trends relative indexes via pytrends (no absolute volumes), competitor and affiliate
+program pages, ad-revenue benchmarks. Absolute search volume was not available without a paid
+keyword tool, so treat rankings below as relative, not counts.
+
+**Demand.** The generic terms "AI SEO", "AI visibility" and "AI search visibility" carry more search
+interest than the jargon "AEO"; "GEO" is rising but ambiguous (geography). Our copy leans on "AEO"
+and "answer engine", so we miss the broader audience. Free "AI visibility checker" style tools are
+the main acquisition pattern (HubSpot AI Search Grader, Semrush and Profound free reports,
+Cituna's comparison of free checkers).
+
+**Competitor gap.** Free checkers mostly test brand mentions in AI answers (needs paid LLM API
+calls). Few give a technical, deterministic readiness audit plus fix-it tools. AEOCheck has this
+and 10 free tools, but no free brand-mention check yet, which is the biggest single query family.
+
+**Monetization without many paying users** (all figures are public benchmarks, not promises):
+- Affiliate: Semrush pays $50-$300 per sale plus ~$10 per trial (120-day cookie); HubSpot 30%
+  recurring for 12 months; Otterly 20% for 12 months; Rankscale 10-15%; Ahrefs has no program.
+  AEOCheck readers are exactly Semrush/HubSpot buyers, and the tool pages already rank for related
+  queries. Needs owner sign-up (IDs), plus a visible disclosure.
+- Display ads: typical RPM $2-5 for this niche, so about $20-50 per 10K sessions. Only worth it
+  after real traffic (GSC is at ~1.9K impressions per 28 days), and it hurts tool UX. Later.
+- Email list (weekly "AI search changes" digest) turns free-tool traffic into an owned channel.
+  Needs a privacy policy update (legal page, owner) before collecting.
+
+**Resulting plan (ROADMAP Phase 5):**
+1. Reposition copy and metadata toward "AI SEO / AI visibility" (keep AEO as the secondary term).
+2. Free AI brand-mention check as the main traffic magnet (needs owner-provided Perplexity/Gemini
+   keys and a monthly budget; engines already exist in `lib/ai-visibility.ts`).
+3. Blog hubs next weekend (how-to-get-cited-by-chatgpt, measure-ai-search-traffic).
+4. Affiliate slots with disclosure, after the owner provides program IDs.
+5. Email capture only after the owner approves the privacy-policy change.
+
 ## 2026-10-04 - Market scan (secondary sources, treat numbers as unverified)
 
 - Citation behavior differs by engine, so per-engine guidance matters: reports say only ~11% of

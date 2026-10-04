@@ -87,6 +87,10 @@ Based on the full code review from 2026-10-03.
   - [x] (2026-10-04) Article schema generator (`/tools/article-schema-generator`: Article/BlogPosting/NewsArticle with author, dates, image, publisher; validates dates and URLs; output passes the schema checker in tests). The report's Article Schema issue links to it.
   - [ ] Next tool candidates from GSC queries ("aeo score checker", "aeo tools", "aeo keyword tracker"): sitemap checker (parse sitemap.xml, lastmod, robots reference), meta tag / Open Graph preview checker, Article schema generator. Check /tools impressions in the GSC Overview first.
   - [x] `/tools` index page
+  - [ ] (market research 2026-10-04, see docs/RESEARCH.md) Reposition homepage/tools copy and metadata from "AEO" jargon toward "AI SEO / AI visibility" (keep AEO as secondary); no claims change.
+  - [ ] Free AI brand-mention check (is my brand named in AI answers for 3 prompts): the biggest query family, but costs LLM calls. Blocked on owner: Perplexity/Gemini keys and budget (see Owner actions).
+  - [ ] Affiliate slots (Semrush, HubSpot) on tool/blog pages with disclosure component. Blocked on owner: program sign-up IDs.
+  - [ ] Public "AI SEO audit" landing page for the scanner aimed at the "ai seo audit / website audit for ai" queries.
   - [x] Content extractability tool at `/tools/content-extractability` (heading-opening passage analysis, 20 per month per client/IP, no AI cost)
   - [ ] Weigh a 26th "citable facts" check against the "25 checks" copy churn (docs/RESEARCH.md)
   - [ ] Before building more tools: read the GSC Overview (now available) to see which tools earn impressions. Candidates next: per-engine tips in the report (needs a primary source), a 26th "citable facts" check.
@@ -116,6 +120,11 @@ Based on the full code review from 2026-10-03.
   lifted. Claude now batches pushes and `vercel.json` turns off previews for `claude/*` branches.
   If weekend sessions keep hitting the limit, upgrade the Vercel plan (Pro has no daily cap) or
   tell Claude to push even less often.
+
+- MONETIZATION (market research 2026-10-04): to earn without many paying users, sign up for the Semrush
+  (BrandLinker/PartnerStack) and HubSpot affiliate programs and give Claude the tracking links via env vars;
+  approve a privacy-policy update for an email digest; provide `PERPLEXITY_API_KEY`/`GEMINI_API_KEY`
+  and a monthly budget for a free brand-mention check. Ads only once traffic justifies it.
 
 - DECISION NEEDED (marketing claim accuracy): the homepage stats bar says "5,700+ scans run", while
   `/api/stats` reports 977, and that already includes a hard-coded +500 (`app/api/stats/route.ts`).
