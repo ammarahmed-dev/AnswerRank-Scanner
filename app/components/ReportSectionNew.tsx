@@ -15,6 +15,7 @@ import { mapReportCategory, type ReportCategory } from "@/lib/report-category-sc
 import { getNormalizedIssues } from "@/lib/report-issues";
 import { getReportPresentation } from "@/lib/report-presentation";
 import { toolsForCheck } from "@/lib/tool-links";
+import { diffReports } from "@/lib/report-diff";
 
 const RetestButton = dynamic(() => import("./RetestButton"), { ssr: false });
 
@@ -604,6 +605,41 @@ const downloadPdf = async () => {
           </div>
         </section>
       )}
+
+      {report.previous && (() => {
+        const diff = diffReports(report.score, report.checks, report.previous);
+        const when = new Date(diff.previousScannedAt);
+        const dateLabel = Number.isNaN(when.getTime()) ? "" : ` on ${when.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+        const tone = diff.scoreDelta > 0 ? "up" : diff.scoreDelta < 0 ? "down" : "flat";
+        return (
+          <section className="surface report-card print-section report-diff-card" aria-label="Changes since your last scan">
+            <h3 className="section-heading">Since your last scan</h3>
+            <p className="section-kicker mt-1">Compared with your scan of this URL{dateLabel}.</p>
+            <div className="report-diff-head">
+              <span className={`report-diff-delta report-diff-${tone}`}>
+                {diff.scoreDelta > 0 ? "+" : ""}{diff.scoreDelta} points
+              </span>
+              <span className="report-diff-scores">{diff.previousScore} &rarr; {report.score}</span>
+              <span className="report-diff-counts">
+                {diff.improved.length} improved · {diff.regressed.length} worse · {diff.unchanged} unchanged
+              </span>
+            </div>
+            {(diff.improved.length > 0 || diff.regressed.length > 0) && (
+              <ul className="report-diff-list">
+                {diff.improved.map((c) => (
+                  <li key={c.id} className="is-better"><Check className="h-4 w-4" aria-hidden="true" /> <strong>{c.label}</strong> <span>{c.from} &rarr; {c.to}</span></li>
+                ))}
+                {diff.regressed.map((c) => (
+                  <li key={c.id} className="is-worse"><AlertCircle className="h-4 w-4" aria-hidden="true" /> <strong>{c.label}</strong> <span>{c.from} &rarr; {c.to}</span></li>
+                ))}
+              </ul>
+            )}
+            {diff.improved.length === 0 && diff.regressed.length === 0 && (
+              <p className="muted-copy mt-3">No check changed status. Apply the fixes below and retest to see progress here.</p>
+            )}
+          </section>
+        );
+      })()}
 
       <section className="surface report-card print-section">
         <h3 className="section-heading">Score Breakdown</h3>

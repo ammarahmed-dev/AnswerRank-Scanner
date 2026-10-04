@@ -3,7 +3,7 @@ import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { buildAIPrompt } from "@/lib/build-ai-prompt";
 import { generateAIInsights } from "@/lib/ai-provider";
 import { runScanCore } from "@/lib/scan-core";
-import { saveReportRecord } from "@/lib/report-db";
+import { getPreviousReportSummary, saveReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
 import { commitUsage, getClientKey, getPlanLimit, releaseUsage, reserveUsage, type UsageReservation } from "@/lib/usage-limits";
 import { assertPublicUrl } from "@/lib/url-safety";
@@ -664,6 +664,11 @@ export async function POST(req: NextRequest) {
           }
         }
 
+        // Retests: remember what the previous scan of this URL looked like (read-only, best effort).
+        if (userId) {
+          const previous = await getPreviousReportSummary(userId, result.url);
+          if (previous) result.previous = previous;
+        }
         const savedResult = await saveReportRecord(result, userId);
         if (!bypassScanLimit) {
           await commitUsage(usageKey, usage);

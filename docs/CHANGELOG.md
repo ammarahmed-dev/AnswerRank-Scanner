@@ -2,6 +2,23 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 50)
+
+- New report feature, "Since your last scan": when a signed-in user scans a URL they have scanned
+  before (including paid retests), the new report carries `previous` (score, date, check id/label/
+  status only) and shows a card with the score change and which checks improved or got worse.
+  Proof that fixes worked is the point of retesting. Stored inside the report JSON, so no
+  migration; the sample report demonstrates it.
+- Touches the scan route (high-risk file): one added read-only lookup (`getPreviousReportSummary`,
+  Supabase `reports` filtered by `user_id` and exact `url`) before the existing save, wrapped to
+  fail soft; usage reservation, plan checks and paywall redaction are unchanged. Guests get no
+  comparison. The summary carries no fix text or AI insights.
+- Verified: 187 tests (diff logic, the lookup query/fail-soft cases), tsc, lint (0 errors), build;
+  Playwright desktop + mobile on the sample report; a local scan still completes and has no
+  `previous` without a database.
+- Not verified against production data: needs a signed-in user with an earlier scan of the same URL.
+  Check the first retest after deploy.
+
 ## 2026-10-04 (session 49)
 
 - New free tool: Article schema generator at `/tools/article-schema-generator`

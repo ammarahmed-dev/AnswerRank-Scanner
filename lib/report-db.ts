@@ -3,7 +3,7 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
-import { ScanResult } from "@/types/index";
+import { PreviousScanSummary, ScanResult } from "@/types/index";
 
 type ReportRow = {
   id: string;
@@ -120,6 +120,36 @@ export async function saveReportRecord(result: ScanResult, userId?: string | nul
   }
 
   return saveReport(report);
+}
+
+/**
+ * The signed-in user's most recent earlier report for this exact URL, reduced to a score and check
+ * statuses. Best effort and read-only: any failure just means no comparison is shown.
+ */
+export async function getPreviousReportSummary(userId: string, url: string): Promise<PreviousScanSummary | null> {
+  if (!hasSupabaseConfig() || !userId) return null;
+  try {
+    const params = new URLSearchParams({
+      user_id: `eq.${userId}`,
+      url: `eq.${url}`,
+      select: "id,created_at,result",
+      order: "created_at.desc",
+      limit: "1",
+    });
+    const res = await fetch(`${supabaseUrl}/rest/v1/reports?${params.toString()}`, { headers: getSupabaseServiceHeaders(), cache: "no-store" });
+    if (!res.ok) return null;
+    const rows = (await res.json()) as Array<{ id: string; created_at?: string; result?: ScanResult }>;
+    const row = rows[0];
+    if (!row?.result || !Array.isArray(row.result.checks) || typeof row.result.score !== "number") return null;
+    return {
+      reportId: row.id,
+      score: row.result.score,
+      scannedAt: row.result.scannedAt || row.created_at || "",
+      checks: row.result.checks.map((c) => ({ id: c.id, label: c.label, status: c.status })),
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function getReportRecord(id: string): Promise<ScanResult | null> {

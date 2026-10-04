@@ -95,8 +95,18 @@ export interface CompetitorScanResult {
   };
 }
 
+/** Compact summary of the same user's previous scan of this URL, stored in the newer report. */
+export interface PreviousScanSummary {
+  reportId?: string;
+  score: number;
+  scannedAt: string;
+  checks: Array<{ id: string; label: string; status: "pass" | "warn" | "fail" }>;
+}
+
 export interface ScanResult {
   reportId?: string;
+  /** Present on retests: what the previous scan of this URL looked like. */
+  previous?: PreviousScanSummary;
   retest_count?: number;
   max_retests?: number;
   unlocked?: boolean;
