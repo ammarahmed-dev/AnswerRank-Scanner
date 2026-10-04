@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
 import { availableEngines, normalizeDomain, runVisibilityCheck, suggestPrompts } from "@/lib/ai-visibility";
+import { listVisibilityRuns, saveVisibilityRun } from "@/lib/ai-visibility-store";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -10,14 +11,28 @@ const MAX_PROMPTS = 10;
 
 // AI Visibility Tracker (docs/RESEARCH.md). Off unless AI_VISIBILITY_ENABLED=true, and limited to
 // admins until the owner decides which plans include it (see docs/ROADMAP.md owner actions).
-export async function POST(req: Request) {
+async function authorizeAdmin(req: Request) {
   if (process.env.AI_VISIBILITY_ENABLED !== "true") {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return { error: NextResponse.json({ error: "Not found" }, { status: 404 }) };
   }
-
   const auth = await getAuthContext(req);
-  if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!isMasterAdmin(auth.user.email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!auth.user) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  if (!isMasterAdmin(auth.user.email)) return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
+  return { user: auth.user };
+}
+
+/** Run history, newest first. Optional `?domain=` narrows to one brand. */
+export async function GET(req: Request) {
+  const gate = await authorizeAdmin(req);
+  if (gate.error) return gate.error;
+  const domain = new URL(req.url).searchParams.get("domain");
+  const runs = await listVisibilityRuns(gate.user.id, domain ? normalizeDomain(domain) : undefined);
+  return NextResponse.json({ runs });
+}
+
+export async function POST(req: Request) {
+  const gate = await authorizeAdmin(req);
+  if (gate.error) return gate.error;
 
   let body: { brandName?: unknown; domain?: unknown; prompts?: unknown };
   try {
@@ -45,5 +60,8 @@ export async function POST(req: Request) {
   }
 
   const summary = await runVisibilityCheck({ name: brandName, domain }, finalPrompts, engines);
-  return NextResponse.json({ brand: { name: brandName, domain }, prompts: finalPrompts, engines: engines.map((e) => e.name), ...summary });
+  const engineNames = engines.map((e) => e.name);
+  // Only keep runs where at least one engine answered; an all-error run says nothing about the brand.
+  const saved = summary.checked > 0 ? await saveVisibilityRun(gate.user.id, { name: brandName, domain }, finalPrompts, engineNames, summary) : false;
+  return NextResponse.json({ brand: { name: brandName, domain }, prompts: finalPrompts, engines: engineNames, saved, ...summary });
 }

@@ -12791,3 +12791,21 @@ textarea.contact-control {
 .extract-list li.is-blocked svg { color: #ff8fa3; }
 .extract-text { margin: 8px 0 0; color: var(--color-ink-soft); font-size: 0.92rem; line-height: 1.6; }
 .extract-issue { margin: 6px 0 0; color: #fbbf24; font-size: 0.88rem; line-height: 1.5; }
+
+.vis-form { display: grid; gap: 12px; }
+.vis-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.vis-form input, .vis-prompts { width: 100%; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: rgba(2, 6, 23, 0.72); color: #e2e8f0; padding: 11px 13px; font: inherit; font-size: 0.95rem; }
+.vis-prompts { resize: vertical; line-height: 1.5; }
+.vis-form-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.vis-rates { display: flex; gap: 22px; flex-wrap: wrap; margin: 8px 0 0; color: var(--color-ink-soft); }
+.vis-rates strong { color: white; font-size: 1.5rem; margin-right: 4px; }
+.vis-history { margin-top: 24px; border-top: 1px solid var(--color-line); padding-top: 16px; }
+.vis-history h2 { color: white; font-size: 1.1rem; margin: 0 0 10px; }
+.vis-history ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.vis-history li { display: grid; grid-template-columns: 60px 120px 1fr; gap: 12px; align-items: center; color: var(--color-ink-soft); font-size: 0.9rem; }
+.vis-bar { height: 8px; border-radius: 999px; background: rgba(148, 163, 184, 0.2); overflow: hidden; }
+.vis-bar i { display: block; height: 100%; background: var(--color-primary); }
+@media (max-width: 640px) {
+  .vis-form-row { grid-template-columns: 1fr; }
+  .vis-history li { grid-template-columns: 52px 80px 1fr; gap: 8px; }
+}

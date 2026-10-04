@@ -2,6 +2,23 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 30)
+
+- AI Visibility Tracker, still dark-launched (needs `AI_VISIBILITY_ENABLED=true`, an engine key
+  and admin email; nothing visible to customers): runs are now saved to a new
+  `ai_visibility_runs` table (additive migration `20261004_ai_visibility_runs.sql`, RLS read-own,
+  service-role writes) and `GET /api/ai-visibility` returns history. Saving fails soft: without
+  the migration a run still returns its results with `saved: false`. All-error runs are not saved.
+- New noindex page `/ai-visibility` (not in nav or sitemap, admin only): brand, domain and
+  category inputs, suggested prompts, per-prompt per-engine results (mentioned, list position,
+  cited) and a mention/citation-rate history for the domain.
+- Verified: 136 tests (store: save columns, missing table, network error, list scoping), tsc,
+  lint, clean build; Playwright with mocked APIs: non-admin sees "not available", admin run
+  renders rates, rows and history on desktop and mobile with no errors. Not run against the real
+  Perplexity/Gemini APIs (no keys in this environment).
+- Note: an incremental build once served a stale CSS chunk locally; `rm -rf .next` fixed it. CI
+  and Vercel build clean.
+
 ## 2026-10-04 (session 29)
 
 - Fonts: Geist and Geist Mono are now self-hosted with `next/font/google` (downloaded at build

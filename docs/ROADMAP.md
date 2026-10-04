@@ -55,8 +55,8 @@ Based on the full code review from 2026-10-03.
 ## Phase 4 - Product upgrades
 
 - [~] Real AI visibility tracking (spec in docs/RESEARCH.md): engine library (`lib/ai-visibility.ts`, Perplexity Sonar + Gemini grounded search: mention, citation, list position, rates) and admin-only `POST /api/ai-visibility` behind `AI_VISIBILITY_ENABLED` shipped. Next, once the owner decides plan placement:
-  - [ ] `ai_visibility_runs` table (additive migration) and history
-  - [ ] Tracker UI on the report/dashboard (prompts editor, per-engine results, trend)
+  - [x] (2026-10-04) `ai_visibility_runs` table (migration `20261004_ai_visibility_runs.sql`), run history (`lib/ai-visibility-store.ts`, `GET /api/ai-visibility`)
+  - [~] Admin-only tracker UI at `/ai-visibility` (noindex, not linked): brand + category + prompts editor, per-engine results, mention/citation history. Customer-facing placement on the report/dashboard waits for the plan decision
   - [ ] Weekly runs for monitored brands via the monitor cron
   - [ ] Add OpenAI (Responses API web search) and Google AI Overviews (SERP API) engines
 - [x] AI crawler access: new robots.txt parser (`lib/robots.ts`) with correct grouping, wildcard fallback, comments, longest-match; covers 12 AI crawlers incl. OAI-SearchBot, Claude-SearchBot, Perplexity-User, Google-Extended (was a wrong `googlebot-extended` token). `llms.txt` was already scored
@@ -116,7 +116,8 @@ Based on the full code review from 2026-10-03.
 - Rotate or delete the test accounts whose passwords were committed in `AUDIT.md` (still in git history)
 - Set `CRON_SECRET`, `RESEND_API_KEY`, `INTERNAL_API_SECRET` in Vercel
 - Run new migrations in `supabase/migrations/` against production (Supabase SQL editor), in order:
-  `20261003_drop_public_compare_runs_policy.sql`, `20261003_atomic_scan_usage.sql`, `20261003_limit_email.sql`
+  `20261003_drop_public_compare_runs_policy.sql`, `20261003_atomic_scan_usage.sql`, `20261003_limit_email.sql`,
+  `20261004_ai_visibility_runs.sql` (only needed once the AI tracker is enabled)
 - Google Search Console automation is broken: the GSC service account is rejected
   ("invalid_grant: account not found"), so on-publish and the weekly gsc-feedback job cannot submit
   sitemaps or read data. Create a new service account key, add it as a user in Search Console, and
