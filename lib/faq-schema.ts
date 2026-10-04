@@ -1,3 +1,5 @@
+import { jsonLdScriptTag, jsonLdString } from "@/lib/jsonld";
+
 export type FaqPair = { question: string; answer: string };
 
 /** Keeps pairs with both fields filled, trimmed and with collapsed inner whitespace. */
@@ -19,13 +21,12 @@ export function buildFaqSchema(pairs: FaqPair[]) {
   };
 }
 
-/** JSON-LD safe to embed in a script tag: "<" is escaped so "</script>" in text cannot end the tag. */
 export function faqSchemaJson(pairs: FaqPair[]): string {
-  return JSON.stringify(buildFaqSchema(pairs), null, 2).replace(/</g, "\\u003c");
+  return jsonLdString(buildFaqSchema(pairs));
 }
 
 export function faqSchemaScriptTag(pairs: FaqPair[]): string {
-  return `<script type="application/ld+json">\n${faqSchemaJson(pairs)}\n</script>`;
+  return jsonLdScriptTag(buildFaqSchema(pairs));
 }
 
 /** Plain-language issues that stop the markup from being useful. Empty when it is ready to publish. */

@@ -2,6 +2,25 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 46)
+
+- Two new free tools, chosen because the scanner recommends exactly these fixes:
+  - `/tools/robots-txt-generator`: pick a policy (visible in AI search without training, allow all,
+    block all, or per crawler) for 12 AI crawlers, add a sitemap line and extra disallow paths,
+    copy or download robots.txt, with warnings (blocking a search crawler removes you from that
+    engine's answers; user agents may ignore robots.txt). `lib/robots-generator.ts` is tested by
+    parsing every generated policy back with the scanner's own parser (`describeAiCrawlerAccess`).
+  - `/tools/organization-schema-generator`: Organization (+ linked WebSite) JSON-LD from name, URL,
+    logo, description, profile links, contact and founding date, with input validation; tested by
+    running the output through the schema checker (no missing required or recommended properties).
+    Shared `lib/jsonld.ts` escapes `<` for both this and the FAQ generator.
+- Report issues can now show several tool links: AI bot access / robots.txt -> crawler checker +
+  robots generator; schema checks -> schema checker + Organization generator
+  (`TOOLS_FOR_CHECK`, test-guarded). Both tools are in the sitemap, footer, `/tools` index and
+  `/llms.txt`.
+- Verified: 164 tests, tsc, lint (0 errors), build; Playwright desktop + mobile on both tools (custom
+  crawler toggle, sitemap line, invalid link warning, valid JSON-LD output, no overflow or errors).
+
 ## 2026-10-04 (session 45)
 
 - First data-driven SEO work from Search Console (see the ROADMAP entry for the numbers). The

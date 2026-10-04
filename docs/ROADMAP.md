@@ -80,6 +80,8 @@ Based on the full code review from 2026-10-03.
     search vs training vs user agents; 30 per month per client/IP).
   - [x] Free FAQ schema generator (client-side, no server cost) at `/tools/faq-schema-generator`
   - [x] Free schema markup checker at `/tools/schema-checker` (JSON-LD parse, types, missing required/recommended props; 30 per month per client/IP); report issues for schema checks link to it
+  - [x] (2026-10-04) Free robots.txt generator for AI crawlers (`/tools/robots-txt-generator`: four policies, per-crawler custom, sitemap, extra disallow paths; output round-trips through the scanner's own parser in tests) and Organization + WebSite schema generator (`/tools/organization-schema-generator`; output passes the schema checker in tests). Both run in the browser. Report issues for AI bot access, robots.txt and schema now link the matching generators.
+  - [ ] Next tool candidates from GSC queries ("aeo score checker", "aeo tools", "aeo keyword tracker"): sitemap checker (parse sitemap.xml, lastmod, robots reference), meta tag / Open Graph preview checker, Article schema generator. Check /tools impressions in the GSC Overview first.
   - [x] `/tools` index page
   - [x] Content extractability tool at `/tools/content-extractability` (heading-opening passage analysis, 20 per month per client/IP, no AI cost)
   - [ ] Weigh a 26th "citable facts" check against the "25 checks" copy churn (docs/RESEARCH.md)

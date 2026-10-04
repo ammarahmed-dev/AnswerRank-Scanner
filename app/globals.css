@@ -10597,3 +10597,19 @@ textarea.contact-control {
 .issue-tool-link { margin: 12px 0 0; font-size: 0.92rem; color: var(--color-ink-soft); }
 .issue-tool-link a { color: var(--color-primary); font-weight: 800; text-decoration: none; }
 .issue-tool-link a:hover { text-decoration: underline; }
+
+.robots-policy { border: 0; padding: 0; margin: 0 0 16px; display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.robots-policy legend { color: var(--color-ink-soft); font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; grid-column: 1 / -1; }
+.robots-policy-card { display: grid; gap: 4px; padding: 14px; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: rgba(2, 6, 23, 0.4); cursor: pointer; }
+.robots-policy-card input { position: absolute; opacity: 0; pointer-events: none; }
+.robots-policy-card strong { color: white; font-size: 0.98rem; }
+.robots-policy-card span { color: var(--color-ink-soft); font-size: 0.86rem; line-height: 1.5; }
+.robots-policy-card.is-selected { border-color: var(--color-primary); background: rgba(0, 240, 180, 0.07); }
+.robots-policy-card:has(input:focus-visible) { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.robots-custom { margin-bottom: 16px; }
+.robots-toggle { min-height: 36px; padding: 4px 14px; font-size: 0.85rem; }
+.robots-fields { margin-bottom: 4px; align-items: start; }
+.org-fields { display: grid; gap: 10px; }
+.robots-fields input, .robots-fields textarea, .org-fields input[type="text"], .org-fields textarea { width: 100%; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: rgba(2, 6, 23, 0.72); color: #e2e8f0; padding: 11px 13px; font: inherit; font-size: 0.95rem; }
+.org-check { display: flex; gap: 8px; align-items: center; color: var(--color-ink-soft); font-size: 0.92rem; }
+@media (max-width: 640px) { .robots-policy { grid-template-columns: 1fr; } }

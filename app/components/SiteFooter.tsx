@@ -41,6 +41,8 @@ export default function SiteFooter() {
               <Link href="/tools/faq-schema-generator">FAQ Schema Generator</Link>
               <Link href="/tools/content-extractability">Content Extractability</Link>
               <Link href="/tools/schema-checker">Schema Checker</Link>
+              <Link href="/tools/robots-txt-generator">robots.txt Generator</Link>
+              <Link href="/tools/organization-schema-generator">Organization Schema</Link>
               <a href="/sitemap">Sitemap</a>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bot, Code2, FileSearch, FileText, ListChecks } from "lucide-react";
+import { Bot, Building2, Code2, FileSearch, FileText, ListChecks, ShieldCheck } from "lucide-react";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 import { buildPageMetadata } from "@/lib/seo";
@@ -8,7 +8,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Free AEO Tools | AEOCheck",
   description:
-    "Free tools for AI search visibility: generate an llms.txt file, check which AI crawlers your robots.txt allows, build FAQ schema, check your schema markup and test how quotable your content is. No signup needed.",
+    "Free tools for AI search visibility: generate llms.txt and robots.txt files, check which AI crawlers you allow, build Organization and FAQ schema, check your markup and test how quotable your content is. No signup needed.",
   path: "/tools",
 });
 
@@ -36,6 +36,18 @@ const TOOLS = [
     icon: Code2,
     name: "Schema Markup Checker",
     text: "Inspect a page's JSON-LD: which types it has, which required properties are missing.",
+  },
+  {
+    href: "/tools/robots-txt-generator",
+    icon: ShieldCheck,
+    name: "robots.txt Generator",
+    text: "Set a policy for GPTBot, OAI-SearchBot, PerplexityBot and ClaudeBot and copy the file.",
+  },
+  {
+    href: "/tools/organization-schema-generator",
+    icon: Building2,
+    name: "Organization Schema Generator",
+    text: "Generate Organization and WebSite JSON-LD with your logo and profile links.",
   },
   {
     href: "/tools/faq-schema-generator",

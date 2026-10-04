@@ -14,7 +14,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { mapReportCategory, type ReportCategory } from "@/lib/report-category-scores";
 import { getNormalizedIssues } from "@/lib/report-issues";
 import { getReportPresentation } from "@/lib/report-presentation";
-import { toolForCheck } from "@/lib/tool-links";
+import { toolsForCheck } from "@/lib/tool-links";
 
 const RetestButton = dynamic(() => import("./RetestButton"), { ssr: false });
 
@@ -855,14 +855,11 @@ const downloadPdf = async () => {
                     {hasFullReportAccess && issue.example && (
                       <pre className="report-code-block">{issue.example}</pre>
                     )}
-                    {(() => {
-                      const tool = toolForCheck(issue.id);
-                      return tool ? (
-                        <p className="issue-tool-link print-hidden">
-                          Free tool: <Link href={tool.href}>{tool.label} &rarr;</Link>
-                        </p>
-                      ) : null;
-                    })()}
+                    {toolsForCheck(issue.id).map((tool) => (
+                      <p key={tool.href} className="issue-tool-link print-hidden">
+                        Free tool: <Link href={tool.href}>{tool.label} &rarr;</Link>
+                      </p>
+                    ))}
                   </div>
                 )}
               </article>
