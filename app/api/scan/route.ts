@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { buildAIPrompt } from "@/lib/build-ai-prompt";
 import { generateAIInsights } from "@/lib/ai-provider";
@@ -9,6 +9,7 @@ import { commitUsage, getClientKey, getPlanLimit, releaseUsage, reserveUsage, ty
 import { assertPublicUrl } from "@/lib/url-safety";
 import { isMasterAdmin } from "@/lib/admin";
 import { reportForViewer } from "@/lib/report-access";
+import { maybeSendLimitReachedEmail } from "@/lib/limit-email";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 import { ScrapedData, ScanResult, AIInsights, CompetitorScanResult, SchemaRecommendation } from "@/types/index";
 
@@ -414,6 +415,11 @@ export async function POST(req: NextRequest) {
     ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER, reserved: false, usageDate: "" }
     : await reserveUsage(usageKey, getPlanLimit(effectivePlan));
   if (usage && !usage.allowed) {
+    const limitedUser = authContext.user;
+    if (limitedUser && effectivePlan === "free") {
+      // At most once a month; runs after the response is sent.
+      after(() => maybeSendLimitReachedEmail(limitedUser, usage.limit).then(() => undefined));
+    }
     return NextResponse.json(
       {
         type: "limit_reached",

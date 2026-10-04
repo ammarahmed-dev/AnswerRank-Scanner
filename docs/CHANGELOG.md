@@ -2,6 +2,16 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 21)
+
+- "Free scans used up" email: when a signed-in free user hits the monthly limit, they get one email
+  that month with the reset date and upgrade options. The month is claimed in the database before
+  sending, so concurrent blocked requests cannot send duplicates. Sends after the 429 response
+  (`after()`), so it never slows the request. Inactive until migration `20261003_limit_email.sql`
+  is applied and `RESEND_API_KEY` is set.
+- Verified: 110/110 tests (no key, claim, already sent, column missing), tsc, lint, build; local
+  scan smoke test still returns a result.
+
 ## 2026-10-03 (session 20)
 
 - Monitor emails: a score drop of 5+ points now sends an alert ("Alert: your AEO score for X

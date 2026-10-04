@@ -61,7 +61,7 @@ Based on the full code review from 2026-10-03.
   - [ ] Add OpenAI (Responses API web search) and Google AI Overviews (SERP API) engines
 - [x] AI crawler access: new robots.txt parser (`lib/robots.ts`) with correct grouping, wildcard fallback, comments, longest-match; covers 12 AI crawlers incl. OAI-SearchBot, Claude-SearchBot, Perplexity-User, Google-Extended (was a wrong `googlebot-extended` token). `llms.txt` was already scored
 - [x] Monitor history chart (sparkline already existed) and score-drop email alerts: drops of 5+ points get an alert subject, a banner naming the categories that fell, per-category deltas and a re-scan link (`lib/monitor-email.ts`)
-- [ ] "Limit reached" email and a 3-step onboarding sequence via Resend
+- [~] "Limit reached" email shipped (once per month per user, `lib/limit-email.ts`; needs migration `20261003_limit_email.sql` and `RESEND_API_KEY`). Onboarding: welcome (day 0) and follow-up (day 3) already exist; a day-7 tips email is still open
 - [ ] Split `HomePageClient.tsx`, `ReportSectionNew.tsx`, `DashboardClient.tsx` into smaller components
 - [~] Consolidate icon libraries: Tabler webfont dropped; Lucide and Phosphor both remain (standardize on one)
 - [~] Uptime check: `.github/workflows/uptime.yml` every 15 min, opens/closes a `uptime` GitHub issue (owner gets GitHub notifications). Error monitoring (Sentry) still needs an account (owner)
@@ -96,7 +96,7 @@ Based on the full code review from 2026-10-03.
 - Rotate or delete the test accounts whose passwords were committed in `AUDIT.md` (still in git history)
 - Set `CRON_SECRET`, `RESEND_API_KEY`, `INTERNAL_API_SECRET` in Vercel
 - Run new migrations in `supabase/migrations/` against production (Supabase SQL editor), in order:
-  `20261003_drop_public_compare_runs_policy.sql`, `20261003_atomic_scan_usage.sql`
+  `20261003_drop_public_compare_runs_policy.sql`, `20261003_atomic_scan_usage.sql`, `20261003_limit_email.sql`
 - Google Search Console automation is broken: the GSC service account is rejected
   ("invalid_grant: account not found"), so on-publish and the weekly gsc-feedback job cannot submit
   sitemaps or read data. Create a new service account key, add it as a user in Search Console, and
