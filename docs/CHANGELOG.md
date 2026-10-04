@@ -13,7 +13,7 @@ Newest first. Every autonomous session adds an entry: date, what shipped, how it
   inside another entity. Microdata and RDFa are not read (stated on the page). 30 per month per
   client/IP; `assertPublicUrl` + `fetchHtml`. Added to `/tools`, the sitemap and the footer;
   report issues for Schema Markup, Article Schema and Structured Data Density now link to it.
-- Verified: 147 tests, tsc, lint, build; real runs on aeocheck.co (9 blocks, 9 types), a blog
+- Verified: 146 tests, tsc, lint, build; real runs on aeocheck.co (9 blocks, 9 types), a blog
   post, stripe.com, example.com (none found), `[::1]` rejected; Playwright desktop + mobile.
 
 ## 2026-10-04 (session 35)
