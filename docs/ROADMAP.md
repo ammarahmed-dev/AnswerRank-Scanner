@@ -83,8 +83,7 @@ Based on the full code review from 2026-10-03.
   - [x] `/tools` index page
   - [x] Content extractability tool at `/tools/content-extractability` (heading-opening passage analysis, 20 per month per client/IP, no AI cost)
   - [ ] Weigh a 26th "citable facts" check against the "25 checks" copy churn (docs/RESEARCH.md)
-  - [ ] Before building more tools: check Search Console data (owner action: fix the GSC service
-    account) to see which of the 3 tools earn traffic. Candidates next: per-engine tips in the report (needs a primary source), a 26th "citable facts" check.
+  - [ ] Before building more tools: read the GSC Overview (now available) to see which tools earn impressions. Candidates next: per-engine tips in the report (needs a primary source), a 26th "citable facts" check.
   - [x] Free llms.txt generator tool at `/tools/llms-txt-generator` (homepage + sitemap pages,
     ranked and grouped; 10 per month per client/IP; SSRF-safe fetches). Funnels to the scanner.
 - UI/UX: polish the scan flow, report, dashboard and marketing pages; mobile first; measure with
@@ -93,6 +92,11 @@ Based on the full code review from 2026-10-03.
   - [x] 2026-10-03: `technical-aeo-guide` (technical pillar hub), `robots-txt-ai-crawlers`
   - [ ] Next: `how-to-get-cited-by-chatgpt` and `measure-ai-search-traffic` (pillar hubs already linked from published posts; temporary redirects in `next.config.ts` until written - remove the redirect when publishing), `ai-crawlers-list`, `llms-txt-guide`
 - Research: weekly scan of AI search changes and competitor tools; update `docs/RESEARCH.md`.
+- Search Console driven work (first report 2026-10-04, window 2026-09-03..10-01; very little traffic yet):
+  - [ ] "aeo checker" (pos 12.1, 76 impressions) and "best aeo checker" (pos 10.6, 60) rank on `/blog/best-aeo-tools-ai-search-visibility` with 0 clicks: add a section/H2 that answers both queries directly and tighten the title (separate commit, not a new post).
+  - [ ] "answer engine optimization checklist brand mentions ai search 2025" (pos 8.9, 54) lands on `/blog` (the index): point it at `aeo-checklist` and check it is internally linked from `/blog`.
+  - [ ] Read the GSC Overview for /tools impressions before deciding the next tool or blog hub; re-run weekly (the feedback workflow runs Tuesdays 05:00 UTC).
+
   - [ ] Re-verify the claims on all four `/vs/*` pages (prices, free trial, features) against each competitor's public pricing page, then bump the "last checked" month in `ComparisonPageClient.tsx`. Last full check: Profound 2026-10-04; others rely on the 2026-10-03 research notes
 - Maintenance: dependency updates (minor/patch weekly, majors with care), `npm audit`, runtime errors.
 
@@ -127,10 +131,7 @@ Based on the full code review from 2026-10-03.
 - Run new migrations in `supabase/migrations/` against production (Supabase SQL editor), in order:
   `20261003_drop_public_compare_runs_policy.sql`, `20261003_atomic_scan_usage.sql`, `20261003_limit_email.sql`,
   `20261004_ai_visibility_runs.sql` (only needed once the AI tracker is enabled)
-- Google Search Console automation is broken: the GSC service account is rejected
-  ("invalid_grant: account not found"), so on-publish and the weekly gsc-feedback job cannot submit
-  sitemaps or read data. Create a new service account key, add it as a user in Search Console, and
-  update the `GSC_CLIENT_EMAIL` / `GSC_PRIVATE_KEY` GitHub secrets. IndexNow (Bing) still works.
+- RESOLVED 2026-10-04: Google Search Console automation works again (new service account, secrets `GSC_CLIENT_EMAIL` / `GSC_PRIVATE_KEY`, variable `GSC_SITE_URL`). The `GSC Feedback Loop` workflow had been auto-disabled for inactivity and was re-enabled; its first run succeeded. Run the manual `GSC Overview` workflow (sitemaps, top queries/pages, tool pages) whenever planning.
 - Optional: AI cover images stopped working (Hugging Face no longer serves FLUX.1-schnell via the
   free `hf-inference` provider). Covers now fall back to branded images automatically. To get AI
   illustrations back, add Hugging Face inference credits (the script tries provider "auto" first).

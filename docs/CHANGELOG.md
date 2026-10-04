@@ -2,6 +2,19 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 44)
+
+- Google Search Console is connected again. The owner created a service account, added it to the
+  property and set the GitHub secrets/variables. The `GSC Feedback Loop` workflow had been disabled
+  by GitHub for inactivity; once re-enabled, a manual run succeeded and committed
+  `reports/gsc-feedback-2026-10-04.md` (3 striking-distance queries, no decay, no gaps).
+- Added a manual, read-only `GSC Overview` workflow (`scripts/gsc-overview.mjs`): sitemap status,
+  daily totals, top queries/pages, /tools pages and their queries, devices, countries.
+- ROADMAP now holds the first data-driven items (aeo checker queries on the best-tools post, the
+  checklist query landing on /blog).
+- Note: production is still behind `main` because of Vercel's deployment rate limit (see
+  session 43); GitHub's report commit and this one deploy after it lifts.
+
 ## 2026-10-04 (session 43)
 
 - Found that production stopped updating: Vercel's Hobby plan limits deployments to about 100 per

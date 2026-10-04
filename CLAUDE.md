@@ -85,6 +85,9 @@ continuously; if a session runs out of budget, the next scheduled session picks 
    `claude/wip-<short-slug>`. A wip branch whose head is already contained in `origin/main`
    (`git merge-base --is-ancestor`) is released/done. When finished, release your claim by pushing
    the shipped `main` commit to it (branch deletion may be refused by the git proxy).
+   Search Console is wired (secrets `GSC_CLIENT_EMAIL`, `GSC_PRIVATE_KEY`, variable `GSC_SITE_URL`):
+   read the newest `reports/gsc-feedback-*.md` and, when planning, run the `GSC Overview` workflow
+   (`workflow_dispatch`, read its job log) to see real queries, pages and /tools impressions.
 3. Choose work in this order:
    a. Production broken or CI red on `main` -> fix or revert first.
    b. First unchecked item in the lowest-numbered phase of `docs/ROADMAP.md`.

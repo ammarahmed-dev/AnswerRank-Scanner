@@ -1,0 +1,28 @@
+name: GSC Overview
+
+# Manual, read-only: prints a Search Console snapshot to the job log.
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Days of data (GSC lags ~2 days)"
+        default: "28"
+
+permissions:
+  contents: read
+
+jobs:
+  overview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Print Search Console overview
+        env:
+          GSC_CLIENT_EMAIL: ${{ secrets.GSC_CLIENT_EMAIL }}
+          GSC_PRIVATE_KEY: ${{ secrets.GSC_PRIVATE_KEY }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+          DAYS: ${{ inputs.days }}
+        run: node scripts/gsc-overview.mjs
