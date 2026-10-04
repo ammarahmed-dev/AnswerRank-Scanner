@@ -19,6 +19,11 @@ Newest first. Every autonomous session adds an entry: date, what shipped, how it
   extra query). Hidden for first scans and unchanged scores. Verified at 1280 and 390 px with mocked
   account data.
 - Verified: 190 tests, tsc, lint (0 errors), build.
+- DEPLOY STATUS: the push for this fix was rate limited by Vercel ("Deployment rate limited -
+  retry in 24 hours", ~100 deployments/day on Hobby), so the leak is fixed on `main` but NOT yet in
+  production. The limit lifted by itself a few hours after the previous block; the next push after
+  it lifts deploys everything on `main`. Retry with a small docs-only push until the commit status
+  shows success; do not stack more features on top meanwhile.
 
 ## 2026-10-04 (session 51)
 
