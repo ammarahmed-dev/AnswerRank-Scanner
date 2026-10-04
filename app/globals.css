@@ -12760,3 +12760,24 @@ textarea.contact-control {
   .crawler-state { grid-column: 3; grid-row: 1; }
   .crawler-source { grid-column: 2 / 4; grid-row: 2; }
 }
+
+.faq-tool-rows { display: grid; gap: 14px; }
+.faq-tool-row { display: grid; gap: 8px; padding: 14px; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: rgba(2, 6, 23, 0.4); }
+.faq-tool-row-head { display: flex; justify-content: space-between; align-items: center; color: var(--color-ink-soft); font-size: 0.82rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+.faq-tool-row-head button { background: none; border: 0; color: var(--color-ink-soft); cursor: pointer; padding: 4px; }
+.faq-tool-row-head button:hover:not(:disabled) { color: #ff8fa3; }
+.faq-tool-row-head button:disabled { opacity: 0.35; cursor: not-allowed; }
+.faq-tool-row input, .faq-tool-row textarea { width: 100%; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: rgba(2, 6, 23, 0.72); color: #e2e8f0; padding: 11px 13px; font: inherit; font-size: 0.95rem; }
+.faq-tool-row textarea { resize: vertical; line-height: 1.5; }
+.faq-tool-add { justify-self: start; }
+.faq-tool-warnings { margin: 0; padding-left: 18px; color: #fbbf24; font-size: 0.9rem; line-height: 1.6; }
+.faq-tool .llms-tool-result { margin-top: 26px; }
+
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; max-width: 960px; margin: 0 auto; }
+.tools-card { display: grid; gap: 8px; padding: 22px; border: 1px solid var(--color-line); text-decoration: none; transition: border-color 0.15s, transform 0.15s; }
+.tools-card:hover { border-color: var(--color-primary); transform: translateY(-2px); }
+.tools-card svg { color: var(--color-primary); }
+.tools-card h2 { color: white; font-size: 1.2rem; margin: 4px 0 0; }
+.tools-card p { color: var(--color-ink-soft); line-height: 1.6; margin: 0; }
+.tools-note { text-align: center; margin: 32px 0 0; color: var(--color-ink-soft); }
+.tools-note a { color: var(--color-primary); font-weight: 800; text-decoration: none; }

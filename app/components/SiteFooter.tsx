@@ -35,8 +35,10 @@ export default function SiteFooter() {
               <a href="/about">About</a>
               <a href="/team">Team</a>
               <a href="/sample-report">Sample Report</a>
+              <Link href="/tools">Free Tools</Link>
               <Link href="/tools/llms-txt-generator">llms.txt Generator</Link>
               <Link href="/tools/ai-crawler-checker">AI Crawler Checker</Link>
+              <Link href="/tools/faq-schema-generator">FAQ Schema Generator</Link>
               <a href="/sitemap">Sitemap</a>
             </div>
           </div>

@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 26)
+
+- New free tool: FAQ schema generator at `/tools/faq-schema-generator`. Runs fully in the browser
+  (nothing sent to a server): add question/answer pairs, get FAQPage JSON-LD in a script tag to
+  copy or download, with warnings for non-question headings, very short answers and half-filled
+  entries. `<` is escaped in the output so answer text cannot close the script tag.
+- New `/tools` index page linking the three tools; added to the sitemap and footer.
+- Verified: 124 tests, tsc, lint, build; Playwright desktop + mobile (output parses as JSON,
+  `</script>` in an answer is escaped, no overflow or errors).
+- Follow-up: Search Console access (owner action) is needed to see which tools earn traffic.
+
 ## 2026-10-04 (session 25)
 
 - New free tool: AI crawler checker at `/tools/ai-crawler-checker`. Enter a domain and see, for
