@@ -1,5 +1,6 @@
 ﻿﻿"use client";
 
+import "../audit.css";
 import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";

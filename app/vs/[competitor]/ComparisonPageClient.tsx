@@ -1,5 +1,6 @@
 "use client";
 
+import "../vs.css";
 import Link from "next/link";
 import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import SiteHeader from "@/app/components/SiteHeader";

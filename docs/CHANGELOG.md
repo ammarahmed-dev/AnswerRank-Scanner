@@ -2,6 +2,25 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 41)
+
+- CSS weight: moved the audit (`audit-*`), comparison (`vs-*`) and dashboard (`db-*`) styles out
+  of `globals.css` into `app/audit/audit.css`, `app/vs/vs.css` and `app/dashboard/dashboard.css`,
+  imported by those routes only. The global stylesheet every page downloads shrinks from 229.8 KB
+  to 195.1 KB minified (-15%). Done by script with checks: all 2,494 CSS rules present exactly
+  once; selector lists mixing moved and global classes were split so a mobile override still
+  applies; a cascade check (shorthand-aware, across media queries) found one class that a later
+  global rule used to override (`vs-cta-section`), which stays in `globals.css`.
+- Verified with a before/after pixel comparison (baseline build vs new build, mocked API data)
+  of /vs/profound, /audit, /audit/[id] and /dashboard (free and pro) at 1280 and 390 px: zero
+  differing pixels except the intended fixes below.
+- Fixed two mobile bugs the comparison exposed on the audit results page (pre-existing): the three
+  header buttons ("All audits", "Dashboard", "Export PDF") overflowed the viewport (page was
+  404 px wide at 390 px) and now wrap; the per-page category chips sat in a fixed 3-column grid
+  and overlapped ("Performance 80" ran into "Trust 45"), they now wrap at natural width.
+- Gotcha logged: `pkill -f "next start -p ..."` kills the agent's own shell (CLAUDE.md warns of
+  this); use `kill $(pgrep -f "[n]ext-server")`.
+
 ## 2026-10-04 (session 40)
 
 - Internal linking: the technical AEO guide now links the llms.txt generator, the schema markup
