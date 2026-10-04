@@ -63,7 +63,11 @@ Based on the full code review from 2026-10-03.
 - [x] Monitor history chart (sparkline already existed) and score-drop email alerts: drops of 5+ points get an alert subject, a banner naming the categories that fell, per-category deltas and a re-scan link (`lib/monitor-email.ts`)
 - [~] "Limit reached" email shipped (once per month per user, `lib/limit-email.ts`; needs migration `20261003_limit_email.sql` and `RESEND_API_KEY`). Onboarding: welcome (day 0) and follow-up (day 3) already exist; a day-7 tips email is still open
 - [ ] Split `HomePageClient.tsx`, `ReportSectionNew.tsx`, `DashboardClient.tsx` into smaller components
-- [~] Consolidate icon libraries: Tabler webfont dropped; Lucide and Phosphor both remain (standardize on one)
+- [~] Consolidate icon libraries: Tabler webfont dropped; Lucide and Phosphor both remain (standardize on one) - Phosphor is only used for filled icons in 2 homepage files; swapping would visibly change the homepage for little gain (icons are tree-shaken). Low priority.
+- [ ] Homepage mobile performance (Lighthouse mobile, local build: 73, FCP 2.8 s, LCP 4.6 s, TBT ~190 ms; production via proxy: 50):
+  - [ ] Lazy-load the Supabase browser client (218 KB chunk incl. Realtime) - `lib/supabase-browser.ts` has ~20 call sites in 17 files; make it async and load after first paint (auth is high-risk: test login, dashboard, scan with token)
+  - [ ] Move static homepage sections out of the 1,300-line `HomePageClient.tsx` into server components to cut hydration work
+  - [ ] Reduce render-blocking CSS (single ~18 KB-unused global stylesheet)
 - [~] Uptime check: `.github/workflows/uptime.yml` every 15 min, opens/closes a `uptime` GitHub issue (owner gets GitHub notifications). Error monitoring (Sentry) still needs an account (owner)
 
 ## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)
@@ -81,6 +85,11 @@ Based on the full code review from 2026-10-03.
 ---
 
 ## Owner actions (need dashboard/credential access Claude does not have)
+
+- DECISION NEEDED (marketing claim accuracy): the homepage stats bar says "5,700+ scans run", while
+  `/api/stats` reports 977, and that already includes a hard-coded +500 (`app/api/stats/route.ts`).
+  If scans from before reports were persisted justify a higher number, record the real figure;
+  otherwise Claude recommends showing the real count and removing the +500.
 
 - DECISION NEEDED (what plans include): AI Visibility Tracker placement. Claude recommends: Pro =
   10 prompts tracked weekly on 2 engines, Agency = 50 prompts, Free = one-off 3-prompt sample on

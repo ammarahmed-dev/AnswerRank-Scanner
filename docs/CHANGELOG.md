@@ -2,6 +2,19 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 22)
+
+- Homepage honesty: the top bar counter no longer adds +1 at random every 6-18 s (a simulated
+  "live" count) and no longer flashes a "2,800+" placeholder before dropping to the real number;
+  it shows the real count once loaded.
+- Rendering: pages faded in from opacity 0, which delayed first paint/LCP and left pages
+  invisible to headless renderers once nothing else forced frames (found when Lighthouse returned
+  NO_FCP). The page transition now slides without hiding content. LCP element is now the H1.
+- Lighthouse mobile (local build): perf 73, LCP 4.6 s (unchanged), TBT 190 ms; deeper fixes
+  (lazy Supabase client, server-rendered homepage sections) added to the ROADMAP with numbers.
+- Found (owner decision): homepage claims "5,700+ scans" vs 977 from /api/stats (incl. +500).
+- Verified: tests, lint, build; homepage renders on mobile with no errors; Lighthouse runs.
+
 ## 2026-10-04 (session 21)
 
 - "Free scans used up" email: when a signed-in free user hits the monthly limit, they get one email

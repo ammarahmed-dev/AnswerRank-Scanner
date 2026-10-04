@@ -90,9 +90,11 @@ a { color: inherit; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+/* Slide only: starting pages at opacity 0 delayed first paint/LCP and left content invisible
+   wherever animations do not advance (headless renderers, background tabs). */
 @keyframes pageFade {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(6px); }
+  to { transform: translateY(0); }
 }
 
 @keyframes shimmer {

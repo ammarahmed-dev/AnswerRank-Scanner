@@ -2,67 +2,39 @@
 
 import { useEffect, useState } from "react";
 
+// Shows the real scan count from /api/stats once it loads. No count-up animation or simulated
+// "live" increments: the number only changes when real scans do.
 export default function TopBar() {
-  const [displayCount, setDisplayCount] = useState("2,800+");
-  const [targetCount, setTargetCount] = useState<number | null>(null);
+  // No placeholder number: show the count only once the real value has loaded.
+  const [displayCount, setDisplayCount] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     fetch("/api/stats", { cache: "no-store" })
       .then((r) => r.json())
-      .then((data: { count?: number }) => {
-        if (data?.count) {
-          setTargetCount(data.count);
-        }
+      .then((data: { display?: string; count?: number }) => {
+        if (cancelled) return;
+        if (data?.display) setDisplayCount(data.display);
+        else if (data?.count) setDisplayCount(data.count.toLocaleString("en-US"));
       })
       .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  useEffect(() => {
-    if (!targetCount) return;
-
-    const duration = 1500;
-    const steps = 40;
-    const stepMs = duration / steps;
-    const startCount = Math.max(0, targetCount - 80);
-    let current = startCount;
-    const increment = (targetCount - startCount) / steps;
-    let tickTimeout: ReturnType<typeof setTimeout> | null = null;
-
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= targetCount) {
-        current = targetCount;
-        clearInterval(timer);
-        setDisplayCount(targetCount.toLocaleString("en-US"));
-
-        let liveCount = targetCount;
-        const scheduleNextTick = () => {
-          const delay = Math.floor(Math.random() * 12000) + 6000;
-          tickTimeout = setTimeout(() => {
-            liveCount += 1;
-            setDisplayCount(liveCount.toLocaleString("en-US"));
-            scheduleNextTick();
-          }, delay);
-        };
-        scheduleNextTick();
-        return;
-      }
-
-      setDisplayCount(Math.floor(current).toLocaleString("en-US"));
-    }, stepMs);
-
-    return () => {
-      clearInterval(timer);
-      if (tickTimeout) clearTimeout(tickTimeout);
-    };
-  }, [targetCount]);
-
   return (
-    <div className="top-bar" aria-live="polite">
+    <div className="top-bar">
       <span className="top-bar-dot" aria-hidden="true" />
       <span className="top-bar-text">
-        <span className="top-bar-count">{displayCount}</span>{" "}
-        URLs scanned and counting
+        {displayCount ? (
+          <>
+            <span className="top-bar-count">{displayCount}</span>{" "}
+            URLs scanned and counting
+          </>
+        ) : (
+          "Free AI search readiness scanner"
+        )}
       </span>
     </div>
   );
