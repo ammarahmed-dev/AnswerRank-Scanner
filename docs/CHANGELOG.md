@@ -2,6 +2,30 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 37)
+
+- Scanner accuracy, found by scanning 14 real sites (stripe, vercel, shopify, linear, wikipedia,
+  apple, wordpress.org, paulgraham, nytimes, hacker news and others) and checking the results
+  against the raw HTML:
+  - Text extraction bug: on minified HTML (most modern sites) adjacent elements' text was glued
+    together ("productHello", "FastSimple"), which roughly halved word counts and made the
+    readability score collapse to 0, so almost every marketing homepage got a false "Poor
+    readability: content is too complex" and some a false "Thin content". Text now keeps
+    elements apart, and readability is computed on real prose (leaf paragraphs/list items of 5+
+    words, each ended with a full stop) and left uncalculated (warn) when there is under 30
+    words of prose.
+  - Meta tags were matched case-sensitively, so apple.com's `name="Description"` was reported as
+    "No meta description". Meta `name` selectors are now case-insensitive, and og:title /
+    og:description / og:image also accept `name=` (common mistake that crawlers still read).
+  - Grading calibrated: meta description is now pass 120-160, warn 30-250, fail only when missing,
+    under 30 or over 250 (Vercel's 47-char and Linear's 65-char descriptions failed before);
+    titles warn up to 90 chars instead of failing above 70. Brand-only titles ("Apple") still fail.
+- Effect: scores of real sites moved up 1-4 points (stripe 87 -> 89, vercel 81 -> 85, linear 74
+  -> 76, apple 73 -> 75). Nothing gets worse, so monitored URLs will not trigger score-drop
+  alerts from this change; their trend lines will show a small step up.
+- Verified: 151 tests (new: text spacing, readability on prose, no prose, case-insensitive
+  meta/og, description and title boundaries), tsc, lint, build; before/after scans of 8 sites.
+
 ## 2026-10-04 (session 36)
 
 - New free tool: schema markup checker at `/tools/schema-checker`. Fetches a page, parses every

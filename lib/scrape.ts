@@ -211,21 +211,21 @@ export function parseHtml(html: string, baseUrl: string): ExtractedData {
   // Basic metadata
   const pageTitle = $("title").first().text().trim();
   const metaDescription =
-    $('meta[name="description"]').attr("content")?.trim() ?? "";
+    $('meta[name="description" i]').attr("content")?.trim() ?? "";
   const canonicalUrl =
     $('link[rel="canonical"]').attr("href")?.trim() ?? "";
 
   // Open Graph
   const ogTitle =
-    $('meta[property="og:title"]').attr("content")?.trim() ?? "";
+    $('meta[property="og:title" i], meta[name="og:title" i]').attr("content")?.trim() ?? "";
   const ogDescription =
-    $('meta[property="og:description"]').attr("content")?.trim() ?? "";
+    $('meta[property="og:description" i], meta[name="og:description" i]').attr("content")?.trim() ?? "";
 
   // Twitter
   const twitterTitle =
-    $('meta[name="twitter:title"]').attr("content")?.trim() ?? "";
+    $('meta[name="twitter:title" i]').attr("content")?.trim() ?? "";
   const twitterDescription =
-    $('meta[name="twitter:description"]').attr("content")?.trim() ?? "";
+    $('meta[name="twitter:description" i]').attr("content")?.trim() ?? "";
 
   // Headings
   const h1Tags: string[] = [];
@@ -304,6 +304,33 @@ export function parseHtml(html: string, baseUrl: string): ExtractedData {
   };
 }
 
+// Cheerio's .text() joins adjacent elements without separators, so minified HTML turns
+// "<h2>Title</h2><p>Text</p>" into "TitleText". Add a space after closing block/inline-block tags.
+const TEXT_BREAKS = /<\/(?:p|div|section|article|main|aside|li|ul|ol|h[1-6]|tr|td|th|dd|dt|dl|blockquote|figcaption|pre|button|a|label|span|table|form|details|summary)>|<br\s*\/?>/gi;
+
+function spaceTextBreaks(html: string): string {
+  return html.replace(TEXT_BREAKS, "$& ");
+}
+
+const BLOCK_DESCENDANTS = "p, li, div, ul, ol, blockquote, table, section, article, h1, h2, h3, h4, h5, h6";
+
+/**
+ * Readable prose for the readability score: leaf paragraphs/list items/text blocks with at least
+ * five words, each ended with a full stop. Navigation labels, buttons and headings are skipped so
+ * they do not merge into one endless "sentence".
+ */
+function extractProse($: cheerio.CheerioAPI): string {
+  const units: string[] = [];
+  $("p, li, blockquote, dd, div, td").each((_, el) => {
+    const node = $(el);
+    if (node.find(BLOCK_DESCENDANTS).length > 0) return;
+    const text = node.text().replace(/\s+/g, " ").trim();
+    if (text.split(" ").length < 5) return;
+    units.push(/[.!?]$/.test(text) ? text : `${text}.`);
+  });
+  return units.join(" ").slice(0, 8000);
+}
+
 function calculateFleschScore(text: string): number {
   // Clean text - remove special chars, extra spaces
   const cleaned = text
@@ -356,13 +383,13 @@ export function parseHtmlToScrapedData(
   // Basic metadata
   const title = $("title").first().text().trim();
   const metaDescription =
-    $('meta[name="description"]').attr("content")?.trim() ?? "";
+    $('meta[name="description" i]').attr("content")?.trim() ?? "";
   const ogTitle =
-    $('meta[property="og:title"]').attr("content")?.trim() ?? "";
+    $('meta[property="og:title" i], meta[name="og:title" i]').attr("content")?.trim() ?? "";
   const ogDescription =
-    $('meta[property="og:description"]').attr("content")?.trim() ?? "";
+    $('meta[property="og:description" i], meta[name="og:description" i]').attr("content")?.trim() ?? "";
   const ogImage =
-    $('meta[property="og:image"]').attr("content")?.trim() ?? "";
+    $('meta[property="og:image" i], meta[name="og:image" i]').attr("content")?.trim() ?? "";
   const canonical =
     $('link[rel="canonical"]').attr("href")?.trim() ?? "";
 
@@ -417,7 +444,7 @@ export function parseHtmlToScrapedData(
 
   // Body text - strip nav/footer/header/script/style first
   const bodyHtml = html; // Keep original for extraction
-  const cleanHtml = bodyHtml
+  const cleanHtml = spaceTextBreaks(bodyHtml)
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
     .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
     .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, "")
@@ -485,12 +512,12 @@ export function parseHtmlToScrapedData(
 
   // Check meta tags
   datePublished = $('meta[property="article:published_time"]').attr("content")?.trim()
-    || $('meta[name="date"]').attr("content")?.trim()
-    || $('meta[name="publish-date"]').attr("content")?.trim()
+    || $('meta[name="date" i]').attr("content")?.trim()
+    || $('meta[name="publish-date" i]').attr("content")?.trim()
     || "";
 
   dateModified = $('meta[property="article:modified_time"]').attr("content")?.trim()
-    || $('meta[name="last-modified"]').attr("content")?.trim()
+    || $('meta[name="last-modified" i]').attr("content")?.trim()
     || "";
 
   // Check schema for dates
@@ -514,7 +541,8 @@ export function parseHtmlToScrapedData(
   }
 
   // Readability score
-  const readabilityScore = calculateFleschScore(bodyText);
+  const prose = extractProse($clean);
+  const readabilityScore = prose.split(/\s+/).filter(Boolean).length >= 30 ? calculateFleschScore(prose) : undefined;
 
   return {
     url: baseUrl,

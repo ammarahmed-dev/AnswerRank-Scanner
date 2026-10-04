@@ -78,7 +78,8 @@ const CHECKS_CONFIG: CheckConfig[] = [
       const len = data.title?.length ?? 0;
       if (!data.title) return "fail";
       if (len >= 30 && len <= 60) return "pass";
-      if (len >= 20 && len <= 70) return "warn";
+      // Long titles get truncated in results but are still read in full, so only brand-only titles fail.
+      if (len >= 20 && len <= 90) return "warn";
       return "fail";
     },
     detail: (data: ScrapedData) => {
@@ -97,7 +98,9 @@ const CHECKS_CONFIG: CheckConfig[] = [
       const len = data.metaDescription?.length ?? 0;
       if (!data.metaDescription) return "fail";
       if (len >= 120 && len <= 160) return "pass";
-      if (len >= 100 && len <= 170) return "warn";
+      // A brief but real description still tells engines what the page is, so it is a warning;
+      // only a missing, token-sized or extremely long one fails.
+      if (len >= 30 && len <= 250) return "warn";
       return "fail";
     },
     detail: (data: ScrapedData) => {

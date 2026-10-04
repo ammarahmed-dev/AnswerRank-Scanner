@@ -136,3 +136,67 @@ describe("reader text parsing", () => {
     expect(typeof data.readabilityScore).toBe("number");
   });
 });
+
+describe("title length grading", () => {
+  const status = (title: string) => runDeterministicChecks({ ...strongPage, title }).find((c) => c.id === "title")?.status;
+
+  it("passes 30-60, warns 20-90, fails brand-only, missing or extreme titles", () => {
+    expect(status("x".repeat(45))).toBe("pass");
+    expect(status("x".repeat(75))).toBe("warn");
+    expect(status("x".repeat(90))).toBe("warn");
+    expect(status("x".repeat(91))).toBe("fail");
+    expect(status("Apple")).toBe("fail");
+    expect(status("")).toBe("fail");
+  });
+});
+
+describe("meta description handling", () => {
+  const status = (description: string) =>
+    runDeterministicChecks({ ...strongPage, metaDescription: description }).find((c) => c.id === "meta_desc")?.status;
+
+  it("grades description length: pass 120-160, warn 30-250, fail otherwise", () => {
+    expect(status("x".repeat(140))).toBe("pass");
+    expect(status("x".repeat(47))).toBe("warn");
+    expect(status("x".repeat(30))).toBe("warn");
+    expect(status("x".repeat(119))).toBe("warn");
+    expect(status("x".repeat(250))).toBe("warn");
+    expect(status("x".repeat(29))).toBe("fail");
+    expect(status("x".repeat(251))).toBe("fail");
+    expect(status("")).toBe("fail");
+  });
+
+  it("reads meta tags regardless of attribute value case and og tags declared with name=", async () => {
+    const { parseHtmlToScrapedData } = await import("@/lib/scrape");
+    const html = `<html><head><title>T</title><meta name="Description" content="Mixed case description"><meta name="og:title" content="OG by name"><meta property="OG:Image" content="https://x.test/i.png"></head><body><h1>Hi</h1></body></html>`;
+    const data = parseHtmlToScrapedData(html, "https://x.test/");
+    expect(data.metaDescription).toBe("Mixed case description");
+    expect(data.ogTitle).toBe("OG by name");
+    expect(data.ogImage).toBe("https://x.test/i.png");
+  });
+});
+
+describe("text extraction from minified HTML", () => {
+  it("keeps words from adjacent elements apart and scores readability on prose", async () => {
+    const { parseHtmlToScrapedData } = await import("@/lib/scrape");
+    const html =
+      "<html><body><main><h2>Our product</h2>" +
+      "<p>We help small teams ship better software every single week.</p>" +
+      "<p>Our dashboard shows what changed and why it matters to your customers.</p>" +
+      "<p>Setup takes five minutes and needs no code from your engineers at all.</p>" +
+      "<ul><li>Fast</li><li>Simple</li></ul>" +
+      "<div><a>Home</a><a>Pricing</a><a>Docs</a></div></main></body></html>";
+    const data = parseHtmlToScrapedData(html, "https://x.test/");
+    expect(data.bodyText).toContain("Our product We help");
+    expect(data.bodyText).toContain("week. Our dashboard");
+    expect(data.bodyText).toContain("Fast Simple");
+    expect(data.wordCount).toBeGreaterThanOrEqual(35);
+    // Three plain-English sentences are easy to read (Flesch above 60), not "0".
+    expect(data.readabilityScore).toBeGreaterThanOrEqual(60);
+  });
+
+  it("does not compute readability when there is almost no prose", async () => {
+    const { parseHtmlToScrapedData } = await import("@/lib/scrape");
+    const data = parseHtmlToScrapedData("<html><body><nav>x</nav><main><h1>Hi</h1><button>Go</button></main></body></html>", "https://x.test/");
+    expect(data.readabilityScore).toBeUndefined();
+  });
+});
