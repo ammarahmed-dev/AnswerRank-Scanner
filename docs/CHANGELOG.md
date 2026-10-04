@@ -2,6 +2,12 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 42)
+
+- Dogfooding: our own `/llms.txt` now lists the free tools hub and the five tools, so AI engines
+  reading it learn about them. Verified with the same parser the scanner uses (`llms_txt` still
+  passes) and the generated file is served as plain text.
+
 ## 2026-10-04 (session 41)
 
 - CSS weight: moved the audit (`audit-*`), comparison (`vs-*`) and dashboard (`db-*`) styles out

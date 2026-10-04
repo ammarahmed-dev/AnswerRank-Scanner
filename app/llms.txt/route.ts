@@ -49,6 +49,14 @@ AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) 
 - About: ${SITE_URL}/about
 - Contact: ${SITE_URL}/contact
 
+## Free tools (no signup)
+- ${SITE_URL}/tools: all free tools
+- ${SITE_URL}/tools/llms-txt-generator: generate an llms.txt file from a site's key pages
+- ${SITE_URL}/tools/ai-crawler-checker: check which AI crawlers a robots.txt allows or blocks
+- ${SITE_URL}/tools/schema-checker: inspect a page's JSON-LD and missing schema properties
+- ${SITE_URL}/tools/content-extractability: test which page sections AI engines can quote
+- ${SITE_URL}/tools/faq-schema-generator: generate FAQPage JSON-LD from questions and answers
+
 ## Blog posts
 ${blogLines}
 
