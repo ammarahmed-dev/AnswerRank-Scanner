@@ -6,19 +6,6 @@ export const SAMPLE_REPORT: ScanResult = {
   score: 47,
   unlocked: true,
   scannedAt: "2026-05-16T10:00:00.000Z",
-  // Example of the "Since your last scan" comparison shown after a retest.
-  previous: {
-    score: 38,
-    scannedAt: "2026-04-18T10:00:00.000Z",
-    checks: [
-      { id: "title", label: "Page Title", status: "warn" },
-      { id: "heading_structure", label: "Heading Hierarchy", status: "fail" },
-      { id: "og_tags", label: "Open Graph Tags", status: "fail" },
-      { id: "sitemap", label: "Sitemap", status: "fail" },
-      { id: "internal_links", label: "Internal Links", status: "pass" },
-      { id: "word_count", label: "Content Length", status: "pass" },
-    ],
-  },
   metadata: {
     title: "Example Agency - Digital Marketing for Local Businesses",
     metaDescription: "",
@@ -219,4 +206,19 @@ export const SAMPLE_REPORT: ScanResult = {
       weight: 6,
     },
   ],
+};
+
+// Example of the "Since your last scan" comparison shown after a retest: the same checks as an
+// earlier, lower-scoring scan of this fictional site.
+const EARLIER_STATUS: Record<string, "pass" | "warn" | "fail"> = {
+  title: "warn",
+  heading_structure: "fail",
+  og_tags: "fail",
+  sitemap: "fail",
+  word_count: "pass",
+};
+SAMPLE_REPORT.previous = {
+  score: 38,
+  scannedAt: "2026-04-18T10:00:00.000Z",
+  checks: SAMPLE_REPORT.checks.map((c) => ({ id: c.id, label: c.label, status: EARLIER_STATUS[c.id] ?? c.status })),
 };

@@ -610,33 +610,60 @@ const downloadPdf = async () => {
         const diff = diffReports(report.score, report.checks, report.previous);
         const when = new Date(diff.previousScannedAt);
         const dateLabel = Number.isNaN(when.getTime()) ? "" : ` on ${when.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
-        const tone = diff.scoreDelta > 0 ? "up" : diff.scoreDelta < 0 ? "down" : "flat";
+        const compared = diff.improved.length + diff.regressed.length + diff.unchanged;
+        const share = (n: number) => (compared ? Math.round((n / compared) * 100) : 0);
+        const scoreColor = report.score >= 90 ? "#00d68f" : report.score >= 70 ? "#00f0b4" : report.score >= 50 ? "#ffb830" : "#ff4d6a";
+        const verdict = diff.scoreDelta > 0 ? "Improving" : diff.scoreDelta < 0 ? "Slipping" : "No change";
+        const pills = (items: typeof diff.improved, tone: "up" | "down") => (
+          <span className="report-diff-pills">
+            {items.slice(0, 6).map((c) => (
+              <span key={c.id} className={`mini-pill report-diff-pill-${tone}`}>{c.label}</span>
+            ))}
+            {items.length > 6 && <span className="mini-pill badge-low">+{items.length - 6} more</span>}
+          </span>
+        );
         return (
-          <section className="surface report-card print-section report-diff-card" aria-label="Changes since your last scan">
-            <h3 className="section-heading">Since your last scan</h3>
+          <section className="surface report-card print-section" aria-label="Changes since your last scan">
+            <h3 className="section-heading">Since Your Last Scan</h3>
             <p className="section-kicker mt-1">Compared with your scan of this URL{dateLabel}.</p>
-            <div className="report-diff-head">
-              <span className={`report-diff-delta report-diff-${tone}`}>
-                {diff.scoreDelta > 0 ? "+" : ""}{diff.scoreDelta} points
-              </span>
-              <span className="report-diff-scores">{diff.previousScore} &rarr; {report.score}</span>
-              <span className="report-diff-counts">
-                {diff.improved.length} improved · {diff.regressed.length} worse · {diff.unchanged} unchanged
-              </span>
+            <div className="score-breakdown-grid mt-4">
+              <div className="score-breakdown-card">
+                <div className="score-breakdown-head">
+                  <span>Score Change</span>
+                  <strong>{diff.scoreDelta > 0 ? "+" : ""}{diff.scoreDelta}</strong>
+                </div>
+                <div className="score-bar"><span className="score-bar-fill" style={{ width: `${report.score}%`, "--bar-color": scoreColor } as CSSProperties} /></div>
+                <small>{verdict}</small>
+                <p>{diff.previousScore} &rarr; {report.score} out of 100.</p>
+              </div>
+              <div className="score-breakdown-card">
+                <div className="score-breakdown-head">
+                  <span>Checks Improved</span>
+                  <strong>{diff.improved.length}</strong>
+                </div>
+                <div className="score-bar"><span className="score-bar-fill" style={{ width: `${share(diff.improved.length)}%`, "--bar-color": "#00f0b4" } as CSSProperties} /></div>
+                <small>{diff.improved.length ? "Fixes are working" : "Nothing improved yet"}</small>
+                {diff.improved.length > 0 ? pills(diff.improved, "up") : <p>Apply the fixes below, then retest.</p>}
+              </div>
+              <div className="score-breakdown-card">
+                <div className="score-breakdown-head">
+                  <span>Checks Worse</span>
+                  <strong>{diff.regressed.length}</strong>
+                </div>
+                <div className="score-bar"><span className="score-bar-fill" style={{ width: `${share(diff.regressed.length)}%`, "--bar-color": "#ff4d6a" } as CSSProperties} /></div>
+                <small>{diff.regressed.length ? "Needs attention" : "No regressions"}</small>
+                {diff.regressed.length > 0 ? pills(diff.regressed, "down") : <p>Nothing dropped since your last scan.</p>}
+              </div>
+              <div className="score-breakdown-card">
+                <div className="score-breakdown-head">
+                  <span>Unchanged</span>
+                  <strong>{diff.unchanged}</strong>
+                </div>
+                <div className="score-bar"><span className="score-bar-fill" style={{ width: `${share(diff.unchanged)}%`, "--bar-color": "#94a3b8" } as CSSProperties} /></div>
+                <small>Same status</small>
+                <p>{diff.added > 0 ? `${diff.added} new check${diff.added === 1 ? "" : "s"} added since your last scan.` : "Checks that kept the same result."}</p>
+              </div>
             </div>
-            {(diff.improved.length > 0 || diff.regressed.length > 0) && (
-              <ul className="report-diff-list">
-                {diff.improved.map((c) => (
-                  <li key={c.id} className="is-better"><Check className="h-4 w-4" aria-hidden="true" /> <strong>{c.label}</strong> <span>{c.from} &rarr; {c.to}</span></li>
-                ))}
-                {diff.regressed.map((c) => (
-                  <li key={c.id} className="is-worse"><AlertCircle className="h-4 w-4" aria-hidden="true" /> <strong>{c.label}</strong> <span>{c.from} &rarr; {c.to}</span></li>
-                ))}
-              </ul>
-            )}
-            {diff.improved.length === 0 && diff.regressed.length === 0 && (
-              <p className="muted-copy mt-3">No check changed status. Apply the fixes below and retest to see progress here.</p>
-            )}
           </section>
         );
       })()}

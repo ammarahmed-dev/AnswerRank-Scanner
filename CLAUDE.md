@@ -60,6 +60,7 @@ matches and kills your own shell).
   several runs and report ranges, never a single number. Check HTML/bundle bytes for real wins.
 - curl cannot see client-rendered text (`isClient &&` blocks, hover menus): verify those with
   Playwright against the live site, not by polling curl.
+- New UI sections must reuse existing components and classes (report sections use `surface report-card print-section`, `score-breakdown-grid`/`-card`, `mini-pill`; tools use `llms-tool*`). Screenshot the new section next to its neighbors at 1280 and 390 px before shipping.
 - Scanner changes: scan a spread of real sites before and after (`POST /api/scan` streams SSE;
   take the `event: result` block) and compare against the raw HTML. Scoring changes move
   monitored scores, so only ship changes that cannot lower a score or say so in the changelog.

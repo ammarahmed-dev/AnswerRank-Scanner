@@ -2,6 +2,20 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 51)
+
+- Design fix from owner feedback on the live report: the "Since your last scan" card used a custom
+  list layout that did not match the report. It now reuses the report's own components: the same
+  `score-breakdown` tiles with score bars, small status labels and `mini-pill` chips (green for
+  improved checks, red for worse), four tiles (Score Change, Checks Improved, Checks Worse,
+  Unchanged) that fill the same 4-column grid as Score Breakdown, title-cased heading, stacking to
+  2 columns on mobile. Removed the one-off `.report-diff-*` list CSS (only the two pill tints remain).
+- The sample report's fictional earlier scan now covers every check (it listed only 6, so the card
+  claimed "17 new checks").
+- Verified: 187 tests, tsc, lint, build; screenshots at 1280 and 390 px next to Score Breakdown.
+- Lesson: when adding a report section, build it from existing report components and compare it with
+  its neighbors in a screenshot before shipping.
+
 ## 2026-10-04 (session 50)
 
 - New report feature, "Since your last scan": when a signed-in user scans a URL they have scanned
