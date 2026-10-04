@@ -454,7 +454,6 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     const tail = findings[findings.length - 1].toLowerCase();
     return `The page does not clearly surface ${head}, and ${tail}.`;
   }, [checks]);
-  const missingContextText = report.aiInsights?.contentGap?.trim() || inferredMissingContext;
   const aboutContactDetail = checks.find((check) => check.id === "eeat_about")?.detail || "";
   const safeMissingContextText = (() => {
     const aiText = report.aiInsights?.contentGap?.trim() || "";

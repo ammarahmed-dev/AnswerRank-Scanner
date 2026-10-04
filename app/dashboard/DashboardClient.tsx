@@ -181,7 +181,6 @@ function OverviewTab({
   const monitorProgress = monitorLimitValue === -1 ? 0 : Math.min((account.monitorCount / monitorLimitValue) * 100, 100);
   const monitorRemaining = monitorLimitValue === -1 ? null : Math.max(0, monitorLimitValue - account.monitorCount);
   const onetimeScanCount = account.profile.onetimeScanCount ?? 0;
-  const onetimeRetestCount = Math.max(0, onetimeScanCount - 1);
   const onetimeRetestsRemaining = Math.max(0, 4 - onetimeScanCount);
   const compareLimitText =
     currentPlan === "free"

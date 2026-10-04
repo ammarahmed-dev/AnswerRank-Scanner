@@ -387,7 +387,7 @@ export function parseHtmlToScrapedData(
   // JSON-LD schemas
   let schemaBlocks = 0;
   const schemaTypes: string[] = extractSchemaTypesFromDom($);
-  $('script[type="application/ld+json"]').each((_, el) => {
+  $('script[type="application/ld+json"]').each(() => {
     schemaBlocks++;
   });
 

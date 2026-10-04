@@ -2,6 +2,15 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 31)
+
+- Lint cleanup: removed dead code and unused variables flagged by ESLint (an unused `handleReset`
+  handler and `report` state binding in the homepage client, two unused derived values in the
+  report and dashboard, an unused callback argument in the scraper). Warnings 22 -> 17, no
+  behavior change. The remaining `set-state-in-effect` warnings sit in auth-adjacent clients and
+  are left as is on purpose.
+- Verified: tsc, lint (0 errors), 136 tests, build.
+
 ## 2026-10-04 (session 30)
 
 - AI Visibility Tracker, still dark-launched (needs `AI_VISIBILITY_ENABLED=true`, an engine key

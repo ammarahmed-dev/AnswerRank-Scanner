@@ -82,7 +82,7 @@ function HomeInner({ heroContent, staticSections }: HomePageClientProps) {
   const [url, setUrl] = useState("");
   const [state, setState] = useState<AppState>("idle");
   const [loaderProgress, setLoaderProgress] = useState<LoaderProgress>({ step: 1, label: "Preparing scan", status: "started" });
-  const [report, setReport] = useState<ScanResult | null>(null);
+  const [, setReport] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
   const { plan, isAdmin, remaining, unlimited, loading: authLoading, refresh: authRefresh, portalUrl } = useAuth();
@@ -352,15 +352,6 @@ function HomeInner({ heroContent, staticSections }: HomePageClientProps) {
     } finally {
       clearTimeout(timeout);
     }
-  };
-
-  const handleReset = () => {
-    setState("idle");
-    setReport(null);
-    setErrorMsg("");
-    setUrl("");
-    setShowErrorModal(false);
-    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   const handleAudit = async (e: React.FormEvent) => {
