@@ -42,6 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/tools/content-extractability`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools/schema-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools/robots-txt-generator`, changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: `${SITE_URL}/tools/sitemap-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools/organization-schema-generator`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/sample-report`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/sitemap`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.4 },

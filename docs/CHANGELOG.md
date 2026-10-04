@@ -2,6 +2,22 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 47)
+
+- New free tool: sitemap checker at `/tools/sitemap-checker` (`lib/sitemap-check.ts`,
+  `/api/tools/sitemap-checker`). Finds the sitemap through robots.txt `Sitemap:` lines or the
+  default paths, validates XML, URL count (50,000 limit), duplicates, URLs on another domain, http
+  and query-string URLs, lastmod validity/staleness/identical dates, follows up to five child
+  sitemaps, spot-checks eight listed URLs (errors, redirects) and flags a sitemap robots.txt does
+  not reference. Every fetch goes through `safeFetch`/`pinnedFetch`; 20 per month per client/IP.
+  Motivation: our own sitemap sat unsubmitted in Search Console for months.
+- Real runs: aeocheck.co (37 URLs, 10 without lastmod), stripe.com (index, 9 sitemaps, 4,508 URLs in
+  the first 5), vercel.com (8,522 URLs), wikipedia.org and example.com (none found), `[::1]` rejected.
+- Report issue "Sitemap" links to the checker; the tool is in the sitemap, footer, `/tools` and
+  `/llms.txt`.
+- Verified: 174 tests, tsc, lint (0 errors), build; Playwright desktop + mobile (fixed a list
+  layout bug where child sitemap rows inherited another tool's grid).
+
 ## 2026-10-04 (session 46)
 
 - Two new free tools, chosen because the scanner recommends exactly these fixes:

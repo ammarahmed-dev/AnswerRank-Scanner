@@ -16,6 +16,7 @@ export const TOOLS_FOR_CHECK: Record<string, ToolLink[]> = {
   schema_present: [SCHEMA_TOOL, ORG_SCHEMA_TOOL],
   article_schema: [SCHEMA_TOOL],
   structured_density: [SCHEMA_TOOL, ORG_SCHEMA_TOOL],
+  sitemap: [{ href: "/tools/sitemap-checker", label: "Validate your sitemap.xml free" }],
   qa_structure: [EXTRACTABILITY_TOOL],
   heading_structure: [EXTRACTABILITY_TOOL],
 };

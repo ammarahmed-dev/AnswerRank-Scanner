@@ -56,6 +56,7 @@ AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) 
 - ${SITE_URL}/tools/schema-checker: inspect a page's JSON-LD and missing schema properties
 - ${SITE_URL}/tools/content-extractability: test which page sections AI engines can quote
 - ${SITE_URL}/tools/faq-schema-generator: generate FAQPage JSON-LD from questions and answers
+- ${SITE_URL}/tools/sitemap-checker: validate a sitemap.xml and spot-check its URLs
 - ${SITE_URL}/tools/robots-txt-generator: generate a robots.txt with a policy for AI crawlers
 - ${SITE_URL}/tools/organization-schema-generator: generate Organization and WebSite JSON-LD
 

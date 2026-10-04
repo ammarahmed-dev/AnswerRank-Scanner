@@ -10613,3 +10613,7 @@ textarea.contact-control {
 .robots-fields input, .robots-fields textarea, .org-fields input[type="text"], .org-fields textarea { width: 100%; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: rgba(2, 6, 23, 0.72); color: #e2e8f0; padding: 11px 13px; font: inherit; font-size: 0.95rem; }
 .org-check { display: flex; gap: 8px; align-items: center; color: var(--color-ink-soft); font-size: 0.92rem; }
 @media (max-width: 640px) { .robots-policy { grid-template-columns: 1fr; } }
+
+.extract-list li.sitemap-warn { border-color: rgba(251, 191, 36, 0.45); }
+.extract-list li.sitemap-warn svg { color: #fbbf24; }
+.sitemap-group h2 { color: white; font-size: 1.1rem; margin: 6px 0 8px; }
