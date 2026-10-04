@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 35)
+
+- Report to tool funnel: an expanded issue in the report now ends with a "Free tool" link when a
+  free tool fixes it: llms.txt File -> llms.txt generator, AI Bot Access and robots.txt -> AI
+  crawler checker, FAQ Schema -> FAQ schema generator, Heading Structure and Answer-Ready Headings
+  -> content extractability checker (`lib/tool-links.ts`; test guards that every mapped check id
+  exists in the score engine and every target page exists). Hidden when printing/PDF.
+  Shown for every plan since it links to free tools and sits outside the paywalled fix text.
+- Verified: 139 tests, tsc, lint, build; Playwright on /sample-report: the four mapped issues show
+  the right links, others show none, no page errors; mobile screenshot of the card.
+
 ## 2026-10-04 (session 34)
 
 - Accessibility audit (Lighthouse mobile on /, /pricing, /blog, a blog post, /tools, a tool,

@@ -12811,3 +12811,7 @@ textarea.contact-control {
 }
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+.issue-tool-link { margin: 12px 0 0; font-size: 0.92rem; color: var(--color-ink-soft); }
+.issue-tool-link a { color: var(--color-primary); font-weight: 800; text-decoration: none; }
+.issue-tool-link a:hover { text-decoration: underline; }
