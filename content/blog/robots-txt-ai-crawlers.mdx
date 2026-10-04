@@ -157,3 +157,7 @@ Disallow: /
 Open `https://yourdomain.com/robots.txt` and read it top to bottom, grouping each block of `User-agent` lines with the rules beneath it. For each AI search crawler, ask: does it have its own group? If not, what does the `*` group say?
 
 Or let a tool do it. The free [AI crawler checker](/tools/ai-crawler-checker) reads your robots.txt the way crawlers do and shows which AI crawlers are allowed or blocked, split into search, training and user agents. For the whole page, [run a free AEOCheck scan](/#scanner) and the AI crawler access check parses your robots.txt the way crawlers do, including grouped user agents and wildcard fallbacks, and tells you which AI search crawlers are blocked versus which are only opted out of training. The same scan covers llms.txt, schema, metadata and the rest of its 25 AEO and GEO checks. See an example in the [sample report](/sample-report), or compare [plans](/pricing) to monitor your pages over time.
+
+## What other sites do
+
+We checked the robots.txt of 85 well-known sites. Of the 72 files we could read, 7 blocked at least one AI search crawler, mostly publishers and large retailers that block on purpose, and 13 blocked GPTBot. See the full numbers and method in the [AI readiness study](/research/ai-readiness-study). Unless you have a licensing reason to opt out, a business that wants to be recommended should not block the search crawlers.

@@ -2,6 +2,13 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 58)
+
+- Production bug fixed: `/ai-seo-audit` linked to `/blog/aeo-checklist`, which does not exist (404). Now points to an existing post. New guard `tests/blog-links.test.ts` fails when any `/blog/<slug>` string in `app/` or `lib/` has no post, redirect or route (verified it fails on a bad slug).
+- Deploy status: the badge deploy (session 57) succeeded; production checks all 200, `/api/account` 401, live badge returns a scored SVG.
+- Internal links from two existing posts (`robots-txt-ai-crawlers`, `technical-aeo-guide`) to the AI readiness study and badge, with numbers copied from the study data (7 of 72 block an AI search crawler, 13 of 72 block GPTBot, 36 of 85 publish llms.txt, 32 of 49 SaaS, 0 of 21 media, 40 of 62 Organization schema).
+- Known: link-lint still reports the pre-existing missing pillar hub `how-to-get-cited-by-chatgpt` (hub planned for next weekend).
+
 ## 2026-10-04 (session 57)
 
 - GROWTH plan item: embeddable "AI readiness" badge. `GET /api/badge?domain=` returns an SVG (score from `runScanCore` without PageSpeed or AI, so it can differ slightly from a full report); `/tools/ai-readiness-badge` creates HTML and Markdown snippets that link to `/ai-seo-audit?ref=badge` (each embed is a backlink). Cost controls: strict hostname validation (no IPs, ports or paths), `assertPublicUrl` through `runScanCore`, CDN caching (s-maxage one day, stale-while-revalidate a week) so only a cache miss scans, and a global cap of 3000 badge scans per month after which the badge shows "n/a". Errors return a short-cached "n/a" badge, never an HTTP error, so embeds do not break.

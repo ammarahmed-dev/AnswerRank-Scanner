@@ -35,7 +35,7 @@ const GROUPS = [
   {
     name: "Trust signals",
     text: "Named author, an about page and freshness dates: the evidence that a source is worth citing.",
-    tool: { href: "/blog/aeo-checklist", label: "AEO checklist" },
+    tool: { href: "/blog/why-chatgpt-is-not-citing-your-website", label: "Why AI is not citing you" },
   },
   {
     name: "Performance",
