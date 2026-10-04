@@ -9,7 +9,7 @@ type Props = {
 export default function SiteHeader({ scanCountLabel: _ }: Props) {
   return (
     <header className="site-header">
-      <Link href="/" className="brand-lockup" aria-label="AEOCheck home">
+      <Link href="/" className="brand-lockup">
         <span className="brand-mark" aria-hidden="true">A</span>
         <span className="brand-name">AEOCheck</span>
       </Link>

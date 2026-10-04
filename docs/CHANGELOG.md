@@ -2,6 +2,21 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 34)
+
+- Accessibility audit (Lighthouse mobile on /, /pricing, /blog, a blog post, /tools, a tool,
+  /login, /signup, /sample-report): scores were already 100 for accessibility and SEO on the main
+  pages. Fixed the real WCAG contrast failures found: white text on the bright green sample-report
+  banner and priority badge (1.48:1, now dark text) and faint gray text on the login/signup forms
+  (2.5-4.1:1, now at least 4.5:1). Removed the header brand link's `aria-label` so its accessible
+  name matches its visible text.
+- Left alone on purpose: the issue accordion buttons in the report keep their descriptive
+  `aria-label` ("Expand details for X"), which Lighthouse flags as a label-in-name mismatch because
+  the visible button text also holds category and priority pills; the label gives screen readers
+  a cleaner name than the visible text would. `/login` is intentionally noindex.
+- Verified: Lighthouse accessibility 100 on /, /login, /signup, /sample-report, /pricing after
+  the fixes; screenshots of the banner and login form.
+
 ## 2026-10-04 (session 33)
 
 - Discoverability: "Free tools" added to the Features dropdown (desktop) and the mobile menu, so
