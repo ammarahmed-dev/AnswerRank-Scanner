@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bot, FileText, ListChecks } from "lucide-react";
+import { Bot, FileSearch, FileText, ListChecks } from "lucide-react";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 import { buildPageMetadata } from "@/lib/seo";
@@ -8,7 +8,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Free AEO Tools | AEOCheck",
   description:
-    "Free tools for AI search visibility: generate an llms.txt file, check which AI crawlers your robots.txt allows, and build FAQ schema. No signup needed.",
+    "Free tools for AI search visibility: generate an llms.txt file, check which AI crawlers your robots.txt allows, build FAQ schema and test how quotable your content is. No signup needed.",
   path: "/tools",
 });
 
@@ -24,6 +24,12 @@ const TOOLS = [
     icon: FileText,
     name: "llms.txt Generator",
     text: "Build a ready-to-publish llms.txt from your homepage and key pages.",
+  },
+  {
+    href: "/tools/content-extractability",
+    icon: FileSearch,
+    name: "Content Extractability Checker",
+    text: "Test whether each section of a page opens with a passage AI engines can quote on its own.",
   },
   {
     href: "/tools/faq-schema-generator",

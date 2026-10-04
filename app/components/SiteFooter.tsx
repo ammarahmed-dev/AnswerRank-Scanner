@@ -39,6 +39,7 @@ export default function SiteFooter() {
               <Link href="/tools/llms-txt-generator">llms.txt Generator</Link>
               <Link href="/tools/ai-crawler-checker">AI Crawler Checker</Link>
               <Link href="/tools/faq-schema-generator">FAQ Schema Generator</Link>
+              <Link href="/tools/content-extractability">Content Extractability</Link>
               <a href="/sitemap">Sitemap</a>
             </div>
           </div>

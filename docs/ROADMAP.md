@@ -78,7 +78,7 @@ Based on the full code review from 2026-10-03.
     search vs training vs user agents; 30 per month per client/IP).
   - [x] Free FAQ schema generator (client-side, no server cost) at `/tools/faq-schema-generator`
   - [x] `/tools` index page
-  - [ ] Content extractability tool at `/tools/content-extractability` (see docs/RESEARCH.md 2026-10-04): deterministic passage analysis, no AI cost
+  - [x] Content extractability tool at `/tools/content-extractability` (heading-opening passage analysis, 20 per month per client/IP, no AI cost)
   - [ ] Weigh a 26th "citable facts" check against the "25 checks" copy churn (docs/RESEARCH.md)
   - [ ] Before building more tools: check Search Console data (owner action: fix the GSC service
     account) to see which of the 3 tools earn traffic. Candidate next: AI schema checker.

@@ -39,6 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/tools/llms-txt-generator`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools/ai-crawler-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools/faq-schema-generator`, changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: `${SITE_URL}/tools/content-extractability`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/sample-report`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/sitemap`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.4 },
     { url: `${SITE_URL}/privacy-policy`, lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },

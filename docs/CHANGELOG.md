@@ -2,6 +2,21 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 28)
+
+- New free tool: content extractability checker at `/tools/content-extractability`. Fetches one
+  page and judges the opening passage under every H2/H3: too short (<20 words), too long (>90),
+  starts by pointing back (This/It/They), filler opener, or no text; also counts question-style
+  headings and passages with a concrete number. Pure heuristics in `lib/extractability.ts` (no AI
+  cost), labeled as a structural check, not a citation prediction. 20 per month per client/IP,
+  `assertPublicUrl` + `fetchHtml`. An H2 that leads straight into an H3 is treated as a wrapper,
+  not flagged. Added to `/tools`, sitemap and footer.
+- Research pass logged in `docs/RESEARCH.md` (engine citation differences, free-grader funnel,
+  feature ideas). Follow-up email now says "25 checks" (was "20+"); a day-7 email was dropped
+  because the follow-up footer promises no more than 2 emails total.
+- Verified: 130 tests, tsc, lint, build; real runs on aeocheck.co blog, Wikipedia, stripe.com;
+  `[::1]` rejected; Playwright desktop + mobile, no errors or overflow.
+
 ## 2026-10-04 (session 27)
 
 - Homepage refactor: the static sections (stats, what we do, why it matters, how it works, who
