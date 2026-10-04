@@ -421,9 +421,12 @@ export function parseHtmlToScrapedData(
   // Images with alt text tracking
   const images: { hasAlt: boolean }[] = [];
   $("img").each((_, el) => {
-    const alt = $(el).attr("alt");
+    const node = $(el);
+    // alt="" is the correct way to mark a decorative image, so only a missing alt attribute counts
+    // as a problem (images hidden from assistive tech are decorative too).
+    const decorative = ["presentation", "none"].includes((node.attr("role") ?? "").toLowerCase()) || node.attr("aria-hidden") === "true";
     images.push({
-      hasAlt: Boolean(alt && alt.trim() !== ""),
+      hasAlt: node.attr("alt") !== undefined || decorative,
     });
   });
 

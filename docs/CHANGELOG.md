@@ -2,6 +2,17 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 38)
+
+- Alt text check: an image with `alt=""` (the correct way to mark a decorative image), a
+  `role="presentation"`/`none` image or an `aria-hidden="true"` image now counts as handled; only
+  a missing `alt` attribute is flagged. Marketing sites full of decorative images (Stripe: 31 of
+  35 images have `alt=""`) were being failed for following accessibility guidance. Scores can only
+  go up from this.
+- QA sweep of 8 more real sites (github, notion, hubspot, moz, semrush, backlinko, healthline,
+  bbc): no crashes, results consistent with the raw HTML.
+- Verified: 152 tests (new: alt handling), tsc, lint, build.
+
 ## 2026-10-04 (session 37)
 
 - Scanner accuracy, found by scanning 14 real sites (stripe, vercel, shopify, linear, wikipedia,

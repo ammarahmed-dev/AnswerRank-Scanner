@@ -200,3 +200,18 @@ describe("text extraction from minified HTML", () => {
     expect(data.readabilityScore).toBeUndefined();
   });
 });
+
+describe("image alt handling", () => {
+  it("treats alt='' and presentational images as decorative, and only a missing alt as a problem", async () => {
+    const { parseHtmlToScrapedData } = await import("@/lib/scrape");
+    const html = `<html><body><main>
+      <img src="a.png" alt="A chart of monthly revenue">
+      <img src="b.png" alt="">
+      <img src="c.png" role="presentation">
+      <img src="d.png" aria-hidden="true">
+      <img src="e.png">
+    </main></body></html>`;
+    const data = parseHtmlToScrapedData(html, "https://x.test/");
+    expect(data.images.map((i) => i.hasAlt)).toEqual([true, true, true, true, false]);
+  });
+});
