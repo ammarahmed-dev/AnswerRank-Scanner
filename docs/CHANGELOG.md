@@ -2,6 +2,18 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 49)
+
+- New free tool: Article schema generator at `/tools/article-schema-generator`
+  (`lib/article-schema.ts`). BlogPosting / Article / NewsArticle JSON-LD with headline, URL, image,
+  author (+ profile), publisher (+ logo), publish and modified dates; validates required fields,
+  ISO dates, modified >= published, headline length (110) and URLs; `dateModified` defaults to the
+  publish date. Runs in the browser. Generated markup passes the schema checker with nothing
+  missing (tested). The report's Article Schema issue now links to it; added to the sitemap,
+  footer, `/tools` and `/llms.txt`.
+- Verified: 183 tests, tsc, lint (0 errors), build; Playwright desktop + mobile (auto-filled
+  publish date, valid JSON-LD, modified-before-published warning, no overflow or errors).
+
 ## 2026-10-04 (session 48)
 
 - New free tool: meta tag checker at `/tools/meta-tag-checker` (`lib/meta-check.ts`,

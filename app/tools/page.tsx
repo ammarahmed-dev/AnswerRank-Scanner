@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bot, Building2, Code2, FileSearch, FileText, ListChecks, Map, ShieldCheck, Tags } from "lucide-react";
+import { Bot, Building2, Newspaper, Code2, FileSearch, FileText, ListChecks, Map, ShieldCheck, Tags } from "lucide-react";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 import { buildPageMetadata } from "@/lib/seo";
@@ -54,6 +54,12 @@ const TOOLS = [
     icon: ShieldCheck,
     name: "robots.txt Generator",
     text: "Set a policy for GPTBot, OAI-SearchBot, PerplexityBot and ClaudeBot and copy the file.",
+  },
+  {
+    href: "/tools/article-schema-generator",
+    icon: Newspaper,
+    name: "Article Schema Generator",
+    text: "Generate Article or BlogPosting JSON-LD with author, dates, image and publisher.",
   },
   {
     href: "/tools/organization-schema-generator",
