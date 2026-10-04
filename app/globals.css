@@ -10640,3 +10640,9 @@ textarea.contact-control {
 .dashboard-delta { margin-left: 8px; font-size: 0.74rem; font-weight: 900; letter-spacing: 0.02em; }
 .dashboard-delta-up { color: #00f0b4; }
 .dashboard-delta-down { color: #ff8fa3; }
+
+.fix-pack-list { display: grid; gap: 22px; }
+.fix-pack-item { display: grid; gap: 12px; }
+.fix-pack-title { margin: 0 0 4px; font-size: 1.05rem; font-weight: 700; }
+.fix-pack-output { min-height: 180px; max-height: 340px; }
+@media print { .fix-pack-list { display: none; } }

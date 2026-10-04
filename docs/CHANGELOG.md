@@ -2,6 +2,12 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 54)
+
+- New report feature "Fix Pack" (`lib/fix-pack.ts`, `FixPackSection`): ready-to-paste files generated from the scan itself, only for checks that did not pass: robots.txt welcoming AI crawlers (only when a block is confirmed or robots.txt is missing; "unverified" never triggers it), Organization + WebSite JSON-LD, an llms.txt starter, and canonical/Open Graph head tags with escaped values. Built with the same builders as the free tools; a test round-trips the robots.txt through the scanner's own parser. Copy and Download buttons. Full-report viewers see the code; free viewers see a locked teaser listing what is ready (no plan or price change; the section is client-side from fields already in the report, so nothing new is stored).
+- Verified: tsc, eslint, 196 tests, build, screenshots of the sample report at 1280 and 390 px (no overflow). Local build used a temporary font stub (sandbox cannot fetch Google font files); not committed.
+- DEPLOY STATUS: Vercel still rate limited at last check; production is behind `main` (leak fix, AI SEO audit page, Fix Pack).
+
 ## 2026-10-04 (session 53)
 
 - Market research recorded (docs/RESEARCH.md) and acted on, except affiliate links and the brand-mention check (owner decision: skipped for now).

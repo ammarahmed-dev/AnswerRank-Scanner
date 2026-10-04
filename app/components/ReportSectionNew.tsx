@@ -16,6 +16,7 @@ import { getNormalizedIssues } from "@/lib/report-issues";
 import { getReportPresentation } from "@/lib/report-presentation";
 import { toolsForCheck } from "@/lib/tool-links";
 import { diffReports } from "@/lib/report-diff";
+import FixPackSection from "./FixPackSection";
 
 const RetestButton = dynamic(() => import("./RetestButton"), { ssr: false });
 
@@ -1042,6 +1043,8 @@ const downloadPdf = async () => {
           </div>
         </div>
       </section>
+
+      <FixPackSection report={report} hasFullReportAccess={hasFullReportAccess} onUpgrade={() => setIsUpgradeModalOpen(true)} />
 
       <section className="surface report-card print-section">
         <h3 className="section-heading">PDF Export</h3>
