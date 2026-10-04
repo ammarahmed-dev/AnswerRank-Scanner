@@ -83,7 +83,7 @@ We cover the allow-or-block decision in depth in [robots.txt for AI crawlers](/b
 
 ### Publish an llms.txt file
 
-An `llms.txt` file at your domain root is a short Markdown summary of your site written for language models: what you do, who it is for and links to your most important pages. It is a young convention and not every engine reads it yet, but it is cheap to add and gives AI systems an authoritative description in your own words instead of one inferred from navigation menus.
+An `llms.txt` file at your domain root is a short Markdown summary of your site written for language models: what you do, who it is for and links to your most important pages. It is a young convention and not every engine reads it yet, but it is cheap to add and gives AI systems an authoritative description in your own words instead of one inferred from navigation menus. The free [llms.txt generator](/tools/llms-txt-generator) drafts one from your homepage and key pages.
 
 ## Step 2: Make sure the content is in the HTML
 
@@ -113,7 +113,7 @@ Start with the types that establish identity and answer questions:
 3. **Article** or **BlogPosting** on editorial content, including author, datePublished and dateModified.
 4. **Product**, **SoftwareApplication** or **Service** on offer pages, and **BreadcrumbList** for site structure.
 
-Validate every block with the Schema.org validator before publishing. Invalid markup is ignored, and markup that contradicts the visible page erodes trust.
+Validate every block with the Schema.org validator before publishing. Invalid markup is ignored, and markup that contradicts the visible page erodes trust. The free [schema markup checker](/tools/schema-checker) lists the types a page already has and the properties it is missing, and the [FAQ schema generator](/tools/faq-schema-generator) builds valid FAQPage markup from your questions and answers.
 
 ## Step 5: Structure pages so answers can be extracted
 
@@ -123,6 +123,8 @@ AI engines quote passages, not whole pages. Structure determines whether your be
 - Phrase key section headings as the **questions your buyers ask**, such as "How does usage-based pricing work?", and answer each one in the first 40 to 60 words beneath it.
 - Keep paragraphs short and lead with the direct answer, then the detail. Aim for plain language; dense, jargon-heavy prose is harder to extract and paraphrase accurately.
 - Give pages enough depth to be worth citing. Thin pages with a few sentences rarely become a source for detailed answers.
+
+To see which of your sections already open with a quotable answer, run the page through the free [content extractability checker](/tools/content-extractability).
 
 ## Step 6: Show who stands behind the content
 

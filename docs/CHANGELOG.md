@@ -2,6 +2,16 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 40)
+
+- Internal linking: the technical AEO guide now links the llms.txt generator, the schema markup
+  checker, the FAQ schema generator and the content extractability checker where each topic is
+  discussed, and the robots.txt post links the AI crawler checker. Each post edited in its own
+  commit (publishing rule). No new posts (the two-per-weekend cap was used on 2026-10-03).
+- Known: `node scripts/link-lint.mjs` still reports the spoke
+  `how-to-check-if-website-appears-in-chatgpt-recommendations` missing its pillar hub link
+  (`/blog/how-to-get-cited-by-chatgpt`, not written yet); it is not part of CI.
+
 ## 2026-10-04 (session 39)
 
 - Comparison page accuracy: `/vs/profound` said Profound is "Enterprise only, no self-serve",
