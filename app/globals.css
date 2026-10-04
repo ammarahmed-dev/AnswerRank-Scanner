@@ -12733,3 +12733,30 @@ textarea.contact-control {
   .llms-tool { padding: 16px; }
   .llms-tool-form .btn { width: 100%; justify-content: center; }
 }
+
+.crawler-verdict { border: 1px solid var(--color-line); border-radius: var(--radius-lg); padding: 16px 18px; background: rgba(2, 6, 23, 0.6); }
+.crawler-verdict strong { color: white; font-size: 1.15rem; }
+.crawler-verdict p { margin: 6px 0 0; color: var(--color-ink-soft); line-height: 1.6; }
+.crawler-verdict .crawler-verdict-meta { font-size: 0.88rem; }
+.crawler-verdict code, .crawler-robots code { word-break: break-all; }
+.crawler-verdict-good { border-color: rgba(52, 211, 153, 0.55); }
+.crawler-verdict-warn { border-color: rgba(251, 191, 36, 0.55); }
+.crawler-verdict-bad { border-color: rgba(255, 143, 163, 0.65); }
+.crawler-group h2 { color: white; font-size: 1.1rem; margin: 6px 0 2px; }
+.crawler-group > p { margin: 0 0 8px; color: var(--color-ink-soft); font-size: 0.9rem; }
+.crawler-group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.crawler-group li { display: grid; grid-template-columns: 20px 1fr auto auto; gap: 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: rgba(2, 6, 23, 0.4); font-size: 0.93rem; }
+.crawler-group li.is-allowed svg { color: #34d399; }
+.crawler-group li.is-blocked svg { color: #ff8fa3; }
+.crawler-name { color: white; font-weight: 700; }
+.crawler-source { color: var(--color-ink-soft); font-size: 0.82rem; }
+.crawler-state { font-weight: 800; font-size: 0.85rem; min-width: 58px; text-align: right; }
+.is-allowed .crawler-state { color: #34d399; }
+.is-blocked .crawler-state { color: #ff8fa3; }
+.crawler-robots summary { cursor: pointer; color: var(--color-primary); font-weight: 800; }
+.crawler-robots pre { margin: 10px 0 0; max-height: 320px; overflow: auto; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: rgba(2, 6, 23, 0.72); color: #e2e8f0; padding: 14px; font: 0.82rem/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+@media (max-width: 640px) {
+  .crawler-group li { grid-template-columns: 20px 1fr auto; }
+  .crawler-state { grid-column: 3; grid-row: 1; }
+  .crawler-source { grid-column: 2 / 4; grid-row: 2; }
+}

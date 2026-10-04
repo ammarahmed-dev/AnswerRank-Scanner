@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyzeAiCrawlerAccess, isRootAllowed, parseRobotsGroups } from "@/lib/robots";
+import { analyzeAiCrawlerAccess, describeAiCrawlerAccess, isRootAllowed, parseRobotsGroups } from "@/lib/robots";
 
 const robots = (...lines: string[]) => lines.join("\n");
 
@@ -53,5 +53,33 @@ describe("robots.txt AI crawler access", () => {
   it("prefers Allow on equal-length rules", () => {
     const groups = parseRobotsGroups(robots("User-agent: PerplexityBot", "Disallow: /", "Allow: /"));
     expect(isRootAllowed(groups, "perplexitybot")).toBe(true);
+  });
+});
+
+describe("describeAiCrawlerAccess", () => {
+  const byToken = (rows: ReturnType<typeof describeAiCrawlerAccess>, token: string) => rows.find((r) => r.token === token)!;
+
+  it("allows everything by default when there are no rules", () => {
+    const rows = describeAiCrawlerAccess("");
+    expect(rows.every((r) => r.allowed && r.source === "default")).toBe(true);
+  });
+
+  it("classifies search, training and user agents", () => {
+    const rows = describeAiCrawlerAccess("");
+    expect(byToken(rows, "oai-searchbot").kind).toBe("search");
+    expect(byToken(rows, "gptbot").kind).toBe("training");
+    expect(byToken(rows, "chatgpt-user").kind).toBe("user");
+  });
+
+  it("reports own-group vs wildcard decisions", () => {
+    const rows = describeAiCrawlerAccess("User-agent: GPTBot\nDisallow: /\n\nUser-agent: *\nAllow: /\n");
+    expect(byToken(rows, "gptbot")).toMatchObject({ allowed: false, source: "own" });
+    expect(byToken(rows, "perplexitybot")).toMatchObject({ allowed: true, source: "wildcard" });
+  });
+
+  it("applies a wildcard block to crawlers without their own group", () => {
+    const rows = describeAiCrawlerAccess("User-agent: *\nDisallow: /\n\nUser-agent: OAI-SearchBot\nAllow: /\n");
+    expect(byToken(rows, "oai-searchbot")).toMatchObject({ allowed: true, source: "own" });
+    expect(byToken(rows, "claudebot")).toMatchObject({ allowed: false, source: "wildcard" });
   });
 });

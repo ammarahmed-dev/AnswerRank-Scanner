@@ -28,6 +28,9 @@ export const AI_SEARCH_CRAWLERS = ["oai-searchbot", "claude-searchbot", "perplex
 // site from AI search answers (Google-Extended also covers grounding in Gemini apps).
 export const AI_TRAINING_CRAWLERS = ["gptbot", "claudebot", "anthropic-ai", "google-extended", "applebot-extended", "cohere-ai"];
 
+// Agents that fetch a page because a person asked about it. Vendors note robots.txt may not apply.
+export const AI_USER_AGENTS = ["chatgpt-user", "claude-user", "perplexity-user"];
+
 type Rule = { allow: boolean; path: string };
 type Group = { agents: string[]; rules: Rule[] };
 
@@ -112,4 +115,31 @@ export function analyzeAiCrawlerAccess(robotsBody: string): {
     detail: explicit ? "AI crawlers are explicitly allowed in robots.txt" : "AI crawlers have access to this page",
     blocked,
   };
+}
+
+export type CrawlerKind = "search" | "training" | "user";
+export type CrawlerAccess = {
+  token: string;
+  label: string;
+  kind: CrawlerKind;
+  allowed: boolean;
+  /** Which robots.txt group decided it: the crawler's own group, the "*" group, or no rule at all. */
+  source: "own" | "wildcard" | "default";
+};
+
+/** Per-crawler access for every known AI crawler, with the group that decided it. */
+export function describeAiCrawlerAccess(robotsBody: string): CrawlerAccess[] {
+  const groups = parseRobotsGroups(robotsBody);
+  return Object.entries(AI_CRAWLERS).map(([token, label]) => {
+    const kind: CrawlerKind = AI_SEARCH_CRAWLERS.includes(token) ? "search" : AI_USER_AGENTS.includes(token) ? "user" : "training";
+    const hasOwn = groups.some((g) => g.agents.includes(token));
+    const hasWildcard = groups.some((g) => g.agents.includes("*"));
+    return {
+      token,
+      label,
+      kind,
+      allowed: isRootAllowed(groups, token),
+      source: hasOwn ? "own" : hasWildcard ? "wildcard" : "default",
+    };
+  });
 }

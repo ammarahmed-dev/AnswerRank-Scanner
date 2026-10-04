@@ -74,6 +74,11 @@ Based on the full code review from 2026-10-03.
 
 - Features: grow AEOCheck into the best AEO/GEO tool for its price. Source ideas from
   `docs/RESEARCH.md`, add each as a concrete item here, then build it.
+  - [x] Free AI crawler checker at `/tools/ai-crawler-checker` (robots.txt rules per AI crawler,
+    search vs training vs user agents; 30 per month per client/IP).
+  - [ ] Free FAQ schema generator (client-side, no server cost) at `/tools/faq-schema-generator`
+  - [ ] `/tools` index page once there are 3 tools; then check Search Console data (owner action:
+    fix the GSC service account) before building more tools
   - [x] Free llms.txt generator tool at `/tools/llms-txt-generator` (homepage + sitemap pages,
     ranked and grouped; 10 per month per client/IP; SSRF-safe fetches). Funnels to the scanner.
 - UI/UX: polish the scan flow, report, dashboard and marketing pages; mobile first; measure with

@@ -2,6 +2,18 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 25)
+
+- New free tool: AI crawler checker at `/tools/ai-crawler-checker`. Enter a domain and see, for
+  each of 12 AI crawlers, whether robots.txt allows or blocks it and which rule decided it (own
+  group, inherited `*`, or no rule), grouped as search / training / user-triggered agents, with a
+  one-line verdict and the raw robots.txt. Reuses the scanner's robots parser
+  (`describeAiCrawlerAccess` in `lib/robots.ts`); fetches go through `safeFetch`; 30 per month
+  per client/IP. Sites that 403 automated robots.txt requests get a clear message.
+- Verified: 120 tests, tsc, lint, build; real runs on medium.com (GPTBot, ClaudeBot,
+  Applebot-Extended blocked), cnn.com (all blocked), stripe.com, aeocheck.co; `[::1]` rejected;
+  Playwright desktop + mobile with no errors or horizontal overflow.
+
 ## 2026-10-04 (session 24)
 
 - Performance: supabase-js (223 KB raw incl. Realtime) is no longer in the initial script set of
