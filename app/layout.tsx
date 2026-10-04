@@ -1,10 +1,25 @@
 import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import BackToTop from "@/app/components/BackToTop";
 import ScrollToTop from "@/app/components/ScrollToTop";
 import { Providers } from "./providers";
 import { absoluteUrl, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
 import "./globals.css";
+
+// Self-hosted at build time (no render-blocking request to fonts.googleapis.com).
+const geistSans = Geist({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-geist-sans",
+});
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  display: "swap",
+  variable: "--font-geist-mono",
+});
 
 const HOME_TITLE = "AEOCheck - Free AEO Scanner & AI Search Readiness Audit";
 const HOME_DESCRIPTION =
@@ -54,18 +69,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" style={{ scrollBehavior: "auto" }}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} style={{ scrollBehavior: "auto" }}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500&display=swap"
-        />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.google-analytics.com" crossOrigin="anonymous" />
       </head>

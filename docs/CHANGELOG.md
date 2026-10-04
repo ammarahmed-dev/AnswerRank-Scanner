@@ -2,6 +2,21 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 29)
+
+- Fonts: Geist and Geist Mono are now self-hosted with `next/font/google` (downloaded at build
+  time, preloaded woff2). Every page previously blocked rendering on two stylesheet requests to
+  fonts.googleapis.com (plus font files from fonts.gstatic.com); those requests and the two
+  preconnects are gone, and the site no longer sends visitors' IPs to Google for fonts.
+  `globals.css` now reads `--font-geist-sans` / `--font-geist-mono`.
+- Finding: `experimental.optimizeCss` (critters) does nothing under the App Router, so the 228 KB
+  global stylesheet is still one blocking request; the route-exclusive CSS groups that can be
+  split out are listed in the ROADMAP.
+- Verified: tsc, lint, 131 tests, build; no googleapis references in the homepage HTML; Geist
+  loads (weights 400-800) and renders the same hero in Chromium. Local lab Lighthouse cannot show
+  the gain (fonts are unreachable from the sandbox), and live lab runs through the proxy swung
+  0.56-0.77, so the before/after number is not claimed.
+
 ## 2026-10-04 (session 28)
 
 - New free tool: content extractability checker at `/tools/content-extractability`. Fetches one

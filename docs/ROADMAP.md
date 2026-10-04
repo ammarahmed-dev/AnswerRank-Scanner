@@ -67,7 +67,8 @@ Based on the full code review from 2026-10-03.
 - [ ] Homepage mobile performance (Lighthouse mobile, local build: 73, FCP 2.8 s, LCP 4.6 s, TBT ~190 ms; production via proxy: 50):
   - [x] (2026-10-04) Lazy-load the Supabase browser client on the shared layout + homepage (`lib/supabase-browser-lazy.ts`): initial homepage JS 951 KB -> 728 KB raw. Lighthouse lab score unchanged (chunk still loads, after hydration). Remaining static importers are auth/dashboard pages only. Was: Lazy-load the Supabase browser client (218 KB chunk incl. Realtime) - `lib/supabase-browser.ts` has ~20 call sites in 17 files; make it async and load after first paint (auth is high-risk: test login, dashboard, scan with token)
   - [x] (2026-10-04) Static homepage sections moved to server component `HomeStaticSections.tsx` (HomePageClient 1,308 -> 1,112 lines; initial JS 728 -> 689 KB raw; lab score unchanged). Remaining: pricing/FAQ/testimonials still in the client component; LCP (4.1 s) is dominated by CSS and the hero, see next item
-  - [ ] Reduce render-blocking CSS (single ~18 KB-unused global stylesheet)
+  - [x] (2026-10-04) Fonts self-hosted via `next/font/google` (Geist + Geist Mono): removes two render-blocking cross-origin stylesheet requests to fonts.googleapis.com plus two preconnects from every page
+  - [ ] Reduce render-blocking CSS: one 228 KB (42 KB gzip) global stylesheet, ~40% unused per page. `experimental.optimizeCss` has no effect in the App Router. Route-exclusive groups to split out of `globals.css`: `audit-*` (35 KB, only audit pages), `vs-*` (5 KB), `db-*` (5 KB), `pro-*` (8 KB). Verify no later global rule targets the moved classes
 - [~] Uptime check: `.github/workflows/uptime.yml` every 15 min, opens/closes a `uptime` GitHub issue (owner gets GitHub notifications). Error monitoring (Sentry) still needs an account (owner)
 
 ## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)
