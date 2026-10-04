@@ -2,6 +2,19 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 43)
+
+- Found that production stopped updating: Vercel's Hobby plan limits deployments to about 100 per
+  day and returned "Deployment rate limited - retry in 24 hours" for the last two commits (docs and
+  the `llms.txt` tool listing). Cause: every change was pushed to `main` plus two branches, and
+  each branch push built a Preview deployment, roughly 4 deployments per change.
+- Fix: `vercel.json` now disables deployments for `claude/*` branches; CLAUDE.md has a deploy
+  budget rule (one push to `main` per finished item, branches only to claim and release, check the
+  public commit status for the Vercel result, batch work when rate limited).
+- State: `main` is ahead of production by the `llms.txt` tools listing and docs only; nothing
+  user-visible is missing. The first push after the limit lifts deploys it. Everything shipped
+  before 07:25 UTC is live (verified: CSS split, tools, scanner fixes).
+
 ## 2026-10-04 (session 42)
 
 - Dogfooding: our own `/llms.txt` now lists the free tools hub and the five tools, so AI engines

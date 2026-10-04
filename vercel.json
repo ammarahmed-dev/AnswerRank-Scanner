@@ -8,5 +8,10 @@
       "path": "/api/cron/followup-email",
       "schedule": "0 9 * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "claude/*": false
+    }
+  }
 }

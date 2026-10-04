@@ -100,6 +100,12 @@ Based on the full code review from 2026-10-03.
 
 ## Owner actions (need dashboard/credential access Claude does not have)
 
+- DEPLOYMENT LIMIT (2026-10-04): Vercel rate limited deployments ("retry in 24 hours") after about
+  100 deployments in a day on the Hobby plan, so `main` was ahead of production until the limit
+  lifted. Claude now batches pushes and `vercel.json` turns off previews for `claude/*` branches.
+  If weekend sessions keep hitting the limit, upgrade the Vercel plan (Pro has no daily cap) or
+  tell Claude to push even less often.
+
 - DECISION NEEDED (marketing claim accuracy): the homepage stats bar says "5,700+ scans run", while
   `/api/stats` reports 977, and that already includes a hard-coded +500 (`app/api/stats/route.ts`).
   If scans from before reports were persisted justify a higher number, record the real figure;

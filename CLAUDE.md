@@ -97,6 +97,15 @@ continuously; if a session runs out of budget, the next scheduled session picks 
 6. Ship: merge your branch into `main` (merge commit or fast-forward) and `git push origin main`.
    Opening a PR first is optional (use one when GitHub tools are available, for the record).
    Never force-push `main`; never rewrite published history.
+   **Deploy budget (Vercel Hobby: 100 deployments/day, then "Deployment rate limited - retry in 24
+   hours" and nothing deploys).** Every push to a branch Vercel builds costs one deployment, so:
+   push only `main` once per finished item (batch small docs/changelog edits into that same
+   commit), push `claude/wip-*` branches only to claim (once) and release (once), never mirror the
+   same commit to several branches, and do not push after every tiny change. `vercel.json` disables
+   previews for `claude/*`. After a push, read https://api.github.com/repos/ammarahmed-dev/AnswerRank-Scanner/commits/<sha>/status
+   (public): if the "Vercel" status says rate limited, stop pushing, finish remaining work in one
+   batch, and note in the CHANGELOG that production is behind `main`; the first push after the
+   limit lifts deploys everything.
 7. After pushing, confirm production: wait for the deploy, then check https://www.aeocheck.co/,
    `/pricing`, `/blog`, `/api/stats` return 200 and that the shipped change behaves as intended.
    If production is broken, `git revert` the merge on `main` and push immediately, then fix forward.
