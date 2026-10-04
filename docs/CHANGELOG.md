@@ -2,6 +2,13 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 57)
+
+- GROWTH plan item: embeddable "AI readiness" badge. `GET /api/badge?domain=` returns an SVG (score from `runScanCore` without PageSpeed or AI, so it can differ slightly from a full report); `/tools/ai-readiness-badge` creates HTML and Markdown snippets that link to `/ai-seo-audit?ref=badge` (each embed is a backlink). Cost controls: strict hostname validation (no IPs, ports or paths), `assertPublicUrl` through `runScanCore`, CDN caching (s-maxage one day, stale-while-revalidate a week) so only a cache miss scans, and a global cap of 3000 badge scans per month after which the badge shows "n/a". Errors return a short-cached "n/a" badge, never an HTTP error, so embeds do not break.
+- In the tools index, footer, sitemap and llms.txt.
+- Verified locally: stripe.com and notion.so return scored SVGs with cache headers, invalid domains return n/a; tests (204), tsc, eslint, build; screenshots at 1280 and 390 px.
+- Follow-up: watch `badge:global` usage (usage table) after launch; lower the cap or add per-domain limits if abused.
+
 ## 2026-10-04 (session 56)
 
 - Traffic plan (`docs/GROWTH.md`): diagnosis (distribution, not product), ranked levers, engineering items, owner actions with ready drafts.

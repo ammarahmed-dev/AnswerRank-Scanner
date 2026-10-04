@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bot, Building2, Newspaper, Code2, FileSearch, FileText, ListChecks, Map, ShieldCheck, Tags } from "lucide-react";
+import { BadgeCheck, Bot, Building2, Newspaper, Code2, FileSearch, FileText, ListChecks, Map, ShieldCheck, Tags } from "lucide-react";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 import { buildPageMetadata } from "@/lib/seo";
@@ -54,6 +54,12 @@ const TOOLS = [
     icon: ShieldCheck,
     name: "robots.txt Generator",
     text: "Set a policy for GPTBot, OAI-SearchBot, PerplexityBot and ClaudeBot and copy the file.",
+  },
+  {
+    href: "/tools/ai-readiness-badge",
+    icon: BadgeCheck,
+    name: "AI Readiness Badge",
+    text: "Embed your AI readiness score on your site or README. Updates daily.",
   },
   {
     href: "/tools/article-schema-generator",
