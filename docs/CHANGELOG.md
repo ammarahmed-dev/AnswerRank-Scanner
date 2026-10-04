@@ -2,6 +2,16 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 33)
+
+- Discoverability: "Free tools" added to the Features dropdown (desktop) and the mobile menu, so
+  the four free tools are reachable from the header on every page, not only the footer.
+- Honesty fix: the homepage hero said the checklist was "Updated May 2026". The checklist was
+  last changed in October 2026 (canonical and answer-ready heading checks, 25 total), so the label
+  now says October 2026. Update it whenever the checks change.
+- Verified: tsc, build with the public Supabase config; Playwright: dropdown shows 5 items and
+  navigates to /tools, mobile menu shows 5 items.
+
 ## 2026-10-04 (session 32)
 
 - Site sweep: loaded all 34 sitemap URLs at 390 px and checked status, console/page errors,

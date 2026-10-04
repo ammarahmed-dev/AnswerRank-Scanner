@@ -8,6 +8,7 @@ const FEATURES = [
   { href: "/compare", label: "Compare", desc: "Side-by-side URL comparison",        emoji: "⚖️" },
   { href: "/audit",   label: "Audit",   desc: "Multi-page site audit",              emoji: "📋" },
   { href: "/monitor", label: "Monitor", desc: "Track score changes over time",      emoji: "📡" },
+  { href: "/tools",   label: "Free tools", desc: "llms.txt, AI crawler and schema tools", emoji: "🧰" },
 ] as const;
 
 export { FEATURES };

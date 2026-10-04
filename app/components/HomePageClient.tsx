@@ -707,7 +707,7 @@ function HomeInner({ heroContent, staticSections }: HomePageClientProps) {
                   <span><CheckCircle weight="fill" className="h-4 w-4" /> Works on any public URL</span>
                 </div>
                 {isClient && <p className="hero-trust-claim">25-point AEO checklist based on how ChatGPT, Perplexity, and Claude index web content</p>}
-                {isClient && <p className="hero-last-updated">Updated May 2026</p>}
+                {isClient && <p className="hero-last-updated">Updated October 2026</p>}
               </div>
 
               <AnimatedProductDemo />
