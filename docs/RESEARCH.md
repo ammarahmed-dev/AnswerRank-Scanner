@@ -2,6 +2,34 @@
 
 Market and product research that feeds `docs/ROADMAP.md`. Newest first. Cite sources.
 
+## 2026-10-04 - Market scan (secondary sources, treat numbers as unverified)
+
+- Citation behavior differs by engine, so per-engine guidance matters: reports say only ~11% of
+  domains are cited by both ChatGPT and Perplexity; Perplexity cites more sources per answer
+  (~22 vs ~10) and has shifted toward sources with explicit data points, named authors and clear
+  dates; ChatGPT Search surfaces business pages more often when schema.org markup is present.
+  Sources: [5WPR citations report](https://www.5wpr.com/research/state-of-ai-citations-2026/),
+  [Koira Q2 2026 changes](https://www.koira.ai/blog/ai-search-engines-changes-q2-2026-smb-response),
+  [QuickSEO comparison](https://quickseo.ai/blog/chatgpt-vs-perplexity-for-ai-visibility-in-2026-citations-traffic-and-conversion-compared).
+  These are vendor blogs, not primary data: do not quote their statistics on the site.
+- ChatGPT mentions brands more often than it links them, so "mentioned vs cited" (already in the
+  AI visibility tracker spec) is the right split.
+- Competitors lead with free graders as acquisition: HubSpot's AI Search Grader, Profound's free
+  AEO reports, plus free local tools (e.g. OmniGEO's content-extractability analyzer). Free,
+  single-purpose tools are the established funnel; AEOCheck now has three (`/tools`).
+  Source: [free AEO/GEO visibility checks](https://guptadeepak.com/how-to-check-aeo-and-geo-visibility-for-free-2026/).
+- Coverage check: the scanner already scores author, freshness (datePublished/dateModified),
+  schema, Q&A structure and answer-ready headings, so the reported signals are covered.
+
+**Feature ideas (added to ROADMAP Phase 5):**
+1. Content extractability tool: paste a URL, see which passages are quotable (answer-first,
+   self-contained, with a concrete data point) and which are not. Deterministic, no AI cost.
+2. "Citable facts" signal (numbers, named sources, dates in the first 100 words of key sections).
+   Would be a 26th check, so every "25 checks" claim and the test guard change together; weigh
+   against the copy churn first.
+3. Per-engine tips in the report ("what Perplexity favors" vs "what ChatGPT favors"), only if a
+   primary source can be cited.
+
 ## 2026-10-03 - AI crawler roles (drives the AI crawler check)
 
 - OpenAI: OAI-SearchBot decides inclusion in ChatGPT search answers; GPTBot is training only;
