@@ -8,7 +8,7 @@ import LoadingState from "../components/LoadingState";
 import ReportSectionNew from "../components/ReportSectionNew";
 import SiteFooter from "../components/SiteFooter";
 import SiteHeader from "../components/SiteHeader";
-import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserAccessToken } from "@/lib/supabase-browser-lazy";
 import { ScanResult } from "@/types/index";
 
 const LOADING_STEP_TIMES = [900, 1800, 3000, 4700, 6800, 8600];
@@ -71,8 +71,7 @@ export default function ReportClient() {
         }
 
         try {
-          const supabase = getSupabaseBrowserClient();
-          const token = (await getSafeSupabaseSession(supabase))?.access_token;
+          const token = await getBrowserAccessToken();
           if (redactedFallback && !token) return;
           const res = await fetch(`/api/reports/${encodeURIComponent(reportId)}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -131,8 +130,7 @@ export default function ReportClient() {
 
       try {
         const timeout = setTimeout(() => controller.abort(), 65000);
-        const supabase = getSupabaseBrowserClient();
-        const token = (await getSafeSupabaseSession(supabase))?.access_token;
+        const token = await getBrowserAccessToken();
         const res = await fetch("/api/scan", {
           method: "POST",
           headers: {

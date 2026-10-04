@@ -65,7 +65,7 @@ Based on the full code review from 2026-10-03.
 - [ ] Split `HomePageClient.tsx`, `ReportSectionNew.tsx`, `DashboardClient.tsx` into smaller components
 - [~] Consolidate icon libraries: Tabler webfont dropped; Lucide and Phosphor both remain (standardize on one) - Phosphor is only used for filled icons in 2 homepage files; swapping would visibly change the homepage for little gain (icons are tree-shaken). Low priority.
 - [ ] Homepage mobile performance (Lighthouse mobile, local build: 73, FCP 2.8 s, LCP 4.6 s, TBT ~190 ms; production via proxy: 50):
-  - [ ] Lazy-load the Supabase browser client (218 KB chunk incl. Realtime) - `lib/supabase-browser.ts` has ~20 call sites in 17 files; make it async and load after first paint (auth is high-risk: test login, dashboard, scan with token)
+  - [x] (2026-10-04) Lazy-load the Supabase browser client on the shared layout + homepage (`lib/supabase-browser-lazy.ts`): initial homepage JS 951 KB -> 728 KB raw. Lighthouse lab score unchanged (chunk still loads, after hydration). Remaining static importers are auth/dashboard pages only. Was: Lazy-load the Supabase browser client (218 KB chunk incl. Realtime) - `lib/supabase-browser.ts` has ~20 call sites in 17 files; make it async and load after first paint (auth is high-risk: test login, dashboard, scan with token)
   - [ ] Move static homepage sections out of the 1,300-line `HomePageClient.tsx` into server components to cut hydration work
   - [ ] Reduce render-blocking CSS (single ~18 KB-unused global stylesheet)
 - [~] Uptime check: `.github/workflows/uptime.yml` every 15 min, opens/closes a `uptime` GitHub issue (owner gets GitHub notifications). Error monitoring (Sentry) still needs an account (owner)

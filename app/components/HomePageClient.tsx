@@ -23,7 +23,7 @@ const TestimonialsSection = dynamic(
     loading: () => <section className="testimonials-section" style={{ minHeight: 320 }} />,
   }
 );
-import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserAccessToken, loadSupabaseBrowserClient } from "@/lib/supabase-browser-lazy";
 import { ScanResult } from "@/types/index";
 import { useRouter, useSearchParams } from "next/navigation";
 import { canRunScan, isProUser } from "@/lib/access";
@@ -249,8 +249,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
     const timeout = setTimeout(() => controller.abort(), 120000);
 
     try {
-      const supabase = getSupabaseBrowserClient();
-      const token = (await getSafeSupabaseSession(supabase))?.access_token;
+      const token = await getBrowserAccessToken();
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: {
@@ -433,8 +432,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
     setAuditState("loading");
     setAuditError("");
     try {
-      const supabase = getSupabaseBrowserClient();
-      const token = (await getSafeSupabaseSession(supabase))?.access_token;
+      const token = await getBrowserAccessToken();
       const res = await fetch("/api/audit", {
         method: "POST",
         headers: {
@@ -537,7 +535,7 @@ function HomeInner({ heroContent, latestPosts }: HomePageClientProps) {
       return;
     }
 
-    const supabase = getSupabaseBrowserClient();
+    const supabase = await loadSupabaseBrowserClient();
     if (!supabase) {
       setWaitlistState("error");
       setWaitlistError("Waitlist service is not configured. You can email hello@aeocheck.co to join.");

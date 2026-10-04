@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, Menu, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { loadSupabaseBrowserClient, supabaseConfigured } from "@/lib/supabase-browser-lazy";
 import { useAuth } from "@/app/context/AuthContext";
 import { FEATURES } from "./FeaturesDropdown";
 
@@ -15,7 +15,6 @@ const NAV_LINKS = [
 ];
 
 export default function AuthButton() {
-  const supabase = getSupabaseBrowserClient();
   const { user, isAdmin, plan } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
@@ -32,10 +31,11 @@ export default function AuthButton() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [menuOpen]);
 
-  if (!supabase) return null;
+  if (!supabaseConfigured) return null;
 
   const handleLogout = async () => {
     setMenuOpen(false);
+    const supabase = await loadSupabaseBrowserClient();
     if (supabase) await supabase.auth.signOut();
     sessionStorage.clear();
   };

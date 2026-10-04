@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserAccessToken, loadSupabaseBrowserClient, supabaseConfigured } from "@/lib/supabase-browser-lazy";
 
 export type UserPlan = "guest" | "free" | "onetime" | "pro" | "agency";
 
@@ -48,8 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onetimeScanCount: 0,
   });
 
-  const supabase = getSupabaseBrowserClient();
-
   const fetchAccount = useCallback(async (token: string) => {
     try {
       const res = await fetch("/api/account", {
@@ -80,35 +78,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refresh = useCallback(async () => {
-    if (!supabase) return;
-    const token = (await getSafeSupabaseSession(supabase))?.access_token;
+    if (!supabaseConfigured) return;
+    const token = await getBrowserAccessToken();
     if (!token) {
       setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null, onetimeScanCount: 0 });
       return;
     }
     await fetchAccount(token);
-  }, [supabase, fetchAccount]);
+  }, [fetchAccount]);
 
   useEffect(() => {
-    if (!supabase) {
-      setState((prev) => ({ ...prev, loading: false }));
-      return;
-    }
+    let cancelled = false;
+    let unsubscribe: (() => void) | null = null;
 
-    const client = supabase;
+    // supabase-js loads after first paint; onAuthStateChange still fires INITIAL_SESSION on subscribe.
+    loadSupabaseBrowserClient()
+      .then((client) => {
+        if (cancelled) return;
+        if (!client) {
+          setState((prev) => ({ ...prev, loading: false }));
+          return;
+        }
+        const {
+          data: { subscription },
+        } = client.auth.onAuthStateChange(async (_event, session) => {
+          if (!session?.access_token) {
+            setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null, onetimeScanCount: 0 });
+            return;
+          }
+          await fetchAccount(session.access_token);
+        });
+        unsubscribe = () => subscription.unsubscribe();
+      })
+      .catch(() => {
+        if (!cancelled) setState((prev) => ({ ...prev, loading: false }));
+      });
 
-    const {
-      data: { subscription },
-    } = client.auth.onAuthStateChange(async (_event, session) => {
-      if (!session?.access_token) {
-        setState({ user: null, plan: "guest", isAdmin: false, remaining: null, unlimited: false, loading: false, portalUrl: null, onetimeScanCount: 0 });
-        return;
-      }
-      await fetchAccount(session.access_token);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase, fetchAccount]);
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, [fetchAccount]);
 
   const value: AuthContextValue = { ...state, refresh };
 

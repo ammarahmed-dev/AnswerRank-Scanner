@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserAccessToken } from "@/lib/supabase-browser-lazy";
 
 export type UpgradePlan = "onetime" | "pro" | "agency";
 
@@ -34,8 +34,7 @@ export default function UpgradeButton({
     setLoading(true);
     setError("");
     try {
-      const supabase = getSupabaseBrowserClient();
-      const token = (await getSafeSupabaseSession(supabase))?.access_token;
+      const token = await getBrowserAccessToken();
       if (!token) {
         const returnTo = typeof window !== "undefined"
           ? window.location.pathname + window.location.search

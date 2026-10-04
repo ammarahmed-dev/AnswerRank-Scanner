@@ -2,6 +2,18 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 24)
+
+- Performance: supabase-js (223 KB raw incl. Realtime) is no longer in the initial script set of
+  every page. The auth provider, header, homepage, upgrade/retest buttons and report page load it
+  on demand via `lib/supabase-browser-lazy.ts` (same client singleton). Homepage initial JS
+  951 KB -> 728 KB raw. Lighthouse mobile lab score is within noise (0.69-0.73 both builds) since
+  the chunk still downloads right after hydration; LCP is still 4.5 s and needs the
+  server-component split.
+- Verified: tsc, lint, 116 tests, build; Playwright against a build with the public Supabase
+  config: guest header shows Login, a stored session shows the account menu and /api/account is
+  called, logout clears the session, homepage scan still sends the bearer token.
+
 ## 2026-10-04 (session 23)
 
 - New free tool: llms.txt generator at `/tools/llms-txt-generator`. Enter a URL; it reads the

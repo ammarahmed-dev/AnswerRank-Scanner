@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import LoadingState from "./LoadingState";
-import { getSafeSupabaseSession, getSupabaseBrowserClient } from "@/lib/supabase-browser";
+import { getBrowserAccessToken } from "@/lib/supabase-browser-lazy";
 import { ScanResult } from "@/types/index";
 
 type ProgressStatus = "started" | "complete" | "skipped" | "error";
@@ -57,8 +57,7 @@ export default function RetestButton({
     setLoaderProgress({ step: 1, label: "Preparing scan", status: "started" });
 
     try {
-      const supabase = getSupabaseBrowserClient();
-      const token = (await getSafeSupabaseSession(supabase))?.access_token;
+      const token = await getBrowserAccessToken();
 
       const checkRes = await fetch(`/api/reports/${reportId}/retest`, {
         method: "POST",
