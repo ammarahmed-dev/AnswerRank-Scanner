@@ -87,6 +87,7 @@ Based on the full code review from 2026-10-03.
   - [x] (2026-10-04) Article schema generator (`/tools/article-schema-generator`: Article/BlogPosting/NewsArticle with author, dates, image, publisher; validates dates and URLs; output passes the schema checker in tests). The report's Article Schema issue links to it.
   - [ ] Next tool candidates from GSC queries ("aeo score checker", "aeo tools", "aeo keyword tracker"): sitemap checker (parse sitemap.xml, lastmod, robots reference), meta tag / Open Graph preview checker, Article schema generator. Check /tools impressions in the GSC Overview first.
   - [x] `/tools` index page
+  - [x] (2026-10-04) Traffic plan in `docs/GROWTH.md` and the first link-worthy asset: `/research/ai-readiness-study` (85 well-known sites; script `scripts/ai-readiness-study.mjs`, data `data/ai-readiness-study.json`). Next: embeddable AI readiness badge, opt-in shareable report pages, study v2 with change over time, platform landing pages.
   - [x] (2026-10-04) Report "Fix Pack": generated robots.txt, Organization schema, llms.txt starter and head tags from the scan (full-report viewers). Zip download shipped. Article/FAQ prefill skipped on purpose (author and dates unknown).
   - [x] (market research 2026-10-04, see docs/RESEARCH.md) Reposition homepage/tools copy and metadata from "AEO" jargon toward "AI SEO / AI visibility" (keep AEO as secondary); no claims change.
   - [ ] Free AI brand-mention check (is my brand named in AI answers for 3 prompts): the biggest query family, but costs LLM calls. Blocked on owner: Perplexity/Gemini keys and budget (see Owner actions).
@@ -115,6 +116,8 @@ Based on the full code review from 2026-10-03.
 ---
 
 ## Owner actions (need dashboard/credential access Claude does not have)
+
+- TRAFFIC (docs/GROWTH.md): post the study and tools on Show HN / Reddit / Product Hunt / directories using the drafts there, ask the authors of "best AEO tools" roundups for inclusion, request indexing in Search Console, consider Vercel Pro.
 
 - DEPLOYMENT LIMIT (2026-10-04): Vercel rate limited deployments ("retry in 24 hours") after about
   100 deployments in a day on the Hobby plan, so `main` was ahead of production until the limit

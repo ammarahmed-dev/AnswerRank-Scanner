@@ -10646,3 +10646,7 @@ textarea.contact-control {
 .fix-pack-title { margin: 0 0 4px; font-size: 1.05rem; font-weight: 700; }
 .fix-pack-output { min-height: 180px; max-height: 340px; }
 @media print { .fix-pack-list { display: none; } }
+
+.study-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.95rem; }
+.study-table th, .study-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--color-line); white-space: nowrap; }
+.study-table th { color: var(--color-ink-soft); font-weight: 600; }

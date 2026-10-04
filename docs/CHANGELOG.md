@@ -2,6 +2,13 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 56)
+
+- Traffic plan (`docs/GROWTH.md`): diagnosis (distribution, not product), ranked levers, engineering items, owner actions with ready drafts.
+- New original-data page `/research/ai-readiness-study`: robots.txt, llms.txt and homepage-schema signals on 85 hand-picked well-known sites (collected 2026-10-04 with `scripts/ai-readiness-study.mjs`, results in `data/ai-readiness-study.json`). Headlines are computed from the data at build time: 42% publish llms.txt (65% of SaaS, 0 of 21 media), 18% of readable robots.txt files block GPTBot, 10% block an AI search crawler. Page states the limits (hand-picked sample, unreadable sites excluded per metric, no claim that llms.txt helps). github.com was removed from the list because the sandbox proxy intercepts it. Dataset + FAQ JSON-LD, sitemap and llms.txt entries. It is a research page, not a blog post, so the 2-posts-per-weekend cap is untouched.
+- Verified: tsc, 201 tests (data consistency tests), build, screenshots at 1280 and 390 px.
+- DEPLOY STATUS: Vercel rate limited after the previous push; this ships with the next deploy (retry scheduled).
+
 ## 2026-10-04 (session 55)
 
 - Fix Pack: "Download all (.zip)" bundles every generated file. Uses a small store-only ZIP writer (`lib/zip.ts`, no dependency); tests check the standard CRC-32 vector and that `unzip -t` accepts the archive and reads files back. Article/FAQ schema prefill was deliberately not added: it would need an author and publish date the scan cannot know, and placeholder values pasted unreviewed would be wrong markup.

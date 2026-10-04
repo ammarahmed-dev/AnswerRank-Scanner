@@ -49,6 +49,9 @@ AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) 
 - About: ${SITE_URL}/about
 - Contact: ${SITE_URL}/contact
 
+## Research
+- ${SITE_URL}/research/ai-readiness-study: robots.txt, llms.txt and schema signals on 85 well-known sites
+
 ## Free tools (no signup)
 - ${SITE_URL}/ai-seo-audit: free AI SEO audit of any URL (25 checks)
 - ${SITE_URL}/tools: all free tools
