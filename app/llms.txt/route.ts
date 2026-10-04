@@ -50,6 +50,7 @@ AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) 
 - Contact: ${SITE_URL}/contact
 
 ## Free tools (no signup)
+- ${SITE_URL}/ai-seo-audit: free AI SEO audit of any URL (25 checks)
 - ${SITE_URL}/tools: all free tools
 - ${SITE_URL}/tools/llms-txt-generator: generate an llms.txt file from a site's key pages
 - ${SITE_URL}/tools/ai-crawler-checker: check which AI crawlers a robots.txt allows or blocks

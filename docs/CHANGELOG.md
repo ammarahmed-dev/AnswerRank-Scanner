@@ -2,6 +2,14 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 53)
+
+- Market research recorded (docs/RESEARCH.md) and acted on, except affiliate links and the brand-mention check (owner decision: skipped for now).
+- New `/ai-seo-audit` landing page (free AI SEO audit: six check groups each linking its free tool, FAQ + WebApplication JSON-LD), in the sitemap, footer and llms.txt. Homepage title, description and badge now lead with "AI SEO audit" and keep "AEO checker"; no claims or numbers changed.
+- Verified: tsc, 190 tests, build, screenshots at 1280 and 390 px (no horizontal overflow). Local build used a temporary font stub because the sandbox cannot fetch Google font files; layout.tsx is unchanged in the commit.
+- Not done: email capture (needs a privacy-policy change, owner), display ads (traffic too low), blog hubs (next weekend, 2-post cap already used).
+- DEPLOY STATUS: production may still be behind `main` while Vercel's rate limit holds; the scheduled retry checks it.
+
 ## 2026-10-04 (session 52)
 
 - SECURITY / paywall fix: `GET /api/account` returned each recent report's complete stored

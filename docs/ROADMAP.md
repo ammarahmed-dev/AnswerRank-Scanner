@@ -87,10 +87,10 @@ Based on the full code review from 2026-10-03.
   - [x] (2026-10-04) Article schema generator (`/tools/article-schema-generator`: Article/BlogPosting/NewsArticle with author, dates, image, publisher; validates dates and URLs; output passes the schema checker in tests). The report's Article Schema issue links to it.
   - [ ] Next tool candidates from GSC queries ("aeo score checker", "aeo tools", "aeo keyword tracker"): sitemap checker (parse sitemap.xml, lastmod, robots reference), meta tag / Open Graph preview checker, Article schema generator. Check /tools impressions in the GSC Overview first.
   - [x] `/tools` index page
-  - [ ] (market research 2026-10-04, see docs/RESEARCH.md) Reposition homepage/tools copy and metadata from "AEO" jargon toward "AI SEO / AI visibility" (keep AEO as secondary); no claims change.
+  - [x] (market research 2026-10-04, see docs/RESEARCH.md) Reposition homepage/tools copy and metadata from "AEO" jargon toward "AI SEO / AI visibility" (keep AEO as secondary); no claims change.
   - [ ] Free AI brand-mention check (is my brand named in AI answers for 3 prompts): the biggest query family, but costs LLM calls. Blocked on owner: Perplexity/Gemini keys and budget (see Owner actions).
   - [ ] Affiliate slots (Semrush, HubSpot) on tool/blog pages with disclosure component. Blocked on owner: program sign-up IDs.
-  - [ ] Public "AI SEO audit" landing page for the scanner aimed at the "ai seo audit / website audit for ai" queries.
+  - [x] Public "AI SEO audit" landing page (`/ai-seo-audit`) for the scanner aimed at the "ai seo audit / website audit for ai" queries.
   - [x] Content extractability tool at `/tools/content-extractability` (heading-opening passage analysis, 20 per month per client/IP, no AI cost)
   - [ ] Weigh a 26th "citable facts" check against the "25 checks" copy churn (docs/RESEARCH.md)
   - [ ] Before building more tools: read the GSC Overview (now available) to see which tools earn impressions. Candidates next: per-engine tips in the report (needs a primary source), a 26th "citable facts" check.
