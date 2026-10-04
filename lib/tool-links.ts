@@ -4,11 +4,16 @@ export type ToolLink = { href: string; label: string };
 const AI_CRAWLER_TOOL: ToolLink = { href: "/tools/ai-crawler-checker", label: "Check which AI crawlers your robots.txt blocks" };
 const EXTRACTABILITY_TOOL: ToolLink = { href: "/tools/content-extractability", label: "Test which sections AI engines can quote" };
 
+const SCHEMA_TOOL: ToolLink = { href: "/tools/schema-checker", label: "Inspect this page's schema markup" };
+
 export const TOOL_FOR_CHECK: Record<string, ToolLink> = {
   llms_txt: { href: "/tools/llms-txt-generator", label: "Generate your llms.txt free" },
   ai_bot_access: AI_CRAWLER_TOOL,
   robots: AI_CRAWLER_TOOL,
   faq_schema: { href: "/tools/faq-schema-generator", label: "Build FAQ schema free" },
+  schema_present: SCHEMA_TOOL,
+  article_schema: SCHEMA_TOOL,
+  structured_density: SCHEMA_TOOL,
   qa_structure: EXTRACTABILITY_TOOL,
   heading_structure: EXTRACTABILITY_TOOL,
 };

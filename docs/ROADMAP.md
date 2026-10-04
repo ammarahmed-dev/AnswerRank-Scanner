@@ -78,11 +78,12 @@ Based on the full code review from 2026-10-03.
   - [x] Free AI crawler checker at `/tools/ai-crawler-checker` (robots.txt rules per AI crawler,
     search vs training vs user agents; 30 per month per client/IP).
   - [x] Free FAQ schema generator (client-side, no server cost) at `/tools/faq-schema-generator`
+  - [x] Free schema markup checker at `/tools/schema-checker` (JSON-LD parse, types, missing required/recommended props; 30 per month per client/IP); report issues for schema checks link to it
   - [x] `/tools` index page
   - [x] Content extractability tool at `/tools/content-extractability` (heading-opening passage analysis, 20 per month per client/IP, no AI cost)
   - [ ] Weigh a 26th "citable facts" check against the "25 checks" copy churn (docs/RESEARCH.md)
   - [ ] Before building more tools: check Search Console data (owner action: fix the GSC service
-    account) to see which of the 3 tools earn traffic. Candidate next: AI schema checker.
+    account) to see which of the 3 tools earn traffic. Candidates next: per-engine tips in the report (needs a primary source), a 26th "citable facts" check.
   - [x] Free llms.txt generator tool at `/tools/llms-txt-generator` (homepage + sitemap pages,
     ranked and grouped; 10 per month per client/IP; SSRF-safe fetches). Funnels to the scanner.
 - UI/UX: polish the scan flow, report, dashboard and marketing pages; mobile first; measure with

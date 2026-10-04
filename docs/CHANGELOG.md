@@ -2,6 +2,20 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-04 (session 36)
+
+- New free tool: schema markup checker at `/tools/schema-checker`. Fetches a page, parses every
+  JSON-LD block (flags invalid JSON), lists the schema.org types (handles `@graph`, arrays, full
+  type URLs and subtypes such as BlogPosting) and flags missing required and recommended
+  properties for Organization, WebSite, WebPage, Article, FAQPage (also validates each
+  question/answer), Product, SoftwareApplication, LocalBusiness, BreadcrumbList, Person and
+  HowTo. Suggestions for missing identity/page/FAQ markup count a publisher or author declared
+  inside another entity. Microdata and RDFa are not read (stated on the page). 30 per month per
+  client/IP; `assertPublicUrl` + `fetchHtml`. Added to `/tools`, the sitemap and the footer;
+  report issues for Schema Markup, Article Schema and Structured Data Density now link to it.
+- Verified: 147 tests, tsc, lint, build; real runs on aeocheck.co (9 blocks, 9 types), a blog
+  post, stripe.com, example.com (none found), `[::1]` rejected; Playwright desktop + mobile.
+
 ## 2026-10-04 (session 35)
 
 - Report to tool funnel: an expanded issue in the report now ends with a "Free tool" link when a

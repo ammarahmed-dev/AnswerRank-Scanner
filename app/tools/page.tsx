@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bot, FileSearch, FileText, ListChecks } from "lucide-react";
+import { Bot, Code2, FileSearch, FileText, ListChecks } from "lucide-react";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 import { buildPageMetadata } from "@/lib/seo";
@@ -8,7 +8,7 @@ import { buildPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildPageMetadata({
   title: "Free AEO Tools | AEOCheck",
   description:
-    "Free tools for AI search visibility: generate an llms.txt file, check which AI crawlers your robots.txt allows, build FAQ schema and test how quotable your content is. No signup needed.",
+    "Free tools for AI search visibility: generate an llms.txt file, check which AI crawlers your robots.txt allows, build FAQ schema, check your schema markup and test how quotable your content is. No signup needed.",
   path: "/tools",
 });
 
@@ -30,6 +30,12 @@ const TOOLS = [
     icon: FileSearch,
     name: "Content Extractability Checker",
     text: "Test whether each section of a page opens with a passage AI engines can quote on its own.",
+  },
+  {
+    href: "/tools/schema-checker",
+    icon: Code2,
+    name: "Schema Markup Checker",
+    text: "Inspect a page's JSON-LD: which types it has, which required properties are missing.",
   },
   {
     href: "/tools/faq-schema-generator",

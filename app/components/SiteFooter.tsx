@@ -40,6 +40,7 @@ export default function SiteFooter() {
               <Link href="/tools/ai-crawler-checker">AI Crawler Checker</Link>
               <Link href="/tools/faq-schema-generator">FAQ Schema Generator</Link>
               <Link href="/tools/content-extractability">Content Extractability</Link>
+              <Link href="/tools/schema-checker">Schema Checker</Link>
               <a href="/sitemap">Sitemap</a>
             </div>
           </div>
