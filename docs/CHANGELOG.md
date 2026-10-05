@@ -2,6 +2,12 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-05 (session 60)
+
+- Owner request: the automatic cover-image workflow did not work, so it is gone. Deleted `.github/workflows/backfill-images.yml` and `scripts/backfill-images.mjs`, removed the cover step from `on-publish.yml` (which now only needs read permission) and from `content-draft.yml`. Covers are now made by hand with the new `scripts/make-cover.mjs` (branded 1200x630 PNG in the same style as the existing covers; documented in CLAUDE.md).
+- Generated and set the cover for `how-to-get-cited-by-chatgpt`.
+- Note: `generate-blog.mjs` still has its own optional Hugging Face image step (needs `HF_TOKEN`); unused, left as is.
+
 ## 2026-10-05 (session 59)
 
 - Blog: published the ChatGPT pillar hub `how-to-get-cited-by-chatgpt` (six steps, each linking a deeper guide or free tool; FAQ in frontmatter and body; no statistics). Claims are limited to OpenAI's documented crawler roles (OAI-SearchBot for ChatGPT search, GPTBot for training, ChatGPT-User for user-triggered fetches) and the utm_source=chatgpt.com referral parameter. `coverImage` left empty so the on-publish workflow generates the cover.

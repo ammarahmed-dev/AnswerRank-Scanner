@@ -7,7 +7,7 @@ on:
       - "content/blog/**"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   notify:
@@ -40,28 +40,6 @@ jobs:
           # Give Vercel time to build before search engines fetch the new URLs.
           # Replace with a deployment-status check if you prefer (vercel CLI or deploy hook).
           sleep 180
-
-      - name: Backfill missing cover image if needed
-        if: steps.changed.outputs.slugs != ''
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          BLOG_DIR: content/blog
-          CHANGED_SLUGS: ${{ steps.changed.outputs.slugs }}
-        run: |
-          SLUG="$CHANGED_SLUGS"
-          if [ -z "$SLUG" ]; then exit 0; fi
-          # Only generate if coverImage is empty in frontmatter
-          MDX="content/blog/${SLUG%% *}.mdx"
-          if grep -q 'coverImage: ""' "$MDX" 2>/dev/null; then
-            echo "No cover image found for ${SLUG%% *} - generating..."
-            node scripts/backfill-images.mjs --slug ${SLUG%% *}
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add public/images/blog/ content/blog/
-            git commit -m "chore: auto-generate cover image for ${SLUG%% *}" || true
-            git pull --rebase --autostash && git push || echo "push failed (another run pushed first); the next run will pick it up"
-          fi
 
       - name: Ping IndexNow (Bing/Yandex/etc.)
         if: steps.changed.outputs.slugs != ''

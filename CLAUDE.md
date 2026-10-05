@@ -148,9 +148,11 @@ Triggers: "write a blog post about X", "generate blog for X".
   date, author "Ammar Ahmed", tags), internal links to `/pricing` and the scanner, FAQ section,
   no em dashes. Run `node scripts/link-lint.mjs`.
 - Note: `/features` redirects to `/pricing` (see `next.config.ts`), so link `/pricing` directly.
-- Publishing: commit each new post on its own (separate from other content edits). The
-  on-publish workflow only reads the last commit and generates a cover image for the first
-  changed post with `coverImage: ""`, then pings IndexNow/GSC. Spokes must link their pillar hub
+- Publishing: commit each new post on its own (separate from other content edits). Make the
+  cover yourself: `PLAYWRIGHT_CORE=<path to playwright-core> node scripts/make-cover.mjs <slug> "<title>" "<tag>"`
+  writes `public/images/blog/<slug>.png` (1200x630, same look as the other covers); set `coverImage` and
+  `coverImageAlt` in the frontmatter and commit the image with the post. There is no automatic cover
+  workflow (it was removed). The on-publish workflow only reads the last commit, then pings IndexNow/GSC. Spokes must link their pillar hub
   (link-lint) - never link a planned post that does not exist yet; write the hub first.
 - MDX supports GitHub-flavored Markdown (tables, task lists) via remark-gfm.
 
