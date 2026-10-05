@@ -1,0 +1,126 @@
+---
+title: 'How to Get Your Website Cited by ChatGPT: A Practical Guide'
+description: >-
+  What it takes for ChatGPT to find, trust and cite your website: crawler
+  access, structured facts, quotable pages and outside mentions, step by step.
+date: 2026-10-05T00:00:00.000Z
+slug: how-to-get-cited-by-chatgpt
+tags:
+  - chatgpt
+  - ai-search
+  - citations
+  - aeo
+author: Ammar Ahmed
+coverImage: ''
+faqs:
+  - question: How do I get my website cited by ChatGPT?
+    answer: >-
+      Let OAI-SearchBot crawl your site, publish pages that answer specific
+      questions in their first paragraph, describe your business with consistent
+      structured data, and earn mentions on third-party sites that ChatGPT also
+      reads. Nobody can guarantee a citation, but these steps remove the common
+      reasons a site is skipped.
+  - question: Does blocking GPTBot stop ChatGPT from citing me?
+    answer: >-
+      Not by itself. GPTBot is OpenAI's training crawler. ChatGPT search uses a
+      separate crawler, OAI-SearchBot, so you can opt out of training and still
+      be eligible to appear in search answers. Blocking OAI-SearchBot is the
+      choice that removes you from ChatGPT search results.
+  - question: Can I pay to be cited by ChatGPT?
+    answer: >-
+      There is no way to buy a citation in an answer. What you can do is make
+      your pages easy to read and worth quoting.
+  - question: How do I know if ChatGPT sends me traffic?
+    answer: >-
+      ChatGPT adds a utm_source=chatgpt.com parameter to links it opens, so
+      filter your analytics for that source. Many answers mention a brand without
+      a link, which analytics cannot see.
+  - question: How long does it take to get cited?
+    answer: >-
+      There is no fixed timeline. Crawler access and page changes can be picked
+      up when pages are re-fetched, while reputation signals such as reviews and
+      mentions build over months. Re-check after each change instead of waiting.
+---
+
+People now ask ChatGPT what to buy, which tool to use and how to solve a problem, and it answers with a short list of sources and brands. Getting cited means being one of them. No one controls that list, and anyone promising a guaranteed spot is guessing. What you can control is whether ChatGPT is able to read your site, understand what you are, and find something worth quoting.
+
+This guide is the overview. Each step links to a deeper guide or a free tool.
+
+## Cited, mentioned and recommended are different things
+
+- **Cited:** ChatGPT shows your page as a source, usually with a link.
+- **Mentioned:** your brand appears in the answer text, sometimes with no link.
+- **Recommended:** your product is named as an option for a "best X for Y" question.
+
+A link comes from pages ChatGPT fetched while answering. A mention can also come from what it learned in training or from other sites that talk about you. That is why both your own pages and your presence elsewhere matter.
+
+## Step 1: Let the right crawlers in
+
+OpenAI documents separate crawlers for separate jobs. **OAI-SearchBot** fetches pages for ChatGPT search, **GPTBot** collects training data, and **ChatGPT-User** fetches a page when a person asks about it. Blocking GPTBot opts you out of training only. Blocking OAI-SearchBot means your pages are not eligible for ChatGPT search answers.
+
+1. Open `yourdomain.com/robots.txt` and look for rules that name these crawlers or block everything.
+2. Check it with the free [AI crawler checker](/tools/ai-crawler-checker), which separates search, training and user-triggered agents.
+3. If you need a clean file, build one with the [robots.txt generator](/tools/robots-txt-generator).
+
+Also look beyond robots.txt: a firewall, bot-protection rule or login wall can block crawlers that robots.txt allows. Our guide to [robots.txt for AI crawlers](/blog/robots-txt-ai-crawlers) covers the details.
+
+## Step 2: Make the page readable without JavaScript tricks
+
+Crawlers fetch HTML. If your main text only appears after client-side scripts run, or sits behind a cookie wall, a fetch may see a near-empty page. View the page source or turn JavaScript off and check that your headings, text and links are all there. Keep pages fast and stable, and give every page a unique title, description and canonical URL. The [technical AEO guide](/blog/technical-aeo-guide) is the full checklist.
+
+## Step 3: State who you are in structured, consistent facts
+
+ChatGPT has to decide what your business is. Remove the guesswork.
+
+- Say what you are in one plain sentence on the homepage: category, audience, differentiator.
+- Add Organization and WebSite schema with your name, logo and official profiles ([generator](/tools/organization-schema-generator)).
+- Add Article schema with a named author and dates to posts ([generator](/tools/article-schema-generator)), and FAQ schema where a page really answers questions ([generator](/tools/faq-schema-generator)).
+- Publish an [llms.txt](/tools/llms-txt-generator) that summarizes the site and points to your best pages. It is a young convention and not every system reads it, but it costs little.
+- Validate the result with the [schema checker](/tools/schema-checker).
+
+Keep the sentence, the schema and your profiles on other sites consistent. Conflicting descriptions make you harder to place.
+
+## Step 4: Write pages that can be quoted
+
+An answer engine lifts a passage. Make passages liftable.
+
+- Give each important question its own heading, then answer it in the first one or two sentences.
+- Put concrete facts in text: prices, limits, dates, specifications, steps. A figure that lives only in an image or a script cannot be quoted.
+- Name the author and show when the page was last updated.
+- Prefer one clear page per question over a long page that touches everything.
+
+The [content extractability checker](/tools/content-extractability) shows which sections already open with a quotable passage and which bury the answer.
+
+## Step 5: Be present where ChatGPT also looks
+
+For "best tool for X" questions, ChatGPT draws on more than your site. Independent reviews, comparison articles, community discussions and documentation all shape how you are described. Earn them honestly: real customer reviews on the sites in your category, accurate listings, useful answers in communities where your product is genuinely relevant, and press or roundups that cover you on merit. Do not buy reviews or seed fake threads. The platforms forbid it and it is easy to discount.
+
+## Step 6: Check, fix, check again
+
+1. **Check readiness.** [Run a free AEOCheck scan](/#scanner) on your homepage and two key pages. It scores 25 signals, ranks the fixes and generates ready-to-paste files for the common ones.
+2. **Check the answers.** In a fresh ChatGPT session, ask the questions your buyers ask, such as "what is the best [category] tool for [use case]?", and note which sources and brands appear. Repeat a few times, since answers vary. [How to check if your website appears in ChatGPT recommendations](/blog/how-to-check-if-website-appears-in-chatgpt-recommendations) walks through it.
+3. **Check traffic.** Filter analytics for `utm_source=chatgpt.com`.
+4. **Fix and repeat.** Change one thing at a time so you can tell what helped.
+
+If you are not appearing and are not sure why, [seven common reasons ChatGPT is not citing your website](/blog/why-chatgpt-is-not-citing-your-website) is the best place to start, and [what other sites do with AI crawlers](/research/ai-readiness-study) puts your setup in context.
+
+## Frequently asked questions
+
+**How do I get my website cited by ChatGPT?**
+Let OAI-SearchBot crawl your site, answer specific questions in the first paragraph of dedicated pages, describe your business with consistent structured data, and earn mentions on third-party sites. None of this guarantees a citation, but it removes the usual reasons to be skipped.
+
+**Does blocking GPTBot stop ChatGPT from citing me?**
+Not by itself. GPTBot is the training crawler. ChatGPT search uses OAI-SearchBot, so you can opt out of training and still be eligible for search answers.
+
+**Can I pay to be cited?**
+No. You cannot buy a place in an answer. You can make your pages easy to read and worth quoting.
+
+**How do I know if ChatGPT sends me traffic?**
+Filter your analytics for the source `chatgpt.com` (links carry a `utm_source=chatgpt.com` parameter). Brand mentions without links will not show up there.
+
+**How long does it take?**
+There is no fixed timeline. Technical fixes can register when pages are re-fetched; reputation signals take months. Re-check after every change.
+
+---
+
+Start with a baseline: [run a free AEO scan](/#scanner) or see an example in the [sample report](/sample-report).

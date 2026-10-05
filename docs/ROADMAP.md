@@ -102,7 +102,8 @@ Based on the full code review from 2026-10-03.
   Lighthouse and fix regressions.
 - Blog: up to 2 useful posts per weekend from `content/topical-map.json` and research.
   - [x] 2026-10-03: `technical-aeo-guide` (technical pillar hub), `robots-txt-ai-crawlers`
-  - [ ] Next: `how-to-get-cited-by-chatgpt` and `measure-ai-search-traffic` (pillar hubs already linked from published posts; temporary redirects in `next.config.ts` until written - remove the redirect when publishing), `ai-crawlers-list`, `llms-txt-guide`
+  - [x] 2026-10-05: `how-to-get-cited-by-chatgpt` hub published (redirect removed)
+  - [ ] Next: `measure-ai-search-traffic` (pillar hubs already linked from published posts; temporary redirects in `next.config.ts` until written - remove the redirect when publishing), `ai-crawlers-list`, `llms-txt-guide`
 - Research: weekly scan of AI search changes and competitor tools; update `docs/RESEARCH.md`.
 - Search Console driven work (first report 2026-10-04, window 2026-09-03..10-01; very little traffic yet):
   - [x] (2026-10-04) "aeo checker" (pos 12.1, 76 impressions) and "best aeo checker" (pos 10.6, 60) rank on `/blog/best-aeo-tools-ai-search-visibility` with 0 clicks: added a direct "What is the best AEO checker?" answer, retitled for 2026, fixed "20+" to 25; homepage title/description now say "AEO checker". Re-check positions in the next GSC Overview.

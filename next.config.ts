@@ -28,7 +28,6 @@ const nextConfig: NextConfig = {
       { source: "/blog/best-aeo-tools", destination: "/blog/best-aeo-tools-ai-search-visibility", permanent: true },
       // Planned pillar hubs (content/topical-map.json) already linked from published posts.
       // Temporary until the hub is written; delete the redirect when the post ships.
-      { source: "/blog/how-to-get-cited-by-chatgpt", destination: "/blog/how-to-check-if-website-appears-in-chatgpt-recommendations", permanent: false },
       { source: "/blog/measure-ai-search-traffic", destination: "/blog/chatgpt-visibility-checker", permanent: false },
       { source: "/index.php", destination: "/", permanent: true },
       { source: "/logo.png", destination: "/icons/icon-512.png", permanent: true },

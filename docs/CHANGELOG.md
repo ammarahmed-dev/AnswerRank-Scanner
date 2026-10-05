@@ -2,6 +2,13 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-05 (session 59)
+
+- Blog: published the ChatGPT pillar hub `how-to-get-cited-by-chatgpt` (six steps, each linking a deeper guide or free tool; FAQ in frontmatter and body; no statistics). Claims are limited to OpenAI's documented crawler roles (OAI-SearchBot for ChatGPT search, GPTBot for training, ChatGPT-User for user-triggered fetches) and the utm_source=chatgpt.com referral parameter. `coverImage` left empty so the on-publish workflow generates the cover.
+- Removed its temporary redirect in `next.config.ts`, marked it published in `content/topical-map.json`, and linked it from `how-to-check-if-website-appears-in-chatgpt-recommendations`. link-lint now passes with 0 errors (it had one since the redirect days).
+- Verified: tsc, 205 tests, build, local render at 1280 and 390 px.
+- Still open: `measure-ai-search-traffic` hub (temporary redirect remains), a real AEO checklist post.
+
 ## 2026-10-04 (session 58)
 
 - Production bug fixed: `/ai-seo-audit` linked to `/blog/aeo-checklist`, which does not exist (404). Now points to an existing post. New guard `tests/blog-links.test.ts` fails when any `/blog/<slug>` string in `app/` or `lib/` has no post, redirect or route (verified it fails on a bad slug).
