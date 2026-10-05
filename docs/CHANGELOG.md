@@ -2,6 +2,12 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-05 (session 61)
+
+- Owner decision: accept CrowdReply's link-exchange request (email thread "wdyt?"). Added CrowdReply as entry 2 in `best-aeo-tools-ai-search-visibility` (later entries renumbered 3-10, comparison table row added). Written from what CrowdReply's own site says (AI visibility tracking across ChatGPT, Perplexity, Gemini and Claude; community engagement feature; backlinks marketplace), attributed to the vendor, with its limits (off-site only, performance figures unverified, follow platform rules and disclose affiliation). Because the placement is part of a reciprocal arrangement, the entry carries a disclosure line and the link is `rel="sponsored noopener"`; remove that only if the owner decides otherwise (Google treats exchanged links without it as a link scheme risk).
+- Returned: reply to Timo (CrowdReply) is a Gmail draft awaiting the owner's send; the Pixelied backlink (they pick or we ask for a topical article) is theirs to place.
+- Verified: build and local render show the anchor with rel="sponsored noopener".
+
 ## 2026-10-05 (session 60)
 
 - Owner request: the automatic cover-image workflow did not work, so it is gone. Deleted `.github/workflows/backfill-images.yml` and `scripts/backfill-images.mjs`, removed the cover step from `on-publish.yml` (which now only needs read permission) and from `content-draft.yml`. Covers are now made by hand with the new `scripts/make-cover.mjs` (branded 1200x630 PNG in the same style as the existing covers; documented in CLAUDE.md).
