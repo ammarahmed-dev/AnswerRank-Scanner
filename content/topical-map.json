@@ -330,7 +330,7 @@
       "pillar": "perplexity",
       "role": "hub",
       "tier": 1,
-      "status": "planned",
+      "status": "drafted",
       "targetQueries": [
         "perplexity seo",
         "how to rank in perplexity",
@@ -340,7 +340,8 @@
         "Article",
         "FAQPage",
         "BreadcrumbList"
-      ]
+      ],
+      "draftedAt": "2026-10-08"
     },
     {
       "slug": "perplexitybot-crawler",
