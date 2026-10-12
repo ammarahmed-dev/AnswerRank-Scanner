@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import SiteFooter from "../../components/SiteFooter";
+import ServiceCta from "../../components/ServiceCta";
 import SiteHeader from "../../components/SiteHeader";
 import { getAllBlogPosts, getBlogPost } from "@/lib/blog";
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/seo";
@@ -169,6 +170,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <div className="blog-post-prose">
           <MDXRemote source={post.content} options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }} />
         </div>
+        <ServiceCta />
       </article>
       <SiteFooter />
     </main>

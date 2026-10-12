@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ServiceCta from "@/app/components/ServiceCta";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
 import { buildPageMetadata, SITE_URL } from "@/lib/seo";
@@ -83,6 +84,7 @@ export default function ContentExtractabilityPage() {
           </div>
         </div>
       </section>
+      <section className="launch-section"><div className="launch-container"><ServiceCta /></div></section>
       <SiteFooter />
     </main>
   );

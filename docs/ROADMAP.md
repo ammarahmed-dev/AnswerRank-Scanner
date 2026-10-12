@@ -75,6 +75,8 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)
 
+- [x] (2026-10-12, owner request) Lead-gen CTA "Need help optimizing for AEO, GEO and SEO?" (`ServiceCta`) on every blog post, all tool pages and /ai-seo-audit; links to `/contact?subject=services`, which preselects the new "Optimization services" subject (saved in `contact_messages` and emailed via Resend). Track: count `subject = 'Optimization services'` rows to measure leads per week.
+
 - Features: grow AEOCheck into the best AEO/GEO tool for its price. Source ideas from
   `docs/RESEARCH.md`, add each as a concrete item here, then build it.
   - [x] Free AI crawler checker at `/tools/ai-crawler-checker` (robots.txt rules per AI crawler,

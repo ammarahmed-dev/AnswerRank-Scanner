@@ -9,6 +9,7 @@ type SubjectOption =
   | "Report issue"
   | "Billing / payment"
   | "Feature request"
+  | "Optimization services"
   | "Other";
 
 type ContactPayload = {
@@ -25,6 +26,7 @@ const ALLOWED_SUBJECTS: SubjectOption[] = [
   "Report issue",
   "Billing / payment",
   "Feature request",
+  "Optimization services",
   "Other",
 ];
 

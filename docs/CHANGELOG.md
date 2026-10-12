@@ -2,6 +2,11 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-12 (session 66)
+
+- Owner request: organic lead capture. Added `ServiceCta` ("Need help optimizing for AEO, GEO and SEO?" with a Talk to us button) to blog posts, the 10 tool pages and /ai-seo-audit; contact form and API accept a new "Optimization services" subject, preselected by `/contact?subject=services`. No DB change (`contact_messages.subject` has no constraint).
+- Verified: tsc, 205 tests, build, screenshots at 1280 and 390 px, form preselect on both widths.
+
 ## 2026-10-12 (session 65)
 
 - SEO: rewrote titles and H1/FAQ on `/tools/schema-checker`, `/tools/sitemap-checker`, `/tools/meta-tag-checker` to match the queries Search Console shows (positions 49-74), and linked the meta tag and sitemap checkers from `technical-aeo-guide`. No tool behavior changed.

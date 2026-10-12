@@ -10650,3 +10650,12 @@ textarea.contact-control {
 .study-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.95rem; }
 .study-table th, .study-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--color-line); white-space: nowrap; }
 .study-table th { color: var(--color-ink-soft); font-weight: 600; }
+
+.service-cta { display: flex; align-items: center; justify-content: space-between; gap: 24px; max-width: 760px; margin: 48px auto 0; padding: 28px 32px; }
+.service-cta h2 { color: white; font-size: 1.35rem; margin: 0 0 8px; }
+.service-cta p { color: var(--color-ink-soft); line-height: 1.6; margin: 0; }
+.service-cta-btn { flex-shrink: 0; }
+@media (max-width: 640px) {
+  .service-cta { flex-direction: column; align-items: stretch; padding: 22px; text-align: left; }
+  .service-cta-btn { justify-content: center; }
+}

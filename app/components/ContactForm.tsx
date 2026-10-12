@@ -9,6 +9,7 @@ type SubjectOption =
   | "Report issue"
   | "Billing / payment"
   | "Feature request"
+  | "Optimization services"
   | "Other";
 
 type ContactFormValues = {
@@ -25,6 +26,7 @@ const SUBJECT_OPTIONS: SubjectOption[] = [
   "Report issue",
   "Billing / payment",
   "Feature request",
+  "Optimization services",
   "Other",
 ];
 
@@ -41,6 +43,7 @@ export default function ContactForm() {
   const [errors, setErrors] = useState<ContactErrors>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
   const isUpgradeRequest = searchParams.get("subject") === "upgrade";
+  const isServicesRequest = searchParams.get("subject") === "services";
 
   const isDisabled = status === "loading";
 
@@ -51,6 +54,11 @@ export default function ContactForm() {
       subject: "Billing / payment",
     }));
   }, [isUpgradeRequest]);
+
+  useEffect(() => {
+    if (!isServicesRequest) return;
+    setValues((prev) => ({ ...prev, subject: "Optimization services" }));
+  }, [isServicesRequest]);
 
   const setField = <K extends keyof ContactFormValues>(key: K, value: ContactFormValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }));
