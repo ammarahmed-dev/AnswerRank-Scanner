@@ -6,13 +6,17 @@ import { buildPageMetadata, SITE_URL } from "@/lib/seo";
 import SitemapChecker from "./SitemapChecker";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Free Sitemap Checker: Validate sitemap.xml | AEOCheck",
+  title: "Free Sitemap Checker: Test and Validate sitemap.xml | AEOCheck",
   description:
     "Check your sitemap.xml: valid XML, URL count, lastmod dates, duplicates, wrong domains, broken URLs and whether robots.txt points to it. Free, no signup.",
   path: "/tools/sitemap-checker",
 });
 
 const faqs = [
+  {
+    q: "How do I check my website's sitemap?",
+    a: "Enter your domain above. The checker finds your sitemap through robots.txt or the common default paths, validates the XML, counts the URLs, flags duplicates, wrong domains and odd lastmod dates, and spot-checks a sample of the listed URLs for working status codes.",
+  },
   {
     q: "What does the sitemap checker test?",
     a: "It finds your sitemap through robots.txt or the default locations, checks that it is valid XML, counts URLs, flags duplicates, URLs on another domain, http URLs and query-string URLs, validates lastmod dates, follows up to five child sitemaps and spot-checks that listed URLs return a success status.",
@@ -66,7 +70,7 @@ export default function SitemapCheckerPage() {
         <div className="launch-container">
           <div className="section-intro llms-tool-intro">
             <p className="launch-eyebrow">Free tool</p>
-            <h1>Sitemap Checker</h1>
+            <h1>Sitemap Checker: Validate Your sitemap.xml</h1>
             <p>Enter your website and see whether your sitemap is valid, current and trustworthy: URLs, lastmod dates, broken links and robots.txt reference.</p>
           </div>
           <SitemapChecker />

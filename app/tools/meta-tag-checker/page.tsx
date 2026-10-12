@@ -6,13 +6,17 @@ import { buildPageMetadata, SITE_URL } from "@/lib/seo";
 import MetaTagChecker from "./MetaTagChecker";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Free Meta Tag Checker with Search and Social Preview | AEOCheck",
+  title: "Free Meta Tag Checker: Title, Description and OG Tags | AEOCheck",
   description:
     "Check a page's title, meta description, canonical, Open Graph and Twitter tags, see how it looks in search and social previews, and fix what is missing. Free.",
   path: "/tools/meta-tag-checker",
 });
 
 const faqs = [
+  {
+    q: "How do I check my meta tags online?",
+    a: "Enter a page URL above. The checker reads the title, meta description, canonical, Open Graph and Twitter tags, shows how the page looks in search results and social cards, and lists what is missing or too long.",
+  },
   {
     q: "What does the meta tag checker look at?",
     a: "The title tag, meta description, canonical URL, Open Graph title, description and image, the robots meta tag, viewport, page language and Twitter card. It also shows how the page appears as a search result and a social card.",

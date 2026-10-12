@@ -2,6 +2,11 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-12 (session 65)
+
+- SEO: rewrote titles and H1/FAQ on `/tools/schema-checker`, `/tools/sitemap-checker`, `/tools/meta-tag-checker` to match the queries Search Console shows (positions 49-74), and linked the meta tag and sitemap checkers from `technical-aeo-guide`. No tool behavior changed.
+- Verified: tsc, 205 tests, link-lint, build, local render of all three titles and H1s.
+
 ## 2026-10-12 (session 64)
 
 - Search Console: confirmed the connection works (GSC Overview workflow ran green and returned data; numbers recorded in the ROADMAP). Fixed `on-publish.yml`: it compared only `HEAD~1..HEAD`, so a push with several commits skipped the IndexNow ping and the GSC sitemap resubmit; it now diffs the full push and can be run by hand with a `slugs` input. Used it to notify search engines about `aeo-checklist`.

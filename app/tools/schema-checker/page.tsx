@@ -6,13 +6,21 @@ import { buildPageMetadata, SITE_URL } from "@/lib/seo";
 import SchemaChecker from "./SchemaChecker";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Free Schema Markup Checker (JSON-LD) | AEOCheck",
+  title: "Free JSON-LD Checker: Test Your Schema Markup | AEOCheck",
   description:
     "Check any page's JSON-LD structured data. See which schema types it has, which required properties are missing and what AI engines expect to find. Free, no signup.",
   path: "/tools/schema-checker",
 });
 
 const faqs = [
+  {
+    q: "How do I check the schema markup on my page?",
+    a: "Enter the page URL above. The checker fetches the page, parses each JSON-LD block and lists the schema.org types it found, with any missing required or recommended properties. It works for FAQ, Article, Organization, Product and other common types, so it also answers whether your FAQ schema is present and complete.",
+  },
+  {
+    q: "Is this a JSON-LD validator?",
+    a: "It checks that each JSON-LD block parses and that common types have their key properties. It is not a full schema.org validator, so for edge cases also run the Schema.org validator. Use this tool for a fast read on what a page declares and what is missing.",
+  },
   {
     q: "What does the schema checker look at?",
     a: "It fetches the page, reads every JSON-LD block, tells you whether each one parses, lists the schema.org types it finds and flags missing required and recommended properties for common types like Organization, WebSite, Article, FAQPage, Product and SoftwareApplication.",
@@ -62,7 +70,7 @@ export default function SchemaCheckerPage() {
         <div className="launch-container">
           <div className="section-intro llms-tool-intro">
             <p className="launch-eyebrow">Free tool</p>
-            <h1>Schema Markup Checker</h1>
+            <h1>JSON-LD Schema Markup Checker</h1>
             <p>
               Paste a page URL and see which JSON-LD structured data it has, what is missing and what to add so AI
               engines can tell who you are and what the page covers.
