@@ -2,6 +2,18 @@
 
 Market and product research that feeds `docs/ROADMAP.md`. Newest first. Cite sources.
 
+## 2026-10-12 - Keyword strategy and revenue plan (owner: "scale to revenue, move to keywords with volume")
+
+Evidence limits: no keyword-volume tool is available (web search returned only vendor claims, no per-keyword volumes). Search Console is the only first-party demand data, so the plan below is built on it plus public competitor pricing (Otterly Lite about $29/month for 15 prompts, Peec AI about $85-100/month for 50 prompts, Profound listed from $99 to $499, Semrush AI toolkit $99 per user; all secondary sources, verify before quoting).
+
+What GSC (28 days to 2026-10-12) says: about 2.1K impressions and 8 clicks. Branded and "aeo checker" queries rank 10-20; every "AEO"-jargon query combined is tiny (single and double digit impressions). The utility families have the broadest query spread: schema/JSON-LD checker (101 impressions), sitemap checker (65), meta tag checker (39), all on page 5-8. Classic-SEO utility queries (JSON-LD checker, meta tag checker, sitemap checker, robots.txt tester, Open Graph checker, schema generator) have far more demand than AEO terms, and each tool already exists.
+
+Plan:
+1. Own the utility keywords: one strong page per query family (done for 3 tools; next robots.txt tester, Open Graph preview, FAQ schema validator), each with a clear funnel to the scanner and the services CTA.
+2. Capture B2B intent: service leads via the new CTA (live). Measure rows with subject "Optimization services".
+3. Convert free users: scanner report already gates fixes; the strongest hook is monitoring (alerts when a score drops) and the AI visibility tracker. Both need owner decisions on plan placement (see Owner actions).
+4. Stop publishing AEO-jargon posts that cannot rank; publish posts only where a tool or GSC query exists ("how to fix ..." for each failing scanner check, linked to the matching tool).
+
 ## 2026-10-04 - Demand, competitors and monetization (Google Trends + public pages)
 
 Method: Google Trends relative indexes via pytrends (no absolute volumes), competitor and affiliate

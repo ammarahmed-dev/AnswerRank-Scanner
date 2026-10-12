@@ -75,6 +75,13 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)
 
+- Revenue plan (2026-10-12, owner request; rationale in docs/RESEARCH.md):
+  - [ ] Utility-keyword pages, in order: robots.txt tester (reuse `lib/robots.ts` against a URL), Open Graph / social preview checker (reuse meta checker), FAQ schema validator page (reuse schema checker, query-matched), each with FAQ + services CTA + links from related posts
+  - [ ] One "how to fix" post per failing scanner check (25 checks), each ending in the matching tool and scanner CTA; replaces new AEO-jargon posts
+  - [ ] Free-to-paid hook: weekly monitoring email for one URL on Free (needs plan-limit decision, see Owner actions) and the AI visibility tracker once keys exist
+  - [ ] Lead tracking: weekly count of `contact_messages` with subject "Optimization services" in the changelog; add a one-click admin view if volume justifies it
+  - [ ] Real user problems to solve next (verify each against support emails and the monitored-URL list before building): site-wide scan from a sitemap (top 10 pages, one ranked fix list), per-check "fix it for me" copy-paste snippets beyond the Fix Pack, shareable before/after report for agencies
+
 - [x] (2026-10-12, owner request) Lead-gen CTA "Need help optimizing for AEO, GEO and SEO?" (`ServiceCta`) on every blog post, all tool pages and /ai-seo-audit; links to `/contact?subject=services`, which preselects the new "Optimization services" subject (saved in `contact_messages` and emailed via Resend). Track: count `subject = 'Optimization services'` rows to measure leads per week.
 
 - Features: grow AEOCheck into the best AEO/GEO tool for its price. Source ideas from
