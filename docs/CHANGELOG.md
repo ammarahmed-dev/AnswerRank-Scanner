@@ -2,6 +2,10 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-12 (session 64)
+
+- Search Console: confirmed the connection works (GSC Overview workflow ran green and returned data; numbers recorded in the ROADMAP). Fixed `on-publish.yml`: it compared only `HEAD~1..HEAD`, so a push with several commits skipped the IndexNow ping and the GSC sitemap resubmit; it now diffs the full push and can be run by hand with a `slugs` input. Used it to notify search engines about `aeo-checklist`.
+
 ## 2026-10-12 (session 63)
 
 - Owner granted Supabase access (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF` in the cloud environment). Production was missing four migrations; applied them in one transaction via the Management API (`POST https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/database/query` with `{"query": ...}`): `20261003_drop_public_compare_runs_policy` (closed a live leak: the `USING (true)` read policy let anyone with the public anon key list all compare runs), `20261003_atomic_scan_usage`, `20261003_limit_email`, `20261004_ai_visibility_runs`.

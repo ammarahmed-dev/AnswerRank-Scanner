@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - "content/blog/**"
+  workflow_dispatch:
+    inputs:
+      slugs:
+        description: "Space-separated blog slugs to notify search engines about"
+        required: true
 
 permissions:
   contents: read
@@ -15,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -25,12 +30,25 @@ jobs:
 
       - name: Detect changed posts
         id: changed
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_SLUGS: ${{ inputs.slugs }}
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          SLUGS=$(git diff --name-only HEAD~1 HEAD -- 'content/blog/**' \
-            | grep -E '\.(mdx|md)$' \
-            | xargs -r -n1 basename \
-            | sed -E 's/\.(mdx|md)$//' \
-            | tr '\n' ' ')
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            SLUGS="$INPUT_SLUGS"
+          else
+            # Diff the whole push, not just the last commit (a push can carry several commits).
+            BASE="$BEFORE_SHA"
+            if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+              BASE=HEAD~1
+            fi
+            SLUGS=$(git diff --name-only "$BASE" HEAD -- 'content/blog/**' \
+              | grep -E '\.(mdx|md)$' \
+              | xargs -r -n1 basename \
+              | sed -E 's/\.(mdx|md)$//' \
+              | tr '\n' ' ')
+          fi
           echo "slugs=$SLUGS" >> "$GITHUB_OUTPUT"
           echo "Changed slugs: $SLUGS"
 
