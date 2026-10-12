@@ -40,7 +40,7 @@ const GROUPS = [
   {
     name: "Performance",
     text: "Core Web Vitals from the public PageSpeed data, since slow pages are harder to fetch and render.",
-    tool: { href: "/blog/technical-aeo-guide", label: "Technical AEO guide" },
+    tool: { href: "/blog/aeo-checklist", label: "AEO checklist" },
   },
 ];
 

@@ -7,6 +7,7 @@ Newest first. Every autonomous session adds an entry: date, what shipped, how it
 - Refactor: `ReportSectionNew.tsx` 1,373 -> 1,077 lines. Types and pure helpers moved verbatim to `lib/report-view-model.ts`; `MetaRow` and `PriorityColumn` to `app/components/ReportParts.tsx`. No markup or behavior change.
 - Owner instruction: ship tested updates straight to `main` without asking.
 - Verified: tsc, 205 tests, build, CI green on the PR. No screenshots (code moved unchanged).
+- Blog: published `aeo-checklist` (GSC-driven: checklist queries had no matching post), with cover, linked from /ai-seo-audit; topical map marked published.
 - Follow-ups: remaining split of the report's JSX sections, `HomePageClient.tsx`, `DashboardClient.tsx`.
 
 ## 2026-10-05 (session 61)
