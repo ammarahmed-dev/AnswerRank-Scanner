@@ -2,6 +2,13 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-12 (session 62)
+
+- Refactor: `ReportSectionNew.tsx` 1,373 -> 1,077 lines. Types and pure helpers moved verbatim to `lib/report-view-model.ts`; `MetaRow` and `PriorityColumn` to `app/components/ReportParts.tsx`. No markup or behavior change.
+- Owner instruction: ship tested updates straight to `main` without asking.
+- Verified: tsc, 205 tests, build, CI green on the PR. No screenshots (code moved unchanged).
+- Follow-ups: remaining split of the report's JSX sections, `HomePageClient.tsx`, `DashboardClient.tsx`.
+
 ## 2026-10-05 (session 61)
 
 - Owner decision: accept CrowdReply's link-exchange request (email thread "wdyt?"). Added CrowdReply as entry 2 in `best-aeo-tools-ai-search-visibility` (later entries renumbered 3-10, comparison table row added). Written from what CrowdReply's own site says (AI visibility tracking across ChatGPT, Perplexity, Gemini and Claude; community engagement feature; backlinks marketplace), attributed to the vendor, with its limits (off-site only, performance figures unverified, follow platform rules and disclose affiliation). Because the placement is part of a reciprocal arrangement, the entry carries a disclosure line and the link is `rel="sponsored noopener"`; remove that only if the owner decides otherwise (Google treats exchanged links without it as a link scheme risk).
