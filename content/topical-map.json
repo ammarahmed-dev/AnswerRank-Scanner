@@ -118,7 +118,7 @@
       "pillar": "aeo-core",
       "role": "spoke",
       "tier": 1,
-      "status": "planned",
+      "status": "published",
       "targetQueries": [
         "aeo checklist",
         "ai search optimization checklist",

@@ -1,0 +1,95 @@
+---
+title: 'The AEO Checklist: 25 Checks to Run Before You Publish'
+description: >-
+  A practical AEO checklist of 25 checks across access, metadata, structure,
+  schema, content and trust, so AI engines can find, read and cite your page.
+date: 2026-10-12T00:00:00.000Z
+slug: aeo-checklist
+tags:
+  - aeo
+  - checklist
+  - ai-search
+  - technical-aeo
+author: Ammar Ahmed
+coverImage: /images/blog/aeo-checklist.png
+coverImageAlt: >-
+  Cover image for The AEO Checklist: 25 Checks to Run Before You Publish
+faqs:
+  - question: What is an AEO checklist?
+    answer: >-
+      An AEO checklist is a list of page-level checks that make your content
+      easy for AI answer engines to fetch, understand and cite: crawler access,
+      clean metadata, a clear heading structure, structured data, answer-ready
+      content and visible trust signals. You run it before publishing and again
+      after major edits.
+  - question: How long does an AEO audit take?
+    answer: >-
+      Checking a single page by hand takes roughly an hour if you are careful
+      with robots.txt and schema. An automated scan checks the same signals in
+      about a minute, so most people scan first and fix by hand.
+  - question: Does passing every check guarantee AI citations?
+    answer: >-
+      No. No checklist can guarantee that ChatGPT, Perplexity or Google AI
+      Overviews cite you. The checks remove technical and clarity obstacles.
+      Whether you are cited still depends on how useful and trustworthy your
+      content is compared with alternatives.
+  - question: Which checks matter most?
+    answer: >-
+      Start with access. If AI crawlers are blocked or the content is not in
+      the HTML, nothing else matters. Then fix the title, headings and
+      structured data, and finish with content and trust signals.
+---
+
+An AEO checklist is only useful if every item is something you can verify on the page. This one follows the 25 checks the AEOCheck scanner runs, grouped in the order an AI system meets your page: it must be allowed in, then read the page, then understand it, then decide whether to trust it. If you want the background first, read [what answer engine optimization is](/blog/what-is-answer-engine-optimization). For the deeper technical walk-through, see the [technical AEO guide](/blog/technical-aeo-guide).
+
+No checklist can promise citations. What it does is remove the avoidable reasons an engine skips your page.
+
+## Access: can AI systems reach the page?
+
+1. **HTTPS.** The page loads over a valid HTTPS connection with no certificate warnings.
+2. **robots.txt exists.** A robots.txt file is served at the domain root and parses cleanly.
+3. **AI crawler access.** Your rules do not block the search crawlers you want, such as OAI-SearchBot, PerplexityBot or Claude-SearchBot. Blocking training crawlers is a separate decision. Our guide to [robots.txt for AI crawlers](/blog/robots-txt-ai-crawlers) explains the difference, and the free [AI crawler checker](/tools/ai-crawler-checker) reads your live file.
+4. **Sitemap.** A sitemap.xml is reachable, lists your real canonical URLs and is referenced from robots.txt. Test it with the [sitemap checker](/tools/sitemap-checker).
+5. **llms.txt.** An llms.txt file summarizes the site for language models. It is a young convention and not every engine reads it, but it is cheap. The [llms.txt generator](/tools/llms-txt-generator) drafts one.
+6. **Core Web Vitals.** The page is fast enough to load reliably on a mobile connection. Slow, unstable pages are fetched less reliably.
+
+## Metadata: does the page describe itself?
+
+7. **Page title.** One unique, descriptive title that says what the page is about.
+8. **Meta description.** A specific summary that matches the page, not a keyword list.
+9. **Canonical URL.** A canonical tag pointing to the preferred version of the page, so duplicates do not split signals.
+10. **Open Graph tags.** `og:title`, `og:description` and `og:url` are present.
+11. **OG image.** A social preview image is set.
+
+You can inspect all of these at once with the [meta tag checker](/tools/meta-tag-checker).
+
+## Structure: can the content be parsed?
+
+12. **One H1.** Exactly one H1 that matches the page topic.
+13. **Heading hierarchy.** H2s and H3s nest in order, with no skipped levels.
+14. **Answer-ready headings.** Key sections use question-style headings, and the first sentence under each heading answers it directly. The free [content extractability tool](/tools/content-extractability) shows which sections open with a quotable answer.
+15. **Internal links.** The page links to related pages with descriptive anchor text.
+16. **Image alt text.** Meaningful images have alt text that describes them.
+
+## Structured data: does a machine know what this is?
+
+17. **Schema present.** The page has JSON-LD that matches its visible content.
+18. **FAQ schema.** If the page has a real FAQ, it is marked up as FAQPage. The [FAQ schema generator](/tools/faq-schema-generator) builds valid markup.
+19. **Article or HowTo schema.** Articles and guides carry Article or HowTo markup with author and dates. Use the [Article schema generator](/tools/article-schema-generator).
+20. **Schema density.** The markup describes more than a bare minimum, such as Organization and WebSite on the homepage. See the [Organization schema generator](/tools/organization-schema-generator), and validate everything with the [schema checker](/tools/schema-checker).
+
+## Content and trust: is it worth citing?
+
+21. **Content length.** The page has enough substance to answer the question fully, not a thin stub.
+22. **Readability.** Short sentences and plain words. Dense, jargon-heavy text is harder to quote.
+23. **Author or attribution.** A named author or organization is visible on the page.
+24. **About and contact pages.** Visitors, and crawlers, can find who runs the site and how to reach them.
+25. **Content freshness.** A visible, accurate publish or update date, kept current where the facts change.
+
+## How to use the checklist
+
+Work from the top. Access problems make every later check irrelevant, so fix those first. Then handle metadata and structure, which are quick wins, and finish with the content and trust items, which take editorial effort. Re-run the list after major edits and whenever you change templates, because a single template change can break a check across hundreds of pages.
+
+## Run it automatically
+
+Doing this by hand for every page does not scale. [Run a free AEOCheck scan](/#scanner) to test all 25 signals on any URL. You get a score, the issues ranked by impact and the specific fix for each. To see what the output looks like first, open the [sample report](/sample-report), and when you want to track pages over time, compare [plans and pricing](/pricing).
