@@ -2,6 +2,12 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-12 (session 63)
+
+- Owner granted Supabase access (`SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF` in the cloud environment). Production was missing four migrations; applied them in one transaction via the Management API (`POST https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/database/query` with `{"query": ...}`): `20261003_drop_public_compare_runs_policy` (closed a live leak: the `USING (true)` read policy let anyone with the public anon key list all compare runs), `20261003_atomic_scan_usage`, `20261003_limit_email`, `20261004_ai_visibility_runs`.
+- Verified read-only afterwards: both usage functions exist, `compare_runs` keeps only its insert policy, `profiles.limit_email_month` and `ai_visibility_runs` exist. Counter test on a throwaway key at limit 1 returned 1 then -1; test row deleted.
+- Follow-ups: `webhook_events` has only `event_id` and `processed_at`, enough to build idempotency; Vercel and Lemon Squeezy access not set yet.
+
 ## 2026-10-12 (session 62)
 
 - Refactor: `ReportSectionNew.tsx` 1,373 -> 1,077 lines. Types and pure helpers moved verbatim to `lib/report-view-model.ts`; `MetaRow` and `PriorityColumn` to `app/components/ReportParts.tsx`. No markup or behavior change.
