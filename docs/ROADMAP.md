@@ -148,13 +148,13 @@ Based on the full code review from 2026-10-03.
   If scans from before reports were persisted justify a higher number, record the real figure;
   otherwise Claude recommends showing the real count and removing the +500.
 
-- DECISION NEEDED (what plans include): AI Visibility Tracker placement. Claude recommends: Pro =
+- OWNER DECIDED 2026-10-12 ("whatever you think is best"): follow the recommendation below (Pro 10 prompts weekly on 2 engines, Agency 50, Free 3-prompt sample). `GEMINI_API_KEY` and `PERPLEXITY_API_KEY` are now set in Vercel production (sensitive); `AI_VISIBILITY_ENABLED` was already set. Building: weekly runs and plan placement are the open Phase 4 items. Original note: AI Visibility Tracker placement. Claude recommends: Pro =
   10 prompts tracked weekly on 2 engines, Agency = 50 prompts, Free = one-off 3-prompt sample on
   the report as an upgrade hook. Cost ~ $1 per tracked brand per month (docs/RESEARCH.md).
   To try it now as admin: set `AI_VISIBILITY_ENABLED=true` plus `PERPLEXITY_API_KEY` and/or
   `GEMINI_API_KEY` in Vercel, then POST /api/ai-visibility.
 
-- DECISION NEEDED (plan limits, hard limit): the pricing page lists "1 monitored URL" for Free
+- DONE 2026-10-12 (owner decided: "do whatever you think is best"): Free users may now monitor 1 URL (server gate removed on add/edit/delete; cap stays 1; manual "scan now" stays Pro, Free gets the weekly cron email). Was: the pricing page lists "1 monitored URL" for Free
   (`PLAN_LIMITS.free.monitorUrls`), but `/api/monitor` rejects all Free users ("Monitor requires a
   Pro plan"). Either let Free monitor 1 URL (server change) or remove it from the Free plan copy.
   Claude recommends allowing 1 monitored URL on Free: it matches what is advertised and drives retention.

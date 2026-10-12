@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
-import { isProUser } from "@/lib/access";
-import { isMasterAdmin } from "@/lib/admin";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
@@ -13,11 +11,6 @@ type RouteContext = { params: Promise<{ id: string }> };
 export async function PATCH(req: Request, { params }: RouteContext) {
   const auth = await getAuthContext(req);
   if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const isAdmin = isMasterAdmin(auth.user.email);
-  if (!isAdmin && !isProUser(auth)) {
-    return NextResponse.json({ error: "Requires Pro plan." }, { status: 403 });
-  }
 
   if (!hasSupabaseConfig()) return NextResponse.json({ error: "Service unavailable." }, { status: 503 });
 
@@ -48,11 +41,6 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 export async function DELETE(req: Request, { params }: RouteContext) {
   const auth = await getAuthContext(req);
   if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const isAdmin = isMasterAdmin(auth.user.email);
-  if (!isAdmin && !isProUser(auth)) {
-    return NextResponse.json({ error: "Requires Pro plan." }, { status: 403 });
-  }
 
   if (!hasSupabaseConfig()) return NextResponse.json({ error: "Service unavailable." }, { status: 503 });
 

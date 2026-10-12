@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
-import { isProUser } from "@/lib/access";
 import { assertPublicUrl } from "@/lib/url-safety";
 import { isMasterAdmin } from "@/lib/admin";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
@@ -99,10 +98,8 @@ export async function POST(req: Request) {
   const auth = await getAuthContext(req);
   if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  // Any signed-in user may monitor; the cap below is 1 URL on Free/Starter (matches PLAN_LIMITS).
   const isAdmin = isMasterAdmin(auth.user.email);
-  if (!isAdmin && !isProUser(auth)) {
-    return NextResponse.json({ error: "Monitor requires a Pro plan." }, { status: 403 });
-  }
 
   const monitorLimit = isAdmin || auth.plan === "agency" ? 999 : auth.plan === "pro" ? 10 : 1;
 

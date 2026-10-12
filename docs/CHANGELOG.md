@@ -2,6 +2,11 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-12 (session 69)
+
+- Owner decisions executed: Free plan now allows 1 monitored URL (removed the Pro gate on `/api/monitor` POST and `/api/monitor/[id]`; the cap of 1 and the UI upgrade prompt were already in place), matching the pricing copy. Gemini and Perplexity keys added to Vercel production as sensitive variables via the Vercel API (never written to the repo); Gemini key verified with a models call, Perplexity key could not be tested from the session (egress blocked).
+- Verified: tsc, tests, eslint on the changed routes.
+
 ## 2026-10-12 (session 68)
 
 - New free tool `/tools/robots-txt-tester`: test a URL against any crawler's robots.txt (own group vs `*`, longest match, Allow wins ties, `*` and `$`), shows the deciding rule. `testRobotsAccess` in `lib/robots.ts` with 6 tests; API `/api/tools/robots-tester` (SSRF-safe fetch, 30 per month per client/IP). Added to /tools, footer, sitemap, llms.txt and linked from `robots-txt-ai-crawlers`.
