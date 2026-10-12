@@ -2,6 +2,11 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-12 (session 68)
+
+- New free tool `/tools/robots-txt-tester`: test a URL against any crawler's robots.txt (own group vs `*`, longest match, Allow wins ties, `*` and `$`), shows the deciding rule. `testRobotsAccess` in `lib/robots.ts` with 6 tests; API `/api/tools/robots-tester` (SSRF-safe fetch, 30 per month per client/IP). Added to /tools, footer, sitemap, llms.txt and linked from `robots-txt-ai-crawlers`.
+- Verified: tsc, 211 tests, link-lint, build, SSRF rejection of a private URL, UI screenshots at 1280 and 390 px with a mocked API response. A live fetch could not be tested because outbound network from the session was down.
+
 ## 2026-10-12 (session 67)
 
 - Owner request: scale for revenue. Wrote the keyword and revenue plan (docs/RESEARCH.md) and concrete ROADMAP items. Honest limit: there is no keyword-volume tool here, so priorities come from Search Console and public competitor pricing.

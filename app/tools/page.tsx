@@ -50,6 +50,12 @@ const TOOLS = [
     text: "Validate sitemap.xml: URLs, lastmod dates, duplicates, broken links and the robots.txt reference.",
   },
   {
+    href: "/tools/robots-txt-tester",
+    icon: ShieldCheck,
+    name: "robots.txt Tester",
+    text: "Test whether a URL is allowed or blocked for Googlebot, GPTBot or any crawler, and which rule decided it.",
+  },
+  {
     href: "/tools/robots-txt-generator",
     icon: ShieldCheck,
     name: "robots.txt Generator",

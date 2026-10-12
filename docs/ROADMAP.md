@@ -76,7 +76,7 @@ Based on the full code review from 2026-10-03.
 ## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)
 
 - Revenue plan (2026-10-12, owner request; rationale in docs/RESEARCH.md):
-  - [ ] Utility-keyword pages, in order: robots.txt tester (reuse `lib/robots.ts` against a URL), Open Graph / social preview checker (reuse meta checker), FAQ schema validator page (reuse schema checker, query-matched), each with FAQ + services CTA + links from related posts
+  - [~] Utility-keyword pages. Done 2026-10-12: robots.txt tester (`/tools/robots-txt-tester`, full RFC 9309 matching with `*`/`$`, shows the deciding rule; 30 per month per client/IP). Remaining, in order: Open Graph / social preview checker, FAQ schema validator page. Was: robots.txt tester (reuse `lib/robots.ts` against a URL), Open Graph / social preview checker (reuse meta checker), FAQ schema validator page (reuse schema checker, query-matched), each with FAQ + services CTA + links from related posts
   - [ ] One "how to fix" post per failing scanner check (25 checks), each ending in the matching tool and scanner CTA; replaces new AEO-jargon posts
   - [ ] Free-to-paid hook: weekly monitoring email for one URL on Free (needs plan-limit decision, see Owner actions) and the AI visibility tracker once keys exist
   - [ ] Lead tracking: weekly count of `contact_messages` with subject "Optimization services" in the changelog; add a one-click admin view if volume justifies it

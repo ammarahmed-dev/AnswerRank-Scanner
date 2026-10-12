@@ -143,3 +143,39 @@ export function describeAiCrawlerAccess(robotsBody: string): CrawlerAccess[] {
     };
   });
 }
+
+export type RobotsTestResult = {
+  allowed: boolean;
+  /** The rule that decided the outcome, or null when no rule matched (allowed by default). */
+  rule: { allow: boolean; path: string } | null;
+  /** Which group supplied the rules: the agent's own group, the "*" group, or none. */
+  source: "own" | "wildcard" | "none";
+};
+
+function patternToRegExp(pattern: string): RegExp {
+  const anchored = pattern.endsWith("$");
+  const body = (anchored ? pattern.slice(0, -1) : pattern)
+    .split("*")
+    .map((part) => part.replace(/[.+?^${}()|[\]\\]/g, "\\$&"))
+    .join(".*");
+  return new RegExp(`^${body}${anchored ? "$" : ""}`);
+}
+
+/**
+ * Whether `agent` may fetch `pathWithQuery` (e.g. "/blog/post?x=1") under this robots.txt.
+ * Longest matching pattern wins, Allow wins ties, `*` and `$` are supported (RFC 9309).
+ */
+export function testRobotsAccess(robotsBody: string, agent: string, pathWithQuery: string): RobotsTestResult {
+  const groups = parseRobotsGroups(robotsBody);
+  const token = agent.trim().toLowerCase();
+  const own = groups.filter((g) => g.agents.includes(token));
+  const wildcard = groups.filter((g) => g.agents.includes("*"));
+  const source: RobotsTestResult["source"] = own.length ? "own" : wildcard.length ? "wildcard" : "none";
+  const rules = (own.length ? own : wildcard).flatMap((g) => g.rules);
+  const path = pathWithQuery.startsWith("/") ? pathWithQuery : `/${pathWithQuery}`;
+
+  const matching = rules.filter((r) => patternToRegExp(r.path).test(path));
+  if (!matching.length) return { allowed: true, rule: null, source };
+  const best = matching.reduce((a, b) => (b.path.length > a.path.length || (b.path.length === a.path.length && b.allow) ? b : a));
+  return { allowed: best.allow, rule: best, source };
+}
