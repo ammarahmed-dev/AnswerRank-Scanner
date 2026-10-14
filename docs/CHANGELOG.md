@@ -2,6 +2,11 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-14 (session 70)
+
+- SEO: new `/tools/open-graph-checker` (query-matched title, H1, five-question FAQ; reuses the meta tag checker component and API, so same quota and SSRF protection). Added to /tools, footer, sitemap, llms.txt and linked from `aeo-checklist`.
+- Verified: tsc, 211 tests, link-lint, build, local render of title and H1 (200).
+
 ## 2026-10-12 (session 69)
 
 - Owner decisions executed: Free plan now allows 1 monitored URL (removed the Pro gate on `/api/monitor` POST and `/api/monitor/[id]`; the cap of 1 and the UI upgrade prompt were already in place), matching the pricing copy. Gemini and Perplexity keys added to Vercel production as sensitive variables via the Vercel API (never written to the repo); Gemini key verified with a models call, Perplexity key could not be tested from the session (egress blocked).

@@ -44,6 +44,12 @@ const TOOLS = [
     text: "Check title, description, canonical and social tags with live search and social previews.",
   },
   {
+    href: "/tools/open-graph-checker",
+    icon: Tags,
+    name: "Open Graph Checker",
+    text: "Check og:title, og:image and Twitter card tags and preview the social card before you share.",
+  },
+  {
     href: "/tools/sitemap-checker",
     icon: Map,
     name: "Sitemap Checker",

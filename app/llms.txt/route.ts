@@ -63,6 +63,7 @@ AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) 
 - ${SITE_URL}/tools/faq-schema-generator: generate FAQPage JSON-LD from questions and answers
 - ${SITE_URL}/tools/meta-tag-checker: check title, description, canonical and social tags with previews
 - ${SITE_URL}/tools/robots-txt-tester: test whether a URL is allowed or blocked for any crawler
+- ${SITE_URL}/tools/open-graph-checker: check Open Graph and Twitter card tags with a social preview
 - ${SITE_URL}/tools/sitemap-checker: validate a sitemap.xml and spot-check its URLs
 - ${SITE_URL}/tools/robots-txt-generator: generate a robots.txt with a policy for AI crawlers
 - ${SITE_URL}/tools/article-schema-generator: generate Article or BlogPosting JSON-LD
