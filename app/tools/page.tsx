@@ -50,6 +50,12 @@ const TOOLS = [
     text: "Check og:title, og:image and Twitter card tags and preview the social card before you share.",
   },
   {
+    href: "/tools/faq-schema-validator",
+    icon: Code2,
+    name: "FAQ Schema Validator",
+    text: "Check a page's FAQPage markup: whether it parses, which questions it lists and what is missing.",
+  },
+  {
     href: "/tools/sitemap-checker",
     icon: Map,
     name: "Sitemap Checker",

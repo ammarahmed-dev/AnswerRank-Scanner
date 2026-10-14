@@ -2,6 +2,11 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-14 (session 71)
+
+- SEO: new `/tools/faq-schema-validator` (FAQ-specific title, H1 and FAQ, reusing the schema checker). Added to /tools, footer, sitemap, llms.txt and linked from `aeo-checklist`.
+- Verified live after deploy: robots tester returns a correct result for a real site (GPTBot blocked on nytimes.com, own group, Disallow /), Open Graph page serves 200 with the new title and H1; `/`, `/pricing`, `/blog`, `/api/stats` 200.
+
 ## 2026-10-14 (session 70)
 
 - SEO: new `/tools/open-graph-checker` (query-matched title, H1, five-question FAQ; reuses the meta tag checker component and API, so same quota and SSRF protection). Added to /tools, footer, sitemap, llms.txt and linked from `aeo-checklist`.

@@ -46,6 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/tools/robots-txt-generator`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools/robots-txt-tester`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools/open-graph-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: `${SITE_URL}/tools/faq-schema-validator`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools/sitemap-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools/meta-tag-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools/ai-readiness-badge`, changeFrequency: "monthly" as const, priority: 0.8 },

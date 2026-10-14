@@ -42,6 +42,7 @@ export default function SiteFooter() {
               <Link href="/tools/faq-schema-generator">FAQ Schema Generator</Link>
               <Link href="/tools/content-extractability">Content Extractability</Link>
               <Link href="/tools/schema-checker">Schema Checker</Link>
+              <Link href="/tools/faq-schema-validator">FAQ Schema Validator</Link>
               <Link href="/tools/robots-txt-generator">robots.txt Generator</Link>
               <Link href="/tools/sitemap-checker">Sitemap Checker</Link>
               <Link href="/tools/robots-txt-tester">Robots.txt Tester</Link>
