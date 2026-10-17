@@ -12,13 +12,6 @@ import ContactForm from "./ContactForm";
 
 // Code-split below-fold and decoration-only components out of the initial bundle
 const AnimatedProductDemo = dynamic(() => import("./AnimatedProductDemo"));
-const TestimonialsSection = dynamic(
-  () => import("./TestimonialsSection"),
-  {
-    ssr: false,
-    loading: () => <section className="testimonials-section" style={{ minHeight: 320 }} />,
-  }
-);
 import { getBrowserAccessToken, loadSupabaseBrowserClient } from "@/lib/supabase-browser-lazy";
 import { ScanResult } from "@/types/index";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -73,7 +66,7 @@ const faqs = [
 
 type HomePageClientProps = {
   heroContent?: ReactNode;
-  /** Server-rendered static sections (stats, how it works, guides) shown between hero and testimonials. */
+  /** Server-rendered static sections (stats, how it works, guides) shown between hero and pricing. */
   staticSections?: ReactNode;
 };
 
@@ -715,8 +708,6 @@ function HomeInner({ heroContent, staticSections }: HomePageClientProps) {
           </section>
 
           {staticSections}
-
-          <TestimonialsSection />
 
           <section className="pricing-section" id="pricing">
             <div className="launch-container pricing-layout">

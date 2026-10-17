@@ -5,16 +5,12 @@ export const runtime = "nodejs";
 export const revalidate = 60;
 
 const supabaseUrl = getSupabaseServerUrl();
-const baseCount = 500;
-const fallbackCount = 570;
 
-// Throttle the display-count write to at most once per 60 s across concurrent requests.
-let lastDisplayCountWrite = 0;
-const DISPLAY_COUNT_WRITE_INTERVAL_MS = 60_000;
-
+// Returns the real number of stored reports. No baseline is added and nothing is persisted, so the
+// public count can go down if rows are deleted. When the count cannot be read, `count` is null.
 export async function GET() {
   if (!hasSupabaseConfig()) {
-    return NextResponse.json({ count: fallbackCount, display: fallbackCount.toLocaleString("en-US") });
+    return NextResponse.json({ count: null, display: null });
   }
 
   try {
@@ -29,40 +25,13 @@ export async function GET() {
     });
 
     const rangeHeader = countRes.headers.get("content-range");
-    const realCount = rangeHeader ? Number.parseInt(rangeHeader.split("/")[1] ?? "0", 10) : 0;
-
-    const statsRes = await fetch(
-      `${supabaseUrl}/rest/v1/app_stats?key=eq.scan_display_count&select=value`,
-      { headers: getSupabaseServiceHeaders(), cache: "no-store" }
-    );
-    const statsData = (await statsRes.json()) as Array<{ value?: number }>;
-    const displayCount = statsData?.[0]?.value ?? baseCount;
-
-    const realTotal = (Number.isFinite(realCount) ? realCount : 0) + baseCount;
-    const finalCount = Math.max(realTotal, displayCount);
-    const rounded = Math.floor(finalCount / 10) * 10;
-
-    const now = Date.now();
-    if (rounded > displayCount && now - lastDisplayCountWrite > DISPLAY_COUNT_WRITE_INTERVAL_MS) {
-      lastDisplayCountWrite = now;
-      await fetch(`${supabaseUrl}/rest/v1/app_stats?key=eq.scan_display_count`, {
-        method: "PATCH",
-        headers: {
-          ...getSupabaseServiceHeaders(),
-          Prefer: "return=minimal",
-        },
-        body: JSON.stringify({
-          value: rounded,
-          updated_at: new Date().toISOString(),
-        }),
-      });
+    const count = rangeHeader ? Number.parseInt(rangeHeader.split("/")[1] ?? "", 10) : NaN;
+    if (!countRes.ok || !Number.isFinite(count)) {
+      return NextResponse.json({ count: null, display: null });
     }
 
-    return NextResponse.json({
-      count: finalCount,
-      display: finalCount.toLocaleString("en-US"),
-    });
+    return NextResponse.json({ count, display: count.toLocaleString("en-US") });
   } catch {
-    return NextResponse.json({ count: fallbackCount, display: fallbackCount.toLocaleString("en-US") });
+    return NextResponse.json({ count: null, display: null });
   }
 }

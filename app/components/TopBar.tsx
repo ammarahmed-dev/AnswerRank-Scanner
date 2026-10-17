@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+const MIN_COUNT_TO_SHOW = 100;
+
 // Shows the real scan count from /api/stats once it loads. No count-up animation or simulated
 // "live" increments: the number only changes when real scans do.
 export default function TopBar() {
@@ -12,10 +14,12 @@ export default function TopBar() {
     let cancelled = false;
     fetch("/api/stats", { cache: "no-store" })
       .then((r) => r.json())
-      .then((data: { display?: string; count?: number }) => {
+      .then((data: { display?: string; count?: number | null }) => {
         if (cancelled) return;
-        if (data?.display) setDisplayCount(data.display);
-        else if (data?.count) setDisplayCount(data.count.toLocaleString("en-US"));
+        // Small counts look weak and may include test scans, so show the number only once it is meaningful.
+        if (typeof data?.count === "number" && data.count >= MIN_COUNT_TO_SHOW) {
+          setDisplayCount(data.display ?? data.count.toLocaleString("en-US"));
+        }
       })
       .catch(() => {});
     return () => {

@@ -16,10 +16,10 @@ import AiSnapshotSection from "./AiSnapshotSection";
 import WhoUsesSection from "./WhoUsesSection";
 
 // Static homepage sections rendered on the server so they add no hydration work to the scanner
-// client component. Rendered between the hero and the testimonials/pricing sections.
+// client component. Rendered between the hero and the pricing section.
 
 const trustStats = [
-  { value: "5,700+", label: "Scans run", text: "Over 5,700 websites have been scanned for AEO and AI search readiness using AEOCheck." },
+  { value: "Free", label: "To start", text: "Run a free scan on any public URL, no installation needed. Create a free account to keep your recent scans." },
   { value: "25", label: "AI visibility checks", text: "Every scan covers 25 AEO and GEO checks across schema, metadata, content clarity, trust signals, and AI readiness." },
   { value: "PDF", label: "Client-ready", text: "Every paid report exports as a branded PDF you can share with clients directly." },
   { value: "60s", label: "Scan time", text: "Paste a URL and get a scored AI readiness report in under 60 seconds. No installation needed." },
