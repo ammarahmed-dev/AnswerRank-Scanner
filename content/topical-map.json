@@ -622,7 +622,7 @@
       "pillar": "technical",
       "role": "spoke",
       "tier": 1,
-      "status": "planned",
+      "status": "published",
       "targetQueries": [
         "llms.txt",
         "what is llms.txt",
