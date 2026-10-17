@@ -50,6 +50,18 @@ export function extractMeta(html: string): MetaValues {
   };
 }
 
+// Relative values are resolved against the fetched page URL before comparing, so "/a" equals "https://host/a".
+function sameUrl(a: string, b: string, base: string): boolean {
+  const norm = (value: string) => {
+    try {
+      return new URL(value, base).href.replace(/\/$/, "");
+    } catch {
+      return value.replace(/\/$/, "");
+    }
+  };
+  return norm(a) === norm(b);
+}
+
 export function buildMetaReport(html: string, url: string): MetaReport {
   const values = extractMeta(html);
   const scanner = runDeterministicChecks(parseHtmlToScrapedData(html, url)).filter((c) => SCANNER_CHECKS.includes(c.id));
@@ -76,7 +88,7 @@ export function buildMetaReport(html: string, url: string): MetaReport {
       ? { id: "twitter_card", label: "Twitter / X card", status: "pass", detail: `twitter:card is "${values.twitterCard}".` }
       : { id: "twitter_card", label: "Twitter / X card", status: "warn", detail: 'No twitter:card tag. Add <meta name="twitter:card" content="summary_large_image"> for rich link previews on X.' }
   );
-  if (values.ogUrl && values.canonical && values.ogUrl.replace(/\/$/, "") !== values.canonical.replace(/\/$/, "")) {
+  if (values.ogUrl && values.canonical && !sameUrl(values.ogUrl, values.canonical, url)) {
     checks.push({ id: "og_url_match", label: "og:url matches canonical", status: "warn", detail: `og:url (${values.ogUrl}) differs from the canonical URL (${values.canonical}). Keep them identical.` });
   }
   return { values, checks };

@@ -2,6 +2,11 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+## 2026-10-17
+
+- SEO: new `/tools/canonical-tag-checker` (canonical-focused title, H1 and FAQ, reusing the meta tag checker component and API, so same quota and SSRF protection). Added to /tools, footer, sitemap and llms.txt. Awaiting PR review, not on `main`.
+- Verified: tsc, tests, build, local render.
+
 ## 2026-10-14 (session 71)
 
 - SEO: new `/tools/faq-schema-validator` (FAQ-specific title, H1 and FAQ, reusing the schema checker). Added to /tools, footer, sitemap, llms.txt and linked from `aeo-checklist`.
