@@ -44,4 +44,9 @@ describe("meta checker", () => {
     expect(byId(report).robots_meta).toBe("fail");
     expect(byId(report).og_url_match).toBe("warn");
   });
+
+  it("treats a relative canonical as equal to an absolute og:url for the same page", () => {
+    const html = '<html lang="en"><head><link rel="canonical" href="/article"><meta property="og:url" content="https://example.com/article"></head></html>';
+    expect(byId(buildMetaReport(html, "https://example.com/article")).og_url_match).toBeUndefined();
+  });
 });
