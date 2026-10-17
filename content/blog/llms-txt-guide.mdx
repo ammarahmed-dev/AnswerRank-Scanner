@@ -30,7 +30,7 @@ faqs:
     answer: >-
       At the root of the domain, so it loads at https://yourdomain.com/llms.txt.
       Serve it as plain text or Markdown with a 200 status. A file in a
-      subfolder is not found by tools that look at the root.
+      subfolder is not found by tools that look only at the root.
   - question: What is the difference between llms.txt and robots.txt?
     answer: >-
       robots.txt tells crawlers what they may fetch. llms.txt describes what
@@ -118,7 +118,7 @@ Do not want to write it by hand? The free [llms.txt generator](/tools/llms-txt-g
 
 **Marketing copy in the summary.** "The world's leading solution" tells a model nothing. State what the product is and does.
 
-**Wrong location or status.** A file in `/docs/llms.txt`, a redirect to the homepage or a soft 404 that returns HTML will not count as a real llms.txt.
+**Wrong location or status.** Your site-wide file belongs at the root. Some sites also publish section-specific files, such as `/docs/llms.txt`, but tools that look only at `/llms.txt` (AEOCheck included) will not see them. A redirect to the homepage or a soft 404 that returns HTML is not a real llms.txt either.
 
 ## How to check it
 
