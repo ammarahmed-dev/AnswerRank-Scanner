@@ -26,8 +26,8 @@ const trustStats = [
 ];
 
 const auditSignals = [
-  { icon: FileMagnifyingGlass, title: "Metadata clarity", text: "Checks your title, description, Open Graph tags, and heading structure. These are the signals AI uses to understand a page." },
-  { icon: Code, title: "Structured data", text: "Finds existing JSON-LD schema and flags missing types. Shows you the markup that will have the biggest impact on AI visibility." },
+  { icon: FileMagnifyingGlass, title: "Metadata clarity", text: "Checks your title, description, Open Graph tags, and heading structure. These are common signals that help AI tools understand a page." },
+  { icon: Code, title: "Structured data", text: "Finds existing JSON-LD schema and flags missing types. Shows you which markup is worth adding first." },
   { icon: Sparkle, title: "Answer readiness", text: "Scores how well your page is set up for AI tools to read, summarize, and cite its content in answers." },
   { icon: Gauge, title: "Priority scoring", text: "A weighted 0-100 score broken down by category. You know exactly where to focus first." },
   { icon: FileArrowDown, title: "Content clarity", text: "Checks whether your page clearly explains who you are, what you offer, who you help, and why AI systems should trust the answer." },
@@ -41,11 +41,11 @@ const workflow = [
   },
   {
     title: "Read every page signal",
-    text: "The scanner reads your metadata, schema markup, and content structure. It runs 25 AEO and GEO checks that AI engines use to cite your page.",
+    text: "The scanner reads your metadata, schema markup, and content structure. It runs 25 AEO and GEO checks on the on-page signals that help AI tools read and understand your page. Passing them does not guarantee a citation.",
   },
   {
-    title: "Score your AI visibility",
-    text: "Each signal gets a score across metadata, schema, headings, clarity, trust, and performance. Your total AI visibility score shows how well answer engines can read, understand, and cite your page.",
+    title: "Score your AI readiness",
+    text: "Each signal gets a score across metadata, schema, headings, clarity, trust, and performance. Your total score shows how well your page is set up for answer engines to read, understand, and cite. It measures readiness, not live rankings or citations.",
   },
   {
     title: "Act on the highest-impact fixes",
