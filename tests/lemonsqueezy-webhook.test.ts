@@ -10,6 +10,7 @@ let POST: (req: Request) => Promise<Response>;
 let profile: Profile | null;
 let patches: Array<Record<string, unknown>>;
 let patchStatus: number;
+let processedEvents: string[];
 
 beforeAll(async () => {
   process.env.SUPABASE_URL = "https://db.test";
@@ -25,10 +26,19 @@ beforeEach(() => {
   profile = { plan: "free", plan_expires_at: null, lemonsqueezy_subscription_id: null };
   patches = [];
   patchStatus = 204;
+  processedEvents = [];
   vi.spyOn(console, "info").mockImplementation(() => undefined);
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
   vi.spyOn(console, "error").mockImplementation(() => undefined);
-  vi.stubGlobal("fetch", async (_url: string, init?: RequestInit) => {
+  vi.stubGlobal("fetch", async (url: string, init?: RequestInit) => {
+    if (String(url).includes("/webhook_events")) {
+      if (init?.method === "POST") {
+        processedEvents.push((JSON.parse(String(init.body)) as { event_id: string }).event_id);
+        return new Response(null, { status: 201 });
+      }
+      const id = new URL(String(url)).searchParams.get("event_id")?.replace("eq.", "");
+      return new Response(JSON.stringify(id && processedEvents.includes(id) ? [{ event_id: id }] : []), { status: 200 });
+    }
     if (init?.method === "PATCH") {
       const body = JSON.parse(String(init.body)) as Record<string, unknown>;
       patches.push(body);
@@ -56,6 +66,24 @@ const sub = (id: string, variant: string, status: string, extra: Record<string, 
 });
 
 describe("lemonsqueezy webhook", () => {
+  it("records a processed event and skips an identical retry", async () => {
+    const data = sub("s1", "200", "active");
+    await send("subscription_created", data);
+    expect(processedEvents).toHaveLength(1);
+    profile = { plan: "free", plan_expires_at: null, lemonsqueezy_subscription_id: null };
+    patches = [];
+    const res = await send("subscription_created", data);
+    expect(res.status).toBe(200);
+    expect(patches).toHaveLength(0);
+  });
+
+  it("does not record an event whose handler failed, so the retry is processed", async () => {
+    patchStatus = 500;
+    const res = await send("subscription_created", sub("s1", "200", "active"));
+    expect(res.status).toBe(500);
+    expect(processedEvents).toHaveLength(0);
+  });
+
   it("rejects a bad signature", async () => {
     const res = await send("subscription_created", sub("s1", "200", "active"), "00".repeat(32));
     expect(res.status).toBe(400);
