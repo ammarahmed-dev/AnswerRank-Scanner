@@ -1,0 +1,129 @@
+---
+title: 'llms.txt: What It Is and How to Create One'
+description: >-
+  What llms.txt is, what it can and cannot do, and how to write one: format,
+  a copy-paste example, where to host it and how to check it.
+date: 2026-10-17T00:00:00.000Z
+slug: llms-txt-guide
+tags:
+  - llms-txt
+  - technical-aeo
+  - ai-search
+  - geo
+author: Ammar Ahmed
+coverImage: /images/blog/llms-txt-guide.png
+coverImageAlt: 'An llms.txt file with a title, summary and links to key pages'
+faqs:
+  - question: What is llms.txt?
+    answer: >-
+      llms.txt is a Markdown file served at the root of your domain
+      (yourdomain.com/llms.txt). It gives language models a short description of
+      your site and a curated list of links to your most useful pages. The
+      format was proposed at llmstxt.org.
+  - question: Does llms.txt improve my rankings in ChatGPT or Google?
+    answer: >-
+      There is no public confirmation that major AI search engines use llms.txt
+      as a ranking or citation signal. Treat it as a low-cost clarity file and
+      not a ranking lever. Crawler access, readable HTML and clear page content
+      matter more.
+  - question: Where do I put the llms.txt file?
+    answer: >-
+      At the root of the domain, so it loads at https://yourdomain.com/llms.txt.
+      Serve it as plain text or Markdown with a 200 status. A file in a
+      subfolder is not found by tools that look at the root.
+  - question: What is the difference between llms.txt and robots.txt?
+    answer: >-
+      robots.txt tells crawlers what they may fetch. llms.txt describes what
+      your site is and which pages matter. One sets access rules, the other
+      offers a summary. Blocking a crawler in robots.txt means it should not
+      fetch your pages at all, whatever llms.txt says.
+  - question: How long should llms.txt be?
+    answer: >-
+      Short. A one or two sentence summary and a few dozen links at most. The
+      point is curation: list the pages you would send a new customer to, not
+      every URL in your sitemap.
+---
+
+Open the llms.txt of a few software companies and you will see the same shape every time: a title, a one-line summary and a list of links. It looks trivial, and it is. This guide explains what the file is for, what it cannot do, and how to write one that is worth publishing. It is part of our [technical AEO guide](/blog/technical-aeo-guide).
+
+## What llms.txt is
+
+`llms.txt` is a plain Markdown file at the root of your domain. It was proposed at [llmstxt.org](https://llmstxt.org) as a way to hand language models a clean, curated overview of a site. Web pages are full of navigation, scripts and banners. A model that wants to understand your business quickly has to dig through all of it. llms.txt skips that and says: this is who we are, and these are the pages that matter.
+
+It is the sibling of two files you already know:
+
+- `robots.txt` controls which crawlers may fetch which URLs.
+- `sitemap.xml` lists URLs for search engines to discover.
+- `llms.txt` summarizes the site in readable prose and links to the best pages.
+
+## What llms.txt does not do
+
+Be honest about expectations before you spend time on it. Major AI search companies have not publicly confirmed that they use llms.txt as a ranking or citation signal, and a file alone will not get you cited. What it gives you is a small, cheap, authoritative description in your own words, which some developer tools may read. If a human or an agent wants a quick map of your site, it is useful there.
+
+That makes it a good low-effort addition once the basics are in place: [AI crawlers allowed in robots.txt](/blog/robots-txt-ai-crawlers), content that can be read without JavaScript, clear titles and schema. It is not a substitute for any of them.
+
+## The format
+
+The proposal defines a simple structure, in this order:
+
+1. An H1 with the name of the site or project (the only required part).
+2. A blockquote with a short summary.
+3. Optional paragraphs with extra context.
+4. H2 sections that contain lists of links, each written as `- [Title](url): short description`.
+5. An optional section named `Optional` for secondary pages that can be skipped when a shorter context is needed.
+
+## A copy-paste example
+
+```md
+# Acme Invoices
+
+> Acme Invoices is invoicing software for freelancers. It creates invoices, tracks payments and sends reminders.
+
+## Product
+
+- [Features](https://www.example.com/features): What the invoicing app does
+- [Pricing](https://www.example.com/pricing): Plans and limits
+
+## Docs
+
+- [Getting started](https://www.example.com/docs/start): Send your first invoice in five minutes
+- [API reference](https://www.example.com/docs/api): REST endpoints and authentication
+
+## Blog
+
+- [How to invoice international clients](https://www.example.com/blog/international-invoicing): Taxes, currency and payment terms
+
+## Optional
+
+- [Privacy policy](https://www.example.com/privacy)
+- [Terms of service](https://www.example.com/terms)
+```
+
+## How to create yours
+
+1. **Write the summary first.** One or two sentences: what you do and who it is for. If you cannot say it plainly, your homepage probably cannot either.
+2. **Pick 10 to 30 pages.** Product, pricing, documentation, your best guides, and the company page. Skip tag archives, search results and thin pages.
+3. **Describe each link in a few words.** Say what the reader gets from the page, not just the title.
+4. **Move legal and utility pages to `Optional`.** Privacy, terms, login and checkout pages are rarely what a model needs.
+5. **Publish at the root.** Save the file as `llms.txt` so it loads at `https://yourdomain.com/llms.txt` with a 200 status. In Next.js, put it in `public/`.
+6. **Keep it current.** Update it when you launch or remove an important page.
+
+Do not want to write it by hand? The free [llms.txt generator](/tools/llms-txt-generator) reads your homepage and sitemap, groups the pages into sections and gives you a draft to edit.
+
+## Common mistakes
+
+**Dumping the whole sitemap.** The value is curation. A list of 2,000 URLs is just a worse sitemap.
+
+**Linking to pages that block crawlers.** If a linked page is disallowed in robots.txt or sits behind a login, the link is no use to anyone. Check your [AI crawler access](/tools/ai-crawler-checker) too.
+
+**Marketing copy in the summary.** "The world's leading solution" tells a model nothing. State what the product is and does.
+
+**Wrong location or status.** A file in `/docs/llms.txt`, a redirect to the homepage or a soft 404 that returns HTML will not count as a real llms.txt.
+
+## How to check it
+
+Load `https://yourdomain.com/llms.txt` in a browser. You should see plain text starting with `# Your Site`. Then [run a free AEOCheck scan](/#scanner): the llms.txt check reports whether the file exists, and the same scan covers crawler access, metadata, schema and the rest of its 25 AEO and GEO checks. See what the output looks like in the [sample report](/sample-report), or compare [plans](/pricing) to monitor your site over time.
+
+## How common is it?
+
+In our [study of 85 well-known sites](/research/ai-readiness-study), 36 publish an llms.txt file: 32 of 49 software companies and none of the 21 media sites. Adoption is concentrated in software and developer documentation, which fits what the file is best at: giving tools a map of a docs-heavy site.
