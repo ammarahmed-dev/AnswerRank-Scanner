@@ -44,6 +44,12 @@ const TOOLS = [
     text: "Check title, description, canonical and social tags with live search and social previews.",
   },
   {
+    href: "/tools/canonical-tag-checker",
+    icon: Tags,
+    name: "Canonical Tag Checker",
+    text: "Check the rel=canonical URL and catch missing or conflicting canonicals.",
+  },
+  {
     href: "/tools/open-graph-checker",
     icon: Tags,
     name: "Open Graph Checker",
