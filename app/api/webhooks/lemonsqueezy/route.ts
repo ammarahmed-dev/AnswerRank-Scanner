@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHash, createHmac, timingSafeEqual } from "crypto";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
@@ -71,6 +71,41 @@ async function patchProfile(userId: string, fields: Record<string, unknown>) {
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`profile patch failed: ${res.status} ${body.slice(0, 200)}`);
+  }
+}
+
+// Lemon Squeezy sends no event ID, so a retry is recognised by the SHA-256 of its raw body.
+// The table (columns event_id, processed_at) is written only after a handler succeeded, so a failed
+// attempt is retried. Both helpers fail open: handlers are idempotent state setters, so a lookup or
+// audit-write failure must never block or lose a payment event.
+async function wasProcessed(eventId: string): Promise<boolean> {
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/webhook_events?event_id=eq.${encodeURIComponent(eventId)}&select=event_id&limit=1`,
+      { headers: getSupabaseServiceHeaders(), cache: "no-store" }
+    );
+    if (!res.ok) return false;
+    const rows = (await res.json()) as unknown[];
+    return rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+async function markProcessed(eventId: string) {
+  try {
+    const res = await fetch(`${supabaseUrl}/rest/v1/webhook_events`, {
+      method: "POST",
+      headers: {
+        ...getSupabaseServiceHeaders(),
+        "Content-Type": "application/json",
+        Prefer: "return=minimal,resolution=ignore-duplicates",
+      },
+      body: JSON.stringify({ event_id: eventId, processed_at: new Date().toISOString() }),
+    });
+    if (!res.ok) console.warn(`[ls-webhook] webhook_events insert failed: ${res.status}`);
+  } catch (err) {
+    console.warn("[ls-webhook] webhook_events insert error:", err instanceof Error ? err.message : err);
   }
 }
 
@@ -206,6 +241,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  const eventId = createHash("sha256").update(rawBody, "utf8").digest("hex");
+  if (await wasProcessed(eventId)) {
+    console.info("[ls-webhook] duplicate event skipped:", eventName);
+    return NextResponse.json({ ok: true, duplicate: true });
+  }
+
   try {
     switch (eventName) {
       case "order_created":
@@ -233,5 +274,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
 
+  await markProcessed(eventId);
   return NextResponse.json({ ok: true });
 }
