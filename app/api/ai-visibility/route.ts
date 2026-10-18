@@ -60,13 +60,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No AI engines configured (PERPLEXITY_API_KEY or GEMINI_API_KEY)." }, { status: 503 });
   }
 
-  // `track: true` also enrols the brand in the weekly cron (/api/cron/ai-visibility).
-  const tracked = body.track === true ? await upsertTrack(gate.user.id, { name: brandName, domain }, finalPrompts) : undefined;
-
   const summary = await runVisibilityCheck({ name: brandName, domain }, finalPrompts, engines);
   const engineNames = engines.map((e) => e.name);
   // Only keep runs where at least one engine answered; an all-error run says nothing about the brand.
   const saved = summary.checked > 0 ? await saveVisibilityRun(gate.user.id, { name: brandName, domain }, finalPrompts, engineNames, summary) : false;
+  // `track: true` also enrols the brand in the weekly cron (/api/cron/ai-visibility). When this run
+  // was saved it counts as the latest run, so the cron waits a full interval before repeating it.
+  const tracked =
+    body.track === true ? await upsertTrack(gate.user.id, { name: brandName, domain }, finalPrompts, saved ? new Date() : null) : undefined;
   return NextResponse.json({ brand: { name: brandName, domain }, prompts: finalPrompts, engines: engineNames, saved, tracked, ...summary });
 }
 

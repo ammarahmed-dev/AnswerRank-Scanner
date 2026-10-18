@@ -55,5 +55,15 @@ describe("track storage", () => {
     expect(seen!.url).toContain("on_conflict=user_id,domain");
     expect(seen!.headers.Prefer).toContain("merge-duplicates");
     expect(seen!.body).toMatchObject({ user_id: "u1", domain: "acme.com", prompts: ["q"] });
+    expect(seen!.body).not.toHaveProperty("last_run_at");
+  });
+  it("records the enrollment run as the latest run", async () => {
+    let body: Record<string, unknown> = {};
+    vi.stubGlobal("fetch", async (_url: string, init: RequestInit) => {
+      body = JSON.parse(String(init.body));
+      return new Response(null, { status: 201 });
+    });
+    await mod.upsertTrack("u1", { name: "Acme", domain: "acme.com" }, ["q"], new Date("2026-10-18T10:00:00Z"));
+    expect(body.last_run_at).toBe("2026-10-18T10:00:00.000Z");
   });
 });

@@ -44,7 +44,11 @@ export async function GET(req: Request) {
         const plan = await getUserPlan(track.userId);
         const planEngines = pickEngines(engines, plan);
         const prompts = trimPrompts(track.prompts, plan);
-        if (!planEngines.length || !prompts.length) return; // plan lapsed or empty track: leave it due
+        if (!planEngines.length || !prompts.length) {
+          // Plan lapsed or empty track: push it back a full interval so it cannot fill the due queue.
+          await markTrackRun(track.id);
+          return;
+        }
         const brand = { name: track.brandName, domain: track.domain };
         const summary = await runVisibilityCheck(brand, prompts, planEngines);
         // An all-error run says nothing about the brand: keep the track due and retry next run.
@@ -57,7 +61,10 @@ export async function GET(req: Request) {
           errors.push(`save:${track.domain}`);
           return;
         }
-        await markTrackRun(track.id);
+        if (!(await markTrackRun(track.id))) {
+          errors.push(`mark:${track.domain}`);
+          return;
+        }
         processed++;
       } catch (err) {
         console.error("[cron/ai-visibility] track failed:", err instanceof Error ? err.message : "unknown error");

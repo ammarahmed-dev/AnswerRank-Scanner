@@ -91,13 +91,13 @@ export async function markTrackRun(id: string, at = new Date()): Promise<boolean
 }
 
 /** Create or replace the track for (user, domain). */
-export async function upsertTrack(userId: string, brand: { name: string; domain: string }, prompts: string[]): Promise<boolean> {
+export async function upsertTrack(userId: string, brand: { name: string; domain: string }, prompts: string[], lastRunAt: Date | null = null): Promise<boolean> {
   if (!hasSupabaseConfig()) return false;
   try {
     const res = await fetch(`${getSupabaseServerUrl()}/rest/v1/ai_visibility_tracks?on_conflict=user_id,domain`, {
       method: "POST",
       headers: { ...getSupabaseServiceHeaders(), Prefer: "resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify({ user_id: userId, brand_name: brand.name, domain: brand.domain, prompts }),
+      body: JSON.stringify({ user_id: userId, brand_name: brand.name, domain: brand.domain, prompts, ...(lastRunAt ? { last_run_at: lastRunAt.toISOString() } : {}) }),
     });
     if (!res.ok) console.error("[ai-visibility] track save failed with status", res.status);
     return res.ok;
