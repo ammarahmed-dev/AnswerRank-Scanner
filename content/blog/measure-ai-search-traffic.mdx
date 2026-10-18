@@ -25,9 +25,11 @@ faqs:
       branded search traffic instead.
   - question: Does Google Search Console report AI Overviews separately?
     answer: >-
-      No. Impressions and clicks from AI Overviews are included in the normal Web
-      search totals, so you cannot isolate them in Search Console. Watch changes in
-      impressions versus clicks for your informational pages instead.
+      Partly. Search Console has a generative AI performance report covering AI
+      Overviews and AI Mode impressions, but only for sites with enough impressions
+      in those features, and it covers Web search only. Clicks from AI Overviews are
+      still counted inside ordinary organic data, so use the report for impressions
+      and watch click-through rate on informational pages for the click side.
   - question: What is the difference between a crawler hit and a citation?
     answer: >-
       A crawler hit means an AI system fetched your page, which you can see in
@@ -56,7 +58,7 @@ If you are still working out whether AI engines mention you at all, start with t
 | AI crawler requests | AI systems fetched your pages | Server or CDN logs |
 | Citations and mentions | Answers named or linked your brand or URL | Manual or automated prompt tests |
 
-Treat them as a funnel. Crawler requests show you are reachable, citations show you are chosen, and referral visits show the answer sent someone to you.
+Think of them as related but independent signals. Crawler requests show you are reachable, citations show you are chosen, and referral visits show the answer sent someone to you. They do not always move together: an engine can name a page it learned about through another provider or another page without any request from the AI user agents you monitor, so a quiet crawler log does not prove a citation is impossible.
 
 ## 1. Count AI referral visits in analytics
 
@@ -76,8 +78,9 @@ What this misses: anyone who read your brand in an answer and later typed your n
 
 ## 2. Estimate Google AI Overviews impact with proxies
 
-Google AI Overviews clicks are counted inside ordinary organic Web search data. Search Console does not label them, and in GA4 they appear as google / organic. You cannot filter them out, so use proxies:
+Google now has a dedicated generative AI performance report in Search Console that shows impressions from AI Overviews and AI Mode. It appears only for sites with enough impressions in those features, and it is limited to Web search. Clicks are a different story: they are counted inside ordinary organic data, and in GA4 they appear as google / organic. You cannot filter them out, so combine the report with proxies:
 
+- Open the generative AI report in Search Console and note which pages and queries earn impressions.
 - Compare impressions and clicks for informational queries over time. Rising impressions with falling click-through rate on a page that answers a question is consistent with an AI answer taking the click, though not proof.
 - Search the queries yourself and note whether an AI Overview appears and whether your page is listed in its sources.
 - Annotate your reports with dates of site changes so you can separate your own edits from changes in the results page.
