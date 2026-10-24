@@ -164,11 +164,15 @@ export async function POST(req: Request) {
       {
         url: primaryUrl,
         score: primaryCore.score,
+        categoryScores: primaryCore.categoryScores,
+        methodology: primaryCore.methodology,
         metrics: benchmarkMetrics(primaryCore.checks, primaryCore.score),
       },
       {
         url: competitorUrl,
         score: competitorCore.score,
+        categoryScores: competitorCore.categoryScores,
+        methodology: competitorCore.methodology,
         metrics: benchmarkMetrics(competitorCore.checks, competitorCore.score),
       },
     ];

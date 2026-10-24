@@ -3,6 +3,7 @@
  * Implements all SEO/AEO checks for AEOCheck
  */
 
+import { OVERALL_STATUS_CREDIT } from "@/lib/scoring-policy";
 import { ScrapedData, CheckResult } from "@/types/index";
 
 type CheckStatus = CheckResult["status"];
@@ -562,12 +563,7 @@ export function calculateScore(checks: CheckResult[]): number {
 
   checks.forEach((check) => {
     totalWeight += check.weight;
-    if (check.status === "pass") {
-      passedWeight += check.weight;
-    } else if (check.status === "warn") {
-      // Warn counts as 50% credit
-      passedWeight += check.weight * 0.5;
-    }
+    passedWeight += check.weight * (OVERALL_STATUS_CREDIT[check.status] ?? 0);
   });
 
   if (totalWeight === 0) return 0;

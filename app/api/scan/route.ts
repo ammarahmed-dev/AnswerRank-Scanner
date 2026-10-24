@@ -362,6 +362,7 @@ async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
       checks: core.checks,
       categoryScores: core.categoryScores,
       metadata: core.metadata,
+      methodology: core.methodology,
       pagespeed: null,
       summary: core.checks.find((check) => check.status !== "pass")?.detail ?? "Core visibility signals are in good shape.",
     };
@@ -658,6 +659,7 @@ export async function POST(req: NextRequest) {
           pagespeed,
           schemaTypes: deterministicFacts.detectedSchemaTypes,
           metadata: coreResult.metadata,
+          methodology: coreResult.methodology,
           competitorUrls: competitorUrls.length ? competitorUrls : undefined,
           competitors,
           scannedAt: new Date().toISOString(),

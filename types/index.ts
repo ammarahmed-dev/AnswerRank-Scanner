@@ -28,6 +28,26 @@ export interface ScrapedData {
   source?: "html" | "reader";
 }
 
+/** Immutable description of how a newly stored score was produced. Legacy reports omit it. */
+export interface ScoringMethodology {
+  version: string;
+  overall: { aggregation: "weighted"; statusCredit: Record<CheckResult["status"], number> };
+  categories: {
+    aggregation: "unweighted_mean";
+    statusPoints: Record<CheckResult["status"], number>;
+    missingSchemaCap: number;
+    performance: "measured_only";
+  };
+  unverifiedHandling: "warning_credit";
+  evidence: {
+    pageSource: "html" | "reader";
+    requestedUrl: string;
+    resolvedUrl?: string;
+    finalUrlVerified: boolean;
+    pageSpeed: "measured" | "unavailable" | "not_requested";
+  };
+}
+
 export interface ScanMetadata {
   title: string;
   metaDescription: string;
@@ -78,6 +98,7 @@ export interface CompetitorScanMetrics {
 }
 
 export interface CompetitorScanResult {
+  methodology?: ScoringMethodology;
   url: string;
   score?: number;
   checks?: CheckResult[];
@@ -99,6 +120,7 @@ export interface CompetitorScanResult {
 
 /** Compact summary of the same user's previous scan of this URL, stored in the newer report. */
 export interface PreviousScanSummary {
+  methodologyVersion?: string;
   reportId?: string;
   score: number;
   scannedAt: string;
@@ -106,6 +128,7 @@ export interface PreviousScanSummary {
 }
 
 export interface ScanResult {
+  methodology?: ScoringMethodology;
   reportId?: string;
   /** Present on retests: what the previous scan of this URL looked like. */
   previous?: PreviousScanSummary;

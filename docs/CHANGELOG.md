@@ -1,3 +1,7 @@
+# 2026-10-24 - Scoring provenance and report snapshots
+
+New reports, competitor/comparison results and successful audit-page JSON carry a scoring-method version, policy credits/caps and fetch/measurement provenance. Versioned report/print category presentation uses stored snapshots instead of silently recalculating them under a later method. Existing unversioned reports retain their current behavior. The methodology document records today's formulas and known limitations. Numerical scores, check weights and customer plans are unchanged. Validation: 300 tests, type check, lint and production build; independent before/after comparisons matched on 1,000 weighted-status vectors and two freshly captured public HTML pages. No migration or historical backfill; monitor snapshot versions and cross-version comparison presentation remain open.
+
 # 2026-10-24 - Audit and monitor count verification
 
 Audit and monitor creation fail with 503 when a database count fails or is missing/malformed, before discovery or insertion. Bounded object JSON prevents malformed or oversized inputs from reaching count queries. Verified zero counts still permit creation and exhausted limits still return their existing limit responses. Count response bodies are cancelled. Validation: 292 tests across 46 files. Count-then-insert concurrency remains open pending verified database transactions; no entitlement or migration changes.

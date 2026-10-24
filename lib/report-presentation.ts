@@ -42,7 +42,7 @@ export type ReportPresentation = {
   passingChecks: Array<{ id: string; label: string }>;
 };
 
-export function getReportPresentation(report: Pick<ScanResult, "checks" | "pagespeed" | "categoryScores">): ReportPresentation {
+export function getReportPresentation(report: Pick<ScanResult, "checks" | "pagespeed" | "categoryScores" | "methodology">): ReportPresentation {
   const scoreRows = getResolvedReportCategoryScores(report);
   const issues = getNormalizedIssues(report.checks, report.pagespeed);
   const critical = issues.filter((issue) => issue.priority === "critical");

@@ -1,3 +1,4 @@
+import type { ScoringMethodology } from "@/types/index";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
@@ -13,6 +14,7 @@ const SCAN_TIMEOUT_MS = 30000;
 type RouteContext = { params: Promise<{ id: string }> };
 
 export type AuditPageResult = {
+  methodology?: ScoringMethodology;
   url: string;
   score: number;
   status?: "done" | "error";
@@ -107,6 +109,7 @@ export async function POST(req: Request, ctx: RouteContext) {
         score: result.score,
         status: "done",
         categoryScores: result.categoryScores,
+        methodology: result.methodology,
         issues: topIssues.map((issue) => ({
           id: issue.id,
           label: issue.label,

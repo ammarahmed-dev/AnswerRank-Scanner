@@ -1,3 +1,4 @@
+import { createScoringMethodology } from "@/lib/scoring-policy";
 import { getScanCategoryScores } from "@/lib/report-category-scores";
 import {
   fetchHtmlPage,
@@ -57,6 +58,7 @@ export type ScanCoreResult = {
     trustSignals?: number;
   };
   metadata: ScanMetadata;
+  methodology: NonNullable<ScanResult["methodology"]>;
 };
 
 function metadataFromScrapedData(scrapedData: ScrapedData): ScanMetadata {
@@ -403,5 +405,12 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
     pagespeedResult,
     categoryScores,
     metadata: metadataFromScrapedData(scrapedData),
+    methodology: createScoringMethodology({
+      pageSource: scrapedData.source === "reader" ? "reader" : "html",
+      requestedUrl: url,
+      resolvedUrl: scrapedData.source === "reader" ? undefined : scrapedData.url,
+      finalUrlVerified: scrapedData.source !== "reader",
+      pageSpeed: !includePageSpeed ? "not_requested" : pagespeed ? "measured" : "unavailable",
+    }),
   };
 }

@@ -95,3 +95,13 @@ Remaining A14 work: verified redirect resolution, separate unbranded/branded agg
 - Validation: 292 tests across 46 files, including both routes with missing/malformed count headers, failed/network reads, exhausted limits, valid zero counts and malformed/oversized inputs.
 
 These guards do not make count-then-insert atomic. Audit/monitor concurrency still requires verified database transactions and production schema access. No plan limit, entitlement or migration changes are included.
+
+## Scoring provenance and immutable snapshots
+
+- New manual/competitor reports, comparison results and successful audit-page JSON results carry methodology version aeocheck-2026-10-24-v1 and the scoring policy's numerical credits/caps.
+- Versioned report and print category presentation reads stored snapshots, including valid zeros. Missing/invalid historical snapshot values stay unavailable instead of being regraded by a newer policy. Unversioned legacy reports keep their existing behavior.
+- Record requested versus directly resolved URLs, HTML/reader provenance and measured/unavailable/not-requested PageSpeed. Reader fallback does not claim a verified redirect destination.
+- Previous-report summaries retain a known method version. The methodology document explains today's distinct overall/category formulas and their limits.
+- Validation: 300 tests across 48 files; save/read/public-preview roundtrip and streamed scan response, immutable category snapshots, unknown future versions, reader provenance and metadata isolation. One-off baseline comparisons against main matched on 1,000 weighted-status vectors and 25 deterministic checks/category scores for fresh example.com and aeocheck.co HTML captures. Wikipedia returned an HTTP error and was not part of the comparison. These are deterministic fixture comparisons, not paid PageSpeed or live end-to-end scan scores.
+
+No numerical scoring changes, database migration, plan change or historical backfill. Remaining A05 work includes explicit unavailable/non-applicable aggregation, pinned legacy compatibility for future rule changes, cross-version delta presentation and versioned monitor snapshots after schema verification. See SCORING-METHODOLOGY.md.
