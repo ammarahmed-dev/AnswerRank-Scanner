@@ -1,14 +1,10 @@
+import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { welcomeEmailHtml, welcomeEmailSubject } from "@/lib/emails/welcome";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-type WelcomePayload = {
-  email?: string;
-  userId?: string;
-};
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -22,15 +18,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
-  let body: WelcomePayload = {};
+  let body: Record<string, unknown>;
   try {
-    body = (await req.json()) as WelcomePayload;
-  } catch {
-    return NextResponse.json({ ok: false }, { status: 400 });
+    body = await readJsonObject(req);
+  } catch (error) {
+    return NextResponse.json({ ok: false }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
   }
 
-  const email = body.email?.trim().toLowerCase() ?? "";
-  const userId = body.userId?.trim() ?? "";
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const userId = typeof body.userId === "string" ? body.userId.trim() : "";
 
   if (!email || !userId || !isValidEmail(email)) {
     return NextResponse.json({ ok: false }, { status: 400 });

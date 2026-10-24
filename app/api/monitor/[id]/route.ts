@@ -1,3 +1,4 @@
+import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
@@ -18,9 +19,9 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
   let body: { frequency?: unknown };
   try {
-    body = (await req.json()) as { frequency?: unknown };
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    body = await readJsonObject(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof BodyTooLargeError ? "Request body is too large." : "Invalid request body." }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
   }
 
   if (body.frequency !== "weekly" && body.frequency !== "monthly") {
