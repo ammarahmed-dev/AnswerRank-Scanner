@@ -1,3 +1,5 @@
+import { getScoringComparison } from "@/lib/scoring-comparison";
+
 /**
  * Shape of a report in the /api/account list. Only fields the dashboard needs are returned: the
  * stored `result` holds the full report including paid sections, so it must never be sent here.
@@ -12,7 +14,8 @@ export type AccountReportRow = {
   result?: {
     unlocked?: boolean;
     unlockedAt?: string;
-    previous?: { score?: number };
+    methodology?: { version?: string };
+    previous?: { score?: number; methodologyVersion?: string };
   } | null;
 };
 
@@ -24,7 +27,7 @@ export type AccountReport = {
   retest_count: number;
   max_retests: number;
   unlocked: boolean;
-  /** Score of the user's earlier scan of the same URL, when this report was a rescan. */
+  /** Earlier score only when both reports record the same scoring method. */
   previousScore: number | null;
 };
 
@@ -38,6 +41,6 @@ export function toAccountReport(row: AccountReportRow): AccountReport {
     unlocked: Boolean(row.result?.unlocked || row.result?.unlockedAt),
     retest_count: typeof row.retest_count === "number" ? row.retest_count : 0,
     max_retests: typeof row.max_retests === "number" ? row.max_retests : 3,
-    previousScore: typeof previous === "number" ? previous : null,
+    previousScore: typeof previous === "number" && getScoringComparison(row.result?.methodology?.version, row.result?.previous?.methodologyVersion) === "same_method" ? previous : null,
   };
 }

@@ -13,7 +13,7 @@ The overall score remains the stored `score`. Existing reports are not migrated 
 - `finalUrlVerified: false` and no claimed resolved URL for reader fallbacks. This does not imply that the fallback verified the final destination.
 - Whether PageSpeed was measured, unavailable or not requested.
 
-The previous-report summary carries a known methodology version when one exists. A future change to scoring rules must handle comparisons across different or unknown versions before interpreting a score delta as a site improvement.
+The previous-report summary carries a known methodology version when one exists. Report history compares scores and check statuses only when both scans record the exact same nonempty methodology version. Different methods, an absent version on either side, and two unversioned legacy scans are not assumed comparable. The report preserves the earlier score/date, explains the limitation and asks the user to establish a new baseline; the dashboard omits its delta badge. Stored numerical scores are unchanged. Monitor history/email comparisons remain separate unversioned work and are not covered by this report-only guard.
 
 ## Current overall calculation
 

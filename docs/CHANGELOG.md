@@ -1,3 +1,7 @@
+# 2026-10-25 - Compare report history only within a recorded scoring method
+
+Report history no longer labels different or unknown scoring methods as improvement/regression. Matching recorded versions retain score and check deltas; incompatible history preserves the earlier score/date with a new-baseline explanation. Dashboard delta badges follow the same compatibility boundary. Stored scores, category snapshots and access rules are unchanged. Validation: 419 tests, type checking, lint (0 errors, 18 existing warnings), production build and local production smoke checks. Browser fixture screenshots and authenticated production history acceptance remain unverified. Monitor snapshot versions and email/history comparison guards remain open.
+
 # 2026-10-25 - Bound remaining application JSON requests
 
 Checkout, contact, welcome email, monitor frequency updates and audit-page scans now reject malformed/non-object JSON with 400 and payloads above 32 KiB with 413, cancelling oversized streams before downstream work. Contact/welcome field types are checked before trimming. Authentication, ownership filters, checkout selection and valid submission behavior are covered by mocked regressions. No actual messages, checkouts or customer writes are used for verification. Validation: 394 tests, type checking, lint (0 errors, 18 existing warnings) and production build. Signed webhook bounds and remaining cancellation/budget work remain open under A11.

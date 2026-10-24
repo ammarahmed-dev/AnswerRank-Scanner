@@ -160,3 +160,12 @@ Remaining: verify deployed metadata and notification status, follow the dated sp
 - Regression tests cover malformed input, multibyte byte limits without Content-Length, cancellation of oversized chunked streams, authentication before body reads, and valid mocked downstream paths. No actual email, checkout, customer write or production migration is part of verification.
 - Validation: 394 tests across 55 files, type checking, lint (0 errors, 18 existing warnings) and production build passed.
 - Remaining A11 work: signed webhook raw-body bounds are coordinated with the separate billing PR; caller cancellation and remaining outbound response/time budgets still require verification. This release does not finish the complete audit.
+
+## Report history scoring compatibility (2026-10-25)
+
+- Numeric report deltas and improved/regressed check labels require the same recorded nonempty methodology version on both scans. Different or missing versions, including two legacy scans without versions, do not imply compatible scoring rules.
+- Incompatible report history preserves the earlier score/date and explains why changes cannot be interpreted reliably. The current scan becomes the suggested baseline. The dashboard receives no previous-score input for an incompatible delta, while stored scores and report access/redaction remain unchanged.
+- The comparison section is extracted into a small component using the existing report card classes. Matching methods retain the existing card structure, including zero scores.
+- Validation: 419 tests across 56 files, type checking, lint (0 errors, 18 existing warnings) and production build pass. Rendered-component tests exercise matching, changed and unknown methods; account API tests verify that incompatible delta inputs are omitted without leaking paid content. Local production sample/report entry pages return 200.
+- Visual fixture screenshots are unavailable because the cloud browser rejected the fixture URL protocol. No desktop/mobile screenshot verification or authenticated production history journey is claimed. Existing report card classes are reused.
+- Remaining A05 work: explicit unavailable/not-applicable aggregation, pinned legacy category compatibility and verified versioned monitor snapshots with guarded monitor/email deltas. No monitor schema change, migration or historical backfill is included.

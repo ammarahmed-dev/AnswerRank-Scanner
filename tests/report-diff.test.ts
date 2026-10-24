@@ -4,6 +4,7 @@ import type { CheckResult, PreviousScanSummary } from "@/types/index";
 
 const check = (id: string, status: CheckResult["status"]): CheckResult => ({ id, label: id.toUpperCase(), status, detail: "", weight: 1 });
 const previous: PreviousScanSummary = {
+  methodologyVersion: "method-v1",
   reportId: "r0",
   score: 50,
   scannedAt: "2026-09-01T00:00:00Z",
@@ -12,7 +13,7 @@ const previous: PreviousScanSummary = {
 
 describe("diffReports", () => {
   it("separates improved, regressed, unchanged and new checks and reports the score change", () => {
-    const d = diffReports(61, [check("title", "pass"), check("meta", "warn"), check("h1", "warn"), check("new_check", "fail")], previous);
+    const d = diffReports(61, [check("title", "pass"), check("meta", "warn"), check("h1", "warn"), check("new_check", "fail")], previous, "method-v1");
     expect(d.scoreDelta).toBe(11);
     expect(d.improved).toEqual([{ id: "title", label: "TITLE", from: "fail", to: "pass" }]);
     expect(d.regressed).toEqual([{ id: "h1", label: "H1", from: "pass", to: "warn" }]);
@@ -22,7 +23,7 @@ describe("diffReports", () => {
   });
 
   it("reports a negative delta and ignores checks that disappeared", () => {
-    const d = diffReports(40, [check("title", "fail")], previous);
+    const d = diffReports(40, [check("title", "fail")], previous, "method-v1");
     expect(d.scoreDelta).toBe(-10);
     expect(d.improved).toEqual([]);
     expect(d.unchanged).toBe(1);
