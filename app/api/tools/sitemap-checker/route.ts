@@ -1,3 +1,4 @@
+import { BodyTooLargeError, readJsonObject, readBoundedText } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { assertPublicUrl, pinnedFetch, safeFetch } from "@/lib/url-safety";
@@ -17,7 +18,7 @@ const UA = "Mozilla/5.0 (compatible; AEOCheckScanner/1.0; +https://www.aeocheck.
 
 async function fetchText(url: string, timeoutMs = 10_000): Promise<{ status: number; text: string }> {
   const { response } = await safeFetch(url, { headers: { "User-Agent": UA, Accept: "application/xml,text/xml,text/plain,*/*" }, signal: AbortSignal.timeout(timeoutMs) });
-  const text = response.status === 200 ? (await response.text()).slice(0, MAX_BYTES) : "";
+  const text = response.status === 200 ? await readBoundedText(response, MAX_BYTES) : "";
   if (response.status !== 200) await response.body?.cancel().catch(() => undefined);
   return { status: response.status, text };
 }
@@ -27,9 +28,9 @@ type Child = { url: string; urlCount?: number; error?: string };
 export async function POST(req: Request) {
   let body: { url?: unknown; clientId?: unknown };
   try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    body = (await readJsonObject(req)) as typeof body;
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof BodyTooLargeError ? "Request body is too large." : "Invalid request body." }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
   }
 
   let url = "";

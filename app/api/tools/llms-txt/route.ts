@@ -1,3 +1,4 @@
+import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import { fetchHtml, normalizeUrl, validateUrl } from "@/lib/scrape";
@@ -29,9 +30,9 @@ function readPage(html: string, url: string) {
 export async function POST(req: Request) {
   let body: { url?: unknown; clientId?: unknown };
   try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    body = (await readJsonObject(req)) as typeof body;
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof BodyTooLargeError ? "Request body is too large." : "Invalid request body." }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
   }
 
   let url = "";

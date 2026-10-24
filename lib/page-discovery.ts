@@ -1,3 +1,4 @@
+import { readBoundedText } from "@/lib/bounded-body";
 import { safeFetch } from "@/lib/url-safety";
 const EXCLUDED_PATH_PREFIXES = [
   "/login",
@@ -77,17 +78,20 @@ function normalizeUrl(href: string, base: URL): string | null {
 
 async function fetchHtml(url: string, timeoutMs = 10000): Promise<string | null> {
   try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     const { response: res } = await safeFetch(url, {
-      signal: ctrl.signal,
+      signal: AbortSignal.timeout(timeoutMs),
       headers: { "User-Agent": "AEOCheck-Audit/1.0 (+https://www.aeocheck.co/)" },
     });
-    clearTimeout(timer);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      await res.body?.cancel().catch(() => undefined);
+      return null;
+    }
     const ct = res.headers.get("content-type") ?? "";
-    if (!ct.includes("text/html") && !ct.includes("text/xml") && !ct.includes("application/xml")) return null;
-    return await res.text();
+    if (!ct.includes("text/html") && !ct.includes("text/xml") && !ct.includes("application/xml")) {
+      await res.body?.cancel().catch(() => undefined);
+      return null;
+    }
+    return await readBoundedText(res, 2_500_000);
   } catch {
     return null;
   }
