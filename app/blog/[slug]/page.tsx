@@ -61,6 +61,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       url: `${SITE_URL}/blog/${post.slug}`,
       siteName: SITE_NAME,
       publishedTime: post.date,
+      modifiedTime: post.updated ?? post.date,
       tags: post.tags,
       images: [{ url: ogImage }],
     },
@@ -95,7 +96,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         description: post.description,
         image: imageUrl,
         datePublished: post.date,
-        dateModified: post.date,
+        dateModified: post.updated ?? post.date,
         author: {
           "@type": "Person",
           name: "Ammar Ahmed",
@@ -149,6 +150,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <header className="blog-post-header">
           <Link href="/blog" className="blog-back-link">Blog</Link>
           <time dateTime={post.date}>{formatDate(post.date)}</time>
+          {post.updated && <p className="blog-post-author">Updated <time dateTime={post.updated}>{formatDate(post.updated)}</time></p>}
           <p className="blog-post-author">By Ammar Ahmed</p>
           <h1>{post.title}</h1>
           <p>{post.description}</p>

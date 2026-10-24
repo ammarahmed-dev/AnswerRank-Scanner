@@ -1,0 +1,47 @@
+# Seven-day SEO sprint: 25 October to 1 November 2026
+
+Objective: improve qualified organic discovery and clicks, with the existing best-AEO-checker guide as the first ranking target. Page-one movement for a relevant query is the aim, not a guaranteed outcome. Preserve the implementation audit and its security priorities alongside this sprint.
+
+## Baseline and measurement
+
+Use the owner's Search Console export supplied on 25 October as the primary baseline. It covers Web search over three months ending 22 October. Keep the raw export and private metrics out of this public repository. The earlier saved GSC feedback report uses a different date window and must not be presented as a directly comparable ranking change.
+
+The export separates date, query and page tables. It does not identify which page earned each query or provide recent query-level trends. Treat query-to-page matches as candidates until the joint query/page GSC report confirms them. Query/page averages are not a fixed rank for one location, device or searcher. Do not add page/query totals to reconstruct property totals; aggregation and anonymized queries differ.
+
+Track clicks, impressions and CTR for consistent date windows. Use query/page position only with matching country/device filters and sufficient impressions. Check brand versus nonbrand separately when data permits. With this site's low click counts, one or two extra clicks do not establish a stable conversion trend.
+
+Day-seven results are preliminary because Search Console data lags publication. Record the latest available data date; revisit the complete post-change window when it is available. Do not label delayed data as a current ranking check.
+
+## Priority pages
+
+1. `/blog/best-aeo-tools-ai-search-visibility`: strongest existing commercial-query opportunity. Clarify page readiness versus actual AI-answer tracking, improve the chooser and evaluation evidence, correct product claims, and link directly to canonical supporting pages.
+2. `/blog/aeo-for-saas`: substantial exposure but lower broad-query positions. Improve relevant SaaS long-tail answers after confirming the query/page match. Do not invent case studies or customer outcomes.
+3. `/blog/how-to-check-if-website-appears-in-chatgpt-recommendations`: preserve its existing clicks and improve the evidence-based measurement journey.
+4. Existing schema, sitemap and meta tools: improve discovery and helpful supporting content. Their broad queries are competitive; do not treat them as guaranteed seven-day winners.
+
+## Delivery sequence
+
+| Day | Work | Verification |
+| --- | --- | --- |
+| 1: 25 Oct | Refresh the existing comparison guide; distinguish scan and tracking intent; correct FAQ claims; stop fabricated sitemap modification dates; add tool discovery links | Build, metadata/JSON-LD checks, canonical links, live public responses and GSC/IndexNow notification status |
+| 2: 26 Oct | Inspect the SaaS guide against the query intent and add useful, specific actions with primary sources | Confirm query/page candidates; no invented proof or promises of citations |
+| 3: 27 Oct | Review crawl/index coverage, redirects, internal links and canonical targets; read the available GSC feedback | Document actual status and data dates; repair demonstrated issues |
+| 4: 28 Oct | Strengthen the ChatGPT recommendation-checking guide with a repeatable measurement workflow and useful tool links | Verify every claim and distinguish readiness from observed answers |
+| 5: 29 Oct | Review page experience and search-result presentation on priority pages | Fix measured defects; do not churn titles based on one day of noise |
+| 6: 30 Oct | Check deployed changes, discovery and measurable scan/pricing entry events where available | Report observed behavior separately from estimated rankings |
+| 7: 31 Oct-1 Nov | Compare available Search Console windows and query/page evidence; summarize gains, losses and next actions | State the latest data date, sample sizes and lag; no invented page-one result |
+
+## First release
+
+- Refreshed the existing best-checker guide with a decision table, a five-minute evaluation workflow and accurate readiness/measurement boundaries. The HubSpot description links to its primary product source. Prices and plan entitlements are not changed.
+- Preserved original publication dates and added explicit update dates to visible article metadata, Open Graph, JSON-LD and blog sitemap entries.
+- Removed build-time lastmod values for unchanged static pages. Dates are omitted where no actual revision is recorded.
+- Shared the public-tool discovery list between XML and HTML sitemaps. No bulk doorway pages, fake reviews or synthetic backlinks.
+
+Continue using the existing implementation task for follow-through; do not create overlapping SEO releases or unrelated automated messages. Re-check current main and other active branches first. Search Console and IndexNow submissions help discovery; they are not confirmation of indexing or ranking.
+
+Primary guidance:
+
+- https://developers.google.com/search/docs/fundamentals/seo-starter-guide
+- https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
+- https://www.hubspot.com/ai-search-grader

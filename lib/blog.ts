@@ -12,6 +12,7 @@ export type FAQ = {
 export type BlogPostMeta = {
   title: string;
   date: string;
+  updated?: string;
   slug: string;
   description: string;
   author: string;
@@ -47,6 +48,7 @@ function readPostFile(fileName: string): BlogPost {
   return {
     title: ensureString(parsed.data.title),
     date: ensureDateString(parsed.data.date),
+    updated: ensureDateString(parsed.data.updated) || undefined,
     slug,
     description: ensureString(parsed.data.description),
     author: ensureString(parsed.data.author) || "Ammar Ahmed",
