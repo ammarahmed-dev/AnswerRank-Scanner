@@ -127,6 +127,7 @@ export async function getPreviousReportSummary(userId: string, url: string): Pro
     return {
       reportId: row.id,
       score: row.result.score,
+      methodologyVersion: row.result.methodology?.version,
       scannedAt: row.result.scannedAt || row.created_at || "",
       checks: row.result.checks.map((c) => ({ id: c.id, label: c.label, status: c.status })),
     };

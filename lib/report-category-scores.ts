@@ -1,3 +1,4 @@
+import { CATEGORY_STATUS_POINTS, MISSING_SCHEMA_CATEGORY_CAP } from "@/lib/scoring-policy";
 import { CheckResult, ScanResult } from "@/types/index";
 
 export type ReportCategory =
@@ -20,9 +21,7 @@ export const REPORT_CATEGORY_LABELS: Record<ReportCategory, string> = {
 };
 
 function scoreFromStatus(status: CheckResult["status"]): number {
-  if (status === "pass") return 100;
-  if (status === "warn") return 60;
-  return 25;
+  return CATEGORY_STATUS_POINTS[status] ?? CATEGORY_STATUS_POINTS.fail;
 }
 
 export function mapReportCategory(id: string): ReportCategory {
@@ -68,7 +67,7 @@ export function getReportCategoryScores(
 
     // Guardrail: missing base schema should never look "Strong" just because optional schema checks are not applicable.
     if (category === "schema" && (schemaPresentCheck?.status === "fail" || hasExplicitSchemaMissingSignal)) {
-      score = Math.min(score, 45);
+      score = Math.min(score, MISSING_SCHEMA_CATEGORY_CAP);
     }
 
     return {
@@ -79,7 +78,21 @@ export function getReportCategoryScores(
   });
 }
 
-export function getResolvedReportCategoryScores(report: Pick<ScanResult, "checks" | "pagespeed" | "categoryScores">) {
+export function getResolvedReportCategoryScores(report: Pick<ScanResult, "checks" | "pagespeed" | "categoryScores" | "methodology">) {
+  // New reports carry a version and a stored snapshot. Never regrade them with a later policy.
+  if (typeof report.methodology?.version === "string" && report.methodology.version.trim()) {
+    const keys: Record<ReportCategory, keyof NonNullable<ScanResult["categoryScores"]>> = {
+      schema: "schema", metadata: "metadata", content: "contentClarity", performance: "performance",
+      trust: "trustSignals", "ai-readiness": "aiReadiness", headings: "headings",
+    };
+    return (Object.keys(REPORT_CATEGORY_LABELS) as ReportCategory[]).flatMap(category => {
+      const score = report.categoryScores?.[keys[category]];
+      // Invalid or absent historical values stay unavailable; do not invent a replacement.
+      return typeof score === "number" && Number.isFinite(score) && score >= 0 && score <= 100
+        ? [{ category, label: REPORT_CATEGORY_LABELS[category], score }]
+        : [];
+    });
+  }
   return getReportCategoryScores(report.checks, report.pagespeed);
 }
 
