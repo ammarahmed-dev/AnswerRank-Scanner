@@ -1,3 +1,7 @@
+# 2026-10-25 - Tested database permission boundary
+
+Supabase is connected. Added six synthetic Postgres tests and a migration that explicitly limits browser table access to waitlist INSERT and public statistics SELECT while preserving server-role grants. Production application is pending approval after automatic review rejected the live permission changes; no database fix is claimed live. Production metadata and customer records are excluded. Full schema baseline and transaction work remain open.
+
 # 2026-10-24 - Scoring provenance and report snapshots
 
 New reports, competitor/comparison results and successful audit-page JSON carry a scoring-method version, policy credits/caps and fetch/measurement provenance. Versioned report/print category presentation uses stored snapshots instead of silently recalculating them under a later method. Existing unversioned reports retain their current behavior. The methodology document records today's formulas and known limitations. Numerical scores, check weights and customer plans are unchanged. Validation: 300 tests, type check, lint and production build; independent before/after comparisons matched on 1,000 weighted-status vectors and two freshly captured public HTML pages. No migration or historical backfill; monitor snapshot versions and cross-version comparison presentation remain open.

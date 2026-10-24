@@ -22,3 +22,4 @@ current_info.txt
 # Local tooling / logs
 .claude/settings.local.json
 *.log
+supabase/.temp/

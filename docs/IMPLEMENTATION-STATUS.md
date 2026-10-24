@@ -24,7 +24,7 @@ Review notes: category normalization can change displayed historical category br
 - Limit audit scans to saved targets, reject already-recorded pages, include valid zero scores in aggregates and clear settled timeout timers.
 - Validation: 224 tests pass across 37 files; production build passes; type checking and lint are checked in CI.
 
-The Supabase connection is currently absent from this conversation; earlier project discovery and documentation calls returned `Unknown tool`. Live schema reconciliation, event-ledger migrations, atomic scan grants, durable audit jobs and email outbox remain blocked on a functioning database connection. The guards above do not replace those transactions or make concurrent audit requests atomic.
+Historical blocker, resolved 2026-10-25: earlier project discovery and documentation calls returned `Unknown tool`. Supabase now supports live schema inspection; transaction and durable-job work remains unfinished. The guards above do not replace those transactions or make concurrent audit requests atomic.
 
 These items are not implemented by the foundation release:
 
@@ -73,7 +73,7 @@ See IMPLEMENTATION-PLAN.md for the complete 17-item acceptance checklist and con
 - Comparison aborts the sibling scan when either scan fails before returning its quota reservation.
 - Validation: 270 tests across 44 files, including malformed/oversized requests across all seven tool routes, oversized stream cancellation, quota release and comparison cancellation.
 
-Connection state (owner clarification): Supabase access is already approved by the owner. The current conversation still exposes no Supabase tools and its connection lookup reports the integration as available for installation/connection. This is a connection exposure problem, not missing permission from the owner. Do not ask for repeated authorization or secrets. Continue independent work while checking whether the approved connection becomes available.
+Connection state: the owner-approved Supabase integration became available on 2026-10-25. Read-only production inspection works. The proposed production privilege correction separately awaits approval after automatic review rejected its application.
 
 ## Visibility evidence integrity
 
@@ -105,3 +105,13 @@ These guards do not make count-then-insert atomic. Audit/monitor concurrency sti
 - Validation: 300 tests across 48 files; save/read/public-preview roundtrip and streamed scan response, immutable category snapshots, unknown future versions, reader provenance and metadata isolation. One-off baseline comparisons against main matched on 1,000 weighted-status vectors and 25 deterministic checks/category scores for fresh example.com and aeocheck.co HTML captures. Wikipedia returned an HTTP error and was not part of the comparison. These are deterministic fixture comparisons, not paid PageSpeed or live end-to-end scan scores.
 
 No numerical scoring changes, database migration, plan change or historical backfill. Remaining A05 work includes explicit unavailable/non-applicable aggregation, pinned legacy compatibility for future rule changes, cross-version delta presentation and versioned monitor snapshots after schema verification. See SCORING-METHODOLOGY.md.
+
+## Supabase connection and table-access correction (2026-10-25)
+
+- Connection exposure is resolved; read-only database inspection is available. Production schema exports and policy/grant snapshots are excluded from this repository change.
+- Prepared an explicit browser access boundary: waitlist INSERT and public statistics SELECT, with other application data accessed through authenticated server APIs. Existing service-role grants are preserved.
+- Six synthetic Postgres tests execute the actual migration and cover both browser roles, minimal inserts, duplicate handling, rejected returned rows, administrative privilege denial, service access, repeated application and future-table defaults.
+- Validation: 306 tests across 49 files, type checking, lint (0 errors, 18 existing warnings) and production build. See DATABASE-ACCESS-AUDIT.md for scope and acceptance.
+- Production migration NOT applied: automatic approval review rejected live permission changes because customer-flow compatibility has not been verified in production. Approval and production acceptance remain necessary. No indirect execution was attempted.
+
+The connection itself no longer blocks schema work. Complete schema reconstruction, transactions and signed-in production acceptance remain unfinished.
