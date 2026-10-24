@@ -3,7 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 const tables = ["ai_visibility_runs", "app_stats", "audit_runs", "compare_runs", "contact_messages", "monitor_snapshots", "monitored_urls", "profiles", "reports", "scan_usage", "waitlist", "webhook_events"];
 
-const migration = readFileSync(new URL("../supabase/migrations/20261024212148_restrict_public_table_privileges.sql", import.meta.url), "utf8");
+const migration = readFileSync(new URL("../supabase/migrations/20261024213440_restrict_public_table_privileges.sql", import.meta.url), "utf8");
 const quote = (s: string) => `"${s.replaceAll('"', '""')}"`;
 let db: PGlite;
 

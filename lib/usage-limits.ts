@@ -73,56 +73,6 @@ async function readUsageCount(clientKey: string) {
   return count;
 }
 
-export async function checkUsageLimit(clientKey: string, limit: number): Promise<UsageResult> {
-  if (!hasSupabaseConfig()) {
-    return { allowed: true, count: 0, remaining: limit, limit };
-  }
-
-  const currentCount = await readUsageCount(clientKey);
-
-  if (currentCount >= limit) {
-    return { allowed: false, count: currentCount, remaining: 0, limit };
-  }
-
-  return {
-    allowed: true,
-    count: currentCount,
-    remaining: Math.max(0, limit - currentCount),
-    limit,
-  };
-}
-
-export async function incrementUsage(clientKey: string, nextCountHint?: number): Promise<number> {
-  if (!hasSupabaseConfig()) return Math.max(0, nextCountHint ?? 1);
-
-  const usageDate = currentMonthUsageDateKey();
-  const currentCount = typeof nextCountHint === "number"
-    ? Math.max(0, nextCountHint - 1)
-    : await readUsageCount(clientKey);
-  const nextCount = currentCount + 1;
-
-  const writeRes = await fetch(`${supabaseUrl}/rest/v1/scan_usage`, {
-    method: "POST",
-    headers: {
-      ...getSupabaseServiceHeaders(),
-      Prefer: "resolution=merge-duplicates",
-    },
-    body: JSON.stringify({
-      client_key: clientKey,
-      usage_date: usageDate,
-      scan_count: nextCount,
-      updated_at: new Date().toISOString(),
-    }),
-  });
-
-  if (!writeRes.ok) {
-    console.error("Supabase usage write failed:", writeRes.status);
-    throw new Error("Usage storage is unavailable.");
-  }
-
-  return nextCount;
-}
-
 export async function getUsageCount(clientKey: string) {
   return readUsageCount(clientKey);
 }
@@ -140,8 +90,8 @@ async function callRpc(name: string, args: Record<string, unknown>): Promise<Res
 /**
  * Atomically reserves one unit of usage before doing the work, so concurrent requests cannot
  * exceed the limit. Call commitUsage() on success and releaseUsage() on failure.
- * Only a missing RPC (404) permits the compatibility read-then-write check while the `reserve_scan_usage` function
- * (supabase/migrations/20261003_atomic_scan_usage.sql) is not installed.
+ * The verified database RPC is required. Missing or failed functions never fall back
+ * to a read-then-write path that can overrun limits under concurrent requests.
  */
 export async function reserveUsage(clientKey: string, limit: number): Promise<UsageReservation> {
   const usageDate = currentMonthUsageDateKey();
@@ -166,27 +116,20 @@ export async function reserveUsage(clientKey: string, limit: number): Promise<Us
       if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 1 || count > limit) return unavailable();
       return { allowed: true, count, remaining: Math.max(0, limit - count), limit, reserved: true, usageDate };
     }
-    if (res.status !== 404) {
-      console.error("Supabase reserve_scan_usage failed:", res.status);
-      return unavailable();
-    }
+    console.error("Supabase reserve_scan_usage failed:", res.status);
+    return unavailable();
   } catch (err) {
     console.error("Supabase reserve_scan_usage error:", err instanceof Error ? err.name : "unknown");
     return unavailable();
   }
-
-  try {
-    const legacy = await checkUsageLimit(clientKey, limit);
-    return { ...legacy, reserved: false, usageDate };
-  } catch {
-    return unavailable();
-  }
 }
 
-/** Records successful usage. A no-op for atomic reservations (already counted). */
-export async function commitUsage(clientKey: string, reservation: UsageReservation): Promise<void> {
+/** Atomic reservations are already counted; production commits require one. */
+export async function commitUsage(_clientKey: string, reservation: UsageReservation): Promise<void> {
+  if (!reservation.allowed || reservation.unavailable) throw new Error("Usage reservation was not accepted.");
   if (reservation.reserved) return;
-  await incrementUsage(clientKey, reservation.count + 1);
+  if (!hasSupabaseConfig() && process.env.NODE_ENV !== "production") return;
+  throw new Error("An atomic usage reservation is required.");
 }
 
 /** Gives back an atomic reservation when the work failed. */

@@ -40,21 +40,7 @@ describe("reserveUsage", () => {
     expect(r).toMatchObject({ allowed: false, remaining: 0, reserved: false });
   });
 
-  it("falls back to the legacy check when the function is missing", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
-    mockFetch((url) =>
-      url.includes("/rpc/") ? new Response("{}", { status: 404 }) : new Response(JSON.stringify([{ scan_count: 1 }]), { status: 200 })
-    );
-    const r = await mod.reserveUsage("k", 3);
-    expect(r).toMatchObject({ allowed: true, count: 1, reserved: false });
-
-    mockFetch(() => new Response(null, { status: 201 }));
-    await mod.commitUsage("k", r);
-    expect(calls[0]).toMatchObject({ url: "https://db.test/rest/v1/scan_usage", method: "POST" });
-    expect(calls[0].body).toMatchObject({ client_key: "k", scan_count: 2 });
-  });
-
-  it.each([401, 403, 429, 500, 503])("fails closed for RPC HTTP %s without a legacy read", async status => {
+  it.each([401, 403, 404, 429, 500, 503])("fails closed for RPC HTTP %s without a legacy read", async status => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     mockFetch(() => new Response("{}", { status }));
     expect(await mod.reserveUsage("k", 3)).toMatchObject({ allowed: false, unavailable: true, reserved: false });
@@ -67,10 +53,12 @@ describe("reserveUsage", () => {
     expect(calls).toHaveLength(1);
   });
 
-  it("does not treat a failed compatibility read as zero usage", async () => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
-    mockFetch(url => new Response("{}", { status: url.includes("/rpc/") ? 404 : 503 }));
-    expect(await mod.reserveUsage("k", 3)).toMatchObject({ allowed: false, unavailable: true });
+  it("rejects commits without a successful atomic reservation rather than writing usage", async () => {
+    mockFetch(() => new Response(null, { status: 201 }));
+    const reservation = { allowed: true, count: 0, remaining: 3, limit: 3, reserved: false, usageDate: "2026-10-01" };
+    await expect(mod.commitUsage("k", reservation)).rejects.toThrow("atomic usage reservation");
+    await expect(mod.commitUsage("k", { ...reservation, allowed: false })).rejects.toThrow("not accepted");
+    expect(calls).toHaveLength(0);
   });
 
   it("commit is a no-op and release calls the RPC for atomic reservations", async () => {
@@ -84,7 +72,7 @@ describe("reserveUsage", () => {
     expect(calls[0].body).toMatchObject({ p_client_key: "k", p_usage_date: r.usageDate });
   });
 
-  it("release is a no-op for legacy reservations", async () => {
+  it("release is a no-op for unreserved requests", async () => {
     mockFetch(() => new Response(null, { status: 204 }));
     await mod.releaseUsage("k", { allowed: true, count: 1, remaining: 2, limit: 3, reserved: false, usageDate: "2026-10-01" });
     expect(calls).toHaveLength(0);

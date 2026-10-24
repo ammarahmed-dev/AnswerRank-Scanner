@@ -16,9 +16,11 @@ These tests do not establish compatibility with every live authenticated journey
 
 ## Production status
 
-**Not applied.** Automatic approval review rejected the production privilege changes because live customer-flow compatibility has not been established. Production permissions remain unchanged. No indirect SQL execution was attempted after rejection.
+**Applied and checked on 2026-10-25 after the owner's explicit approval.** The recorded Supabase migration version is 20261024213440; the repository filename matches that history entry. Earlier automatic-review rejection was resolved by the owner's approval.
 
-The migration is ready for review. Applying it to production requires approval, followed by catalog verification, read-only API denial checks, signed-in server journeys, a controlled waitlist submission and security advisors. Do not publish live metadata or customer rows as verification evidence.
+Catalog checks confirmed the intended browser grants and absence of administrative/direct customer-table privileges. Anonymous Data API reads of private tables were denied with 401; public statistics remained 200. A synthetic anonymous waitlist insert succeeded inside a rolled-back transaction, leaving no test row. Public pages and an existing report remained readable through the application's server API. Security advisors were rechecked.
+
+These checks do not replace full signed-in checkout, monitor, audit and email acceptance journeys. No customer rows were deleted or changed. Live metadata and customer records remain excluded from the repository.
 
 References:
 

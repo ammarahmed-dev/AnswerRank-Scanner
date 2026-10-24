@@ -1,3 +1,7 @@
+# 2026-10-25 - Require atomic quota reservations
+
+Production quota functions are verified. Missing RPCs now return unavailable instead of falling back to non-atomic read/write accounting, and commits reject unaccepted reservations. SQL regression tests cover caps, releases, account/month isolation and browser privilege denial. The PR #25 permission migration was applied after explicit owner approval; private Data API reads are denied while public statistics, waitlist inserts and server report reads retain their intended access. Rolled-back production checks left no test rows. The migration filename matches recorded Supabase history. Full signed-in and multi-connection acceptance remain open.
+
 # 2026-10-25 - Tested database permission boundary
 
 Supabase is connected. Added six synthetic Postgres tests and a migration that explicitly limits browser table access to waitlist INSERT and public statistics SELECT while preserving server-role grants. Production application is pending approval after automatic review rejected the live permission changes; no database fix is claimed live. Production metadata and customer records are excluded. Full schema baseline and transaction work remain open.
