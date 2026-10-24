@@ -1,3 +1,4 @@
+import { PUBLIC_TOOL_PAGES } from "@/lib/public-tool-pages";
 import type { MetadataRoute } from "next";
 import { getAllBlogPosts } from "@/lib/blog";
 import { COMPETITOR_SLUGS } from "@/app/vs/competitors";
@@ -16,47 +17,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const blogPosts = posts.map((post) => ({
     url: `${SITE_URL}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
+    lastModified: new Date(post.updated ?? post.date),
     changeFrequency: "monthly" as const,
     priority: 0.8,
   }));
 
   const comparisonPages = COMPETITOR_SLUGS.map((slug) => ({
     url: `${SITE_URL}/vs/${slug}`,
-    lastModified: new Date(),
     changeFrequency: "monthly" as const,
     priority: 0.8,
   }));
 
   return [
     { url: `${SITE_URL}/`, changeFrequency: "weekly" as const, priority: 1.0 },
-    { url: `${SITE_URL}/pricing`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.9 },
+    { url: `${SITE_URL}/pricing`, changeFrequency: "monthly" as const, priority: 0.9 },
     { url: `${SITE_URL}/blog`, changeFrequency: "weekly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/about`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7 },
-    { url: `${SITE_URL}/team`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.7 },
-    { url: `${SITE_URL}/contact`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.6 },
+    { url: `${SITE_URL}/about`, changeFrequency: "monthly" as const, priority: 0.7 },
+    { url: `${SITE_URL}/team`, changeFrequency: "monthly" as const, priority: 0.7 },
+    { url: `${SITE_URL}/contact`, changeFrequency: "monthly" as const, priority: 0.6 },
     { url: `${SITE_URL}/ai-seo-audit`, changeFrequency: "monthly" as const, priority: 0.9 },
     { url: `${SITE_URL}/research/ai-readiness-study`, changeFrequency: "yearly" as const, priority: 0.8 },
     { url: `${SITE_URL}/tools`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/llms-txt-generator`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/ai-crawler-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/faq-schema-generator`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/content-extractability`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/schema-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/robots-txt-generator`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/robots-txt-tester`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/open-graph-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/faq-schema-validator`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/sitemap-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/meta-tag-checker`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/ai-readiness-badge`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/article-schema-generator`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/tools/organization-schema-generator`, changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/sample-report`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.8 },
-    { url: `${SITE_URL}/sitemap`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.4 },
-    { url: `${SITE_URL}/privacy-policy`, lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
-    { url: `${SITE_URL}/terms-of-service`, lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
-    { url: `${SITE_URL}/refund-policy`, lastModified: new Date(), changeFrequency: "yearly" as const, priority: 0.3 },
+    { url: `${SITE_URL}/sample-report`, changeFrequency: "monthly" as const, priority: 0.8 },
+    { url: `${SITE_URL}/sitemap`, changeFrequency: "monthly" as const, priority: 0.4 },
+    { url: `${SITE_URL}/privacy-policy`, changeFrequency: "yearly" as const, priority: 0.3 },
+    { url: `${SITE_URL}/terms-of-service`, changeFrequency: "yearly" as const, priority: 0.3 },
+    { url: `${SITE_URL}/refund-policy`, changeFrequency: "yearly" as const, priority: 0.3 },
+    ...PUBLIC_TOOL_PAGES.map(page => ({ url: `${SITE_URL}${page.href}`, changeFrequency: "monthly" as const, priority: 0.8 })),
     ...comparisonPages,
     ...blogPosts,
   ];

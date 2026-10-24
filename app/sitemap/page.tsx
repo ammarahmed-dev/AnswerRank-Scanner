@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PUBLIC_TOOL_PAGES } from "@/lib/public-tool-pages";
 import type { Metadata } from "next";
 import SiteFooter from "@/app/components/SiteFooter";
 import SiteHeader from "@/app/components/SiteHeader";
@@ -32,6 +33,12 @@ export default function HtmlSitemapPage() {
             <li><a href="/team">Team</a> - Meet the people behind AEOCheck</li>
             <li><a href="/contact">Contact</a> - Get in touch with the AEOCheck team</li>
             <li><a href="/sample-report">Sample Report</a> - See a full AEO report before you scan</li>
+          </ul>
+
+          <h2>Free website tools</h2>
+          <ul>
+            <li><Link href="/tools">All free AEO and website tools</Link></li>
+            {PUBLIC_TOOL_PAGES.map(page => <li key={page.href}><Link href={page.href}>{page.name}</Link></li>)}
           </ul>
 
           <h2>Blog</h2>

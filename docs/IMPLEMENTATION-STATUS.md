@@ -141,3 +141,14 @@ Remaining A11 work includes other non-tool input boundaries and cancellation thr
 - Validation: 331 tests across 53 files, including eight streamed scan/save regressions covering matching and mismatched sources, preview redaction and ownership query filtering. Type checking, lint and production build are release gates. Authenticated production retest acceptance remains open.
 
 This closes the cross-URL seed gap only. Atomic purchase/retest reservations, count updates, expiry/recovery and failed-scan consumption remain A03 work; no new entitlement or retest-count policy is introduced.
+
+## Seven-day SEO sprint started (2026-10-25)
+
+- Added docs/SEO-SEVEN-DAY-SPRINT.md, grounded in the owner's current Search Console export. The export and raw metrics are not committed to this public repository. Different date windows and query/page aggregation are explicitly distinguished.
+- Refreshed the existing best-AEO-checker guide with a decision table, evidence checklist, accurate free/paid descriptions and readiness-versus-observed-visibility boundaries. Corrected the HubSpot description against its primary product page; existing competitor comparison-page work is not overwritten.
+- Blog metadata preserves the original publication date and optionally records an actual update in visible text, Open Graph, JSON-LD and XML sitemap output. Unchanged static pages no longer receive fabricated build-time lastmod values.
+- XML and HTML sitemaps share the 14 public tool links, with tests for canonical host, uniqueness, route existence, stable dates and private-route exclusion.
+- Validation: 334 tests across 54 files, type checking, lint (0 errors, 18 existing warnings) and production build passed. Local production HTML confirms canonical URL, original/updated dates, JSON-LD/Open Graph parity, 48 sitemap entries and public tool links.
+- Existing on-publish IndexNow/GSC notification work is triggered by the blog update. Accepted notifications do not prove crawling, indexing or ranking. Seven-day ranking gains are a target, not a guaranteed result.
+
+Remaining: verify deployed metadata and notification status, follow the dated sprint priorities, obtain like-for-like query/page results when available, and report actual changes with Search Console lag. No bought links, bulk pages, outreach messages, prices or entitlements are part of this release.

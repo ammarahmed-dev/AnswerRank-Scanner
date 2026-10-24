@@ -1,3 +1,7 @@
+# 2026-10-25 - Start the seven-day SEO sprint
+
+Refreshed the existing best-AEO-checker guide with an evidence-based chooser, clearer scan/tracking distinctions and accurate product claims. Added optional substantive article-update dates across visible metadata, Open Graph, JSON-LD and XML sitemap output while preserving publication dates. Removed build-time lastmod values from unchanged static pages and shared all 14 public tool discovery links between HTML/XML sitemaps. The seven-day plan uses the owner's Search Console export without publishing raw metrics. Ranking gains remain an objective requiring measurement.
+
 # 2026-10-25 - Bind inherited retest unlocks to the scanned URL
 
 A retest source report can grant its existing unlock only when its stored URL normalizes to the requested scan URL. Different hosts, pages, queries or schemes stay preview reports; missing/malformed source URLs grant no inherited unlock. Same-URL behavior and ownership filtering are preserved. Eight streamed scan/save regression cases cover the boundary. Purchase/retest atomicity remains separate work.
