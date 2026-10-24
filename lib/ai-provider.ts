@@ -1,4 +1,6 @@
-export async function generateAIInsights(prompt: string): Promise<string | null> {
+import { readBoundedText } from "@/lib/bounded-body";
+
+export async function generateAIInsights(prompt: string, signal?: AbortSignal): Promise<string | null> {
   const deepseekKey = process.env.DEEPSEEK_API_KEY;
   const openRouterKey = process.env.OPENROUTER_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
@@ -30,17 +32,19 @@ export async function generateAIInsights(prompt: string): Promise<string | null>
   }
 
   for (const provider of providers) {
+    signal?.throwIfAborted();
     if (!provider.key) continue;
 
     try {
-      const result = await provider.call(prompt, provider.key);
+      const result = await provider.call(prompt, provider.key, signal);
       if (result) {
         return result;
       }
     } catch (err) {
+      signal?.throwIfAborted();
       console.error(
         `${provider.name} failed:`,
-        err instanceof Error ? err.message : "Unknown error"
+        err instanceof Error ? err.name : "Unknown error"
       );
     }
   }
@@ -49,23 +53,34 @@ export async function generateAIInsights(prompt: string): Promise<string | null>
   return null;
 }
 
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+type ProviderResponse = {
+  choices?: Array<{ message?: { content?: unknown } }>;
+  candidates?: Array<{ content?: { parts?: Array<{ text?: unknown }> } }>;
+};
 
+async function fetchProviderJson(url: string, init: RequestInit, timeoutMs: number, signal?: AbortSignal): Promise<ProviderResponse> {
+  const controller = new AbortController();
+  const combined = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal;
+  const timeout = setTimeout(() => controller.abort(), Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 8000);
   try {
-    return await fetch(url, { ...init, signal: controller.signal });
+    combined.throwIfAborted();
+    const response = await fetch(url, { ...init, signal: combined });
+    if (!response.ok) {
+      await response.body?.cancel().catch(() => undefined);
+      throw new Error(`AI provider HTTP ${response.status}`);
+    }
+    return JSON.parse(await readBoundedText(response, 1_000_000, combined)) as ProviderResponse;
   } finally {
     clearTimeout(timeout);
   }
 }
 
-async function callDeepSeek(prompt: string, apiKey: string): Promise<string | null> {
+async function callDeepSeek(prompt: string, apiKey: string, signal?: AbortSignal): Promise<string | null> {
   const model = process.env.DEEPSEEK_MODEL || "deepseek-chat";
   const maxTokens = Number(process.env.AI_MAX_OUTPUT_TOKENS ?? 400);
   const timeoutMs = Number(process.env.AI_PROVIDER_TIMEOUT_MS ?? 8000);
 
-  const response = await fetchWithTimeout("https://api.deepseek.com/chat/completions", {
+  const data = await fetchProviderJson("https://api.deepseek.com/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -78,25 +93,19 @@ async function callDeepSeek(prompt: string, apiKey: string): Promise<string | nu
       max_tokens: maxTokens,
       response_format: { type: "json_object" },
     }),
-  }, timeoutMs);
+  }, timeoutMs, signal);
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`DeepSeek API error: ${response.status} ${JSON.stringify(errorData)}`);
-  }
-
-  const data = await response.json();
   const text = data?.choices?.[0]?.message?.content;
-  if (!text) throw new Error("DeepSeek returned empty response");
+  if (typeof text !== "string" || !text.trim()) throw new Error("DeepSeek returned empty response");
   return text;
 }
 
-async function callOpenRouter(prompt: string, apiKey: string): Promise<string | null> {
+async function callOpenRouter(prompt: string, apiKey: string, signal?: AbortSignal): Promise<string | null> {
   const model = process.env.OPENROUTER_MODEL || "openrouter/free";
   const maxTokens = Number(process.env.AI_MAX_OUTPUT_TOKENS ?? 600);
   const timeoutMs = Number(process.env.AI_PROVIDER_TIMEOUT_MS ?? 5000);
 
-  const response = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
+  const data = await fetchProviderJson("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -111,42 +120,30 @@ async function callOpenRouter(prompt: string, apiKey: string): Promise<string | 
       max_tokens: maxTokens,
       response_format: { type: "json_object" },
     }),
-  }, timeoutMs);
+  }, timeoutMs, signal);
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`OpenRouter API error: ${response.status} ${JSON.stringify(errorData)}`);
-  }
-
-  const data = await response.json();
   const text = data?.choices?.[0]?.message?.content;
-  if (!text) throw new Error("OpenRouter returned empty response");
+  if (typeof text !== "string" || !text.trim()) throw new Error("OpenRouter returned empty response");
   return text;
 }
 
-async function callGemini(prompt: string, apiKey: string): Promise<string | null> {
+async function callGemini(prompt: string, apiKey: string, signal?: AbortSignal): Promise<string | null> {
   const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
   const maxTokens = Number(process.env.AI_MAX_OUTPUT_TOKENS ?? 600);
   const timeoutMs = Number(process.env.AI_PROVIDER_TIMEOUT_MS ?? 5000);
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  const response = await fetchWithTimeout(url, {
+  const data = await fetchProviderJson(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { temperature: 0.2, maxOutputTokens: maxTokens },
     }),
-  }, timeoutMs);
+  }, timeoutMs, signal);
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Gemini API error: ${response.status} ${JSON.stringify(errorData)}`);
-  }
-
-  const data = await response.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Gemini returned empty response");
+  if (typeof text !== "string" || !text.trim()) throw new Error("Gemini returned empty response");
   return text;
 }

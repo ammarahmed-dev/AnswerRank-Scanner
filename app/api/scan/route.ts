@@ -231,16 +231,18 @@ async function getAIInsightsWithBudget(
     };
     issues: string[];
     deterministicFacts?: DeterministicFacts;
-  }
+  },
+  signal?: AbortSignal
 ): Promise<AIInsights | null> {
   try {
     const prompt = buildAIPrompt(scrapedData, context);
-    const aiRawResponse = await generateAIInsights(prompt);
+    const aiRawResponse = await generateAIInsights(prompt, signal);
 
     if (!aiRawResponse) return null;
 
     return parseAIInsights(aiRawResponse, scrapedData.schemaTypes);
   } catch (err: unknown) {
+    signal?.throwIfAborted();
     console.error(
       "AI analysis failed:",
       err instanceof Error ? err.message : "Unknown error"
@@ -334,7 +336,8 @@ async function patchOnetimeProfile(userId: string, fields: Record<string, unknow
   }).catch((err) => console.error("[scan] onetime profile patch failed:", err));
 }
 
-async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
+async function scanCompetitor(rawUrl: string, parentSignal: AbortSignal): Promise<CompetitorScanResult> {
+  parentSignal.throwIfAborted();
   let normalizedUrl = rawUrl;
   try {
     normalizedUrl = normalizeUrl(rawUrl);
@@ -344,15 +347,22 @@ async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
     return { url: rawUrl, error: "Could not scan competitor URL" };
   }
 
+  parentSignal.throwIfAborted();
+  const abortController = new AbortController();
+  const signal = AbortSignal.any([parentSignal, abortController.signal]);
   const timeoutMs = Number(process.env.COMPETITOR_SCAN_TIMEOUT_MS ?? 25000);
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error("Competitor scan timed out")), timeoutMs);
+    timer = setTimeout(() => {
+      abortController.abort();
+      reject(new Error("Competitor scan timed out"));
+    }, timeoutMs);
   });
 
   const work = (async (): Promise<CompetitorScanResult> => {
     const core = await runScanCore(normalizedUrl, {
       includePageSpeed: false,
+      signal,
       normalizeAndValidate: false,
     });
 
@@ -371,6 +381,7 @@ async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
   try {
     return await Promise.race([work, timeout]);
   } catch {
+    parentSignal.throwIfAborted();
     return { url: normalizedUrl, error: "Could not scan competitor URL" };
   } finally {
     clearTimeout(timer);
@@ -519,13 +530,28 @@ export async function POST(req: NextRequest) {
 
   const encoder = new TextEncoder();
   let usageSettled = false;
+  let streamClosed = false;
+  const abortController = new AbortController();
+  const signal = AbortSignal.any([req.signal, abortController.signal]);
+  async function releaseUnsettledUsage() {
+    if (usageSettled) return;
+    usageSettled = true;
+    await releaseUsage(usageKey, usage);
+  }
 
   const stream = new ReadableStream({
     cancel() {
-      console.info("[scan] SSE client disconnected before stream completed");
+      streamClosed = true;
+      abortController.abort();
     },
     async start(controller) {
+      function closeStream() {
+        if (streamClosed) return;
+        streamClosed = true;
+        controller.close();
+      }
       function emit(event: ScanEvent) {
+        if (streamClosed || signal.aborted) return;
         controller.enqueue(encoder.encode(`event: ${event.type}\n`));
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
       }
@@ -545,7 +571,7 @@ export async function POST(req: NextRequest) {
         try {
           coreResult = await runScanCore(url, {
             includePageSpeed: true,
-            signal: req.signal,
+            signal,
             normalizeAndValidate: false,
             onProgress: (phase) => {
               if (phase === "fetch_started") emitProgress(2, "Fetching website", "started");
@@ -564,12 +590,13 @@ export async function POST(req: NextRequest) {
           const message = isInternal || !raw
             ? "We couldn't scan this URL. The site may be blocking automated access. Try a different URL or check that the address is correct."
             : raw;
-          await releaseUsage(usageKey, usage);
+          await releaseUnsettledUsage();
           emitError(message);
-          controller.close();
+          closeStream();
           return;
         }
 
+        signal.throwIfAborted();
         const scrapedData: ScrapedData = coreResult.scrapedData;
         const checks = coreResult.checks;
         const score = coreResult.score;
@@ -628,7 +655,7 @@ export async function POST(req: NextRequest) {
               },
               issues: issueTitles,
               deterministicFacts,
-            });
+            }, signal);
             if (aiInsights) {
               aiInsights = groundAIInsights(aiInsights, deterministicFacts);
               emitProgress(5, "Generating AI insights", "complete");
@@ -636,19 +663,22 @@ export async function POST(req: NextRequest) {
               emitProgress(5, "Using local recommendations", "skipped");
             }
           } catch (err: unknown) {
+            signal.throwIfAborted();
             console.error("AI insights failed:", err instanceof Error ? err.message : "Unknown error");
             emitProgress(5, "Using local recommendations", "error");
           }
         }
+        signal.throwIfAborted();
         aiInsights = groundAIInsights(aiInsights, deterministicFacts);
 
         let competitors: CompetitorScanResult[] | undefined;
         if (competitorUrls.length) {
           const label = competitorUrls.length === 1 ? "Scanning competitor" : "Scanning competitors";
           emitProgress(6, label, "started");
-          competitors = await Promise.all(competitorUrls.map(scanCompetitor));
+          competitors = await Promise.all(competitorUrls.map(competitorUrl => scanCompetitor(competitorUrl, signal)));
         }
 
+        signal.throwIfAborted();
         emitProgress(6, "Preparing report", "started");
         const result: ScanResult = {
           url,
@@ -671,6 +701,8 @@ export async function POST(req: NextRequest) {
           limitedScan: scrapedData.source === "reader" || undefined,
         };
 
+        // Once persistence starts, finish saving and settling usage even if the viewer disconnects.
+        signal.throwIfAborted();
         // Update onetime profile after successful scan
         if (effectivePlan === "onetime" && !isAdmin && isFullReport && userId) {
           if ((authContext.onetimeUrl ?? null) === null) {
@@ -697,15 +729,15 @@ export async function POST(req: NextRequest) {
         await sleep(220);
         // The stored report stays complete; preview viewers get the paid sections removed.
         emit({ type: "result", result: reportForViewer(savedResult, { plan: effectivePlan, isAdmin, isOwner: true }) });
-        controller.close();
+        closeStream();
       } catch (err: unknown) {
-        console.error("Stream error:", err);
-        if (!usageSettled) await releaseUsage(usageKey, usage).catch(() => undefined);
+        if (!signal.aborted) console.error("Stream error:", err);
+        await releaseUnsettledUsage().catch(() => undefined);
         try {
           emitError("An unexpected error occurred. Please try again.");
-          controller.close();
+          closeStream();
         } catch {
-          controller.error(err);
+          if (!streamClosed) controller.error(err);
         }
       }
     },
