@@ -55,11 +55,11 @@ export async function POST(req: Request, ctx: RouteContext) {
       return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     }
 
-    const pageUrl = typeof body.url === "string" ? body.url.trim() : "";
+    const pageUrl = typeof body?.url === "string" ? body.url.trim() : "";
     if (!pageUrl) return NextResponse.json({ error: "url is required." }, { status: 400 });
 
     const auditRes = await fetch(
-      `${supabaseUrl}/rest/v1/audit_runs?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(auth.user.id)}&select=id,status,scanned_pages,total_pages,results`,
+      `${supabaseUrl}/rest/v1/audit_runs?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(auth.user.id)}&select=id,status,scanned_pages,total_pages,results,urls`,
       { headers: getSupabaseServiceHeaders(), cache: "no-store" }
     );
 
@@ -70,6 +70,7 @@ export async function POST(req: Request, ctx: RouteContext) {
       scanned_pages: number;
       total_pages: number;
       results: AuditPageResult[];
+      urls: string[];
     }>;
     if (!auditRows.length) return NextResponse.json({ error: "Audit not found." }, { status: 404 });
 
@@ -78,11 +79,19 @@ export async function POST(req: Request, ctx: RouteContext) {
       return NextResponse.json({ error: "Audit is already finished." }, { status: 409 });
     }
 
+    if (!Array.isArray(audit.urls) || !audit.urls.includes(pageUrl)) {
+      return NextResponse.json({ error: "URL is not part of this audit." }, { status: 400 });
+    }
+    if (Array.isArray(audit.results) && audit.results.some((result) => result.url === pageUrl)) {
+      return NextResponse.json({ error: "This page has already been scanned." }, { status: 409 });
+    }
+
     let pageResult: AuditPageResult;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
     try {
       const scanPromise = runScanCore(pageUrl, { includePageSpeed: false, normalizeAndValidate: false });
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("timeout")), SCAN_TIMEOUT_MS)
+        timeout = setTimeout(() => reject(new Error("timeout")), SCAN_TIMEOUT_MS)
       );
       const result = await Promise.race([scanPromise, timeoutPromise]);
 
@@ -125,12 +134,14 @@ export async function POST(req: Request, ctx: RouteContext) {
       };
     }
 
+    clearTimeout(timeout);
+
     const existingResults: AuditPageResult[] = Array.isArray(audit.results) ? audit.results : [];
     const updatedResults = [...existingResults, pageResult];
     const newScannedPages = audit.scanned_pages + 1;
     const isComplete = newScannedPages >= audit.total_pages;
 
-    const successfulScores = updatedResults.filter((r) => !r.error && r.score > 0).map((r) => r.score);
+    const successfulScores = updatedResults.filter((r) => !r.error && Number.isFinite(r.score)).map((r) => r.score);
     const aggregateScore =
       successfulScores.length > 0
         ? Math.round(successfulScores.reduce((a, b) => a + b, 0) / successfulScores.length)

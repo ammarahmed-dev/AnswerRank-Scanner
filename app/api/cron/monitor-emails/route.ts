@@ -64,6 +64,7 @@ async function getDueUrls(): Promise<MonitorRow[]> {
     ),
   ]);
 
+  if (!weeklyRes.ok || !monthlyRes.ok) throw new Error("Failed to load due monitors");
   const weekly: MonitorRow[] = weeklyRes.ok ? ((await weeklyRes.json()) as MonitorRow[]) : [];
   const monthly: MonitorRow[] = monthlyRes.ok ? ((await monthlyRes.json()) as MonitorRow[]) : [];
 
@@ -109,13 +110,15 @@ async function saveSnapshot(monitoredUrlId: string, score: number, categoryScore
   if (!snapRes.ok) {
     const detail = await snapRes.text().catch(() => "");
     console.error(`[cron/monitor-emails] snapshot insert failed for ${monitoredUrlId}:`, detail);
+    throw new Error("Failed to save monitor snapshot");
   }
 
-  await fetch(`${supabaseUrl}/rest/v1/monitored_urls?id=eq.${monitoredUrlId}`, {
+  const updateRes = await fetch(`${supabaseUrl}/rest/v1/monitored_urls?id=eq.${monitoredUrlId}`, {
     method: "PATCH",
     headers: { ...getSupabaseServiceHeaders(), Prefer: "return=minimal" },
     body: JSON.stringify({ last_scanned_at: now }),
-  }).catch(() => null);
+  });
+  if (!updateRes.ok) throw new Error("Failed to update monitor schedule");
 }
 
 
@@ -138,7 +141,13 @@ export async function GET(req: Request) {
   const resendApiKey = process.env.RESEND_API_KEY;
   const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
-  const dueUrls = await getDueUrls();
+  let dueUrls: MonitorRow[];
+  try {
+    dueUrls = await getDueUrls();
+  } catch (error) {
+    console.error("[cron/monitor-emails] due query failed:", error);
+    return NextResponse.json({ error: "Failed to load due monitors." }, { status: 503 });
+  }
   console.info(`[cron/monitor-emails] ${dueUrls.length} URLs due for scan`);
 
   const errors: string[] = [];
@@ -190,12 +199,13 @@ export async function GET(req: Request) {
               previousCategoryScores: previousSnapshots[0]?.category_scores ?? null,
             });
 
-            await resend.emails.send({
+            const delivery = await resend.emails.send({
               from: "AEOCheck <hello@aeocheck.co>",
               to: email,
               subject,
               html,
             });
+            if (delivery.error) throw new Error(delivery.error.message);
           } catch (err) {
             console.error(`[cron/monitor-emails] email send failed for ${row.url}:`, err);
             errors.push(`email:${row.url}`);
