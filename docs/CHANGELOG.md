@@ -2,6 +2,12 @@
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
+
+## 2026-10-18 - Weekly AI visibility runs (PR, not merged)
+- Shipped on branch `claude/roadmap-ai-visibility-weekly`: tracked-brands table, weekly cron, admin enrol/remove, tests (216 pass), tsc, lint, build.
+- Needs owner: run `supabase/migrations/20261018_ai_visibility_tracks.sql`. Feature stays off unless `AI_VISIBILITY_ENABLED=true`.
+- Follow-up: customer-facing tracker UI.
+
 ## 2026-10-14 (session 71)
 
 - SEO: new `/tools/faq-schema-validator` (FAQ-specific title, H1 and FAQ, reusing the schema checker). Added to /tools, footer, sitemap, llms.txt and linked from `aeo-checklist`.
