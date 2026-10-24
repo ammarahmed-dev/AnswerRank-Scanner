@@ -975,7 +975,7 @@
       "pillar": "measurement",
       "role": "hub",
       "tier": 1,
-      "status": "planned",
+      "status": "published",
       "targetQueries": [
         "measure ai search traffic",
         "track ai citations",
