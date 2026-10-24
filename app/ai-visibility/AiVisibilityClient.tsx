@@ -16,6 +16,9 @@ type RunResponse = {
   mentionRate: number;
   citationRate: number;
   checked: number;
+  citationChecked?: number;
+  brandedChecked?: number;
+  unbrandedChecked?: number;
   error?: string;
 };
 
@@ -29,11 +32,11 @@ async function api<T>(path: string, init?: RequestInit): Promise<{ ok: boolean; 
   return { ok: res.ok, status: res.status, data: (await res.json().catch(() => ({}))) as T };
 }
 
-function Rates({ mention, citation }: { mention: number; citation: number }) {
+function Rates({ mention, citation }: { mention: number; citation: number | null }) {
   return (
     <p className="vis-rates">
       <span><strong>{mention}%</strong> mention rate</span>
-      <span><strong>{citation}%</strong> citation rate</span>
+      <span><strong>{citation === null ? "Unavailable" : `${citation}%`}</strong> citation rate</span>
     </p>
   );
 }
@@ -121,10 +124,11 @@ export default function AiVisibilityClient() {
         <div className="llms-tool-result">
           <div className="crawler-verdict crawler-verdict-good">
             <strong>{run.brand.name} across {run.engines.join(" + ")}</strong>
-            <Rates mention={run.mentionRate} citation={run.citationRate} />
+            <Rates mention={run.mentionRate} citation={run.citationChecked === 0 ? null : run.citationRate} />
             <p className="crawler-verdict-meta">
-              {run.checked} answer{run.checked === 1 ? "" : "s"} checked. {run.saved ? "Saved to history." : "Not saved (history table not migrated yet)."}
+              {run.checked} answer{run.checked === 1 ? "" : "s"} checked. {run.saved ? "Saved to history." : "History could not be saved."}
             </p>
+            <p className="crawler-verdict-meta">Totals include {run.unbrandedChecked ?? 0} unbranded and {run.brandedChecked ?? 0} branded answers. Citation rates exclude unresolved source redirects. List position is within an answer, not a search ranking.</p>
           </div>
           <ul className="extract-list">
             {run.results.map((r, i) => (
@@ -139,7 +143,7 @@ export default function AiVisibilityClient() {
                 ) : (
                   <p className="extract-text">
                     {r.mentioned ? "Mentioned" : "Not mentioned"}
-                    {r.position ? ` (list position ${r.position})` : ""} · {r.cited ? "domain cited as a source" : "domain not cited"}
+                    {r.position ? ` (list position ${r.position})` : ""} · {r.citationVerified === false ? "source redirect not verified" : r.cited ? "domain cited as a source" : "domain not cited"}
                   </p>
                 )}
               </li>
@@ -156,7 +160,7 @@ export default function AiVisibilityClient() {
               <li key={h.id}>
                 <span>{new Date(h.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                 <span className="vis-bar" aria-hidden="true"><i style={{ width: `${h.mentionRate}%` }} /></span>
-                <span>{h.mentionRate}% mentioned · {h.citationRate}% cited</span>
+                <span>{h.mentionRate}% mentioned · {h.results.some(r => r.citationVerified === true) ? `${h.citationRate}% cited` : "citation data unverified"}</span>
               </li>
             ))}
           </ul>

@@ -1,3 +1,7 @@
+# 2026-10-24 - Visibility evidence integrity
+
+The admin visibility prototype preserves Gemini source URIs, excludes unresolved source redirects from citation rates and reports all-engine failures as unavailable. New JSON results retain answer text, requested model, observation time, prompt kind and methodology version. The existing UI labels distinguish list position from search rank; interactive answer inspection remains deferred until browser QA is available. Legacy citation data is labeled unverified. Provider downloads and admin request bodies are bounded. Validation: 275 tests across 45 files; live paid-provider and authenticated production journey verification remain open. No migration, customer plan-placement or entitlement changes.
+
 # 2026-10-24 - Tool and discovery resource boundaries
 
 All seven free tools now reject malformed JSON roots and oversized requests before quota or network work. Robots/sitemap tool responses and discovery pages are bounded while streaming; discovery timeouts cover body consumption and rejected responses are cancelled. Comparison failures abort the other scan before releasing the reservation. Validation: 270 tests across 44 files. No migrations or entitlement changes. The owner has approved Supabase access; actual tool exposure remains unresolved in this conversation.

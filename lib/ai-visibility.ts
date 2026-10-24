@@ -1,3 +1,5 @@
+import { readBoundedText } from "@/lib/bounded-body";
+
 /**
  * AI Visibility Tracker: asks AI answer engines buyer-style questions and records whether a brand
  * is mentioned in the answer and whether its domain is cited as a source.
@@ -8,7 +10,7 @@ export type EngineName = "perplexity" | "gemini";
 
 export type Brand = { name: string; domain: string };
 
-export type EngineAnswer = { answer: string; citations: string[] };
+export type EngineAnswer = { answer: string; citations: string[]; requestedModel?: string };
 
 export type PromptResult = {
   prompt: string;
@@ -18,6 +20,12 @@ export type PromptResult = {
   /** 1-based position of the brand among list items in the answer, when the answer is a list. */
   position: number | null;
   citations: string[];
+  answer?: string;
+  requestedModel?: string;
+  recordedAt?: string;
+  citationVerified?: boolean;
+  promptKind?: "branded" | "unbranded";
+  methodologyVersion?: string;
   error?: string;
 };
 
@@ -26,22 +34,29 @@ export type VisibilitySummary = {
   mentionRate: number;
   citationRate: number;
   checked: number;
+  citationChecked?: number;
+  brandedChecked?: number;
+  unbrandedChecked?: number;
 };
 
 const ENGINE_TIMEOUT_MS = 30_000;
 
 async function fetchJson(url: string, init: RequestInit): Promise<unknown> {
   const res = await fetch(url, { ...init, signal: AbortSignal.timeout(ENGINE_TIMEOUT_MS) });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  if (!res.ok) {
+    await res.body?.cancel().catch(() => undefined);
+    throw new Error(`HTTP ${res.status}`);
+  }
+  return JSON.parse(await readBoundedText(res, 1_000_000));
 }
 
 export async function askPerplexity(prompt: string, apiKey: string): Promise<EngineAnswer> {
+  const requestedModel = process.env.PERPLEXITY_MODEL || "sonar";
   const data = (await fetchJson("https://api.perplexity.ai/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
-      model: process.env.PERPLEXITY_MODEL || "sonar",
+      model: requestedModel,
       messages: [{ role: "user", content: prompt }],
     }),
   })) as {
@@ -52,7 +67,7 @@ export async function askPerplexity(prompt: string, apiKey: string): Promise<Eng
   const citations = data.citations?.length
     ? data.citations
     : (data.search_results ?? []).map((r) => r.url).filter((u): u is string => Boolean(u));
-  return { answer: data.choices?.[0]?.message?.content ?? "", citations };
+  return { answer: data.choices?.[0]?.message?.content ?? "", citations, requestedModel };
 }
 
 export async function askGemini(prompt: string, apiKey: string): Promise<EngineAnswer> {
@@ -75,11 +90,11 @@ export async function askGemini(prompt: string, apiKey: string): Promise<EngineA
   };
   const candidate = data.candidates?.[0];
   const answer = (candidate?.content?.parts ?? []).map((p) => p.text ?? "").join("");
-  // Grounding URIs are redirect links; the title carries the source domain.
+  // Preserve source URIs. Titles are display labels and cannot verify a citation URL.
   const citations = (candidate?.groundingMetadata?.groundingChunks ?? [])
-    .map((chunk) => chunk.web?.title || chunk.web?.uri || "")
+    .map((chunk) => chunk.web?.uri || "")
     .filter(Boolean);
-  return { answer, citations };
+  return { answer, citations, requestedModel: model };
 }
 
 function escapeRegExp(value: string): string {
@@ -147,8 +162,28 @@ export async function runVisibilityCheck(
   const results = await Promise.all(
     tasks.map(async ({ prompt, engine }): Promise<PromptResult> => {
       try {
-        const { answer, citations } = await engine.ask(prompt);
-        return { prompt, engine: engine.name, ...analyzeAnswer(answer, citations, brand), citations: citations.slice(0, 10) };
+        const { answer, citations, requestedModel } = await engine.ask(prompt);
+        if (typeof answer !== "string" || !answer.trim() || answer.length > 50_000 || !Array.isArray(citations)) {
+          throw new Error("Engine returned an invalid or empty answer");
+        }
+        const sourceUrls: string[] = [];
+        for (const source of citations) {
+          if (typeof source !== "string" || source.length > 4096) throw new Error("Engine returned an invalid source URL");
+          let parsed: URL;
+          try { parsed = new URL(source); } catch { throw new Error("Engine returned an invalid source URL"); }
+          if (!["http:", "https:"].includes(parsed.protocol)) throw new Error("Engine returned an invalid source URL");
+          sourceUrls.push(source);
+        }
+        if (sourceUrls.length > 100) throw new Error("Engine returned too many source URLs");
+        const analysis = analyzeAnswer(answer, sourceUrls, brand);
+        const unresolved = sourceUrls.some(source => normalizeDomain(source) === "vertexaisearch.cloud.google.com");
+        return {
+          prompt, engine: engine.name, ...analysis, citations: sourceUrls.slice(0, 100),
+          answer, requestedModel, recordedAt: new Date().toISOString(),
+          citationVerified: analysis.cited || !unresolved,
+          promptKind: mentionPattern(brand).test(prompt) ? "branded" : "unbranded",
+          methodologyVersion: "visibility-2026-10-v2",
+        };
       } catch (err) {
         return {
           prompt,
@@ -163,11 +198,15 @@ export async function runVisibilityCheck(
     })
   );
   const ok = results.filter((r) => !r.error);
-  const rate = (n: number) => (ok.length ? Math.round((n / ok.length) * 100) : 0);
+  const citationResults = ok.filter(r => r.citationVerified !== false);
+  const rate = (n: number, denominator = ok.length) => (denominator ? Math.round((n / denominator) * 100) : 0);
   return {
     results,
     mentionRate: rate(ok.filter((r) => r.mentioned).length),
-    citationRate: rate(ok.filter((r) => r.cited).length),
+    citationRate: rate(citationResults.filter((r) => r.cited).length, citationResults.length),
+    citationChecked: citationResults.length,
+    brandedChecked: ok.filter(r => r.promptKind === "branded").length,
+    unbrandedChecked: ok.filter(r => r.promptKind === "unbranded").length,
     checked: ok.length,
   };
 }
