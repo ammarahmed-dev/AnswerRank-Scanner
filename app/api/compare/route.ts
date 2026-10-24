@@ -133,6 +133,9 @@ export async function POST(req: Request) {
   const usage: UsageReservation = bypassLimit
     ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER, reserved: false, usageDate: "" }
     : await reserveUsage(clientKey, compareLimit);
+  if (usage.unavailable) {
+    return NextResponse.json({ error: "Usage verification is temporarily unavailable. Please try again shortly." }, { status: 503 });
+  }
   if (!usage.allowed) {
     const limitMsg = effectivePlan === "onetime"
       ? "You've used your 1 compare for this month. Upgrade to Pro for unlimited comparisons."

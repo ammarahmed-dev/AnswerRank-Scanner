@@ -54,6 +54,9 @@ export async function POST(req: Request) {
   const clientId = typeof body.clientId === "string" ? body.clientId : undefined;
   const usageKey = `tool:llms:${auth.user ? `user:${auth.user.id}` : getClientKey(clientId, req)}`;
   const usage = await reserveUsage(usageKey, TOOL_MONTHLY_LIMIT);
+  if (usage.unavailable) {
+    return NextResponse.json({ error: "Usage verification is temporarily unavailable. Please try again shortly." }, { status: 503 });
+  }
   if (!usage.allowed) {
     return NextResponse.json(
       { error: `You've generated ${TOOL_MONTHLY_LIMIT} llms.txt files this month. Try again next month or run a full scan.` },
