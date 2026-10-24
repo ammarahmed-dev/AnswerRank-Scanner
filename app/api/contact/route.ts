@@ -1,3 +1,4 @@
+import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { hasSupabaseConfig } from "@/lib/supabase-config";
@@ -126,9 +127,15 @@ export async function POST(req: NextRequest) {
 
   let body: ContactPayload = {};
   try {
-    body = (await req.json()) as ContactPayload;
-  } catch {
-    return NextResponse.json({ error: "Invalid request payload." }, { status: 400 });
+    const payload = await readJsonObject(req);
+    body = {
+      name: typeof payload.name === "string" ? payload.name : "",
+      email: typeof payload.email === "string" ? payload.email : "",
+      subject: typeof payload.subject === "string" ? payload.subject : "",
+      message: typeof payload.message === "string" ? payload.message : "",
+    };
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof BodyTooLargeError ? "Request body is too large." : "Invalid request payload." }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
   }
 
   const errors = validate(body);

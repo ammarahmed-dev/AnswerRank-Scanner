@@ -152,3 +152,11 @@ This closes the cross-URL seed gap only. Atomic purchase/retest reservations, co
 - Existing on-publish IndexNow/GSC notification work is triggered by the blog update. Accepted notifications do not prove crawling, indexing or ranking. Seven-day ranking gains are a target, not a guaranteed result.
 
 Remaining: verify deployed metadata and notification status, follow the dated sprint priorities, obtain like-for-like query/page results when available, and report actual changes with Search Console lag. No bought links, bulk pages, outreach messages, prices or entitlements are part of this release.
+
+## Remaining JSON request boundaries (2026-10-25)
+
+- Checkout creation, contact submissions, internal welcome email, monitor frequency updates and audit-page scans use the shared 32 KiB decoded-byte limit and require an object JSON root. Malformed/scalar/array/null JSON returns 400; oversized bodies return 413. Existing authentication and contact rate-limit ordering is retained.
+- Contact and welcome fields are checked as strings before trimming. Wrong field types return validation errors rather than throwing. Valid checkout variant selection, owner predicates, contact normalization and welcome normalization retain their current behavior.
+- Regression tests cover malformed input, multibyte byte limits without Content-Length, cancellation of oversized chunked streams, authentication before body reads, and valid mocked downstream paths. No actual email, checkout, customer write or production migration is part of verification.
+- Validation: 394 tests across 55 files, type checking, lint (0 errors, 18 existing warnings) and production build passed.
+- Remaining A11 work: signed webhook raw-body bounds are coordinated with the separate billing PR; caller cancellation and remaining outbound response/time budgets still require verification. This release does not finish the complete audit.

@@ -1,3 +1,4 @@
+import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import type { ScoringMethodology } from "@/types/index";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
@@ -52,9 +53,9 @@ export async function POST(req: Request, ctx: RouteContext) {
 
     let body: { url?: unknown };
     try {
-      body = (await req.json()) as { url?: unknown };
-    } catch {
-      return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+      body = await readJsonObject(req);
+    } catch (error) {
+      return NextResponse.json({ error: error instanceof BodyTooLargeError ? "Request body is too large." : "Invalid request body." }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
     }
 
     const pageUrl = typeof body?.url === "string" ? body.url.trim() : "";
