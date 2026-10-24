@@ -82,13 +82,13 @@ export function isRootAllowed(groups: Group[], agent: string): boolean {
   return best.allow;
 }
 
-export function analyzeAiCrawlerAccess(robotsBody: string): {
+export function analyzeAiCrawlerAccess(robotsBody: string, pathWithQuery = "/"): {
   status: "pass" | "warn" | "fail";
   detail: string;
   blocked: string[];
 } {
   const groups = parseRobotsGroups(robotsBody);
-  const blocked = Object.keys(AI_CRAWLERS).filter((agent) => !isRootAllowed(groups, agent));
+  const blocked = Object.keys(AI_CRAWLERS).filter((agent) => !testRobotsAccess(robotsBody, agent, pathWithQuery).allowed);
   const names = blocked.map((agent) => AI_CRAWLERS[agent]);
 
   if (blocked.length === Object.keys(AI_CRAWLERS).length) {

@@ -50,7 +50,9 @@ export function getReportCategoryScores(
   };
 
   checks.forEach((check) => {
-    groups[mapReportCategory(check.id)].push(scoreFromStatus(check.status));
+    const category = mapReportCategory(check.id);
+    // Performance comes only from the measurement, never a categorical proxy.
+    if (category !== "performance") groups[category].push(scoreFromStatus(check.status));
   });
 
   if (typeof pagespeed?.score === "number") groups.performance.push(pagespeed.score);
@@ -61,7 +63,7 @@ export function getReportCategoryScores(
     check.status === "fail"
   ) || checks.some((check) => /no schema detected/i.test(check.detail));
 
-  return (Object.entries(groups) as Array<[ReportCategory, number[]]>).map(([category, values]) => {
+  return (Object.entries(groups) as Array<[ReportCategory, number[]]>).filter(([, values]) => values.length > 0).map(([category, values]) => {
     let score = values.length ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0;
 
     // Guardrail: missing base schema should never look "Strong" just because optional schema checks are not applicable.
@@ -79,4 +81,15 @@ export function getReportCategoryScores(
 
 export function getResolvedReportCategoryScores(report: Pick<ScanResult, "checks" | "pagespeed" | "categoryScores">) {
   return getReportCategoryScores(report.checks, report.pagespeed);
+}
+
+/** Shared storage shape used by scans, comparisons, audits and monitoring. */
+export function getScanCategoryScores(checks: ScanResult["checks"], pagespeed: ScanResult["pagespeed"]) {
+  const rows = getReportCategoryScores(checks, pagespeed);
+  const score = (category: ReportCategory) => rows.find((row) => row.category === category)?.score;
+  return {
+    metadata: score("metadata"), headings: score("headings"), schema: score("schema"),
+    contentClarity: score("content"), aiReadiness: score("ai-readiness"),
+    performance: score("performance"), trustSignals: score("trust"),
+  };
 }

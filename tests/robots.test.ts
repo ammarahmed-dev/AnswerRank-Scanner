@@ -4,6 +4,13 @@ import { analyzeAiCrawlerAccess, describeAiCrawlerAccess, isRootAllowed, parseRo
 const robots = (...lines: string[]) => lines.join("\n");
 
 describe("robots.txt AI crawler access", () => {
+  it("evaluates the requested page path and query rather than only the root", () => {
+    const body = robots("User-agent: OAI-SearchBot", "Disallow: /private/", "Allow: /private/public$", "Disallow: /*?secret=*");
+    expect(analyzeAiCrawlerAccess(body).status).toBe("pass");
+    expect(analyzeAiCrawlerAccess(body, "/private/page").status).toBe("fail");
+    expect(analyzeAiCrawlerAccess(body, "/private/public").status).toBe("pass");
+    expect(analyzeAiCrawlerAccess(body, "/page?secret=yes").status).toBe("fail");
+  });
   it("allows everything for an open robots.txt", () => {
     expect(analyzeAiCrawlerAccess(robots("User-agent: *", "Disallow:"))).toMatchObject({ status: "pass", blocked: [] });
   });
