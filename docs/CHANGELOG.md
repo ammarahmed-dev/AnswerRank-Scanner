@@ -1,3 +1,7 @@
+# 2026-10-24 - Competitor comparison re-verification
+
+Re-checked the four /vs pages against public pricing pages and listings. Profound now shown with its 7-day trial and self-serve Agency Growth plan (was "trial only"); Peec AI shown with a free trial; Semrush price note says $99/mo per domain. Otterly ($29) and Peec ($95) prices unchanged. Validation: tsc, 292 tests, build. No scoring, plan or migration changes.
+
 # 2026-10-24 - Audit and monitor count verification
 
 Audit and monitor creation fail with 503 when a database count fails or is missing/malformed, before discovery or insertion. Bounded object JSON prevents malformed or oversized inputs from reaching count queries. Verified zero counts still permit creation and exhausted limits still return their existing limit responses. Count response bodies are cancelled. Validation: 292 tests across 46 files. Count-then-insert concurrency remains open pending verified database transactions; no entitlement or migration changes.

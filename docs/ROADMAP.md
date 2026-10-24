@@ -123,7 +123,7 @@ Based on the full code review from 2026-10-03.
   - [x] (2026-10-12) `on-publish` diffed only the last commit, so a multi-commit push skipped IndexNow and the sitemap resubmit; now diffs the whole push and has a `workflow_dispatch` with a `slugs` input.
   - [ ] Read the GSC Overview for /tools impressions before deciding the next tool or blog hub; re-run weekly (the feedback workflow runs Tuesdays 05:00 UTC).
 
-  - [ ] Re-verify the claims on all four `/vs/*` pages (prices, free trial, features) against each competitor's public pricing page, then bump the "last checked" month in `ComparisonPageClient.tsx`. Last full check: Profound 2026-10-04; others rely on the 2026-10-03 research notes
+  - [x] (2026-10-24) Re-verified all four `/vs/*` pages against public pages/third-party listings: Otterly $29 Lite, Peec $95 Starter (USD), Semrush AI Visibility Toolkit $99/mo per domain, Profound 7-day trial + self-serve Agency Growth (page said "trial only", fixed); Peec has a free trial (was "No"). Otterly trial and Peec trial length unverified (pricing pages did not render), so not claimed. Original: Re-verify the claims on all four `/vs/*` pages (prices, free trial, features) against each competitor's public pricing page, then bump the "last checked" month in `ComparisonPageClient.tsx`. Last full check: Profound 2026-10-04; others rely on the 2026-10-03 research notes
 - Maintenance: dependency updates (minor/patch weekly, majors with care), `npm audit`, runtime errors.
 
 ---
