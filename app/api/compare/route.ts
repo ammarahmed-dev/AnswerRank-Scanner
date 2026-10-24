@@ -146,14 +146,16 @@ export async function POST(req: Request) {
     );
   }
 
+  const scanController = new AbortController();
+  const scanSignal = AbortSignal.any([req.signal, scanController.signal]);
   let usageSettled = false;
   try {
     const [primaryCore, competitorCore] = await Promise.all([runScanCore(primaryUrl, {
-      signal: req.signal,
+      signal: scanSignal,
       includePageSpeed: true,
       normalizeAndValidate: false,
     }), runScanCore(competitorUrl, {
-      signal: req.signal,
+      signal: scanSignal,
       includePageSpeed: true,
       normalizeAndValidate: false,
     })]);
@@ -276,6 +278,7 @@ export async function POST(req: Request) {
       comparison: comparisonPayload,
     });
   } catch {
+    scanController.abort();
     if (!usageSettled) await releaseUsage(clientKey, usage);
     return NextResponse.json(
       { error: "Comparison failed. Please make sure both URLs are publicly accessible and try again." },

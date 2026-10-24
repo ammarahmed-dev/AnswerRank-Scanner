@@ -1,3 +1,4 @@
+import { BodyTooLargeError, readJsonObject, readBoundedText } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { assertPublicUrl, safeFetch } from "@/lib/url-safety";
@@ -15,9 +16,9 @@ const MAX_ROBOTS_BYTES = 512 * 1024;
 export async function POST(req: Request) {
   let body: { url?: unknown; clientId?: unknown };
   try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    body = (await readJsonObject(req)) as typeof body;
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof BodyTooLargeError ? "Request body is too large." : "Invalid request body." }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
   }
 
   let url = "";
@@ -58,10 +59,12 @@ export async function POST(req: Request) {
     });
 
     if (response.status === 404 || response.status === 410) {
+      await response.body?.cancel().catch(() => undefined);
       await commitUsage(usageKey, usage);
       return NextResponse.json({ origin, robotsUrl: finalUrl, found: false, crawlers: describeAiCrawlerAccess("") });
     }
     if (response.status !== 200) {
+      await response.body?.cancel().catch(() => undefined);
       await releaseUsage(usageKey, usage);
       return NextResponse.json(
         {
@@ -74,7 +77,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const text = (await response.text()).slice(0, MAX_ROBOTS_BYTES);
+    const text = await readBoundedText(response, MAX_ROBOTS_BYTES);
     if (!/user-agent\s*:/i.test(text) && /<html[\s>]/i.test(text)) {
       await commitUsage(usageKey, usage);
       return NextResponse.json({ origin, robotsUrl: finalUrl, found: false, crawlers: describeAiCrawlerAccess("") });

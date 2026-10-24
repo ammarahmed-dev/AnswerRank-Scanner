@@ -64,3 +64,13 @@ This covers the fetch/cancellation portion of items 4 and 5. Atomic quota enforc
 - Validation: 252 tests across 41 files; type check, build and lint pass (18 existing warnings).
 
 See IMPLEMENTATION-PLAN.md for the complete 17-item acceptance checklist and continuing work. The full plan is not complete.
+
+## Tool and discovery boundaries
+
+- All seven free-tool POST routes reject non-object JSON with 400 and payloads over 32 KiB with 413 before authentication, quota reservation or network work.
+- AI crawler and robots tester downloads now enforce decoded 512 KiB limits during streaming; sitemap checker enforces a decoded 5 MiB limit. Rejected HTTP responses are cancelled.
+- Page discovery bounds each page to 2.5 MB, keeps its timeout active during body consumption and cancels non-page/error responses.
+- Comparison aborts the sibling scan when either scan fails before returning its quota reservation.
+- Validation: 270 tests across 44 files, including malformed/oversized requests across all seven tool routes, oversized stream cancellation, quota release and comparison cancellation.
+
+Connection state (owner clarification): Supabase access is already approved by the owner. The current conversation still exposes no Supabase tools and its connection lookup reports the integration as available for installation/connection. This is a connection exposure problem, not missing permission from the owner. Do not ask for repeated authorization or secrets. Continue independent work while checking whether the approved connection becomes available.

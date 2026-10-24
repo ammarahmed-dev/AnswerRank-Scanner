@@ -1,3 +1,7 @@
+# 2026-10-24 - Tool and discovery resource boundaries
+
+All seven free tools now reject malformed JSON roots and oversized requests before quota or network work. Robots/sitemap tool responses and discovery pages are bounded while streaming; discovery timeouts cover body consumption and rejected responses are cancelled. Comparison failures abort the other scan before releasing the reservation. Validation: 270 tests across 44 files. No migrations or entitlement changes. The owner has approved Supabase access; actual tool exposure remains unresolved in this conversation.
+
 # 2026-10-24 - Quota storage failure guards
 
 Configured quota storage errors now return service unavailable before starting scans or tools. Only a missing RPC permits the temporary compatibility path; failed compatibility reads and writes no longer silently succeed. Admin health reports capability configuration rather than requiring every optional provider key. Added the full audit acceptance checklist and recorded the owner's hourly continuation request. This does not establish verified production database schema or complete the full plan.

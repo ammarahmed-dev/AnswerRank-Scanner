@@ -46,3 +46,10 @@ export async function readBoundedText(source: StreamBody, maxBytes: number): Pro
     reader.releaseLock();
   }
 }
+
+/** Reject non-object JSON at the boundary before field access, auth or paid work. */
+export async function readJsonObject(source: StreamBody, maxBytes = 32_768): Promise<Record<string, unknown>> {
+  const value: unknown = JSON.parse(await readBoundedText(source, maxBytes));
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Request body must be a JSON object.");
+  return value as Record<string, unknown>;
+}
