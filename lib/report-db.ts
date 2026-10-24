@@ -96,24 +96,7 @@ export async function saveReportRecord(result: ScanResult, userId?: string | nul
       const details = await res.text().catch(() => "");
       console.error("Supabase report save failed:", details);
 
-      if (details.includes("user_id")) {
-        const { user_id: _userId, ...legacyPayload } = payload;
-        const legacyRes = await fetch(`${supabaseUrl}/rest/v1/reports`, {
-          method: "POST",
-          headers: {
-            ...getSupabaseServiceHeaders(),
-            Prefer: "resolution=merge-duplicates",
-          },
-          body: JSON.stringify(legacyPayload),
-        });
-
-        if (legacyRes.ok) return report;
-
-        const legacyDetails = await legacyRes.text().catch(() => "");
-        console.error("Supabase legacy report save failed:", legacyDetails);
-      }
-
-      return saveReport(report);
+      throw new Error("Report storage is temporarily unavailable. Please retry.");
     }
 
     return report;
