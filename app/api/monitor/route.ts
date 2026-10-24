@@ -1,3 +1,5 @@
+import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
+import { CountUnavailableError, fetchExactCount } from "@/lib/exact-count";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { assertPublicUrl } from "@/lib/url-safety";
@@ -107,13 +109,13 @@ export async function POST(req: Request) {
 
   let body: { url?: unknown; label?: unknown };
   try {
-    body = (await req.json()) as { url?: unknown; label?: unknown };
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    body = await readJsonObject(req);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof BodyTooLargeError ? "Request body is too large." : "Invalid request body." }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
   }
 
   const rawUrl = typeof body.url === "string" ? body.url.trim() : "";
-  if (!rawUrl) return NextResponse.json({ error: "url is required." }, { status: 400 });
+  if (!rawUrl || rawUrl.length > 4096) return NextResponse.json({ error: "url is required." }, { status: 400 });
 
   let normalized: string;
   try {
@@ -128,12 +130,10 @@ export async function POST(req: Request) {
   }
 
   // Count existing entries to enforce cap
-  const countRes = await fetch(
+  const total = await fetchExactCount(
     `${supabaseUrl}/rest/v1/monitored_urls?user_id=eq.${auth.user.id}&select=id`,
     { headers: { ...getSupabaseServiceHeaders(), Prefer: "count=exact" }, cache: "no-store" }
   );
-  const contentRange = countRes.headers.get("content-range") ?? "";
-  const total = parseInt(contentRange.split("/")[1] ?? "0", 10);
   if (total >= monitorLimit) {
     return NextResponse.json({ error: `Maximum ${monitorLimit} monitored URLs reached.` }, { status: 422 });
   }
@@ -161,6 +161,7 @@ export async function POST(req: Request) {
   const [row] = (await insertRes.json()) as MonitorItem[];
   return NextResponse.json({ item: row }, { status: 201 });
   } catch (err) {
+    if (err instanceof CountUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });
     console.error("[monitor POST] Unhandled error:", err);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }

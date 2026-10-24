@@ -1,3 +1,7 @@
+# 2026-10-24 - Audit and monitor count verification
+
+Audit and monitor creation fail with 503 when a database count fails or is missing/malformed, before discovery or insertion. Bounded object JSON prevents malformed or oversized inputs from reaching count queries. Verified zero counts still permit creation and exhausted limits still return their existing limit responses. Count response bodies are cancelled. Validation: 292 tests across 46 files. Count-then-insert concurrency remains open pending verified database transactions; no entitlement or migration changes.
+
 # 2026-10-24 - Visibility evidence integrity
 
 The admin visibility prototype preserves Gemini source URIs, excludes unresolved source redirects from citation rates and reports all-engine failures as unavailable. New JSON results retain answer text, requested model, observation time, prompt kind and methodology version. The existing UI labels distinguish list position from search rank; interactive answer inspection remains deferred until browser QA is available. Legacy citation data is labeled unverified. Provider downloads and admin request bodies are bounded. Validation: 275 tests across 45 files; live paid-provider and authenticated production journey verification remain open. No migration, customer plan-placement or entitlement changes.

@@ -86,3 +86,12 @@ Connection state (owner clarification): Supabase access is already approved by t
 - Validation: 275 tests across 45 files. Fixtures verify URI preservation, unresolved-source denominators, answer provenance, empty/malformed provider evidence and all-engine failure responses. Live paid-provider calls and admin production UI still require an available authenticated test session; no live provider verification is claimed. The local Chromium download returned invalid archives, so the new interactive answer-inspection section is deferred rather than added without browser QA.
 
 Remaining A14 work: verified redirect resolution, separate unbranded/branded aggregate series, durable spend budgets/concurrency and weekly tracking integration. Existing saved rates are preserved; new observations carry visibility-2026-10-v2 provenance.
+
+## Audit and monitor count guards
+
+- Audit and monitor creation now require a successful database response with an exact numeric Content-Range count before starting discovery or adding a monitor. Database errors, network failures and missing/malformed counts return 503 instead of being treated as zero.
+- Validate bounded object JSON for both authenticated routes; null/array roots return 400 and bodies above 32 KiB return 413 before count queries.
+- Bound count requests to 10 seconds and cancel count-query response bodies after reading the header; use a consistent UTC calendar-month boundary for the existing one-time audit check.
+- Validation: 292 tests across 46 files, including both routes with missing/malformed count headers, failed/network reads, exhausted limits, valid zero counts and malformed/oversized inputs.
+
+These guards do not make count-then-insert atomic. Audit/monitor concurrency still requires verified database transactions and production schema access. No plan limit, entitlement or migration changes are included.
