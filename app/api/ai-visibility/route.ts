@@ -1,3 +1,4 @@
+import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
@@ -36,9 +37,9 @@ export async function POST(req: Request) {
 
   let body: { brandName?: unknown; domain?: unknown; prompts?: unknown };
   try {
-    body = (await req.json()) as typeof body;
-  } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    body = (await readJsonObject(req)) as typeof body;
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof BodyTooLargeError ? "Request body is too large." : "Invalid request body." }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
   }
 
   const brandName = typeof body.brandName === "string" ? body.brandName.trim().slice(0, 80) : "";
@@ -47,6 +48,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "brandName and domain are required." }, { status: 400 });
   }
 
+  if (body.prompts !== undefined && (!Array.isArray(body.prompts) || body.prompts.length > MAX_PROMPTS ||
+      body.prompts.some(prompt => typeof prompt !== "string" || !prompt.trim() || prompt.length > 200))) {
+    return NextResponse.json({ error: "Provide up to 10 nonempty prompts, each at most 200 characters." }, { status: 400 });
+  }
   const prompts = (Array.isArray(body.prompts) ? body.prompts : [])
     .filter((p): p is string => typeof p === "string")
     .map((p) => p.trim().slice(0, 200))
@@ -61,6 +66,9 @@ export async function POST(req: Request) {
 
   const summary = await runVisibilityCheck({ name: brandName, domain }, finalPrompts, engines);
   const engineNames = engines.map((e) => e.name);
+  if (summary.checked === 0) {
+    return NextResponse.json({ error: "AI visibility is unavailable: no engine returned a usable answer.", results: summary.results }, { status: 502 });
+  }
   // Only keep runs where at least one engine answered; an all-error run says nothing about the brand.
   const saved = summary.checked > 0 ? await saveVisibilityRun(gate.user.id, { name: brandName, domain }, finalPrompts, engineNames, summary) : false;
   return NextResponse.json({ brand: { name: brandName, domain }, prompts: finalPrompts, engines: engineNames, saved, ...summary });

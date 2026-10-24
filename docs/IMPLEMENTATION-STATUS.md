@@ -74,3 +74,15 @@ See IMPLEMENTATION-PLAN.md for the complete 17-item acceptance checklist and con
 - Validation: 270 tests across 44 files, including malformed/oversized requests across all seven tool routes, oversized stream cancellation, quota release and comparison cancellation.
 
 Connection state (owner clarification): Supabase access is already approved by the owner. The current conversation still exposes no Supabase tools and its connection lookup reports the integration as available for installation/connection. This is a connection exposure problem, not missing permission from the owner. Do not ask for repeated authorization or secrets. Continue independent work while checking whether the approved connection becomes available.
+
+## Visibility evidence integrity
+
+- Preserve Gemini grounding source URIs instead of substituting display titles. Google source redirects are recorded as unverified until their destination is verified, and excluded from the citation-rate denominator rather than treated as a confirmed negative.
+- All-engine failures return 502/unavailable and are not saved as zero-rate observations. Empty answers and malformed source URLs are rejected as engine errors.
+- Save answer text, requested model, observation time, branded/unbranded classification and methodology version inside the existing JSON results. No new database columns are required.
+- Retain answer inspection data in the admin API response and stored JSON; distinguish unresolved citations, disclose mixed prompt totals and label list position as within an answer rather than search rank. Legacy citation data is labeled unverified rather than silently interpreted under the new method.
+- Bound provider JSON responses to 1 MB while streaming. Validate the admin request JSON and prompt limits before starting provider calls.
+- Citation parsing follows Google's GenerateContent grounding documentation: https://ai.google.dev/gemini-api/docs/generate-content/google-search
+- Validation: 275 tests across 45 files. Fixtures verify URI preservation, unresolved-source denominators, answer provenance, empty/malformed provider evidence and all-engine failure responses. Live paid-provider calls and admin production UI still require an available authenticated test session; no live provider verification is claimed. The local Chromium download returned invalid archives, so the new interactive answer-inspection section is deferred rather than added without browser QA.
+
+Remaining A14 work: verified redirect resolution, separate unbranded/branded aggregate series, durable spend budgets/concurrency and weekly tracking integration. Existing saved rates are preserved; new observations carry visibility-2026-10-v2 provenance.
