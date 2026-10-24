@@ -83,6 +83,11 @@ export async function POST(req: Request) {
   const bypassLimit = isAdmin;
   const compareLimit = effectivePlan === "onetime" ? 1 : getPlanLimit(effectivePlan);
   const body = (await req.json().catch(() => ({}))) as CompareBody;
+  if (!body || typeof body !== "object" || Array.isArray(body) ||
+      (body.urls !== undefined && (!Array.isArray(body.urls) || body.urls.length > 2 ||
+        body.urls.some((url) => typeof url !== "string" || url.length > 4096)))) {
+    return NextResponse.json({ error: "Invalid comparison URLs." }, { status: 400 });
+  }
   const candidatePrimary = typeof body.primaryUrl === "string" ? body.primaryUrl.trim() : "";
   const candidateCompetitor = typeof body.competitorUrl === "string" ? body.competitorUrl.trim() : "";
   const urlsFromArray = (body.urls ?? []).map((url) => url.trim()).filter(Boolean);

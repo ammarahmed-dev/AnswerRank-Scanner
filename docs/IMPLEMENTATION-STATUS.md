@@ -16,6 +16,16 @@ Review notes: category normalization can change displayed historical category br
 
 ## Remaining audit work
 
+### Reliability guards release
+
+- Validate malformed scan/comparison options before reserving usage.
+- Require billing profile updates to return exactly one affected row, so missing profiles cause provider retries.
+- Abort monitor schedule advancement after a snapshot write failure; check schedule writes and returned Resend errors; return 503 when due queries fail.
+- Limit audit scans to saved targets, reject already-recorded pages, include valid zero scores in aggregates and clear settled timeout timers.
+- Validation: 224 tests pass across 37 files; production build passes; type checking and lint are checked in CI.
+
+Database project discovery and documentation tools both return `Unknown tool` from the connected Supabase service. Live schema reconciliation, event-ledger migrations, atomic scan grants, durable audit jobs and email outbox remain blocked on a functioning database connection. The guards above do not replace those transactions or make concurrent audit requests atomic.
+
 These items are not implemented by the foundation release:
 
 1. Reconcile database schema and verify clean/upgrade migrations.

@@ -383,6 +383,14 @@ export async function POST(req: NextRequest) {
     return errorResponse("Invalid request body.", 400);
   }
 
+  if (!body || typeof body !== "object" || Array.isArray(body) ||
+      (body.includeAI !== undefined && typeof body.includeAI !== "boolean") ||
+      (body.competitorUrls !== undefined && typeof body.competitorUrls !== "string" &&
+        (!Array.isArray(body.competitorUrls) || body.competitorUrls.length > 3 ||
+          body.competitorUrls.some((url) => typeof url !== "string" || url.length > 4096)))) {
+    return errorResponse("Invalid scan options.", 400);
+  }
+
   const rawUrl = body?.url;
   if (!rawUrl || typeof rawUrl !== "string") {
     return errorResponse("Please provide a valid URL.", 400);

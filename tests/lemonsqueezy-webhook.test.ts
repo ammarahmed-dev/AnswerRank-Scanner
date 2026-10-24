@@ -33,7 +33,7 @@ beforeEach(() => {
       const body = JSON.parse(String(init.body)) as Record<string, unknown>;
       patches.push(body);
       if (patchStatus < 300 && profile) profile = { ...profile, ...body } as Profile;
-      return new Response(patchStatus < 300 ? null : "db down", { status: patchStatus });
+      return new Response(patchStatus < 300 ? JSON.stringify(profile ? [profile] : []) : "db down", { status: patchStatus < 300 ? 200 : patchStatus });
     }
     return new Response(JSON.stringify(profile ? [profile] : []), { status: 200 });
   });
@@ -56,6 +56,11 @@ const sub = (id: string, variant: string, status: string, extra: Record<string, 
 });
 
 describe("lemonsqueezy webhook", () => {
+  it("returns a retryable failure when no profile was updated", async () => {
+    profile = null;
+    expect((await send("subscription_created", sub("s1", "200", "active"))).status).toBe(500);
+  });
+
   it("rejects a bad signature", async () => {
     const res = await send("subscription_created", sub("s1", "200", "active"), "00".repeat(32));
     expect(res.status).toBe(400);

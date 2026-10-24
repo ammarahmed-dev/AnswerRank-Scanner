@@ -64,13 +64,17 @@ async function patchProfile(userId: string, fields: Record<string, unknown>) {
     headers: {
       ...getSupabaseServiceHeaders(),
       "Content-Type": "application/json",
-      Prefer: "return=minimal",
+      Prefer: "return=representation",
     },
     body: JSON.stringify(fields),
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`profile patch failed: ${res.status} ${body.slice(0, 200)}`);
+  }
+  const updated = await res.json() as unknown;
+  if (!Array.isArray(updated) || updated.length !== 1) {
+    throw new Error("profile patch did not update exactly one profile");
   }
 }
 

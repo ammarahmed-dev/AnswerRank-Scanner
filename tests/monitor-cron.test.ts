@@ -22,6 +22,8 @@ beforeAll(async () => {
 });
 
 afterEach(() => {
+  scanned.length = 0;
+  snapshots.length = 0;
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -29,6 +31,29 @@ afterEach(() => {
 const row = (id: string, url: string, frequency: string, last: string | null) => ({ id, url, label: null, user_id: "u1", frequency, last_scanned_at: last });
 
 describe("monitor cron", () => {
+  it("does not advance the schedule when saving a snapshot fails", async () => {
+    vi.spyOn(console, "info").mockImplementation(() => undefined);
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.includes("/monitored_urls?") && !init?.method) {
+        return new Response(JSON.stringify(url.includes("frequency=eq.weekly") ? [row("failed-save", "https://example.com/", "weekly", null)] : []));
+      }
+      if (init?.method === "POST") return new Response("unavailable", { status: 503 });
+      return new Response("[]");
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const response = await GET(new Request("https://www.aeocheck.co/api/cron/monitor-emails", { headers: { authorization: "Bearer cron-secret" } }));
+    expect(await response.json()).toMatchObject({ processed: 0, errors: ["unexpected:https://example.com/"] });
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === "PATCH")).toBe(false);
+  });
+
+  it("returns a retryable service error when the due query fails", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.stubGlobal("fetch", async () => new Response("unavailable", { status: 503 }));
+    const response = await GET(new Request("https://www.aeocheck.co/api/cron/monitor-emails", { headers: { authorization: "Bearer cron-secret" } }));
+    expect(response.status).toBe(503);
+  });
+
   it("rejects requests without the cron secret", async () => {
     const res = await GET(new Request("https://www.aeocheck.co/api/cron/monitor-emails"));
     expect(res.status).toBe(401);
