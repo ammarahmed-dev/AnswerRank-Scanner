@@ -19,7 +19,7 @@ export const SAMPLE_REPORT: ScanResult = {
     score: 61,
     lcp: 3.2,
     cls: 0.08,
-    fid: 180,
+    tbt: 180,
   },
   aiInsights: {
     summary:
@@ -200,7 +200,7 @@ export const SAMPLE_REPORT: ScanResult = {
     },
     {
       id: "core_web_vitals",
-      label: "Core Web Vitals",
+      label: "Lab performance",
       status: "warn",
       detail: "PageSpeed score 61. LCP is 3.2s - above the 2.5s target. CLS is 0.08 - within acceptable range.",
       weight: 6,

@@ -1,3 +1,4 @@
+import type { StreamBody } from "@/lib/bounded-body";
 import { lookup as dnsLookup, type LookupAddress } from "dns";
 import { lookup } from "dns/promises";
 import { isIP } from "net";
@@ -135,7 +136,7 @@ export type SafeResponse = {
   statusText: string;
   headers: { get(name: string): string | null };
   text(): Promise<string>;
-  body: { cancel(reason?: unknown): Promise<void> } | null;
+  body: StreamBody["body"];
 };
 
 type SafeFetchInit = Omit<UndiciRequestInit, "redirect" | "dispatcher">;
@@ -162,9 +163,9 @@ export async function safeFetch(
     const location = response.headers.get("location");
 
     if (response.status >= 300 && response.status < 400 && location) {
+      await response.body?.cancel().catch(() => undefined);
       if (hop === maxRedirects) throw new Error("Redirect limit reached");
       currentUrl = new URL(location, currentUrl).toString();
-      await response.body?.cancel().catch(() => undefined);
       continue;
     }
 

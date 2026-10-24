@@ -22,7 +22,7 @@ export const AI_CRAWLERS: Record<string, string> = {
 };
 
 // Crawlers that decide whether a site can appear (and be cited) in AI search answers.
-// Blocking these removes the site from that engine's answers.
+// Their access is one signal; this does not establish whether an engine cites the site.
 export const AI_SEARCH_CRAWLERS = ["oai-searchbot", "claude-searchbot", "perplexitybot"];
 // Training-focused tokens: blocking opts content out of model training but does not remove the
 // site from AI search answers (Google-Extended also covers grounding in Gemini apps).
@@ -92,20 +92,20 @@ export function analyzeAiCrawlerAccess(robotsBody: string, pathWithQuery = "/"):
   const names = blocked.map((agent) => AI_CRAWLERS[agent]);
 
   if (blocked.length === Object.keys(AI_CRAWLERS).length) {
-    return { status: "fail", detail: "robots.txt blocks all AI crawlers - this site is invisible to AI search engines", blocked };
+    return { status: "fail", detail: "robots.txt blocks all listed AI crawlers for this page", blocked };
   }
   if (blocked.length) {
     const searchBlocked = blocked.filter((agent) => AI_SEARCH_CRAWLERS.includes(agent));
     if (searchBlocked.length) {
       return {
         status: "fail",
-        detail: `AI search crawlers blocked: ${searchBlocked.map((a) => AI_CRAWLERS[a]).join(", ")} - this site cannot appear in those AI answers`,
+        detail: `AI search crawlers blocked: ${searchBlocked.map((a) => AI_CRAWLERS[a]).join(", ")} - crawling this page is disallowed by these rules`,
         blocked,
       };
     }
     return {
       status: "warn",
-      detail: `Blocked for AI training only: ${names.join(", ")} - AI search crawlers are still allowed`,
+      detail: `AI search crawlers are allowed. Other blocked agents (training only or user requests): ${names.join(", ")}`,
       blocked,
     };
   }

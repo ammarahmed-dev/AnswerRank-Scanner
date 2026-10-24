@@ -1,3 +1,4 @@
+import { BodyTooLargeError, readBoundedText } from "@/lib/bounded-body";
 import { NextRequest, NextResponse, after } from "next/server";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { buildAIPrompt } from "@/lib/build-ai-prompt";
@@ -378,9 +379,9 @@ async function scanCompetitor(rawUrl: string): Promise<CompetitorScanResult> {
 export async function POST(req: NextRequest) {
   let body: ScanRequestBody;
   try {
-    body = (await req.json()) as ScanRequestBody;
-  } catch {
-    return errorResponse("Invalid request body.", 400);
+    body = JSON.parse(await readBoundedText(req, 32_768)) as ScanRequestBody;
+  } catch (error) {
+    return errorResponse(error instanceof BodyTooLargeError ? "Request body is too large." : "Invalid request body.", error instanceof BodyTooLargeError ? 413 : 400);
   }
 
   if (!body || typeof body !== "object" || Array.isArray(body) ||
@@ -391,8 +392,11 @@ export async function POST(req: NextRequest) {
     return errorResponse("Invalid scan options.", 400);
   }
 
+  if (typeof body.competitorUrls === "string" && body.competitorUrls.length > 12_288) {
+    return errorResponse("Invalid scan options.", 400);
+  }
   const rawUrl = body?.url;
-  if (!rawUrl || typeof rawUrl !== "string") {
+  if (!rawUrl || typeof rawUrl !== "string" || rawUrl.length > 4096) {
     return errorResponse("Please provide a valid URL.", 400);
   }
 
@@ -537,6 +541,7 @@ export async function POST(req: NextRequest) {
         try {
           coreResult = await runScanCore(url, {
             includePageSpeed: true,
+            signal: req.signal,
             normalizeAndValidate: false,
             onProgress: (phase) => {
               if (phase === "fetch_started") emitProgress(2, "Fetching website", "started");

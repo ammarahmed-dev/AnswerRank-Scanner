@@ -86,12 +86,14 @@ export async function POST(req: Request, ctx: RouteContext) {
       return NextResponse.json({ error: "This page has already been scanned." }, { status: 409 });
     }
 
+    const scanController = new AbortController();
+    const scanSignal = AbortSignal.any([req.signal, scanController.signal]);
     let pageResult: AuditPageResult;
     let timeout: ReturnType<typeof setTimeout> | undefined;
     try {
-      const scanPromise = runScanCore(pageUrl, { includePageSpeed: false, normalizeAndValidate: false });
+      const scanPromise = runScanCore(pageUrl, { includePageSpeed: false, normalizeAndValidate: false, signal: scanSignal });
       const timeoutPromise = new Promise<never>((_, reject) =>
-        timeout = setTimeout(() => reject(new Error("timeout")), SCAN_TIMEOUT_MS)
+        timeout = setTimeout(() => { scanController.abort(); reject(new Error("timeout")); }, SCAN_TIMEOUT_MS)
       );
       const result = await Promise.race([scanPromise, timeoutPromise]);
 
