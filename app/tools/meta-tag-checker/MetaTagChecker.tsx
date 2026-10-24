@@ -79,6 +79,7 @@ export default function MetaTagChecker() {
           <div className={`crawler-verdict crawler-verdict-${fails ? "bad" : warns ? "warn" : "good"}`}>
             <strong>{fails} problem{fails === 1 ? "" : "s"}, {warns} warning{warns === 1 ? "" : "s"}</strong>
             <p className="crawler-verdict-meta">{result.url}</p>
+            {v.canonical && <p className="crawler-verdict-meta">Canonical: {v.canonical}</p>}
           </div>
 
           <div className="meta-previews">
