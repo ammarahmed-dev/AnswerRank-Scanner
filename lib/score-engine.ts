@@ -502,14 +502,14 @@ const CHECKS_CONFIG: CheckConfig[] = [
   },
   {
     id: "core_web_vitals",
-    label: "Core Web Vitals",
+    label: "Lab performance",
     weight: 6,
     check: (_data: ScrapedData) => {
       // Status is overridden in scan/route.ts
       // using actual PageSpeed data
       return "warn";
     },
-    detail: () => "Core Web Vitals require PageSpeed API data",
+    detail: () => "Lab performance requires PageSpeed API data; real-user Core Web Vitals are not assessed",
   },
 ];
 

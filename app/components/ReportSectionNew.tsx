@@ -98,7 +98,7 @@ export default function ReportSectionNew({ report, onReset }: Props) {
     {
       title: "Performance score",
       text: report.pagespeed?.score !== undefined
-        ? `${report.pagespeed.score}/100. Page speed and Core Web Vitals affect how reliably AI crawlers can index your content.`
+        ? `${report.pagespeed.score}/100. Lighthouse lab performance measures this page under simulated mobile conditions. Real-user Core Web Vitals are not assessed.`
         : "PageSpeed score unavailable. The performance API did not return data for this page.",
       icon: TrendingUp,
     },

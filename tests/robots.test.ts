@@ -42,7 +42,7 @@ describe("robots.txt AI crawler access", () => {
   it("treats a wildcard block as blocking AI crawlers without their own group", () => {
     const r = analyzeAiCrawlerAccess(robots("User-agent: *", "Disallow: /"));
     expect(r.status).toBe("fail");
-    expect(r.detail).toMatch(/all AI crawlers/);
+    expect(r.detail).toMatch(/all listed AI crawlers/);
   });
 
   it("lets a crawler's own group override a wildcard block", () => {

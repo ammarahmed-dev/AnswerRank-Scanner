@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import { ExtractedData } from "@/types/report";
 import { ScrapedData } from "@/types/index";
 import { safeFetch } from "@/lib/url-safety";
+import { readBoundedText } from "@/lib/bounded-body";
 
 function normalizeSchemaTypeLabel(value: string): string {
   const trimmed = value.trim();
@@ -87,12 +88,16 @@ export function validateUrl(url: string): boolean {
 }
 
 export async function fetchHtml(url: string): Promise<string> {
+  return (await fetchHtmlPage(url)).html;
+}
+
+export async function fetchHtmlPage(url: string, signal?: AbortSignal): Promise<{ html: string; finalUrl: string }> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 12000);
 
   try {
     const { response: res, finalUrl } = await safeFetch(url, {
-      signal: controller.signal,
+      signal: signal ? AbortSignal.any([signal, controller.signal]) : controller.signal,
       headers: {
         "User-Agent":
           "Mozilla/5.0 (compatible; AEOCheckScanner/1.0; +https://www.aeocheck.co)",
@@ -107,27 +112,26 @@ export async function fetchHtml(url: string): Promise<string> {
     }
 
     if (!res.ok) {
+      await res.body?.cancel().catch(() => undefined);
       if (res.status === 403 || res.status === 401) throw new Error("Blocked by target website");
       throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     }
 
     const contentType = res.headers.get("content-type") || "";
     if (!contentType.includes("text/html") && !contentType.includes("text/plain")) {
+      await res.body?.cancel().catch(() => undefined);
       throw new Error("URL does not return an HTML page.");
     }
 
-    const contentLength = Number(res.headers.get("content-length") || 0);
-    if (contentLength > 2_500_000) throw new Error("HTML response is too large to analyze in the demo scanner.");
-
-    const text = await res.text();
+    const text = await readBoundedText(res, 2_500_000);
     if (!text.trim()) throw new Error("Empty HTML response");
-    return text.slice(0, 2_500_000);
+    return { html: text, finalUrl };
   } finally {
     clearTimeout(timeout);
   }
 }
 
-export async function fetchJinaReaderText(url: string): Promise<string> {
+export async function fetchJinaReaderText(url: string, signal?: AbortSignal): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   const readerUrl = `https://r.jina.ai/${url}`;
@@ -142,16 +146,17 @@ export async function fetchJinaReaderText(url: string): Promise<string> {
 
   try {
     const res = await fetch(readerUrl, {
-      signal: controller.signal,
+      signal: signal ? AbortSignal.any([signal, controller.signal]) : controller.signal,
       redirect: "follow",
       headers,
     });
 
     if (!res.ok) {
+      await res.body?.cancel().catch(() => undefined);
       throw new Error(`scrape:jina:http:${res.status}`);
     }
 
-    const text = await res.text();
+    const text = await readBoundedText(res, 200_000);
     if (!text.trim()) throw new Error("scrape:jina:empty");
     return text.slice(0, 50000);
   } finally {

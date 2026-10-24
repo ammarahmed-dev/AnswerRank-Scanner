@@ -24,7 +24,7 @@ Review notes: category normalization can change displayed historical category br
 - Limit audit scans to saved targets, reject already-recorded pages, include valid zero scores in aggregates and clear settled timeout timers.
 - Validation: 224 tests pass across 37 files; production build passes; type checking and lint are checked in CI.
 
-Database project discovery and documentation tools both return `Unknown tool` from the connected Supabase service. Live schema reconciliation, event-ledger migrations, atomic scan grants, durable audit jobs and email outbox remain blocked on a functioning database connection. The guards above do not replace those transactions or make concurrent audit requests atomic.
+The Supabase connection is currently absent from this conversation; earlier project discovery and documentation calls returned `Unknown tool`. Live schema reconciliation, event-ledger migrations, atomic scan grants, durable audit jobs and email outbox remain blocked on a functioning database connection. The guards above do not replace those transactions or make concurrent audit requests atomic.
 
 These items are not implemented by the foundation release:
 
@@ -40,3 +40,17 @@ These items are not implemented by the foundation release:
 10. Improve AI recommendation provenance and validate the gated visibility prototype.
 
 Production schema, payment sandbox, email sink and actual deployment configuration still require verification. Work is proposed through PRs; completion of one PR does not mean the entire audit is complete.
+
+## Fetch integrity release
+
+- Analyze directly fetched HTML at its final URL; robots, fallback sitemap, llms.txt and PageSpeed use that page's origin (including scheme and port). A redirected robots file remains scoped to its original requested authority.
+- Bound decoded response bytes during download for HTML, reader fallback, robots/sitemap, llms.txt and PageSpeed. Cancel rejected/error bodies and redirect bodies.
+- Bound scan/compare request JSON to 32 KiB before usage reservation, with 413 for oversized payloads.
+- Propagate caller cancellation to scanner fetches and PageSpeed. Audit timeouts now abort the underlying scanner request.
+- Reject HTML/soft-error llms.txt responses and unverified robots bodies. Avoid claiming an inaccessible robots file was found.
+- Store Lighthouse blocking time as `tbt`, retaining historical `fid` compatibility on read; remove the invalid time-to-interactive substitution. Label these measurements as lab performance, not a real-user Core Web Vitals assessment.
+- Regression coverage: decoded/chunked limits, split UTF-8, cancellation, redirected origin/path/port, robots policy redirects, soft errors, unverified robots and TBT mapping.
+
+Score impact: new scans can decrease when a formerly accepted HTML llms.txt error page is rejected or the resolved page's actual robots policy blocks crawling. Historical stored overall scores are unchanged. A missing TBT measurement no longer inherits the unrelated time-to-interactive duration.
+
+This covers the fetch/cancellation portion of items 4 and 5. Atomic quota enforcement, reservation expiry, durable audit jobs and the database-dependent work remain open. Reader fallback does not independently verify a final page URL and retains the requested URL.

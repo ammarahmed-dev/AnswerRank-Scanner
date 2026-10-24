@@ -1,3 +1,4 @@
+import { BodyTooLargeError, readBoundedText } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { runScanCore } from "@/lib/scan-core";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
@@ -82,7 +83,12 @@ export async function POST(req: Request) {
     : `compare:${getClientKey(undefined, req)}`;
   const bypassLimit = isAdmin;
   const compareLimit = effectivePlan === "onetime" ? 1 : getPlanLimit(effectivePlan);
-  const body = (await req.json().catch(() => ({}))) as CompareBody;
+  let body: CompareBody;
+  try {
+    body = JSON.parse(await readBoundedText(req, 32_768)) as CompareBody;
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof BodyTooLargeError ? "Request body is too large." : "Invalid request body." }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
+  }
   if (!body || typeof body !== "object" || Array.isArray(body) ||
       (body.urls !== undefined && (!Array.isArray(body.urls) || body.urls.length > 2 ||
         body.urls.some((url) => typeof url !== "string" || url.length > 4096)))) {
@@ -92,6 +98,9 @@ export async function POST(req: Request) {
   const candidateCompetitor = typeof body.competitorUrl === "string" ? body.competitorUrl.trim() : "";
   const urlsFromArray = (body.urls ?? []).map((url) => url.trim()).filter(Boolean);
 
+  if (candidatePrimary.length > 4096 || candidateCompetitor.length > 4096) {
+    return NextResponse.json({ error: "Invalid comparison URLs." }, { status: 400 });
+  }
   const primaryInput = candidatePrimary || urlsFromArray[0] || "";
   const competitorInput = candidateCompetitor || urlsFromArray[1] || "";
 
@@ -137,9 +146,11 @@ export async function POST(req: Request) {
   let usageSettled = false;
   try {
     const [primaryCore, competitorCore] = await Promise.all([runScanCore(primaryUrl, {
+      signal: req.signal,
       includePageSpeed: true,
       normalizeAndValidate: false,
     }), runScanCore(competitorUrl, {
+      signal: req.signal,
       includePageSpeed: true,
       normalizeAndValidate: false,
     })]);

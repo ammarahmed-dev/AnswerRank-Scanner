@@ -57,12 +57,13 @@ function maybeSplitCoreWebVitals(
       priority: issue.priority === "critical" ? "critical" : "high",
     });
   }
-  if (typeof pagespeed.fid === "number" && pagespeed.fid >= 200) {
+  const tbt = pagespeed.tbt ?? pagespeed.fid;
+  if (typeof tbt === "number" && tbt >= 200) {
     parts.push({
       id: "cwv_tbt",
       label: "Total Blocking Time",
-      detail: `TBT is ${pagespeed.fid}ms. Target under 200ms.`,
-      status: pagespeed.fid >= 600 ? "fail" : "warn",
+      detail: `TBT is ${tbt}ms. Target under 200ms.`,
+      status: tbt >= 600 ? "fail" : "warn",
       weight: issue.priority === "critical" ? 10 : 7,
       priority: issue.priority === "critical" ? "critical" : "high",
     });

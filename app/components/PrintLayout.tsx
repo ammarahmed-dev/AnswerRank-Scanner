@@ -237,7 +237,7 @@ function getDynamicNextSteps(report: ScanResult, issues: ReturnType<typeof getNo
   const step1 = criticalCount > 0
     ? "Fix critical issues first. Resolve the critical blockers shown in the Priority Action Plan before lower-priority items."
     : performanceIssue
-      ? "Improve performance first. Focus on Core Web Vitals and page speed issues to improve crawl reliability."
+      ? "Improve performance first. Focus on the lab page speed issues highlighted in this report."
       : readabilityIssue
         ? "Improve readability first. Simplify sentence structure and add clearer answer-first copy."
         : "Fix the top-priority issues first. Start with the highest-impact items in this report.";
@@ -245,7 +245,7 @@ function getDynamicNextSteps(report: ScanResult, issues: ReturnType<typeof getNo
   const step2 = schemaFailed || metadataFailed
     ? "Resolve schema and metadata gaps. Add or fix JSON-LD, title, meta description, and Open Graph fields."
     : performanceIssue
-      ? "Address Core Web Vitals details. Improve LCP, CLS, and TBT where flagged."
+      ? "Address lab performance details. Improve LCP, CLS, and TBT where flagged."
       : "Implement the highest-impact recommendations from this scan.";
 
   const step3 = schemaFailed

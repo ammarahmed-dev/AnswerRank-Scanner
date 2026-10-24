@@ -63,7 +63,7 @@ export function categoryNote(category: Category, score: number) {
   if (category === "content") return score >= 70 ? "Content depth gives AI enough to work with." : "Add use-case detail and concise answer blocks so AI can extract clear responses.";
   if (category === "headings") return score >= 70 ? "Heading hierarchy is clear and well-structured." : "Restructure headings. A logical H1-H2-H3 hierarchy helps AI parse your content.";
   if (category === "trust") return score >= 70 ? "Trust signals and crawl directives look good." : "Add trust signals. Include HTTPS, a valid robots.txt, and author or brand information.";
-  if (category === "performance") return score >= 70 ? "Page speed and Core Web Vitals are competitive." : "Speed improvements are available. Faster pages are indexed more reliably by AI crawlers.";
+  if (category === "performance") return score >= 70 ? "Mobile lab performance is good." : "Speed improvements are available. Faster pages are indexed more reliably by AI crawlers.";
   return score >= 70 ? "This page is well-structured for AI answer extraction." : "Improve content clarity so AI assistants can accurately summarize and cite this page.";
 }
 
@@ -108,7 +108,7 @@ export function whyItMattersById(id: string): string {
     canonical: "A canonical URL tells AI engines and search crawlers which version of a page is authoritative. Without one, duplicate URLs (tracking parameters, www vs non-www) split signals and the wrong version may be cited.",
     qa_structure: "Answer engines look for sections that pose a question and answer it directly. Question-style H2/H3 headings make it easy for ChatGPT, Perplexity and AI Overviews to lift your answer verbatim and cite you.",
     readability: "AI engines like ChatGPT and Perplexity prefer content that is easy to parse and extract. Research shows readability (Flesch score) positively correlates with AI citation frequency - simpler, clearer writing gets cited more.",
-    core_web_vitals: "Core Web Vitals directly affect how reliably AI crawlers can index your content. Slow LCP means AI bots may time out before reading your page. High CLS indicates unstable layouts that confuse both users and crawlers.",
+    core_web_vitals: "Lighthouse lab metrics simulate a page load to identify slow rendering, layout shifts, and JavaScript blocking. They do not establish whether real-user Core Web Vitals pass or whether AI engines cite this page.",
     cwv_lcp: "Largest Contentful Paint affects how quickly the main content becomes available to users and crawlers. Slow LCP can cause visitors and bots to abandon the page before the content is fully usable.",
     cwv_cls: "Cumulative Layout Shift measures visual stability. High CLS makes the page feel unstable and can make content harder for users and crawlers to interpret reliably.",
     cwv_tbt: "Total Blocking Time shows how much JavaScript blocks the page from responding. High TBT can delay interaction and make crawled content slower to process.",

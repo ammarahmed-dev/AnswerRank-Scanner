@@ -65,6 +65,8 @@ export interface PageSpeedData {
   score: number;
   lcp?: number | null;
   cls?: number | null;
+  tbt?: number | null;
+  /** Legacy reports stored Lighthouse TBT under this key. */
   fid?: number | null;
 }
 
