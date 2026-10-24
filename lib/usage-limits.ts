@@ -9,6 +9,8 @@ export const PRO_MONTHLY_SCAN_LIMIT = Number(process.env.PRO_MONTHLY_SCAN_LIMIT 
 
 type UsageResult = {
   allowed: boolean;
+  /** Storage could not verify usage; callers must return 503, not a quota warning. */
+  unavailable?: boolean;
   count: number;
   remaining: number;
   limit: number;
@@ -60,13 +62,15 @@ async function readUsageCount(clientKey: string) {
   });
 
   if (!readRes.ok) {
-    const details = await readRes.text().catch(() => "");
-    console.error("Supabase usage read failed:", details);
-    return 0;
+    console.error("Supabase usage read failed:", readRes.status);
+    throw new Error("Usage storage is unavailable.");
   }
 
-  const rows = (await readRes.json()) as Array<{ scan_count: number }>;
-  return rows[0]?.scan_count ?? 0;
+  const rows: unknown = await readRes.json();
+  if (!Array.isArray(rows) || rows.length > 1) throw new Error("Invalid usage storage response.");
+  const count: unknown = rows.length ? rows[0]?.scan_count : 0;
+  if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) throw new Error("Invalid usage storage response.");
+  return count;
 }
 
 export async function checkUsageLimit(clientKey: string, limit: number): Promise<UsageResult> {
@@ -112,9 +116,8 @@ export async function incrementUsage(clientKey: string, nextCountHint?: number):
   });
 
   if (!writeRes.ok) {
-    const details = await writeRes.text().catch(() => "");
-    console.error("Supabase usage write failed:", details);
-    return currentCount;
+    console.error("Supabase usage write failed:", writeRes.status);
+    throw new Error("Usage storage is unavailable.");
   }
 
   return nextCount;
@@ -137,12 +140,15 @@ async function callRpc(name: string, args: Record<string, unknown>): Promise<Res
 /**
  * Atomically reserves one unit of usage before doing the work, so concurrent requests cannot
  * exceed the limit. Call commitUsage() on success and releaseUsage() on failure.
- * Falls back to the legacy read-then-write check while the `reserve_scan_usage` function
+ * Only a missing RPC (404) permits the compatibility read-then-write check while the `reserve_scan_usage` function
  * (supabase/migrations/20261003_atomic_scan_usage.sql) is not installed.
  */
 export async function reserveUsage(clientKey: string, limit: number): Promise<UsageReservation> {
   const usageDate = currentMonthUsageDateKey();
+  const unavailable = (): UsageReservation => ({ allowed: false, unavailable: true, count: 0, remaining: 0, limit, reserved: false, usageDate });
+  if (!Number.isSafeInteger(limit) || limit < 1) return unavailable();
   if (!hasSupabaseConfig()) {
+    if (process.env.NODE_ENV === "production") return unavailable();
     return { allowed: true, count: 0, remaining: limit, limit, reserved: false, usageDate };
   }
 
@@ -153,21 +159,28 @@ export async function reserveUsage(clientKey: string, limit: number): Promise<Us
       p_limit: limit,
     });
     if (res.ok) {
-      const count = Number(await res.json());
-      if (!Number.isFinite(count) || count < 0) {
+      const count: unknown = await res.json();
+      if (count === -1) {
         return { allowed: false, count: limit, remaining: 0, limit, reserved: false, usageDate };
       }
+      if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 1 || count > limit) return unavailable();
       return { allowed: true, count, remaining: Math.max(0, limit - count), limit, reserved: true, usageDate };
     }
     if (res.status !== 404) {
       console.error("Supabase reserve_scan_usage failed:", res.status);
+      return unavailable();
     }
   } catch (err) {
-    console.error("Supabase reserve_scan_usage error:", err instanceof Error ? err.message : err);
+    console.error("Supabase reserve_scan_usage error:", err instanceof Error ? err.name : "unknown");
+    return unavailable();
   }
 
-  const legacy = await checkUsageLimit(clientKey, limit);
-  return { ...legacy, reserved: false, usageDate };
+  try {
+    const legacy = await checkUsageLimit(clientKey, limit);
+    return { ...legacy, reserved: false, usageDate };
+  } catch {
+    return unavailable();
+  }
 }
 
 /** Records successful usage. A no-op for atomic reservations (already counted). */

@@ -54,3 +54,13 @@ Production schema, payment sandbox, email sink and actual deployment configurati
 Score impact: new scans can decrease when a formerly accepted HTML llms.txt error page is rejected or the resolved page's actual robots policy blocks crawling. Historical stored overall scores are unchanged. A missing TBT measurement no longer inherits the unrelated time-to-interactive duration.
 
 This covers the fetch/cancellation portion of items 4 and 5. Atomic quota enforcement, reservation expiry, durable audit jobs and the database-dependent work remain open. Reader fallback does not independently verify a final page URL and retains the requested URL.
+
+## Service failure guards
+
+- Configured quota RPC HTTP errors, network errors and malformed successful responses stop work with 503, rather than falling back to weaker accounting or showing a misleading monthly-limit message.
+- The missing-RPC 404 compatibility path remains until the live schema is verified. Its failed reads/writes now fail rather than pretending usage is zero or persisted. This path is still not atomic.
+- Production without quota database configuration fails closed; local development remains available without credentials.
+- The admin configuration health endpoint reports capabilities and accepts one supported recommendation provider. Optional missing providers no longer make core configuration look broken; the response explicitly does not claim connectivity or schema health.
+- Validation: 252 tests across 41 files; type check, build and lint pass (18 existing warnings).
+
+See IMPLEMENTATION-PLAN.md for the complete 17-item acceptance checklist and continuing work. The full plan is not complete.

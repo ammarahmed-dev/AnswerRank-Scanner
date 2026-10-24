@@ -1,3 +1,7 @@
+# 2026-10-24 - Quota storage failure guards
+
+Configured quota storage errors now return service unavailable before starting scans or tools. Only a missing RPC permits the temporary compatibility path; failed compatibility reads and writes no longer silently succeed. Admin health reports capability configuration rather than requiring every optional provider key. Added the full audit acceptance checklist and recorded the owner's hourly continuation request. This does not establish verified production database schema or complete the full plan.
+
 # 2026-10-24 - Scanner fetch integrity
 
 Resolved page URLs now determine scanner origin/path checks; streamed response and request bodies are bounded; cancellation reaches scanner fetches; llms.txt HTML errors are rejected. Performance is labeled as Lighthouse lab data, with a TBT field and compatibility for old reports. These corrections can lower a new scan score if a soft error was previously counted as valid llms.txt or the actual destination blocks crawling. Stored historical overall scores are unchanged. See IMPLEMENTATION-STATUS.md for remaining database work.

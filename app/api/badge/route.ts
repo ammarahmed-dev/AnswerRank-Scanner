@@ -25,6 +25,9 @@ export async function GET(req: Request) {
 
   const usageKey = "badge:global";
   const usage = await reserveUsage(usageKey, GLOBAL_MONTHLY_BADGE_SCANS);
+  if (usage.unavailable) {
+    return Response.json({ error: "Usage verification is temporarily unavailable. Please try again shortly." }, { status: 503 });
+  }
   if (!usage.allowed) return svgResponse(renderBadgeSvg(null), SHORT_CACHE);
 
   try {

@@ -54,6 +54,25 @@ describe("reserveUsage", () => {
     expect(calls[0].body).toMatchObject({ client_key: "k", scan_count: 2 });
   });
 
+  it.each([401, 403, 429, 500, 503])("fails closed for RPC HTTP %s without a legacy read", async status => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    mockFetch(() => new Response("{}", { status }));
+    expect(await mod.reserveUsage("k", 3)).toMatchObject({ allowed: false, unavailable: true, reserved: false });
+    expect(calls).toHaveLength(1);
+  });
+
+  it.each([null, "1", {}, 0, 1.5, 4])("fails closed for malformed RPC count %j", async count => {
+    mockFetch(() => new Response(JSON.stringify(count)));
+    expect(await mod.reserveUsage("k", 3)).toMatchObject({ allowed: false, unavailable: true });
+    expect(calls).toHaveLength(1);
+  });
+
+  it("does not treat a failed compatibility read as zero usage", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    mockFetch(url => new Response("{}", { status: url.includes("/rpc/") ? 404 : 503 }));
+    expect(await mod.reserveUsage("k", 3)).toMatchObject({ allowed: false, unavailable: true });
+  });
+
   it("commit is a no-op and release calls the RPC for atomic reservations", async () => {
     mockFetch(() => new Response("1", { status: 200 }));
     const r = await mod.reserveUsage("k", 3);

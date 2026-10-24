@@ -426,6 +426,9 @@ export async function POST(req: NextRequest) {
   const usage: UsageReservation = bypassScanLimit
     ? { allowed: true, count: 0, remaining: Number.MAX_SAFE_INTEGER, limit: Number.MAX_SAFE_INTEGER, reserved: false, usageDate: "" }
     : await reserveUsage(usageKey, getPlanLimit(effectivePlan));
+  if (usage.unavailable) {
+    return NextResponse.json({ error: "Usage verification is temporarily unavailable. Please try again shortly." }, { status: 503 });
+  }
   if (usage && !usage.allowed) {
     const limitedUser = authContext.user;
     if (limitedUser && effectivePlan === "free") {

@@ -11,6 +11,13 @@ describe("scan request validation", () => {
     expect((await POST(req as never)).status).toBe(413);
     expect(reserveUsage).not.toHaveBeenCalled();
   });
+  it("returns a service error for quota outages instead of a limit or scan result", async () => {
+    reserveUsage.mockResolvedValueOnce({ allowed: false, unavailable: true });
+    const { POST } = await import("@/app/api/compare/route");
+    const req = new Request("https://aeocheck.co/api/compare", { method: "POST", body: JSON.stringify({ urls: ["https://a.test", "https://b.test"] }) });
+    expect((await POST(req)).status).toBe(503);
+    reserveUsage.mockClear();
+  });
   it("rejects malformed options before reserving quota or starting work", async () => {
     const { POST } = await import("@/app/api/scan/route");
     for (const body of [null, [], { url: "https://example.com", competitorUrls: [123] }, { url: "https://example.com", includeAI: "false" }]) {
