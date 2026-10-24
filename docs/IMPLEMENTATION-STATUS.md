@@ -123,3 +123,13 @@ The connection itself no longer blocks schema work. Complete schema reconstructi
 - Added isolated SQL tests of the existing migration for cap/release behavior, account/month isolation, nonpositive limits and browser execution denial. Queued PGlite calls use one connection and are not a multi-connection contention benchmark.
 - Validation: 310 tests across 50 files, including actual SQL execution and missing-function fail-closed behavior; type check, lint and production build.
 - Remaining A09 work: stable anonymous abuse protection, durable reservation identifiers/crash expiry and account/provider budgets. Full production contention testing remains open.
+
+## Scan cancellation and recommendation response bounds
+
+- Request abort and SSE cancellation propagate to the scan core, recommendation provider and competitor scans. Stream emission/closure is guarded after disconnect; unfinished pre-persistence work releases its reservation once and does not save a report.
+- Competitor timeout aborts the underlying scan instead of merely abandoning its promise. A timed-out competitor remains an unavailable competitor result, while the completed primary report can still save.
+- Once report persistence begins, disconnect does not abandon the existing save/usage-settlement path. This is not a new database transaction and does not solve the separate one-time grant/retest atomicity work.
+- DeepSeek, OpenRouter and Gemini recommendation responses are bounded to 1 MB of decoded bytes; provider deadlines remain active during body reads. Cancelled callers do not start fallback providers, HTTP error bodies are cancelled, and error payloads are omitted from provider logs.
+- Validation: 323 tests across 52 files, including core/request/stream cancellation, AI and competitor cancellation, competitor timeout, late persistence completion, provider success across all three adapters, oversized/stalled bodies and no fallback after cancellation. Type checking, lint and production build remain release gates. No paid provider calls or authenticated production scan is claimed.
+
+Remaining A11 work includes other non-tool input boundaries and cancellation through the remaining callers. Recommendation provenance, stronger output schemas, useful caching and durable budgets remain A13 work.

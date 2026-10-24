@@ -1,3 +1,7 @@
+# 2026-10-25 - Cancel disconnected scans and bound recommendation responses
+
+Disconnected scan streams now abort core, AI and competitor work before persistence and release unused quota once. Competitor timeouts abort the underlying scan. Saves already started finish and settle usage. Recommendation provider bodies are capped at 1 MB, deadlines cover body reads, caller cancellation prevents fallback calls, and provider error payloads are excluded from logs. Validation includes 323 tests covering stream/request cancellation, late saves and bounded/stalled provider bodies. No scoring, price or entitlement changes.
+
 # 2026-10-25 - Require atomic quota reservations
 
 Production quota functions are verified. Missing RPCs now return unavailable instead of falling back to non-atomic read/write accounting, and commits reject unaccepted reservations. SQL regression tests cover caps, releases, account/month isolation and browser privilege denial. The PR #25 permission migration was applied after explicit owner approval; private Data API reads are denied while public statistics, waitlist inserts and server report reads retain their intended access. Rolled-back production checks left no test rows. The migration filename matches recorded Supabase history. Full signed-in and multi-connection acceptance remain open.

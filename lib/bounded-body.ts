@@ -18,19 +18,28 @@ export type StreamBody = {
 };
 
 /** Counts decoded bytes, including chunked and decompressed fetch responses. */
-export async function readBoundedText(source: StreamBody, maxBytes: number): Promise<string> {
+export async function readBoundedText(source: StreamBody, maxBytes: number, signal?: AbortSignal): Promise<string> {
+  if (signal?.aborted) {
+    await source.body?.cancel().catch(() => undefined);
+    signal.throwIfAborted();
+  }
   if (Number(source.headers.get("content-length")) > maxBytes) {
     await source.body?.cancel().catch(() => undefined);
     throw new BodyTooLargeError();
   }
   if (!source.body) return "";
   const reader = source.body.getReader();
+  const abort = () => { void reader.cancel(signal?.reason).catch(() => undefined); };
+  signal?.addEventListener("abort", abort, { once: true });
+  if (signal?.aborted) abort();
   const decoder = new TextDecoder();
   const parts: string[] = [];
   let bytes = 0;
   try {
     while (true) {
+      signal?.throwIfAborted();
       const { done, value } = await reader.read();
+      signal?.throwIfAborted();
       if (done) break;
       if (!value) continue;
       bytes += value.byteLength;
@@ -43,6 +52,7 @@ export async function readBoundedText(source: StreamBody, maxBytes: number): Pro
     await reader.cancel().catch(() => undefined);
     throw error;
   } finally {
+    signal?.removeEventListener("abort", abort);
     reader.releaseLock();
   }
 }
