@@ -474,7 +474,7 @@ export async function POST(req: NextRequest) {
     const params = new URLSearchParams({
       id: `eq.${retestOfReportId}`,
       user_id: `eq.${userId}`,
-      select: "result,retest_count,max_retests",
+      select: "url,result,retest_count,max_retests",
       limit: "1",
     });
     try {
@@ -484,12 +484,15 @@ export async function POST(req: NextRequest) {
       });
       if (seedRes.ok) {
         const rows = (await seedRes.json()) as Array<{
+          url?: string;
           retest_count?: number;
           max_retests?: number;
           result?: { unlocked?: boolean; unlockedAt?: string };
         }>;
         const source = rows[0];
-        if (source) {
+        // A report-level unlock applies only to the URL that was purchased/scanned.
+        // Ownership filtering alone must not let a caller transfer it to another page.
+        if (source && typeof source.url === "string" && normalizeUrl(source.url) === url) {
           retestSeed = {
             unlocked: Boolean(source.result?.unlocked || source.result?.unlockedAt),
             retestCount: source.retest_count ?? 0,

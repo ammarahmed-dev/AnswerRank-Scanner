@@ -1,3 +1,7 @@
+# 2026-10-25 - Bind inherited retest unlocks to the scanned URL
+
+A retest source report can grant its existing unlock only when its stored URL normalizes to the requested scan URL. Different hosts, pages, queries or schemes stay preview reports; missing/malformed source URLs grant no inherited unlock. Same-URL behavior and ownership filtering are preserved. Eight streamed scan/save regression cases cover the boundary. Purchase/retest atomicity remains separate work.
+
 # 2026-10-25 - Cancel disconnected scans and bound recommendation responses
 
 Disconnected scan streams now abort core, AI and competitor work before persistence and release unused quota once. Competitor timeouts abort the underlying scan. Saves already started finish and settle usage. Recommendation provider bodies are capped at 1 MB, deadlines cover body reads, caller cancellation prevents fallback calls, and provider error payloads are excluded from logs. Validation includes 323 tests covering stream/request cancellation, late saves and bounded/stalled provider bodies. No scoring, price or entitlement changes.

@@ -133,3 +133,11 @@ The connection itself no longer blocks schema work. Complete schema reconstructi
 - Validation: 323 tests across 52 files, including core/request/stream cancellation, AI and competitor cancellation, competitor timeout, late persistence completion, provider success across all three adapters, oversized/stalled bodies and no fallback after cancellation. Type checking, lint and production build remain release gates. No paid provider calls or authenticated production scan is claimed.
 
 Remaining A11 work includes other non-tool input boundaries and cancellation through the remaining callers. Recommendation provenance, stronger output schemas, useful caching and durable budgets remain A13 work.
+
+## Retest unlock URL scope
+
+- Owned retest seed lookups include the stored report URL. Inherited unlocks require that URL to normalize to the current scan target. An unlock cannot be transferred to another host, page, query or scheme by supplying a source report ID.
+- Matching URLs retain existing behavior, including normalization of host casing and fragment removal. Missing/malformed stored URLs grant no inherited unlock. Ownership filtering remains in the database query.
+- Validation: 331 tests across 53 files, including eight streamed scan/save regressions covering matching and mismatched sources, preview redaction and ownership query filtering. Type checking, lint and production build are release gates. Authenticated production retest acceptance remains open.
+
+This closes the cross-URL seed gap only. Atomic purchase/retest reservations, count updates, expiry/recovery and failed-scan consumption remain A03 work; no new entitlement or retest-count policy is introduced.
