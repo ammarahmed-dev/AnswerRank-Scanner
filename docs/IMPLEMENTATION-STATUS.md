@@ -73,7 +73,7 @@ See IMPLEMENTATION-PLAN.md for the complete 17-item acceptance checklist and con
 - Comparison aborts the sibling scan when either scan fails before returning its quota reservation.
 - Validation: 270 tests across 44 files, including malformed/oversized requests across all seven tool routes, oversized stream cancellation, quota release and comparison cancellation.
 
-Connection state: the owner-approved Supabase integration became available on 2026-10-25. Read-only production inspection works. The proposed production privilege correction separately awaits approval after automatic review rejected its application.
+Connection state: the owner-approved Supabase integration became available on 2026-10-25. Read-only production inspection works. The production privilege correction was applied and checked after explicit owner approval on 2026-10-25.
 
 ## Visibility evidence integrity
 
@@ -112,6 +112,14 @@ No numerical scoring changes, database migration, plan change or historical back
 - Prepared an explicit browser access boundary: waitlist INSERT and public statistics SELECT, with other application data accessed through authenticated server APIs. Existing service-role grants are preserved.
 - Six synthetic Postgres tests execute the actual migration and cover both browser roles, minimal inserts, duplicate handling, rejected returned rows, administrative privilege denial, service access, repeated application and future-table defaults.
 - Validation: 306 tests across 49 files, type checking, lint (0 errors, 18 existing warnings) and production build. See DATABASE-ACCESS-AUDIT.md for scope and acceptance.
-- Production migration NOT applied: automatic approval review rejected live permission changes because customer-flow compatibility has not been verified in production. Approval and production acceptance remain necessary. No indirect execution was attempted.
+- Production permission migration applied and checked on 2026-10-25 after explicit owner approval. Catalog checks, denied anonymous private-table reads, retained public statistics/report reads and a rolled-back waitlist insert passed. Full signed-in customer journeys remain open. The repository filename matches the recorded migration version.
 
 The connection itself no longer blocks schema work. Complete schema reconstruction, transactions and signed-in production acceptance remain unfinished.
+
+## Required atomic quota reservations
+
+- Verified the production quota functions under service_role inside a rolled-back synthetic transaction: two reservations reached the cap, a third was denied, and release permitted another reservation. Verification left no test rows. Browser roles cannot execute those functions.
+- Removed the missing-RPC read-then-write compatibility path and its non-atomic increment helper. Missing functions now fail closed before scan work. Commit rejects unsuccessful/unreserved requests in configured environments; non-production operation without database configuration remains available.
+- Added isolated SQL tests of the existing migration for cap/release behavior, account/month isolation, nonpositive limits and browser execution denial. Queued PGlite calls use one connection and are not a multi-connection contention benchmark.
+- Validation: 310 tests across 50 files, including actual SQL execution and missing-function fail-closed behavior; type check, lint and production build.
+- Remaining A09 work: stable anonymous abuse protection, durable reservation identifiers/crash expiry and account/provider budgets. Full production contention testing remains open.
