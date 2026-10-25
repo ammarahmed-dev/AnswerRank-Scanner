@@ -42,9 +42,9 @@ Continue using the existing implementation task for follow-through; do not creat
 
 ## Measurement access check: 25 October
 
-The available manual GSC Overview history ends with the 12 October run. The latest checked-in feedback report is dated 20 October and uses data ending 17 October. Both precede the owner's export baseline and the sprint release. The older feedback confirms the best-checker query/page pairing only for its own window; it cannot establish a post-release gain.
+Fresh read-only Search Console retrieval succeeded on 25 October through the existing GitHub Actions `GSC Overview` service-account connection. The refreshed performance data ends on 23 October, before the sprint changes. The earlier blanket access blocker is resolved. Keep raw logs, exports and private performance metrics out of public documentation.
 
-The connected GitHub tools can read workflow runs and logs but do not expose workflow dispatch. A fresh joint query/page pull for the priority guides remains pending. Keep using the owner's supplied baseline with its documented aggregation limits, and do not churn titles or claim rankings from these older reports.
+The overview currently limits query rows and reports queries and pages separately; its joint query/page section covers tools only. A targeted joint query/page pull for the priority guides remains pending. A missing query in the limited overview is not evidence of zero impressions. Compare matching dates and filters before attributing any change.
 
 Primary guidance:
 
@@ -61,3 +61,15 @@ The owner confirmed on 25 October that organic search and AI-answer visibility a
 - AEO: answer practical questions directly, maintain accurate entities and visible content that agrees with structured data, and document the scanner's methodology and limitations. Page readiness and crawler access do not establish inclusion in an AI answer.
 - GEO: create useful original evidence and clear source citations, and evaluate observed brand mentions/citations with repeatable prompts and recorded engine/model/date/context. Verify source destinations before treating them as confirmed citations. No fabricated results, paid links, doorway content or promises of AI placement.
 - Measurement: use available dated organic query/page clicks, impressions and CTR, observed AI-answer evidence, and actual scan/pricing conversion events. Keep missing data and lag explicit, protect private analytics, and distinguish a release from a measured gain. Continue the full audit and growth streams together.
+
+## Owner priority: non-branded discovery (25 October)
+
+Make qualified non-branded discovery the first growth priority alongside the implementation audit. The owner reports encouraging branded-query CTR, but the small sample does not establish broad awareness or acquisition. Retain branded search as a separate baseline; do not use its CTR as evidence that generic checker searches perform similarly.
+
+1. First obtain a targeted joint query/page view for `best aeo checker` and close variants, with dates and country/device filters recorded privately. Confirm the intended existing comparison guide and identify any competing site pages before changing content.
+2. Review the deployed best-AEO-tools guide against those intents. Improve demonstrated gaps in answer clarity, comparison evidence, methodology and internal links, while preserving useful existing content, publication dates and stable titles. Do not repeat changes already shipped.
+3. Verify a useful path from the guide to the scanner and sample report. Check actual scan-start and completed-scan events where available; clicks alone do not establish customers or revenue.
+4. Continue the SaaS and ChatGPT measurement guides next. Support AEO/GEO with accurate direct answers, primary sources and repeatable observed-answer evidence; crawler eligibility is not an AI citation.
+5. Measure non-branded clicks, impressions, CTR and qualified scanner entries over matching reporting windows. Report lag and small samples explicitly. A query/page evidence gap must not block independently demonstrated technical fixes.
+
+Release this work in focused batches while urgent security, paid-rights and data-integrity failures retain precedence. No guaranteed ranking dates, daily title churn or new near-duplicate pages.
