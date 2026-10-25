@@ -17,7 +17,7 @@ function b64url(input) {
     .replace(/=+$/, "");
 }
 
-export async function getAccessToken() {
+export async function getAccessToken({ readOnly = false } = {}) {
   const clientEmail = process.env.GSC_CLIENT_EMAIL;
   let privateKey = process.env.GSC_PRIVATE_KEY;
   if (!clientEmail || !privateKey) {
@@ -30,7 +30,7 @@ export async function getAccessToken() {
   const claims = b64url(
     JSON.stringify({
       iss: clientEmail,
-      scope: SCOPE,
+      scope: readOnly ? `${SCOPE}.readonly` : SCOPE,
       aud: TOKEN_URL,
       iat: now,
       exp: now + 3600,

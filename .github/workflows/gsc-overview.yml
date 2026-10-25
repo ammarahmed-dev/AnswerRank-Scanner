@@ -1,7 +1,14 @@
 name: GSC Overview
 
-# Manual, read-only: prints a Search Console snapshot to the job log.
+# Read-only: manual or after changes to this diagnostic, prints a Search Console snapshot to the job log.
 on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/gsc-overview.mjs"
+      - "scripts/lib/gsc-opportunities.mjs"
+      - "scripts/lib/gsc-auth.mjs"
+      - ".github/workflows/gsc-overview.yml"
   workflow_dispatch:
     inputs:
       days:
@@ -13,12 +20,13 @@ permissions:
 
 jobs:
   overview:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Print Search Console overview
         env:
           GSC_CLIENT_EMAIL: ${{ secrets.GSC_CLIENT_EMAIL }}
