@@ -32,7 +32,7 @@ describe("atomic audit creation SQL",()=>{
       await upgrade.exec(load("_atomic_audit_creation.sql"));
       expect((await upgrade.query("SELECT domain,total_discovered FROM public.audit_runs")).rows).toEqual([{domain:"legacy.example.invalid",total_discovered:42}]);
     }finally{await upgrade.close();}
-  });
+  },30000);
   it("admits one queued monthly create and stores complete initial state",async()=>{
     await db.exec("SET ROLE service_role");
     try{

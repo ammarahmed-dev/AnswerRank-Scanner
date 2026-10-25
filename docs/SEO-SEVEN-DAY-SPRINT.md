@@ -51,3 +51,13 @@ Primary guidance:
 - https://developers.google.com/search/docs/fundamentals/seo-starter-guide
 - https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap
 - https://www.hubspot.com/ai-search-grader
+
+
+## Ongoing SEO, AEO and GEO priorities
+
+The owner confirmed on 25 October that organic search and AI-answer visibility are an ongoing parallel priority alongside the complete implementation audit, including after this sprint. Urgent security, paid-rights and data-integrity failures come first; growth must not wait until every audit item is closed. Assess both tracks and ship focused, justified batches rather than hourly title or cosmetic changes.
+
+- SEO: verify crawl/index eligibility, canonical/redirect targets, internal discovery links and page experience. Improve existing checker, SaaS and ChatGPT guides for demonstrated search intent, preserving original publication dates. Fresh query/page evidence remains required for performance attribution; unavailable analytics do not block independently verified technical/content fixes.
+- AEO: answer practical questions directly, maintain accurate entities and visible content that agrees with structured data, and document the scanner's methodology and limitations. Page readiness and crawler access do not establish inclusion in an AI answer.
+- GEO: create useful original evidence and clear source citations, and evaluate observed brand mentions/citations with repeatable prompts and recorded engine/model/date/context. Verify source destinations before treating them as confirmed citations. No fabricated results, paid links, doorway content or promises of AI placement.
+- Measurement: use available dated organic query/page clicks, impressions and CTR, observed AI-answer evidence, and actual scan/pricing conversion events. Keep missing data and lag explicit, protect private analytics, and distinguish a release from a measured gain. Continue the full audit and growth streams together.

@@ -1,3 +1,4 @@
+import { saveOnetimeReport, OnetimeReportSaveError } from "@/lib/onetime-report";
 import { BodyTooLargeError, readBoundedText } from "@/lib/bounded-body";
 import { NextRequest, NextResponse, after } from "next/server";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
@@ -323,18 +324,6 @@ type ScanEvent = ProgressEvent | ResultEvent | ErrorEvent;
 type ScanRequestBody = { url?: string; includeAI?: boolean; clientId?: string; competitorUrls?: string[] | string; retestOfReportId?: string };
 
 const supabaseUrl = getSupabaseServerUrl();
-
-async function patchOnetimeProfile(userId: string, fields: Record<string, unknown>) {
-  await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}`, {
-    method: "PATCH",
-    headers: {
-      ...getSupabaseServiceHeaders(),
-      "Content-Type": "application/json",
-      Prefer: "return=minimal",
-    },
-    body: JSON.stringify(fields),
-  }).catch((err) => console.error("[scan] onetime profile patch failed:", err));
-}
 
 async function scanCompetitor(rawUrl: string, parentSignal: AbortSignal): Promise<CompetitorScanResult> {
   parentSignal.throwIfAborted();
@@ -704,25 +693,17 @@ export async function POST(req: NextRequest) {
           limitedScan: scrapedData.source === "reader" || undefined,
         };
 
-        // Once persistence starts, finish saving and settling usage even if the viewer disconnects.
         signal.throwIfAborted();
-        // Update onetime profile after successful scan
-        if (effectivePlan === "onetime" && !isAdmin && isFullReport && userId) {
-          if ((authContext.onetimeUrl ?? null) === null) {
-            await patchOnetimeProfile(userId, { onetime_url: url, onetime_scan_count: 1 });
-          } else {
-            await patchOnetimeProfile(userId, {
-              onetime_scan_count: (authContext.onetimeScanCount ?? 0) + 1,
-            });
-          }
-        }
-
         // Retests: remember what the previous scan of this URL looked like (read-only, best effort).
         if (userId) {
           const previous = await getPreviousReportSummary(userId, result.url);
           if (previous) result.previous = previous;
         }
-        const savedResult = await saveReportRecord(result, userId);
+        // Once a write starts, finish saving and settling usage even if the viewer disconnects.
+        signal.throwIfAborted();
+        const savedResult = effectivePlan === "onetime" && !isAdmin && isFullReport && userId
+          ? await saveOnetimeReport(result,userId)
+          : await saveReportRecord(result, userId);
         if (!bypassScanLimit) {
           await commitUsage(usageKey, usage);
         }
@@ -737,7 +718,7 @@ export async function POST(req: NextRequest) {
         if (!signal.aborted) console.error("Stream error:", err);
         await releaseUnsettledUsage().catch(() => undefined);
         try {
-          emitError("An unexpected error occurred. Please try again.");
+          emitError(err instanceof OnetimeReportSaveError ? err.message : "An unexpected error occurred. Please try again.");
           closeStream();
         } catch {
           if (!streamClosed) controller.error(err);
