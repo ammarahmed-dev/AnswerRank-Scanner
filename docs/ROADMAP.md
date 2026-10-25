@@ -98,7 +98,7 @@ Based on the full code review from 2026-10-03.
 
 
 - [x] (2026-10-25, owner request) Research AEO/GEO service presentation using Brickell Digital and tool-plus-service references; document the existing CTA/contact flow and a scoped delivery plan in [SERVICES-PRESENTATION-PLAN.md](SERVICES-PRESENTATION-PLAN.md).
-- [ ] (A17/A15 priority) Deliver services plan S01-S03: one implementation page, scoped enquiry intake and existing shared/report CTA journey; then S04-S06 discovery, verified private attribution and qualification review. Preserve software pricing/rights and avoid promises of AI placement. Research complete does not mean service funnel live.
+- [~] (A17/A15 priority) Deliver services plan S01-S03: one implementation page, scoped enquiry intake and existing shared/report CTA journey; then S04-S06 discovery, verified private attribution and qualification review. Preserve software pricing/rights and avoid promises of AI placement. Initial page and CTA path are implemented; production valid-enquiry/readback and notification acceptance remain open.
 
 
 - Revenue plan (2026-10-12, owner request; rationale in docs/RESEARCH.md):

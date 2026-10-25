@@ -31,6 +31,7 @@ async function until(check, label) {
   throw new Error(`Timed out: ${label}`);
 }
 async function screenshot(name, fullPage = false) {
+  if (fullPage) await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: `${output}/${name}.png`, fullPage, animations: 'disabled' });
 }
 async function noOverflow() {
@@ -86,9 +87,9 @@ try {
     await route.fulfill({ status: succeed ? 200 : 503, contentType: 'application/json', body: JSON.stringify(succeed ? { success: true } : { error: 'Synthetic storage unavailable. Please retry.' }) });
   });
   await submit.click();
-  assert.equal(await submit.isDisabled(), true);
-  await page.getByRole('alert').waitFor();
-  assert.equal(await submit.isEnabled(), true);
+  await until(() => submit.isDisabled(), 'sending disabled state');
+  await page.getByText('Synthetic storage unavailable. Please retry.', { exact: true }).waitFor();
+  await until(() => submit.isEnabled(), 'retry enabled state');
   succeed = true;
   await submit.click();
   await page.locator('.contact-success').waitFor();

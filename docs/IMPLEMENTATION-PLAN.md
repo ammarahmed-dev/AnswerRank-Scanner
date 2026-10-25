@@ -26,7 +26,7 @@ Status: Done means shipped and verified; Partial means useful work shipped but a
 
 ## Growth priority approved 25 October
 
-A17 runs alongside the correctness audit: prioritize qualified non-branded discovery, beginning with the existing best-AEO-tools guide and its scanner conversion path, then SaaS and ChatGPT measurement intent. Follow the ordered acceptance steps in [the SEO sprint](SEO-SEVEN-DAY-SPRINT.md#owner-priority-non-branded-discovery-25-october). Keep branded performance separate, confirm targeted query/page evidence, and measure matching date windows. Fresh read-only GSC access is verified; targeted guide-level query/page retrieval is implemented in the Overview diagnostic, with actual output verification and post-release attribution still required. Urgent security, paid-rights and data-integrity failures retain precedence.
+A17 runs alongside the correctness audit: prioritize qualified non-branded discovery, beginning with the existing best-AEO-tools guide and its scanner conversion path, then SaaS and ChatGPT measurement intent. Follow the ordered acceptance steps in [the SEO sprint](SEO-SEVEN-DAY-SPRINT.md#owner-priority-non-branded-discovery-25-october). Keep branded performance separate, confirm targeted query/page evidence, and measure matching date windows. Fresh read-only GSC access is verified; targeted guide-level query/page retrieval is implemented in the Overview diagnostic, with actual output verified on 25 October; post-release attribution still requires a matching later window. Urgent security, paid-rights and data-integrity failures retain precedence.
 
 ## Implementation-services priority approved 25 October
 
