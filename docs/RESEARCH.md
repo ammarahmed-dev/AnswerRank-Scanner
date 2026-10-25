@@ -2,6 +2,14 @@
 
 Market and product research that feeds `docs/ROADMAP.md`. Newest first. Cite sources.
 
+## 2026-10-25 - Implementation services presentation
+
+Owner request: research how AEOCheck should show hands-on AEO/GEO services, using the Brickell Digital reference, then add the result to the plan. Findings and direct sources: [SERVICES-PRESENTATION-PLAN.md](SERVICES-PRESENTATION-PLAN.md).
+
+The publicly located [BD AI Visibility page](https://www.brickelldigital.com/ai-visibility) shows defined foundation/ongoing packages, process and measurement. [Screaming Frog](https://www.screamingfrog.co.uk/) separates tools from agency services; [HubSpot](https://www.hubspot.com/services/professional/technical-consulting/projects) separates project scoping/guidance from hands-on execution. These are presentation references, not conversion evidence. [Google](https://developers.google.com/search/docs/appearance/ai-features) does not require special schema or AI text files for its AI search features.
+
+Recommendation: one implementation service page, request-a-proposal scope options and an audit-to-fix-to-verification journey. Existing shared service CTAs and Optimization services contact intake already exist; improve that path instead of creating duplicate promotions. Keep readiness, observed AI answers, organic data and real enquiries separate. No prices, copied testimonials, guarantees or software entitlements change. Page/funnel delivery remains open under S01-S06.
+
 ## 2026-10-12 - Keyword strategy and revenue plan (owner: "scale to revenue, move to keywords with volume")
 
 Evidence limits: no keyword-volume tool is available (web search returned only vendor claims, no per-keyword volumes). Search Console is the only first-party demand data, so the plan below is built on it plus public competitor pricing (Otterly Lite about $29/month for 15 prompts, Peec AI about $85-100/month for 50 prompts, Profound listed from $99 to $499, Semrush AI toolkit $99 per user; all secondary sources, verify before quoting).

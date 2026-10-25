@@ -245,3 +245,9 @@ Remaining: verify deployed metadata and notification status, follow the dated sp
 - Owner steering: SEO, AEO and GEO are now ongoing parallel priorities in the existing continuation task and SEO sprint document, including after the seven-day sprint. Prioritize current guides/tools, technical discovery, accurate entities/schema, original credible evidence, repeatable AI-answer observations and actual conversion measurements. Preserve urgent correctness work and all private-metric/attribution limitations.
 
 - Owner priority update (25 October): qualified non-branded discovery is the first growth task alongside the audit, starting with the best-AEO-tools guide and its scanner conversion path. The SEO sprint records evidence, delivery and measurement acceptance steps; branded CTR remains a separate small-sample baseline.
+
+## Implementation-services research and plan (2026-10-25)
+
+- Completed source-backed presentation research and code inspection of the existing shared CTA and contact-subject/storage flow. Added SERVICES-PRESENTATION-PLAN.md with page structure, package concepts, CTA placement, intake/privacy/operations, measurement and staged acceptance criteria.
+- Prioritized A17/A15 implementation alongside the non-branded growth work. S01-S06 remain open: no dedicated service page, added CTA placements, analytics destination verification or live lead-delivery acceptance is claimed by this documentation release. No application, database, price or entitlement changes.
+- Validation: documentation links and whitespace checked; existing CI runs regression tests, type checking, lint and production build before merge. The full implementation audit remains unfinished.

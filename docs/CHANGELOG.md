@@ -1,3 +1,7 @@
+# 2026-10-25 - Research implementation-services presentation
+
+Added a sourced service-page and conversion-path plan based on Brickell Digital, Screaming Frog, HubSpot and Google guidance, plus inspection of existing AEOCheck CTAs/intake. Prioritized scoped service delivery under A17/A15 with S01-S06 acceptance steps. Research complete; service page/funnel still pending. Documentation only: no prices, software limits, database or public product behavior changes. Validation: documentation checks and CI regression/type/lint/build gate.
+
 # 2026-10-25 - Prioritize non-branded search acquisition
 
 - Prioritize the existing comparison guide and scanner conversion path alongside the implementation audit, followed by SaaS and ChatGPT measurement content.
