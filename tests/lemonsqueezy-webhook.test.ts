@@ -10,6 +10,7 @@ let POST: (req: Request) => Promise<Response>;
 let profile: Profile | null;
 let patches: Array<Record<string, unknown>>;
 let patchStatus: number;
+let processedEvents: Set<string>;
 
 beforeAll(async () => {
   process.env.SUPABASE_URL = "https://db.test";
@@ -25,15 +26,19 @@ beforeEach(() => {
   profile = { plan: "free", plan_expires_at: null, lemonsqueezy_subscription_id: null };
   patches = [];
   patchStatus = 204;
+  processedEvents = new Set();
   vi.spyOn(console, "info").mockImplementation(() => undefined);
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
   vi.spyOn(console, "error").mockImplementation(() => undefined);
-  vi.stubGlobal("fetch", async (_url: string, init?: RequestInit) => {
-    if (init?.method === "PATCH") {
-      const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+  vi.stubGlobal("fetch", async (url: string, init?: RequestInit) => {
+    if (url.includes("/rpc/apply_billing_event")) {
+      const args = JSON.parse(String(init?.body));
+      if (processedEvents.has(args.p_event_id)) return Response.json(false);
+      const body = args.p_patch as Record<string, unknown>;
       patches.push(body);
       if (patchStatus < 300 && profile) profile = { ...profile, ...body } as Profile;
-      return new Response(patchStatus < 300 ? JSON.stringify(profile ? [profile] : []) : "db down", { status: patchStatus < 300 ? 200 : patchStatus });
+      if (patchStatus < 300 && profile) { processedEvents.add(args.p_event_id); return Response.json(true); }
+      return new Response("db down", { status: 503 });
     }
     return new Response(JSON.stringify(profile ? [profile] : []), { status: 200 });
   });
@@ -56,6 +61,40 @@ const sub = (id: string, variant: string, status: string, extra: Record<string, 
 });
 
 describe("lemonsqueezy webhook", () => {
+  it("does not apply an exact replay after a later profile change", async () => {
+    const data = sub("s1", "200", "active");
+    expect((await send("subscription_created", data)).status).toBe(200);
+    profile = { plan: "agency", plan_expires_at: null, lemonsqueezy_subscription_id: "s1" };
+    const count = patches.length;
+    expect((await send("subscription_created", data)).status).toBe(200);
+    expect(patches.length).toBe(count);
+    expect(profile.plan).toBe("agency");
+  });
+  it("keeps a failed mutation retryable without a processed receipt", async () => {
+    patchStatus = 503;
+    const data = sub("s1", "200", "active");
+    expect((await send("subscription_created", data)).status).toBe(500);
+    expect(processedEvents.size).toBe(0);
+    patchStatus = 204;
+    expect((await send("subscription_created", data)).status).toBe(200);
+    expect(processedEvents.size).toBe(1);
+  });
+  it("rejects oversized streamed bodies before any persistence", async () => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const cancel = vi.fn();
+    const stream = new ReadableStream({ start(c) { c.enqueue(new Uint8Array(270_000)); }, cancel });
+    const req = new Request("https://aeocheck.co/api/test", { method: "POST", body: stream, duplex: "half" } as RequestInit);
+    expect((await POST(req)).status).toBe(413);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+  it("rejects a signed null root and noncanonical signatures", async () => {
+    const raw = "null";
+    const signature = createHmac("sha256", SECRET).update(raw).digest("hex");
+    expect((await POST(new Request("https://aeocheck.co/api/test", { method: "POST", body: raw, headers: { "x-signature": signature } }))).status).toBe(400);
+    expect((await send("subscription_created", sub("s1", "200", "active"), signature + "ZZ")).status).toBe(400);
+    expect(patches).toHaveLength(0);
+  });
   it("returns a retryable failure when no profile was updated", async () => {
     profile = null;
     expect((await send("subscription_created", sub("s1", "200", "active"))).status).toBe(500);
