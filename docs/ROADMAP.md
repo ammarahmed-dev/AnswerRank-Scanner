@@ -24,6 +24,8 @@ Based on the full code review from 2026-10-03.
 
 - [x] (2026-10-25, audit A11) Propagate cancellation through manual monitor scans and stop disconnected audit scans before progress writes; bound ownership reads and retain already dispatched write outcomes. Durable jobs and signed-in acceptance remain open.
 
+- [x] (2026-10-25, audit A07) Append audit page results and recalculate progress/aggregate/completion in a service-only transaction against current locked state; reject save-time duplicates and foreign targets. Durable jobs, leases and recovery remain open.
+
 ## Phase 2 - Foundations for safe automation
 
 - [x] CI workflow: typecheck + build on every push and PR (`.github/workflows/ci.yml`)
