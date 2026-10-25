@@ -24,6 +24,10 @@ Status: Done means shipped and verified; Partial means useful work shipped but a
 | A16 Privacy and lifecycle | Blocked in part on product/data decisions and schema | Public report access remains redacted for nonowners | Verify actual providers and data paths; update factual provider disclosures; export/deletion/retention implementation and tests; share-link/owner policy; legal review where needed |
 | A17 Growth and business validation | Open | Existing tools, resource pages and GSC reports; seven-day SEO sprint and owner-export baseline added; comparison-guide and discovery fixes prepared | Verify current GSC query/page data; improve existing intent-matched pages; publish documented methodology and credible case studies; instrument conversion; validate audit-fix-verify-monitor proposition with users; no invented traffic, revenue or passive-income promises |
 
+## Growth priority approved 25 October
+
+A17 runs alongside the correctness audit: prioritize qualified non-branded discovery, beginning with the existing best-AEO-tools guide and its scanner conversion path, then SaaS and ChatGPT measurement intent. Follow the ordered acceptance steps in [the SEO sprint](SEO-SEVEN-DAY-SPRINT.md#owner-priority-non-branded-discovery-25-october). Keep branded performance separate, confirm targeted query/page evidence, and measure matching date windows. Fresh read-only GSC access is verified; targeted guide-level query/page extraction remains open. Urgent security, paid-rights and data-integrity failures retain precedence.
+
 ## Execution order and release gates
 
 1. Complete available security and correctness work first. Reconcile the database before shipping transactions that depend on unverified tables or functions. A migration file alone does not establish production safety.
