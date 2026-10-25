@@ -1,3 +1,7 @@
+# 2026-10-25 - Stop disconnected manual monitor and audit-page scans
+
+Manual monitor scans now propagate cancellation and enforce a total scan deadline. Audit disconnects stop before result/progress writes, while active-caller timeouts keep existing error reporting. Owner reads are bounded through body consumption; database error payloads are excluded from audit logs. Already dispatched writes settle independently, with ambiguous failures retained as failures. Validation: 497 tests, type checking, lint (0 errors, 18 existing warnings), production build and local access-control smoke checks. Durable jobs, concurrent audit updates and signed-in production acceptance remain open.
+
 # 2026-10-25 - Commit billing mutations and replay receipts together
 
 Whitelisted billing profile updates now commit in one transaction with exact-body processed receipts. Duplicate deliveries cannot overwrite a later profile state, and conflicting reads or failed/suppressed writes stay retryable. Existing plan/refund decisions are preserved. Webhook bodies are bounded to 256 KiB with stricter signature/root validation. The additive service-only invoker function is applied and checked without production customer mutations. Validation: 479 tests, type checking, lint (0 errors, 18 existing warnings), clean build and local production rejection checks. Distinct-event ordering, durable inbox/recovery, repurchase grants and live payment sandbox acceptance remain unfinished.
