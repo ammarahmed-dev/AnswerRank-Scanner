@@ -77,3 +77,11 @@ Release this work in focused batches while urgent security, paid-rights and data
 ## Implementation service conversion path
 
 The owner requested researched presentation and planning for hands-on AEO/GEO implementation. See [SERVICES-PRESENTATION-PLAN.md](SERVICES-PRESENTATION-PLAN.md). Reuse current blog/tool service CTAs, provide one dedicated service page and preserve scanner-first discovery. Measure saved, qualified enquiries separately from software purchases and organic rankings. Research does not establish service demand or conversion gains. Build the scoped page/intake/report path before broader promotional placement; keep all audit and non-branded measurement priorities.
+
+## Long-query workflow applied (25 October)
+
+The owner's uploaded three-month export was reviewed privately using a four-or-more whitespace-separated word screen, then filtered for relevant intent, meaningful impressions and plausible existing-page opportunities. Word count is a discovery aid, not a ranking factor. Exclude unrelated brands, malformed/prefixed queries and tiny-sample outliers from immediate priorities; retain original raw strings privately rather than silently merging their metrics.
+
+The first content batch improves the existing SaaS guide's direct product-discovery answers and repeatable measurement steps, while correcting unsupported technical/visibility claims. Preserve its original publication date and title, record the actual update date and link to relevant existing tools/guides. This is an intent-based candidate selection: the export has separate query/page tables, so it does not prove which URL earned a query or establish current post-release results. No private metrics or raw query export is committed.
+
+Next: obtain targeted joint query/page evidence for shortlisted intents using the authorized read-only GSC connection; compare matching dates and filters before attributing any change. The current 40-row overview is insufficient to establish all long-query/page matches. Keep best-checker commercial intent prioritized alongside this SaaS follow-through, without duplicate pages or daily title churn.

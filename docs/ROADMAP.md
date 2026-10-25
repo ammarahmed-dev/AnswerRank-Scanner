@@ -93,6 +93,10 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)
 
+- [x] (2026-10-25, owner request) Apply long-query discovery to the private GSC export and improve the existing SaaS guide for relevant product-discovery and measurement intent; preserve original dates/title and distinguish intent candidates from verified query/page mappings.
+- [ ] Retrieve targeted joint query/page evidence for shortlisted long-query intents; assess matching-window organic performance after data catches up, keeping raw metrics private and avoiding word-count-only prioritization.
+
+
 - [x] (2026-10-25, owner request) Research AEO/GEO service presentation using Brickell Digital and tool-plus-service references; document the existing CTA/contact flow and a scoped delivery plan in [SERVICES-PRESENTATION-PLAN.md](SERVICES-PRESENTATION-PLAN.md).
 - [ ] (A17/A15 priority) Deliver services plan S01-S03: one implementation page, scoped enquiry intake and existing shared/report CTA journey; then S04-S06 discovery, verified private attribution and qualification review. Preserve software pricing/rights and avoid promises of AI placement. Research complete does not mean service funnel live.
 
@@ -193,3 +197,5 @@ Based on the full code review from 2026-10-03.
 - Export the production schema so Claude can write the base migration and use `webhook_events`:
   `npx supabase db dump --schema-only > supabase/schema.sql` (or Supabase dashboard > Database > Schema), then commit it
 - In Lemon Squeezy, make sure the webhook subscribes to: `order_created`, `order_refunded`, `subscription_created`, `subscription_updated`, `subscription_cancelled`, `subscription_resumed`, `subscription_expired`, `subscription_payment_failed`
+
+- [ ] Content-map consistency: reconcile the legacy best-tools pillar with the canonical comparison guide so the site-wide content-link checker does not demand a link that redirects back to the same page. Preserve existing URLs and verify generator slots before changing the map.

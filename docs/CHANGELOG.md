@@ -1,3 +1,7 @@
+# 2026-10-25 - Apply long-query discovery to the SaaS guide
+
+Refreshed the existing SaaS guide with direct buyer-question answers, page selection, actionable checks and a repeatable measurement workflow. Corrected crawler-purpose and readiness-versus-observed-visibility claims using primary sources. Preserved the June publication date and existing title; recorded the actual update date. Private export analysis informed intent selection but does not establish joint query/page attribution or post-release gains. No private metrics, new pages, prices or entitlement changes. Validation uses existing regression/link checks, type checking, lint, production build and CI; live verification follows merge.
+
 # 2026-10-25 - Research implementation-services presentation
 
 Added a sourced service-page and conversion-path plan based on Brickell Digital, Screaming Frog, HubSpot and Google guidance, plus inspection of existing AEOCheck CTAs/intake. Prioritized scoped service delivery under A17/A15 with S01-S06 acceptance steps. Research complete; service page/funnel still pending. Documentation only: no prices, software limits, database or public product behavior changes. Validation: documentation checks and CI regression/type/lint/build gate.
