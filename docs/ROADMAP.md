@@ -22,6 +22,8 @@ Based on the full code review from 2026-10-03.
 - [x] Upgrade `next` to the patched 16.x release and apply non-breaking `npm audit fix`
 - [x] Remaining high advisories: replaced `@vercel/og` with built-in `next/og`, dropped `@tabler/icons-webfont` (dashboard icons now Lucide); `npm audit` reports 0 vulnerabilities
 
+- [x] (2026-10-25, audit A11) Propagate cancellation through manual monitor scans and stop disconnected audit scans before progress writes; bound ownership reads and retain already dispatched write outcomes. Durable jobs and signed-in acceptance remain open.
+
 ## Phase 2 - Foundations for safe automation
 
 - [x] CI workflow: typecheck + build on every push and PR (`.github/workflows/ci.yml`)

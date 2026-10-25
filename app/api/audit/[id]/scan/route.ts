@@ -1,3 +1,4 @@
+import { loadScanRows } from "@/lib/scan-resource";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import type { ScoringMethodology } from "@/types/index";
 import { NextResponse } from "next/server";
@@ -44,6 +45,7 @@ export type AuditPageResult = {
 };
 
 export async function POST(req: Request, ctx: RouteContext) {
+  let persistenceStarted = false;
   try {
     const auth = await getAuthContext(req);
     if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -61,20 +63,20 @@ export async function POST(req: Request, ctx: RouteContext) {
     const pageUrl = typeof body?.url === "string" ? body.url.trim() : "";
     if (!pageUrl) return NextResponse.json({ error: "url is required." }, { status: 400 });
 
-    const auditRes = await fetch(
-      `${supabaseUrl}/rest/v1/audit_runs?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(auth.user.id)}&select=id,status,scanned_pages,total_pages,results,urls`,
-      { headers: getSupabaseServiceHeaders(), cache: "no-store" }
-    );
-
-    if (!auditRes.ok) return NextResponse.json({ error: "Failed to load audit." }, { status: 500 });
-    const auditRows = (await auditRes.json()) as Array<{
-      id: string;
-      status: string;
-      scanned_pages: number;
-      total_pages: number;
-      results: AuditPageResult[];
-      urls: string[];
+    req.signal.throwIfAborted();
+    let auditRows: Array<{
+      id: string; status: string; scanned_pages: number; total_pages: number;
+      results: AuditPageResult[]; urls: string[];
     }>;
+    try {
+      auditRows = await loadScanRows(
+        `${supabaseUrl}/rest/v1/audit_runs?id=eq.${encodeURIComponent(id)}&user_id=eq.${encodeURIComponent(auth.user.id)}&select=id,status,scanned_pages,total_pages,results,urls`,
+        2_500_000, req.signal
+      ) as typeof auditRows;
+    } catch {
+      return NextResponse.json({ error: req.signal.aborted ? "Request cancelled." : "Failed to load audit." }, { status: req.signal.aborted ? 499 : 503 });
+    }
+    req.signal.throwIfAborted();
     if (!auditRows.length) return NextResponse.json({ error: "Audit not found." }, { status: 404 });
 
     const audit = auditRows[0];
@@ -99,6 +101,7 @@ export async function POST(req: Request, ctx: RouteContext) {
         timeout = setTimeout(() => { scanController.abort(); reject(new Error("timeout")); }, SCAN_TIMEOUT_MS)
       );
       const result = await Promise.race([scanPromise, timeoutPromise]);
+      req.signal.throwIfAborted();
 
       const normalizedIssues = getNormalizedIssues(result.checks, result.pagespeed)
         .sort((a, b) => b.weight - a.weight);
@@ -124,7 +127,8 @@ export async function POST(req: Request, ctx: RouteContext) {
         topIssue: topIssues[0]?.label ?? null,
       };
     } catch (err) {
-      const isTimeout = err instanceof Error && err.message === "timeout";
+      if (req.signal.aborted) return NextResponse.json({ error: "Request cancelled." }, { status: 499 });
+      const isTimeout = scanController.signal.aborted || (err instanceof Error && err.message === "timeout");
       pageResult = {
         url: pageUrl,
         score: 0,
@@ -138,9 +142,11 @@ export async function POST(req: Request, ctx: RouteContext) {
         topIssue: null,
         error: isTimeout ? "Page scan timed out." : "Scan failed.",
       };
+    } finally {
+      clearTimeout(timeout);
     }
 
-    clearTimeout(timeout);
+    req.signal.throwIfAborted();
 
     const existingResults: AuditPageResult[] = Array.isArray(audit.results) ? audit.results : [];
     const updatedResults = [...existingResults, pageResult];
@@ -153,8 +159,12 @@ export async function POST(req: Request, ctx: RouteContext) {
         ? Math.round(successfulScores.reduce((a, b) => a + b, 0) / successfulScores.length)
         : null;
 
+    // Finish a dispatched write even if the caller disconnects; its outcome may be committed.
+    req.signal.throwIfAborted();
+    persistenceStarted = true;
     const patchRes = await fetch(`${supabaseUrl}/rest/v1/audit_runs?id=eq.${encodeURIComponent(id)}`, {
       method: "PATCH",
+      signal: AbortSignal.timeout(10_000),
       headers: { ...getSupabaseServiceHeaders(), Prefer: "return=minimal" },
       body: JSON.stringify({
         results: updatedResults,
@@ -166,11 +176,12 @@ export async function POST(req: Request, ctx: RouteContext) {
     });
 
     if (!patchRes.ok) {
-      const detail = await patchRes.text().catch(() => "");
-      console.error("[audit scan] patch failed:", detail);
+      await patchRes.body?.cancel().catch(() => undefined);
+      console.error("[audit scan] patch failed:", patchRes.status);
       return NextResponse.json({ error: "Failed to save scan result." }, { status: 500 });
     }
 
+    await patchRes.body?.cancel().catch(() => undefined);
     return NextResponse.json({
       pageResult,
       scannedPages: newScannedPages,
@@ -179,7 +190,8 @@ export async function POST(req: Request, ctx: RouteContext) {
       complete: isComplete,
     });
   } catch (err) {
-    console.error("[audit scan] Unhandled error:", err);
+    if (req.signal.aborted && !persistenceStarted) return NextResponse.json({ error: "Request cancelled." }, { status: 499 });
+    console.error("[audit scan] Unhandled error:", err instanceof Error ? err.name : "Unknown error");
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }
 }
