@@ -1,3 +1,7 @@
+# 2026-10-26 - Reconcile the canonical comparison-guide hub
+
+Consolidated the tools pillar on the published comparison guide and removed the obsolete planned hub generation slot. Preserved the legacy permanent redirect and all publication dates/titles. Updated two published spoke links to the canonical URL and linked both live tools spokes from the hub. The site-wide content-link check now runs in CI; regression checks reject a missing required hub link. No ranking or conversion gains claimed. Full audit, service enquiry delivery and analytics acceptance remain open.
+
 # 2026-10-25 - Repair mobile navigation and publish scoped service pricing
 
 Public navigation no longer disappears with missing auth configuration. Aligned mobile/desktop breakpoints, added keyboard/Escape/outside dismissal and viewport scrolling, and removed closed links from keyboard navigation. Added implementation-services discovery in shared navigation/footer and one CTA each on home and software pricing. Published owner-requested USD starting rates: $499 fixes sprint, $999 key-page improvements and $499/month ongoing, with explicit allowances, exclusions and proposal confirmation. No software price/entitlement, checkout, auth-method or database change. Regression/type/lint/build and isolated browser checks gate release; inspect desktop/mobile screenshots before merging. Real production enquiry/email delivery and analytics attribution remain unverified.

@@ -27,6 +27,8 @@ jobs:
         run: npx tsc --noEmit
       - name: Lint
         run: npm run lint
+      - name: Content links
+        run: node scripts/link-lint.mjs
       - name: Unit tests
         run: npm test
       - name: Build

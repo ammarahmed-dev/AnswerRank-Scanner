@@ -51,7 +51,7 @@
     },
     {
       "id": "tools",
-      "hubSlug": "best-aeo-tools",
+      "hubSlug": "best-aeo-tools-ai-search-visibility",
       "name": "Tools & Comparisons"
     }
   ],
@@ -1057,27 +1057,6 @@
       ]
     },
     {
-      "slug": "best-aeo-tools",
-      "title": "Best AEO Tools in 2026 (Honest Comparison)",
-      "pillar": "tools",
-      "role": "hub",
-      "tier": 1,
-      "status": "planned",
-      "targetQueries": [
-        "best aeo tools",
-        "aeo tools 2026",
-        "ai search visibility tools",
-        "geo tools"
-      ],
-      "schemaTypes": [
-        "Article",
-        "FAQPage",
-        "BreadcrumbList",
-        "ItemList"
-      ],
-      "refreshCadence": "quarterly"
-    },
-    {
       "slug": "free-aeo-tools",
       "title": "9 Free AEO Tools That Actually Work",
       "pillar": "tools",
@@ -1170,9 +1149,9 @@
     },
     {
       "slug": "best-aeo-tools-ai-search-visibility",
-      "title": "Best AEO Tools for AI Search Visibility in 2025 (Free + Paid)",
+      "title": "Best AEO Checker: Free Audits vs AI Visibility Tools (2026)",
       "pillar": "tools",
-      "role": "spoke",
+      "role": "hub",
       "tier": 1,
       "status": "published",
       "targetQueries": [
@@ -1185,8 +1164,9 @@
         "FAQPage",
         "ItemList"
       ],
-      "notes": "EXISTING POST",
-      "publishedAt": "2026-05-21"
+      "notes": "Published canonical tools hub. Legacy /blog/best-aeo-tools permanently redirects here; do not generate a competing legacy hub.",
+      "publishedAt": "2026-05-21",
+      "refreshCadence": "quarterly"
     },
     {
       "slug": "chatgpt-product-recommendations",
