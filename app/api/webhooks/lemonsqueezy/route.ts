@@ -1,5 +1,7 @@
+import { BodyTooLargeError, readBoundedText } from "@/lib/bounded-body";
+import { applyBillingEvent } from "@/lib/billing-persistence";
 import { NextResponse } from "next/server";
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHash, createHmac, timingSafeEqual } from "crypto";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
@@ -31,7 +33,7 @@ function variantToPlan(variantId: string): PaidPlan | null {
 
 function verifySignature(rawBody: string, signature: string): boolean {
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
-  if (!secret || !signature) return false;
+  if (!secret || !/^[a-f0-9]{64}$/i.test(signature)) return false;
   try {
     const digestBuf = Buffer.from(createHmac("sha256", secret).update(rawBody, "utf8").digest("hex"), "hex");
     const sigBuf = Buffer.from(signature, "hex");
@@ -43,12 +45,13 @@ function verifySignature(rawBody: string, signature: string): boolean {
 }
 
 async function fetchProfile(userId: string): Promise<Profile | null> {
+  const signal = AbortSignal.timeout(10_000);
   const res = await fetch(
     `${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=plan,plan_expires_at,lemonsqueezy_subscription_id`,
-    { headers: getSupabaseServiceHeaders(), cache: "no-store" }
+    { headers: getSupabaseServiceHeaders(), cache: "no-store", signal }
   );
-  if (!res.ok) throw new Error(`profile fetch failed: ${res.status}`);
-  const rows = (await res.json()) as Array<Partial<Profile>>;
+  if (!res.ok) { await res.body?.cancel().catch(() => undefined); throw new Error("Billing profile read failed."); }
+  const rows = JSON.parse(await readBoundedText(res, 16_384, signal)) as Array<Partial<Profile>>;
   const row = rows[0];
   if (!row) return null;
   return {
@@ -58,27 +61,13 @@ async function fetchProfile(userId: string): Promise<Profile | null> {
   };
 }
 
-async function patchProfile(userId: string, fields: Record<string, unknown>) {
-  const res = await fetch(`${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}`, {
-    method: "PATCH",
-    headers: {
-      ...getSupabaseServiceHeaders(),
-      "Content-Type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(fields),
-  });
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`profile patch failed: ${res.status} ${body.slice(0, 200)}`);
-  }
-  const updated = await res.json() as unknown;
-  if (!Array.isArray(updated) || updated.length !== 1) {
-    throw new Error("profile patch did not update exactly one profile");
-  }
+async function patchProfile(userId: string, fields: Record<string, unknown>, eventId: string, expected: Profile | null) {
+  if (!expected) throw new Error("Billing profile is missing.");
+  const applied = await applyBillingEvent({ eventId, userId, expected, patch: fields });
+  console.info(applied ? "[ls-webhook] mutation committed" : "[ls-webhook] exact replay ignored");
 }
 
-async function handleOrderCreated(userId: string, attrs: Record<string, unknown>) {
+async function handleOrderCreated(userId: string, attrs: Record<string, unknown>, eventId: string) {
   const firstItem = (attrs.first_order_item ?? {}) as Record<string, unknown>;
   const plan = variantToPlan(String(firstItem.variant_id ?? ""));
   if (plan !== "onetime") return; // subscription orders are handled by subscription_* events
@@ -90,11 +79,10 @@ async function handleOrderCreated(userId: string, attrs: Record<string, unknown>
     console.info(`[ls-webhook] order_created skipped: user ${userId} already on ${currentPlan}`);
     return;
   }
-  await patchProfile(userId, { plan: "onetime", plan_expires_at: null });
-  console.info("[ls-webhook] order_created -> plan=onetime user:", userId);
+  await patchProfile(userId, { plan: "onetime", plan_expires_at: null }, eventId, profile);
 }
 
-async function handleOrderRefunded(userId: string, attrs: Record<string, unknown>) {
+async function handleOrderRefunded(userId: string, attrs: Record<string, unknown>, eventId: string) {
   const firstItem = (attrs.first_order_item ?? {}) as Record<string, unknown>;
   const plan = variantToPlan(String(firstItem.variant_id ?? ""));
   if (plan !== "onetime") return; // subscription refunds arrive as subscription status changes
@@ -106,15 +94,15 @@ async function handleOrderRefunded(userId: string, attrs: Record<string, unknown
 
   const profile = await fetchProfile(userId);
   if (profile?.plan !== "onetime") return;
-  await patchProfile(userId, { plan: "free", plan_expires_at: null });
-  console.info("[ls-webhook] order_refunded -> plan=free user:", userId);
+  await patchProfile(userId, { plan: "free", plan_expires_at: null }, eventId, profile);
 }
 
 async function handleSubscriptionEvent(
   eventName: string,
   userId: string,
   subscriptionId: string | null,
-  attrs: Record<string, unknown>
+  attrs: Record<string, unknown>,
+  eventId: string
 ) {
   const plan = variantToPlan(String(attrs.variant_id ?? ""));
   if (plan !== "pro" && plan !== "agency") {
@@ -151,8 +139,7 @@ async function handleSubscriptionEvent(
       lemonsqueezy_subscription_id: subscriptionId,
       lemonsqueezy_portal_url: portalUrl,
       plan_expires_at: null,
-    });
-    console.info(`[ls-webhook] ${eventName} status=${status} -> plan=${plan} user:`, userId);
+    }, eventId, profile);
     return;
   }
 
@@ -167,14 +154,12 @@ async function handleSubscriptionEvent(
       plan,
       lemonsqueezy_portal_url: portalUrl,
       plan_expires_at: endsAt ?? new Date().toISOString(),
-    });
-    console.info(`[ls-webhook] ${eventName} status=cancelled ends_at=${endsAt} user:`, userId);
+    }, eventId, profile);
     return;
   }
 
   if (INACTIVE_STATUSES.has(status)) {
-    await patchProfile(userId, { plan: "free", plan_expires_at: null });
-    console.info(`[ls-webhook] ${eventName} status=${status} -> plan=free user:`, userId);
+    await patchProfile(userId, { plan: "free", plan_expires_at: null }, eventId, profile);
     return;
   }
 
@@ -182,7 +167,11 @@ async function handleSubscriptionEvent(
 }
 
 export async function POST(req: Request) {
-  const rawBody = await req.text();
+  let rawBody: string;
+  try { rawBody = await readBoundedText(req, 262_144, req.signal); }
+  catch (error) {
+    return NextResponse.json({ error: error instanceof BodyTooLargeError ? "Webhook body is too large." : "Invalid webhook body." }, { status: error instanceof BodyTooLargeError ? 413 : 400 });
+  }
   const signature = req.headers.get("x-signature") ?? "";
 
   if (!verifySignature(rawBody, signature)) {
@@ -196,6 +185,7 @@ export async function POST(req: Request) {
   };
   try {
     event = JSON.parse(rawBody) as typeof event;
+    if (!event || typeof event !== "object" || Array.isArray(event)) throw new Error("Expected an object");
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
@@ -210,13 +200,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  const eventId = createHash("sha256").update(rawBody, "utf8").digest("hex");
   try {
     switch (eventName) {
       case "order_created":
-        await handleOrderCreated(userId, attrs);
+        await handleOrderCreated(userId, attrs, eventId);
         break;
       case "order_refunded":
-        await handleOrderRefunded(userId, attrs);
+        await handleOrderRefunded(userId, attrs, eventId);
         break;
       case "subscription_created":
       case "subscription_updated":
@@ -225,7 +216,7 @@ export async function POST(req: Request) {
       case "subscription_expired":
       case "subscription_paused":
       case "subscription_unpaused":
-        await handleSubscriptionEvent(eventName, userId, dataId, attrs);
+        await handleSubscriptionEvent(eventName, userId, dataId, attrs, eventId);
         break;
       default:
         // subscription_payment_* events carry invoices; the status change arrives as subscription_updated.

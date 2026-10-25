@@ -1,3 +1,7 @@
+# 2026-10-25 - Commit billing mutations and replay receipts together
+
+Whitelisted billing profile updates now commit in one transaction with exact-body processed receipts. Duplicate deliveries cannot overwrite a later profile state, and conflicting reads or failed/suppressed writes stay retryable. Existing plan/refund decisions are preserved. Webhook bodies are bounded to 256 KiB with stricter signature/root validation. The additive service-only invoker function is applied and checked without production customer mutations. Validation: 479 tests, type checking, lint (0 errors, 18 existing warnings), clean build and local production rejection checks. Distinct-event ordering, durable inbox/recovery, repurchase grants and live payment sandbox acceptance remain unfinished.
+
 # 2026-10-25 - Commit monitor snapshots and schedules atomically
 
 Manual and scheduled scans now persist their snapshot and last-scanned timestamp in one database transaction. Failed or silently suppressed writes roll back; manual saves return 503 and cron skips email after persistence failure. The shared client bounds RPC responses and validates the saved observation without a split-write fallback. The additive service-only invoker function is applied and verified in production. Validation: 457 tests, type checking, lint (0 errors, 18 existing warnings), production build and local smoke checks. Leases, idempotent recovery and durable email delivery remain open; no actual email or customer-row change was used for verification.

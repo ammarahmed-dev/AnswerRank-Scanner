@@ -51,7 +51,7 @@ Based on the full code review from 2026-10-03.
 - [x] Reader fallback: fixed (it always failed: `X-Respond-With: no-content` made Jina return 400); HTML-only checks are "Not verified" (warn) on fallback scans, readability computed, CAPTCHA walls reported as blocked, report shows a limited-scan notice
 - [x] Unify `isMasterAdmin`: admin only from MASTER_ADMIN_EMAILS via `/api/account` `isAdmin`; Agency customers no longer see the Admin tab / Master Admin badge
 - [x] `getAuthContext`: profile is created only when missing (was a write on every authenticated request)
-- [ ] UNBLOCKED (2026-10-12, schema readable via Supabase token; production `webhook_events` has `event_id`, `processed_at`): persist webhook events in `webhook_events` for idempotency and audit. The table exists in production but no migration defines its columns
+- [~] (2026-10-25, audit A02) Exact-body mutation receipts now commit atomically with whitelisted profile patches and optimistic state checks. Missing/failed writes stay retryable. Distinct-event ordering, failed/ignored inbox, authoritative recovery and live sandbox remain open; PR #9's fail-open implementation is superseded.
 - [ ] BLOCKED (needs production schema): base-schema migration that recreates `profiles`, `webhook_events`, `app_stats` from scratch; retire `supabase-schema.sql`
 - [x] Fix stale copy: welcome email scan count from config, removed fake "87/100" stat (UA domain and APP_URL fixed earlier)
 - [x] `UpgradeButton`: show checkout errors to the user; `/upgrade/success` now redirects to `/dashboard?upgraded=1`
