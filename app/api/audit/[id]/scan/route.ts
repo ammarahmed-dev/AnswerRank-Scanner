@@ -1,9 +1,10 @@
+import { AuditSaveConflict, saveAuditPageResult } from "@/lib/audit-persistence";
 import { loadScanRows } from "@/lib/scan-resource";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import type { ScoringMethodology } from "@/types/index";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
-import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
+import { getSupabaseServerUrl, hasSupabaseConfig } from "@/lib/supabase-config";
 import { runScanCore } from "@/lib/scan-core";
 import { getNormalizedIssues } from "@/lib/report-issues";
 
@@ -148,47 +149,16 @@ export async function POST(req: Request, ctx: RouteContext) {
 
     req.signal.throwIfAborted();
 
-    const existingResults: AuditPageResult[] = Array.isArray(audit.results) ? audit.results : [];
-    const updatedResults = [...existingResults, pageResult];
-    const newScannedPages = audit.scanned_pages + 1;
-    const isComplete = newScannedPages >= audit.total_pages;
-
-    const successfulScores = updatedResults.filter((r) => !r.error && Number.isFinite(r.score)).map((r) => r.score);
-    const aggregateScore =
-      successfulScores.length > 0
-        ? Math.round(successfulScores.reduce((a, b) => a + b, 0) / successfulScores.length)
-        : null;
-
-    // Finish a dispatched write even if the caller disconnects; its outcome may be committed.
+    // Let a dispatched transaction settle independently of caller cancellation.
     req.signal.throwIfAborted();
     persistenceStarted = true;
-    const patchRes = await fetch(`${supabaseUrl}/rest/v1/audit_runs?id=eq.${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      signal: AbortSignal.timeout(10_000),
-      headers: { ...getSupabaseServiceHeaders(), Prefer: "return=minimal" },
-      body: JSON.stringify({
-        results: updatedResults,
-        scanned_pages: newScannedPages,
-        aggregate_score: aggregateScore,
-        status: isComplete ? "completed" : "running",
-        completed_at: isComplete ? new Date().toISOString() : null,
-      }),
-    });
-
-    if (!patchRes.ok) {
-      await patchRes.body?.cancel().catch(() => undefined);
-      console.error("[audit scan] patch failed:", patchRes.status);
-      return NextResponse.json({ error: "Failed to save scan result." }, { status: 500 });
+    try {
+      const progress = await saveAuditPageResult(id, auth.user.id, pageResult);
+      return NextResponse.json({ pageResult, ...progress });
+    } catch (error) {
+      if (error instanceof AuditSaveConflict) return NextResponse.json({ error: error.message }, { status: error.status });
+      return NextResponse.json({ error: "Failed to save scan result. Reload the audit before retrying." }, { status: 503 });
     }
-
-    await patchRes.body?.cancel().catch(() => undefined);
-    return NextResponse.json({
-      pageResult,
-      scannedPages: newScannedPages,
-      totalPages: audit.total_pages,
-      aggregateScore,
-      complete: isComplete,
-    });
   } catch (err) {
     if (req.signal.aborted && !persistenceStarted) return NextResponse.json({ error: "Request cancelled." }, { status: 499 });
     console.error("[audit scan] Unhandled error:", err instanceof Error ? err.name : "Unknown error");

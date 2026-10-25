@@ -1,3 +1,7 @@
+# 2026-10-25 - Commit audit page results and progress atomically
+
+Audit-page saves now lock the owned audit and append to current results, preventing stale requests from overwriting another page's saved result. Target, duplicate and finished-state checks run again inside the transaction. Progress, aggregate and completion commit together; zero scores count and failed-page-only averages remain unavailable. RPC failures have no legacy replacement-write fallback. The additive migration is applied and verified without customer-audit writes. Validation: 538 tests, type checking, lint (0 errors, 18 existing warnings), production build and local access-control checks. Durable jobs, leases, recovery and signed-in/multi-connection acceptance remain open.
+
 # 2026-10-25 - Stop disconnected manual monitor and audit-page scans
 
 Manual monitor scans now propagate cancellation and enforce a total scan deadline. Audit disconnects stop before result/progress writes, while active-caller timeouts keep existing error reporting. Owner reads are bounded through body consumption; database error payloads are excluded from audit logs. Already dispatched writes settle independently, with ambiguous failures retained as failures. Validation: 497 tests, type checking, lint (0 errors, 18 existing warnings), production build and local access-control smoke checks. Durable jobs, concurrent audit updates and signed-in production acceptance remain open.

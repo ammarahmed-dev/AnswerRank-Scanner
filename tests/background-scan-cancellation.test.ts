@@ -75,18 +75,18 @@ for (const [name, route] of [["audit", audit], ["monitor", monitor]] as const) {
     it("reports an uncertain write failure instead of claiming cancellation before saving", async () => {
       const controller = new AbortController();
       vi.stubGlobal("fetch", vi.fn(async (_url: string, init?: RequestInit) => {
-        if (init?.method === "PATCH") { controller.abort(); throw new Error("private database detail"); }
+        if (init?.method === "POST") { controller.abort(); throw new Error("private database detail"); }
         return Response.json(rows);
       }));
       save.mockImplementation(async () => { controller.abort(); throw new Error("private database detail"); });
       const response = await route(request(controller.signal), ctx());
-      expect(response.status).toBe(name === "audit" ? 500 : 503);
+      expect(response.status).toBe(503);
       expect(await response.text()).not.toContain("private database detail");
     });
     it("lets an already dispatched persistence operation settle after cancellation", async () => {
       const controller = new AbortController();
       const fetch = vi.fn(async (_url: string, init?: RequestInit) => {
-        if (init?.method === "PATCH") { controller.abort(); expect(init.signal?.aborted).toBe(false); return new Response(null, { status: 204 }); }
+        if (init?.method === "POST") { controller.abort(); expect(init.signal?.aborted).toBe(false); return Response.json([{ scanned_pages: 1, total_pages: 1, aggregate_score: 0, complete: true }]); }
         return Response.json(rows);
       });
       vi.stubGlobal("fetch", fetch);
@@ -125,12 +125,11 @@ describe("scan resource deadlines", () => {
   it("retains audit timeout error reporting for an active caller", async () => {
     vi.useFakeTimers(); let saved: Record<string, unknown> | undefined;
     vi.stubGlobal("fetch", vi.fn(async (_url: string, init?: RequestInit) => {
-      if (init?.method === "PATCH") { saved = JSON.parse(String(init.body)); return new Response(null, { status: 204 }); }
+      if (init?.method === "POST") { saved = JSON.parse(String(init.body)); return Response.json([{ scanned_pages: 1, total_pages: 1, aggregate_score: 0, complete: true }]); }
       return Response.json(rows);
     })); scan.mockImplementation(pendingScan);
     const work = audit(request(new AbortController().signal), ctx());
     await vi.advanceTimersByTimeAsync(30_001);
-    expect((await work).status).toBe(200); expect(saved?.scanned_pages).toBe(1);
-    expect(saved?.results).toMatchObject([{ status: "error", score: 0 }]);
+    expect((await work).status).toBe(200); expect(saved?.p_page_result).toMatchObject({ status: "error", score: 0 });
   });
 });
