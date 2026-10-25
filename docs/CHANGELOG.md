@@ -1,11 +1,10 @@
-# 2026-10-25 - Save one-time reports and consume rights together
-
-## 25 October 2026 — Non-branded growth priority
+# 2026-10-25 - Prioritize non-branded search acquisition
 
 - Prioritize the existing comparison guide and scanner conversion path alongside the implementation audit, followed by SaaS and ChatGPT measurement content.
 - Record targeted query/page evidence and matching-window measurement requirements; separate branded and non-branded results.
 - Correct the stale GSC access blocker after successful read-only retrieval. No private analytics or application behavior changes.
 
+# 2026-10-25 - Save one-time reports and consume rights together
 
 Full one-time-plan scans now save the report and consume the profile's URL/counter in one transaction after rechecking current rights. Failed writes roll back both sides; the unchecked pre-save profile PATCH is removed. The additive migration is applied and checked without customer mutations. Current scan allowances and other report paths are preserved. Validation: 638 tests, type checking, lint (0 errors, 18 existing warnings), production build and local rejection checks. Purchase-scoped reservations, free-plan retest counters, retry recovery and signed-in/multi-connection acceptance remain open. The owner also made SEO/AEO/GEO an ongoing parallel priority in the standing work and repository plan.
 
