@@ -40,6 +40,8 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
+- [x] (2026-10-25, audit A08) Serialize monitor creation cap checks and inserts in a service-only per-account transaction; preserve current caps and duplicate handling, validate committed responses and fail closed without direct-write fallback. Signed-in and true contention acceptance remain open.
+
 - [x] (2026-10-25, audit A08) Atomically insert monitor snapshots and advance schedules with a service-only owned-monitor RPC; share it across manual and cron scans and fail closed on persistence errors. Leases, idempotency and durable email outbox remain open.
 
 - [x] (2026-10-25, audit A05) Record monitor scoring methods on new snapshots; suppress incompatible list/email deltas and break chart lines across changed/unknown methods. Nullable production column applied and verified; legacy observations preserved. Full signed-in/email acceptance remains open.
