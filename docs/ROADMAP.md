@@ -93,6 +93,10 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)
 
+- [x] (2026-10-25, owner request) Research AEO/GEO service presentation using Brickell Digital and tool-plus-service references; document the existing CTA/contact flow and a scoped delivery plan in [SERVICES-PRESENTATION-PLAN.md](SERVICES-PRESENTATION-PLAN.md).
+- [ ] (A17/A15 priority) Deliver services plan S01-S03: one implementation page, scoped enquiry intake and existing shared/report CTA journey; then S04-S06 discovery, verified private attribution and qualification review. Preserve software pricing/rights and avoid promises of AI placement. Research complete does not mean service funnel live.
+
+
 - Revenue plan (2026-10-12, owner request; rationale in docs/RESEARCH.md):
   - [~] Utility-keyword pages. Done 2026-10-12: robots.txt tester (`/tools/robots-txt-tester`, full RFC 9309 matching with `*`/`$`, shows the deciding rule; 30 per month per client/IP). Done 2026-10-14: Open Graph checker (`/tools/open-graph-checker`, reuses the meta checker engine with OG-focused title, H1 and FAQ). FAQ schema validator (`/tools/faq-schema-validator`, 2026-10-14, reuses the schema checker). Utility pages done; next measure them in GSC. Was: robots.txt tester (reuse `lib/robots.ts` against a URL), Open Graph / social preview checker (reuse meta checker), FAQ schema validator page (reuse schema checker, query-matched), each with FAQ + services CTA + links from related posts
   - [ ] One "how to fix" post per failing scanner check (25 checks), each ending in the matching tool and scanner CTA; replaces new AEO-jargon posts

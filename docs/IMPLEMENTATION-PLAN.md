@@ -28,6 +28,10 @@ Status: Done means shipped and verified; Partial means useful work shipped but a
 
 A17 runs alongside the correctness audit: prioritize qualified non-branded discovery, beginning with the existing best-AEO-tools guide and its scanner conversion path, then SaaS and ChatGPT measurement intent. Follow the ordered acceptance steps in [the SEO sprint](SEO-SEVEN-DAY-SPRINT.md#owner-priority-non-branded-discovery-25-october). Keep branded performance separate, confirm targeted query/page evidence, and measure matching date windows. Fresh read-only GSC access is verified; targeted guide-level query/page extraction remains open. Urgent security, paid-rights and data-integrity failures retain precedence.
 
+## Implementation-services priority approved 25 October
+
+Research and plan the service offer alongside non-branded discovery: visitors can hire implementation help after receiving useful findings. Follow [SERVICES-PRESENTATION-PLAN.md](SERVICES-PRESENTATION-PLAN.md) for sourced presentation research, one canonical service page, scoped engagement options, reuse of existing CTAs/intake, staged placement, private attribution and S01-S06 release gates. This is A17/A15 work; the research is complete but the page and funnel implementation remain open. Do not publish new service prices, change software plans, copy third-party proof or promise AI placements.
+
 ## Execution order and release gates
 
 1. Complete available security and correctness work first. Reconcile the database before shipping transactions that depend on unverified tables or functions. A migration file alone does not establish production safety.

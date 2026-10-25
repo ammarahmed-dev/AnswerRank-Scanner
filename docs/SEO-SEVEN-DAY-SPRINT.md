@@ -73,3 +73,7 @@ Make qualified non-branded discovery the first growth priority alongside the imp
 5. Measure non-branded clicks, impressions, CTR and qualified scanner entries over matching reporting windows. Report lag and small samples explicitly. A query/page evidence gap must not block independently demonstrated technical fixes.
 
 Release this work in focused batches while urgent security, paid-rights and data-integrity failures retain precedence. No guaranteed ranking dates, daily title churn or new near-duplicate pages.
+
+## Implementation service conversion path
+
+The owner requested researched presentation and planning for hands-on AEO/GEO implementation. See [SERVICES-PRESENTATION-PLAN.md](SERVICES-PRESENTATION-PLAN.md). Reuse current blog/tool service CTAs, provide one dedicated service page and preserve scanner-first discovery. Measure saved, qualified enquiries separately from software purchases and organic rankings. Research does not establish service demand or conversion gains. Build the scoped page/intake/report path before broader promotional placement; keep all audit and non-branded measurement priorities.
