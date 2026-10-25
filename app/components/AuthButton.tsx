@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, LogOut, Menu, ShieldCheck, Sparkles, UserRound, X } from "lucide-react";
 import { loadSupabaseBrowserClient, supabaseConfigured } from "@/lib/supabase-browser-lazy";
 import { useAuth } from "@/app/context/AuthContext";
+import { SERVICES_PATH } from "@/lib/service-enquiry";
 import { FEATURES } from "./FeaturesDropdown";
 
 const NAV_LINKS = [
   { href: "/#how", label: "How it works" },
   { href: "/blog", label: "Blog" },
+  { href: SERVICES_PATH, label: "Implementation services" },
   { href: "/pricing", label: "Pricing" },
   { href: "/#faq", label: "FAQ" },
 ];
@@ -18,20 +20,31 @@ export default function AuthButton() {
   const { user, isAdmin, plan } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
+  const menuId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!menuOpen) return;
-    function onClickOutside(e: MouseEvent) {
+    function onClickOutside(e: PointerEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
     }
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") { setMenuOpen(false); triggerRef.current?.focus(); }
+    }
+    const desktop = window.matchMedia("(min-width: 1201px)");
+    const onResize = () => { if (desktop.matches) setMenuOpen(false); };
+    document.addEventListener("pointerdown", onClickOutside);
+    document.addEventListener("keydown", onKeyDown);
+    desktop.addEventListener("change", onResize);
+    return () => {
+      document.removeEventListener("pointerdown", onClickOutside);
+      document.removeEventListener("keydown", onKeyDown);
+      desktop.removeEventListener("change", onResize);
+    };
   }, [menuOpen]);
-
-  if (!supabaseConfigured) return null;
 
   const handleLogout = async () => {
     setMenuOpen(false);
@@ -45,10 +58,10 @@ export default function AuthButton() {
   const isPro = plan === "pro" || plan === "agency" || isAdmin;
 
   return (
-    <div ref={wrapperRef}>
-      {/* Desktop auth items, hidden below md */}
-      {user ? (
-        <div className="hidden md:inline-flex">
+    <div ref={wrapperRef} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setMenuOpen(false); }}>
+      {/* Desktop auth items, hidden at the shared navigation breakpoint */}
+      {supabaseConfigured && (user ? (
+        <div className="header-auth-desktop">
           <div className="auth-account">
             {masterAdmin && (
               <a href="/admin" title="Master Admin · Unlimited Access">
@@ -64,18 +77,20 @@ export default function AuthButton() {
           </div>
         </div>
       ) : (
-        <div className="hidden md:inline-flex">
+        <div className="header-auth-desktop">
           <div className="auth-guest-actions">
             <a href="/login" className="btn btn-secondary auth-open-button">Login</a>
             <a href="/signup" className="btn btn-secondary auth-open-button">Register</a>
           </div>
         </div>
-      )}
+      ))}
 
-      {/* Hamburger button, hidden above md via CSS */}
+      {/* Public navigation toggle, independent of auth configuration */}
       <button
         type="button"
+        ref={triggerRef}
         className="nav-hamburger"
+        aria-controls={menuId}
         onClick={() => setMenuOpen((o) => !o)}
         aria-label={menuOpen ? "Close menu" : "Open menu"}
         aria-expanded={menuOpen}
@@ -83,8 +98,8 @@ export default function AuthButton() {
         {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
-      {/* Mobile dropdown, always rendered and toggled with is-open */}
-      <div className={`nav-mobile-menu${menuOpen ? " is-open" : ""}`}>
+      {/* Closed navigation is removed from keyboard and accessibility navigation */}
+      <nav id={menuId} aria-label="Mobile navigation" hidden={!menuOpen} className={`nav-mobile-menu${menuOpen ? " is-open" : ""}`}>
         <div className="nav-mobile-section">
           {NAV_LINKS.map((link) => (
             <a key={link.href} href={link.href} className="nav-mobile-link" onClick={close}>
@@ -94,13 +109,15 @@ export default function AuthButton() {
           <button
             type="button"
             className={`nav-mobile-link nav-mobile-features-toggle${featuresOpen ? " is-open" : ""}`}
+            aria-expanded={featuresOpen}
+            aria-controls={`${menuId}-features`}
             onClick={() => setFeaturesOpen(o => !o)}
           >
             Features
             <ChevronDown className="nav-mobile-features-chevron" aria-hidden="true" />
           </button>
           {featuresOpen && (
-            <div className="nav-mobile-features-list">
+            <div id={`${menuId}-features`} className="nav-mobile-features-list">
               {FEATURES.map(({ href, label, desc }) => (
                 <a key={href} href={href} className="nav-mobile-feature-item" onClick={close}>
                   <span className="nav-mobile-feature-label">{label}</span>
@@ -116,8 +133,10 @@ export default function AuthButton() {
         <div className="nav-mobile-section">
           {!user ? (
             <>
-              <a href="/login" className="nav-mobile-link" onClick={close}>Login</a>
-              <a href="/signup" className="nav-mobile-link" onClick={close}>Register</a>
+              {supabaseConfigured && <>
+                <a href="/login" className="nav-mobile-link" onClick={close}>Login</a>
+                <a href="/signup" className="nav-mobile-link" onClick={close}>Register</a>
+              </>}
               <Link href="/#scanner" className="nav-mobile-cta" onClick={close}>
                 <Sparkles className="h-4 w-4" /> Scan My Website
               </Link>
@@ -140,7 +159,7 @@ export default function AuthButton() {
             </>
           )}
         </div>
-      </div>
+      </nav>
     </div>
   );
 }

@@ -13,7 +13,7 @@ export const SERVICE_PLATFORMS = [
   { value: "shopify", label: "Shopify" },
   { value: "other", label: "Another platform" },
 ] as const;
-export const SERVICE_SOURCES = ["services-page", "content", "report", "direct"] as const;
+export const SERVICE_SOURCES = ["services-page", "content", "report", "home", "pricing", "direct"] as const;
 export type ServiceSource = typeof SERVICE_SOURCES[number];
 export type ServiceEnquiry = {
   website: string;

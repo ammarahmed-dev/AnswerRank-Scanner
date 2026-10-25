@@ -60,6 +60,39 @@ try {
   await screenshot('services-desktop', true);
   checks.push('Desktop page, canonical, packages and overflow');
 
+  // Navigation must work even when this credential-free build has no Supabase config.
+  for (const width of [320, 390, 800, 1024]) {
+    await page.setViewportSize({ width, height: 844 });
+    const toggle = page.getByRole('button', { name: 'Open menu', exact: true });
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    const nav = page.getByRole('navigation', { name: 'Mobile navigation' });
+    await nav.waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Close menu', exact: true }).getAttribute('aria-expanded'), 'true');
+    await nav.getByRole('button', { name: 'Features', exact: true }).click();
+    assert.equal(await nav.getByRole('button', { name: 'Features', exact: true }).getAttribute('aria-expanded'), 'true');
+    await nav.getByRole('link', { name: /Free tools/ }).scrollIntoViewIfNeeded();
+    await noOverflow();
+    assert(await nav.evaluate(el => el.getBoundingClientRect().bottom <= innerHeight), 'Menu fits the viewport');
+    await screenshot(`mobile-menu-${width}`);
+    await page.keyboard.press('Escape');
+    assert.equal(await nav.isVisible(), false);
+    assert(await toggle.evaluate(el => el === document.activeElement));
+    await toggle.click();
+    await nav.getByRole('link', { name: 'Implementation services', exact: true }).click();
+    await page.waitForURL(origin + path);
+    assert.equal(await page.getByRole('navigation', { name: 'Mobile navigation' }).isVisible(), false);
+    await page.getByRole('button', { name: 'Open menu', exact: true }).click();
+    await page.locator('.site-header').click({ position: { x: 190, y: 30 } });
+    await until(async () => !(await page.getByRole('navigation', { name: 'Mobile navigation' }).isVisible()), 'outside click closes menu');
+    await goto(path + '?source=report');
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+  assert.equal(await page.getByRole('button', { name: 'Open menu', exact: true }).isVisible(), false);
+  assert.equal(await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Implementation services' }).getAttribute('href'), path);
+  assert.equal(await page.locator('.services-price strong').allTextContents().then(prices => prices.join(',')), '$499,$999,$499');
+  checks.push('Mobile menu without auth config, keyboard/Escape/link close, scrollable features, tablet breakpoints and service pricing');
+
   const submit = page.locator('form button[type="submit"]');
   await submit.click();
   await page.locator('#contact-name-error').waitFor();
@@ -114,6 +147,19 @@ try {
     assert.equal(await link.getAttribute('href'), path + '?source=content');
   }
   checks.push('Comparison guide and tool service discovery');
+  for (const [url, source] of [['/', 'home'], ['/pricing', 'pricing']]) {
+    await goto(url);
+    const block = page.getByRole('complementary', { name: 'Implementation help' });
+    assert.equal(await block.count(), 1);
+    assert.equal(await block.locator('a').getAttribute('href'), path + '?source=' + source);
+    for (const width of [1280, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await noOverflow();
+      await block.scrollIntoViewIfNeeded();
+      await screenshot(`${source}-cta-${width}`);
+    }
+  }
+  checks.push('One homepage/pricing CTA and responsive neighboring sections');
 
   const fixtureModule = { exports: {} };
   const compiled = ts.transpileModule(await readFile('lib/sample-report.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } });

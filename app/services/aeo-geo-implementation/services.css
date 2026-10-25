@@ -46,3 +46,8 @@
   .services-evidence, .services-form { padding: 24px; }
   .services-enquiry { gap: 24px; }
 }
+
+.services-package .services-price { display: flex; flex-direction: column; gap: 6px; margin-block: 24px; }
+.services-price strong { font-size: 40px; line-height: 1.1; color: var(--color-ink); letter-spacing: -.03em; }
+.services-price span { font-size: 13px; color: var(--color-ink-soft); }
+.services-package .btn { white-space: normal; text-align: center; }

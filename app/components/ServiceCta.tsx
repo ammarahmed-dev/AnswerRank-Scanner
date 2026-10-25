@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SERVICES_PATH } from "@/lib/service-enquiry";
 
-export default function ServiceCta({ placement = "content" }: { placement?: "content" | "report" }) {
+export default function ServiceCta({ placement = "content" }: { placement?: "content" | "report" | "home" | "pricing" }) {
   return (
     <aside className={`service-cta surface${placement === "report" ? " print-hidden" : ""}`} aria-label="Implementation help">
       <div className="service-cta-text">

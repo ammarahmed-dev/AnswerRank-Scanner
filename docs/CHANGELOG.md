@@ -1,3 +1,7 @@
+# 2026-10-25 - Repair mobile navigation and publish scoped service pricing
+
+Public navigation no longer disappears with missing auth configuration. Aligned mobile/desktop breakpoints, added keyboard/Escape/outside dismissal and viewport scrolling, and removed closed links from keyboard navigation. Added implementation-services discovery in shared navigation/footer and one CTA each on home and software pricing. Published owner-requested USD starting rates: $499 fixes sprint, $999 key-page improvements and $499/month ongoing, with explicit allowances, exclusions and proposal confirmation. No software price/entitlement, checkout, auth-method or database change. Regression/type/lint/build and isolated browser checks gate release; inspect desktop/mobile screenshots before merging. Real production enquiry/email delivery and analytics attribution remain unverified.
+
 # 2026-10-25 - Launch scoped AEO/GEO implementation enquiries
 
 CI now runs isolated Chromium service/contact/report journeys and retains synthetic screenshots for seven days. External browser requests are blocked; valid submissions are intercepted, so no customer record or email is created. Desktop/mobile screenshots at 1280/390 px must be inspected before merge. Local production HTTP smoke checks return 200 for the new page, both sitemaps and existing image endpoints, with 400 for empty contact input. PR #43's reviewed live query/page output is verified; stale targeted-retrieval blockers are corrected without publishing private metrics.
