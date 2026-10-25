@@ -60,6 +60,7 @@ export async function POST(req: Request, { params }: RouteContext) {
       monitored_url_id: id,
       score,
       category_scores: categoryScores,
+      methodology_version: scanResult.methodology?.version ?? null,
       scanned_at: now,
     }),
   });

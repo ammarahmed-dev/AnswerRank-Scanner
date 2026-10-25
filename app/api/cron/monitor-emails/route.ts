@@ -33,6 +33,7 @@ type Snapshot = {
   score: number;
   category_scores: Record<string, number> | null;
   scanned_at: string;
+  methodology_version?: string | null;
 };
 
 async function getDueUrls(): Promise<MonitorRow[]> {
@@ -89,7 +90,7 @@ async function getLastSnapshots(monitoredUrlId: string): Promise<Snapshot[]> {
     monitored_url_id: `eq.${monitoredUrlId}`,
     order: "scanned_at.desc",
     limit: "2",
-    select: "score,category_scores,scanned_at",
+    select: "score,category_scores,scanned_at,methodology_version",
   });
   const res = await fetch(`${supabaseUrl}/rest/v1/monitor_snapshots?${params.toString()}`, {
     headers: getSupabaseServiceHeaders(),
@@ -99,13 +100,13 @@ async function getLastSnapshots(monitoredUrlId: string): Promise<Snapshot[]> {
   return (await res.json()) as Snapshot[];
 }
 
-async function saveSnapshot(monitoredUrlId: string, score: number, categoryScores: Record<string, number>) {
+async function saveSnapshot(monitoredUrlId: string, score: number, categoryScores: Record<string, number>, methodologyVersion?: string) {
   const now = new Date().toISOString();
 
   const snapRes = await fetch(`${supabaseUrl}/rest/v1/monitor_snapshots`, {
     method: "POST",
     headers: { ...getSupabaseServiceHeaders(), Prefer: "return=minimal" },
-    body: JSON.stringify({ monitored_url_id: monitoredUrlId, score, category_scores: categoryScores, scanned_at: now }),
+    body: JSON.stringify({ monitored_url_id: monitoredUrlId, score, category_scores: categoryScores, scanned_at: now, methodology_version: methodologyVersion ?? null }),
   });
   if (!snapRes.ok) {
     const detail = await snapRes.text().catch(() => "");
@@ -172,7 +173,7 @@ export async function GET(req: Request) {
       const previousScore = previousSnapshots[0]?.score ?? null;
 
       // 3. Save snapshot + update last_scanned_at
-      await saveSnapshot(row.id, score, categoryScores as Record<string, number>);
+      await saveSnapshot(row.id, score, categoryScores as Record<string, number>, scanResult.methodology?.version);
 
       // 4. Send email if Resend is configured
       if (resend) {
@@ -195,6 +196,8 @@ export async function GET(req: Request) {
               frequency: row.frequency,
               score,
               previousScore,
+              methodologyVersion: scanResult.methodology?.version,
+              previousMethodologyVersion: previousSnapshots[0]?.methodology_version,
               categoryScores: categoryScores as Record<string, number>,
               previousCategoryScores: previousSnapshots[0]?.category_scores ?? null,
             });

@@ -1,5 +1,7 @@
 "use client";
 
+import MonitorScoreHistory from "./MonitorScoreHistory";
+
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -43,6 +45,7 @@ type Snapshot = {
   score: number;
   category_scores: Record<string, number> | null;
   scanned_at: string;
+  methodology_version?: string | null;
 };
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -86,68 +89,6 @@ function scoreGrade(score: number) {
 }
 
 // ── SVG Sparkline ─────────────────────────────────────────────────────────────
-
-const CHART_W = 480;
-const CHART_H = 100;
-const PAD_X = 14;
-const PAD_Y = 12;
-
-function ScoreSparkline({ snapshots }: { snapshots: Snapshot[] }) {
-  if (snapshots.length === 0) {
-    return <p className="monitor-chart-hint">No scans yet. Click Scan Now to start tracking.</p>;
-  }
-  if (snapshots.length === 1) {
-    return <p className="monitor-chart-hint">Need at least 2 scans to show a trend. Run another scan.</p>;
-  }
-
-  const innerW = CHART_W - PAD_X * 2;
-  const innerH = CHART_H - PAD_Y * 2;
-
-  const scores = snapshots.map((s) => s.score);
-  const rawMin = Math.min(...scores);
-  const rawMax = Math.max(...scores);
-  const spread = rawMax === rawMin ? 20 : rawMax - rawMin;
-  const yMin = Math.max(0, rawMin - Math.ceil(spread * 0.2));
-  const yMax = Math.min(100, rawMax + Math.ceil(spread * 0.2));
-  const yRange = yMax - yMin || 20;
-
-  const pts = snapshots.map((snap, i) => ({
-    x: PAD_X + (i / (snapshots.length - 1)) * innerW,
-    y: PAD_Y + innerH - ((snap.score - yMin) / yRange) * innerH,
-    score: snap.score,
-    date: snap.scanned_at,
-  }));
-
-  const polyPoints = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-  const last = scores[scores.length - 1];
-  const first = scores[0];
-  const isUp = last >= first;
-  const stroke = isUp ? "var(--color-success)" : "var(--color-danger)";
-
-  return (
-    <svg
-      viewBox={`0 0 ${CHART_W} ${CHART_H}`}
-      className="monitor-sparkline"
-      role="img"
-      aria-label="AEO score trend"
-    >
-      <polyline
-        fill="none"
-        stroke={stroke}
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        points={polyPoints}
-      />
-      {pts.map((p, i) => (
-        <g key={i}>
-          <circle cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="5" fill={stroke} opacity="0.25" />
-          <circle cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r="3" fill={stroke} />
-        </g>
-      ))}
-    </svg>
-  );
-}
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 
@@ -618,13 +559,13 @@ export default function MonitorClient() {
                       {isExpanded && (
                         <div className="monitor-history-panel">
                           <div className="monitor-chart-wrap">
-                            <p className="monitor-chart-label">Score trend - last {Math.min(snapshots.length, 10)} scans</p>
+                            <p className="monitor-chart-label">Score history - last {Math.min(snapshots.length, 10)} scans</p>
                             {isHistLoading ? (
                               <div className="monitor-chart-loading">
                                 <Loader2 className="h-5 w-5 animate-spin" />
                               </div>
                             ) : (
-                              <ScoreSparkline snapshots={snapshots} />
+                              <MonitorScoreHistory snapshots={snapshots} />
                             )}
                           </div>
 

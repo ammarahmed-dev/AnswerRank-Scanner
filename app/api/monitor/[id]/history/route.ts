@@ -13,6 +13,7 @@ export type Snapshot = {
   score: number;
   category_scores: Record<string, number> | null;
   scanned_at: string;
+  methodology_version?: string | null;
 };
 
 export async function GET(req: Request, { params }: RouteContext) {
@@ -41,7 +42,7 @@ export async function GET(req: Request, { params }: RouteContext) {
   // Fetch last 10 snapshots, newest first, then reverse for chart ordering
   const snapParams = new URLSearchParams({
     monitored_url_id: `eq.${id}`,
-    select: "id,score,category_scores,scanned_at",
+    select: "id,score,category_scores,scanned_at,methodology_version",
     order: "scanned_at.desc",
     limit: "10",
   });

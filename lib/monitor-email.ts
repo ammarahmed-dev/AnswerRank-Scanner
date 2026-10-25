@@ -1,3 +1,5 @@
+import { getScoringComparison } from "@/lib/scoring-comparison";
+
 // Monitor score emails (weekly/monthly), with an alert variant when the score drops sharply.
 
 export const SCORE_DROP_ALERT_POINTS = 5;
@@ -44,6 +46,8 @@ export type MonitorEmailInput = {
   frequency: "weekly" | "monthly";
   score: number;
   previousScore: number | null;
+  methodologyVersion?: string | null;
+  previousMethodologyVersion?: string | null;
   categoryScores: Record<string, number>;
   previousCategoryScores?: Record<string, number> | null;
 };
@@ -57,7 +61,10 @@ export function categoryDrops(current: Record<string, number>, previous?: Record
 }
 
 export function buildMonitorEmail(input: MonitorEmailInput): { subject: string; html: string; isDropAlert: boolean } {
-  const { score, previousScore, categoryScores, previousCategoryScores } = input;
+  const { score, categoryScores } = input;
+  const comparable = getScoringComparison(input.methodologyVersion, input.previousMethodologyVersion) === "same_method";
+  const previousScore = comparable ? input.previousScore : null;
+  const previousCategoryScores = comparable ? input.previousCategoryScores : null;
   const name = escapeHtml(input.name);
   const host = escapeHtml(input.url.replace(/^https?:\/\//, "").split("/")[0]);
   const grade = scoreGrade(score);
@@ -74,7 +81,7 @@ export function buildMonitorEmail(input: MonitorEmailInput): { subject: string; 
 
   const deltaHtml =
     delta === null
-      ? `<span style="color:#8a9ab0;font-size:14px;">First scan</span>`
+      ? `<span style="color:#8a9ab0;font-size:14px;">${input.previousScore === null ? "First scan" : "New baseline: scoring methods differ or are unknown"}</span>`
       : delta === 0
         ? `<span style="color:#8a9ab0;font-size:14px;">No change from last scan</span>`
         : delta > 0

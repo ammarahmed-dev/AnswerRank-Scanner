@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { buildMonitorEmail, categoryDrops, escapeHtml } from "@/lib/monitor-email";
 
 const base = {
+  methodologyVersion: "method-v1",
+  previousMethodologyVersion: "method-v1",
   name: "Example",
   url: "https://example.com/pricing",
   frequency: "weekly" as const,
