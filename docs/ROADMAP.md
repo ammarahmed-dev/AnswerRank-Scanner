@@ -40,6 +40,8 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
+- [x] (2026-10-25, audit A07) Recheck monthly/rolling audit caps and create the audit under an account transaction lock after discovery; keep early guards, preserve tier limits and reconcile the existing discovery-count field in historical installs. Durable discovery/job reservations remain open.
+
 - [x] (2026-10-25, audit A08) Serialize monitor creation cap checks and inserts in a service-only per-account transaction; preserve current caps and duplicate handling, validate committed responses and fail closed without direct-write fallback. Signed-in and true contention acceptance remain open.
 
 - [x] (2026-10-25, audit A08) Atomically insert monitor snapshots and advance schedules with a service-only owned-monitor RPC; share it across manual and cron scans and fail closed on persistence errors. Leases, idempotency and durable email outbox remain open.
@@ -58,7 +60,7 @@ Based on the full code review from 2026-10-03.
 - [x] Unify `isMasterAdmin`: admin only from MASTER_ADMIN_EMAILS via `/api/account` `isAdmin`; Agency customers no longer see the Admin tab / Master Admin badge
 - [x] `getAuthContext`: profile is created only when missing (was a write on every authenticated request)
 - [~] (2026-10-25, audit A02) Exact-body mutation receipts now commit atomically with whitelisted profile patches and optimistic state checks. Missing/failed writes stay retryable. Distinct-event ordering, failed/ignored inbox, authoritative recovery and live sandbox remain open; PR #9's fail-open implementation is superseded.
-- [ ] BLOCKED (needs production schema): base-schema migration that recreates `profiles`, `webhook_events`, `app_stats` from scratch; retire `supabase-schema.sql`
+- [ ] Reconcile the full base schema for `profiles`, `webhook_events` and `app_stats`, then retire `supabase-schema.sql`. Production schema inspection is available; a verified baseline and clean-install/upgrade coverage are still required.
 - [x] Fix stale copy: welcome email scan count from config, removed fake "87/100" stat (UA domain and APP_URL fixed earlier)
 - [x] `UpgradeButton`: show checkout errors to the user; `/upgrade/success` now redirects to `/dashboard?upgraded=1`
 - [x] Encode PostgREST filter values built from route params (audit scan, monitor scan); the rest use URLSearchParams
