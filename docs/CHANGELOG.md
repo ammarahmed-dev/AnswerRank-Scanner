@@ -1,3 +1,7 @@
+# 2026-10-25 - Retrieve targeted Search Console query/page evidence
+
+Extended read-only GSC Overview with actual query/page pairs for checker intent, priority guides and long-query candidates. Fixed the shared Pacific-date window, finalized Web scope, bounded pagination, label precision and failure reporting. Overview uses read-only OAuth; sitemap submission keeps its existing scope. The existing workflow refreshes on diagnostic changes to main as well as manual runs, with no new recurring schedule, metric commits or notifications. Mocked regression tests, type/lint checks, production build and CI gate the release; inspect real post-merge output before claiming evidence coverage. No customer-facing content, price, entitlement or database change. Raw analytics stay out of this repository.
+
 # 2026-10-25 - Apply long-query discovery to the SaaS guide
 
 Refreshed the existing SaaS guide with direct buyer-question answers, page selection, actionable checks and a repeatable measurement workflow. Corrected crawler-purpose and readiness-versus-observed-visibility claims using primary sources. Preserved the June publication date and existing title; recorded the actual update date. Private export analysis informed intent selection but does not establish joint query/page attribution or post-release gains. No private metrics, new pages, prices or entitlement changes. Validation uses existing regression/link checks, type checking, lint, production build and CI; live verification follows merge.
