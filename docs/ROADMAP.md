@@ -36,6 +36,8 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
+- [x] (2026-10-25, audit A05) Guard report/dashboard score and check deltas by recorded scoring-method compatibility; explain different/unknown methods without interpreting them as site improvement. Monitor/email history remains pending versioned snapshots.
+
 - [x] (2026-10-25, audit A11) Bound remaining JSON application requests to 32 KiB, reject non-object roots, and validate contact/welcome field types before work. Checkout, monitor update and audit scan auth/ownership behavior is preserved. Signed webhook raw-body limits remain part of the separate billing work.
 
 - [x] Atomic usage counting: `reserve_scan_usage` / `release_scan_usage` (migration `20261003_atomic_scan_usage.sql`, tested on Postgres 16: 50 concurrent requests at limit 5 -> exactly 5 granted). Scan and compare reserve up front, release on failure; legacy fallback until the migration is applied
