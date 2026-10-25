@@ -33,3 +33,14 @@ jobs:
         run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: 1
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Service journey browser checks
+        run: node tests/browser/services.mjs
+      - name: Upload synthetic UI checks
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: services-ui
+          path: test-results/services/
+          retention-days: 7

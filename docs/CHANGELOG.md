@@ -106,6 +106,8 @@ Resolved page URLs now determine scanner origin/path checks; streamed response a
 
 # Changelog
 
+Browser verification for the initial implementation-services release now runs in CI against the built local app, blocks external browser requests, uses synthetic report fixtures and intercepts valid contact submissions. Screenshots are retained for seven days; no production credentials or test email. Visual acceptance remains pending until the artifact is inspected.
+
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 
 ## 2026-10-14 (session 71)

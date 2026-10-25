@@ -23,3 +23,5 @@ current_info.txt
 .claude/settings.local.json
 *.log
 supabase/.temp/
+
+/test-results/
