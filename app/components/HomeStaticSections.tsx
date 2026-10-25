@@ -13,6 +13,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import type { BlogPostMeta } from "@/lib/blog";
 import AiSnapshotSection from "./AiSnapshotSection";
+import ServiceCta from "./ServiceCta";
 import WhoUsesSection from "./WhoUsesSection";
 
 // Static homepage sections rendered on the server so they add no hydration work to the scanner
@@ -216,6 +217,7 @@ export default function HomeStaticSections({ latestPosts }: { latestPosts: BlogP
             </div>
           </div>
         </section>
+      <ServiceCta placement="home" />
     </>
   );
 }

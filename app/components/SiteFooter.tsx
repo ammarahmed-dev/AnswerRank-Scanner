@@ -25,6 +25,7 @@ export default function SiteFooter() {
               <Link href="/#scanner">Scanner</Link>
               <Link href="/#how">How It Works</Link>
               <a href="/pricing">Pricing</a>
+              <Link href="/services/aeo-geo-implementation">Implementation services</Link>
               <Link href="/#faq">FAQ</Link>
               <a href="/contact">Contact</a>
             </div>

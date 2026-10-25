@@ -15,14 +15,14 @@ export const metadata: Metadata = buildPageMetadata({
   path: SERVICES_PATH,
 });
 const packages = [
-  { icon: Code2, title: "Website fixes sprint", lead: "You have findings. Get the priority fixes implemented.",
-    scope: "One site, a focused backlog and clear acceptance checks.",
+  { icon: Code2, title: "Website fixes sprint", price: "$499", cadence: "one-time starting price", lead: "You have findings. Get the priority fixes implemented.",
+    scope: "One site, up to 3 agreed fixes within 4 hours of implementation and verification.",
     items: ["Review the findings and agree what to fix", "Implement agreed technical and template changes", "Verify the changes and hand over the evidence"] },
-  { icon: FileCheck2, title: "Key-page improvement", lead: "Make your important pages easier to understand and use.",
-    scope: "A named set of product, service or resource pages.",
+  { icon: FileCheck2, title: "Key-page improvement", price: "$999", cadence: "one-time starting price", lead: "Make your important pages easier to understand and use.",
+    scope: "Up to 3 existing pages within 8 hours of content, markup and internal-link improvements.",
     items: ["Clarify answers, headings and product information", "Improve applicable schema and internal links", "Review content facts with you before publishing"] },
-  { icon: Layers3, title: "Ongoing improvement", lead: "Keep improving after the foundation is in place.",
-    scope: "An agreed backlog, delivery capacity and review cadence.",
+  { icon: Layers3, title: "Ongoing improvement", price: "$499", cadence: "per month, starting price", lead: "Keep improving after the foundation is in place.",
+    scope: "Up to 4 hours per month for agreed improvements, verification and a progress summary.",
     items: ["Prioritize useful follow-up work", "Review organic data where access is available", "Record what changed and what remains unverified"] },
 ];
 const steps = [
@@ -32,6 +32,7 @@ const steps = [
   ["04", "Verify and hand over", "Receive a dated change log, technical checks and next steps. Later traffic and AI-answer observations are measured separately."],
 ];
 const faqs = [
+  ["How does pricing work?", "Prices start at $499 for a fixes sprint, $999 for key-page improvements and $499 per month for ongoing work, in USD. We review the site and confirm deliverables, the time allowance, final price and any applicable tax in a written proposal. Work beyond that scope needs a separate agreement."],
   ["Is implementation included in my scanner plan?", "No. Scanner plans provide product features. Implementation is a separate service with an agreed proposal and scope; enquiring does not change your plan."],
   ["Do you guarantee rankings or AI citations?", "No. We commit to agreed work and verification. A readiness score, crawler access or schema repair does not establish inclusion in an AI answer, and rankings and citations can change."],
   ["Can you work with my current website?", "Tell us your platform and the changes you need. We review Webflow, WordPress, Shopify and custom-site work before confirming fit and access. You do not need to move platforms to enquire."],
@@ -58,7 +59,7 @@ export default function ImplementationServicesPage() {
         <p className="services-lead">For site owners and small teams who want hands-on help with technical SEO, structured data and clearer content. Agree the scope, review the work and see what was verified.</p>
         <div className="services-actions">
           <a href="#enquiry" className="btn btn-primary">Request an implementation proposal <ArrowRight size={16} aria-hidden="true" /></a>
-          <a href="#scope" className="btn btn-secondary">See what is included</a>
+          <a href="#scope" className="btn btn-secondary">View pricing and scope</a>
         </div>
         <p className="services-note">Need a starting point? <Link href="/#scanner">Scan your website</Link> or <Link href="/sample-report">view a sample report</Link>.</p>
       </section>
@@ -76,15 +77,18 @@ export default function ImplementationServicesPage() {
       <section id="scope" className="services-section launch-container" aria-labelledby="services-scope">
         <p className="services-eyebrow">Choose the scope</p>
         <h2 id="services-scope">Start with the work you actually need.</h2>
-        <p className="services-intro">Each engagement is scoped after reviewing your site. These services are separate from AEOCheck software subscriptions.</p>
+        <p className="services-intro">Starting prices in USD. We confirm the exact work, final price and any applicable tax in a written proposal before you commit. Implementation and verification share the stated time allowance. Larger backlogs are quoted separately. These services are separate from AEOCheck software subscriptions.</p>
         <div className="services-packages">
-          {packages.map(({ icon: Icon, title, lead, scope, items }) => <article className="surface services-package" key={title}>
+          {packages.map(({ icon: Icon, title, price, cadence, lead, scope, items }) => <article className="surface services-package" key={title}>
             <Icon size={24} className="services-icon" aria-hidden="true" />
-            <h3>{title}</h3><p>{lead}</p><p className="services-package-scope">{scope}</p>
+            <h3>{title}</h3><p>{lead}</p>
+            <p className="services-price"><strong>{price}</strong><span>USD / {cadence}</span></p><p className="services-package-scope">{scope}</p>
             <ul>{items.map(item => <li key={item}><CheckCircle2 size={16} aria-hidden="true" /><span>{item}</span></li>)}</ul>
-            <p className="services-note">Custom scope / proposal before work begins</p>
+            <p className="services-note">Final scope and price agreed before work begins</p>
+            <a href="#enquiry" className="btn btn-secondary">Discuss this scope</a>
           </article>)}
         </div>
+        <p className="services-note">Third-party tools, hosting, paid placements, a full redesign and new long-form articles are excluded. Ongoing work is agreed month by month; this form does not start a subscription or take payment.</p>
       </section>
 
       <section className="services-section launch-container" aria-labelledby="services-process">

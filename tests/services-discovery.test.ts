@@ -7,7 +7,7 @@ import { SERVICES_PATH } from "@/lib/service-enquiry";
 import sitemap from "@/app/sitemap";
 
 describe("implementation services discovery", () => {
-  it.each(["content", "report"] as const)("uses one public destination for %s without private report fields", placement => {
+  it.each(["content", "report", "home", "pricing"] as const)("uses one public destination for %s without private report fields", placement => {
     const html = renderToStaticMarkup(createElement(ServiceCta, { placement }));
     expect(html).toContain(`${SERVICES_PATH}?source=${placement}`);
     expect(html).not.toContain("/contact?");

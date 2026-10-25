@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildPageMetadata, SITE_URL } from "@/lib/seo";
 import { PLAN_LIMITS } from "@/lib/access";
+import ServiceCta from "@/app/components/ServiceCta";
 import SiteHeader from "@/app/components/SiteHeader";
 import SiteFooter from "@/app/components/SiteFooter";
 import PricingClient from "./PricingClient";
@@ -146,6 +147,7 @@ export default function PricingPage() {
       <SiteHeader />
       <main>
         <PricingClient />
+        <ServiceCta placement="pricing" />
       </main>
       <SiteFooter />
     </>

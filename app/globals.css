@@ -10663,3 +10663,19 @@ textarea.contact-control {
 /* Shared implementation-enquiry fields also appear on the contact page. */
 .service-form-note { color: var(--color-ink-soft); font-size: 13px; line-height: 1.65; margin: 0; }
 .service-enquiry-form .contact-submit { white-space: normal; min-height: 52px; }
+
+/* Shared navigation: one breakpoint, independent of auth configuration. */
+.header-auth-desktop, .header-desktop-cta { display: inline-flex; }
+.site-header .site-nav { gap: 16px; }
+.site-header .nav-mobile-menu { position: absolute; top: 100%; max-height: calc(100dvh - 84px); overflow-y: auto; overscroll-behavior: contain; }
+.site-header .nav-mobile-menu[hidden] { display: none; }
+.site-header .nav-hamburger { width: 44px; height: 44px; }
+@media (max-width: 1200px) {
+  .site-header { grid-template-columns: 1fr auto; padding: 12px 14px; gap: 12px; }
+  .site-header .site-nav, .site-header .header-auth-desktop, .site-header .header-desktop-cta { display: none; }
+  .site-header .nav-hamburger { display: flex; }
+  .site-header .header-action-buttons { min-width: 0; }
+}
+@media (min-width: 1201px) {
+  .site-header .nav-hamburger, .site-header .nav-mobile-menu { display: none; }
+}

@@ -17,13 +17,14 @@ export default function SiteHeader({ scanCountLabel: _ }: Props) {
         <Link href="/#how">How it works</Link>
         <FeaturesDropdown />
         <Link href="/blog">Blog</Link>
+        <Link href="/services/aeo-geo-implementation">Implementation services</Link>
         <a href="/pricing">Pricing</a>
         <Link href="/#faq">FAQ</Link>
       </nav>
       <div className="header-actions">
         <div className="header-action-buttons">
           <AuthButton />
-          <span className="hidden md:inline-flex">
+          <span className="header-desktop-cta">
             <Link href="/#scanner" className="btn btn-primary header-cta">Scan My Website</Link>
           </span>
         </div>
