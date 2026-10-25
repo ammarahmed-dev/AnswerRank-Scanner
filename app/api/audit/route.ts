@@ -1,3 +1,4 @@
+import { createAuditWithLimits, AuditCreationLimit } from "@/lib/audit-creation";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { CountUnavailableError, fetchExactCount } from "@/lib/exact-count";
 import { NextResponse } from "next/server";
@@ -90,34 +91,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: (e as Error).message }, { status: 400 });
     }
 
-    // Discover pages (runs async after we've responded would be ideal but we need the urls)
-    // SQL needed if column missing: ALTER TABLE audit_runs ADD COLUMN IF NOT EXISTS total_discovered INTEGER DEFAULT 0;
     const { urls, totalDiscovered } = await discoverPages(baseUrl, tier.pageLimit);
-
-    const insertRes = await fetch(`${supabaseUrl}/rest/v1/audit_runs`, {
-      method: "POST",
-      headers: { ...getSupabaseServiceHeaders(), Prefer: "return=representation" },
-      body: JSON.stringify({
-        user_id: auth.user.id,
-        domain,
-        status: "pending",
-        total_pages: urls.length,
-        scanned_pages: 0,
-        page_limit: tier.pageLimit,
-        total_discovered: totalDiscovered,
-        urls,
-        results: [],
-      }),
-    });
-
-    if (!insertRes.ok) {
-      const detail = await insertRes.text().catch(() => "");
-      console.error("[audit POST] insert failed:", detail);
-      return NextResponse.json({ error: "Failed to create audit." }, { status: 500 });
+    try {
+      const id = await createAuditWithLimits({
+        userId: auth.user.id, domain, urls, totalDiscovered, pageLimit: tier.pageLimit,
+        monthlyLimit: effectivePlan === "free" || effectivePlan === "onetime" ? 1 : null,
+        rollingLimit: !isAdmin && effectivePlan !== "free" && tier.auditLimit < 999 ? tier.auditLimit : null,
+        windowHours: tier.windowHours,
+      });
+      return NextResponse.json({ id, urls }, { status: 201 });
+    } catch (error) {
+      if (error instanceof AuditCreationLimit) {
+        return NextResponse.json({ error: error.window === "monthly"
+          ? effectivePlan === "onetime"
+            ? "You've used your included audit. Upgrade to Pro for unlimited audits."
+            : "You've used your included audit for this month. It resets on the 1st of next month."
+          : `Audit limit reached (${tier.auditLimit} audits per ${tier.windowHours} hours).` }, { status: 429 });
+      }
+      return NextResponse.json({ error: "Could not create audit. Reload your audit history before retrying." }, { status: 503 });
     }
-
-    const [row] = (await insertRes.json()) as Array<{ id: string }>;
-    return NextResponse.json({ id: row.id, urls }, { status: 201 });
   } catch (err) {
     if (err instanceof CountUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });
     console.error("[audit POST] Unhandled error:", err);

@@ -40,6 +40,12 @@ Day-seven results are preliminary because Search Console data lags publication. 
 
 Continue using the existing implementation task for follow-through; do not create overlapping SEO releases or unrelated automated messages. Re-check current main and other active branches first. Search Console and IndexNow submissions help discovery; they are not confirmation of indexing or ranking.
 
+## Measurement access check: 25 October
+
+The available manual GSC Overview history ends with the 12 October run. The latest checked-in feedback report is dated 20 October and uses data ending 17 October. Both precede the owner's export baseline and the sprint release. The older feedback confirms the best-checker query/page pairing only for its own window; it cannot establish a post-release gain.
+
+The connected GitHub tools can read workflow runs and logs but do not expose workflow dispatch. A fresh joint query/page pull for the priority guides remains pending. Keep using the owner's supplied baseline with its documented aggregation limits, and do not churn titles or claim rankings from these older reports.
+
 Primary guidance:
 
 - https://developers.google.com/search/docs/fundamentals/seo-starter-guide
