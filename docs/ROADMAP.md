@@ -198,7 +198,7 @@ Based on the full code review from 2026-10-03.
   `npx supabase db dump --schema-only > supabase/schema.sql` (or Supabase dashboard > Database > Schema), then commit it
 - In Lemon Squeezy, make sure the webhook subscribes to: `order_created`, `order_refunded`, `subscription_created`, `subscription_updated`, `subscription_cancelled`, `subscription_resumed`, `subscription_expired`, `subscription_payment_failed`
 
-- [ ] Content-map consistency: reconcile the legacy best-tools pillar with the canonical comparison guide so the site-wide content-link checker does not demand a link that redirects back to the same page. Preserve existing URLs and verify generator slots before changing the map.
+- [x] (2026-10-26) Content-map consistency: reconcile the legacy best-tools pillar with the canonical comparison guide so the site-wide content-link checker does not demand a link that redirects back to the same page. Preserve existing URLs and verify generator slots before changing the map.
 
 - [x] (2026-10-25, A17 measurement) Extend the existing read-only GSC Overview with bounded targeted query/page retrieval, complete JSON labels, finalized Web/Pacific dates, explicit coverage and error status. Verify actual post-merge output before interpreting query/page evidence; do not commit raw analytics.
 - [ ] Review targeted Overview pairs for the priority guides, then compare the first complete post-change window against matching filters/dates. Verify country/device segments before narrower ranking claims.
