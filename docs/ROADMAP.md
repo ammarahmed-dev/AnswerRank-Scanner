@@ -40,6 +40,8 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
+- [x] (2026-10-25, audit A03) Save a full one-time-plan report and consume its locked URL/counter in one service-only transaction; reject changed/exhausted rights and roll back both sides on failed writes. Purchase identity, up-front reservations and free-plan unlocked-report retests remain open.
+
 - [x] (2026-10-25, audit A07) Recheck monthly/rolling audit caps and create the audit under an account transaction lock after discovery; keep early guards, preserve tier limits and reconcile the existing discovery-count field in historical installs. Durable discovery/job reservations remain open.
 
 - [x] (2026-10-25, audit A08) Serialize monitor creation cap checks and inserts in a service-only per-account transaction; preserve current caps and duplicate handling, validate committed responses and fail closed without direct-write fallback. Signed-in and true contention acceptance remain open.
