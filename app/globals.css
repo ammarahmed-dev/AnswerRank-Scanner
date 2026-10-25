@@ -10659,3 +10659,7 @@ textarea.contact-control {
   .service-cta { flex-direction: column; align-items: stretch; padding: 22px; text-align: left; }
   .service-cta-btn { justify-content: center; }
 }
+
+/* Shared implementation-enquiry fields also appear on the contact page. */
+.service-form-note { color: var(--color-ink-soft); font-size: 13px; line-height: 1.65; margin: 0; }
+.service-enquiry-form .contact-submit { white-space: normal; min-height: 52px; }

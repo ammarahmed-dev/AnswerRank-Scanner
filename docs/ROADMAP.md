@@ -98,7 +98,7 @@ Based on the full code review from 2026-10-03.
 
 
 - [x] (2026-10-25, owner request) Research AEO/GEO service presentation using Brickell Digital and tool-plus-service references; document the existing CTA/contact flow and a scoped delivery plan in [SERVICES-PRESENTATION-PLAN.md](SERVICES-PRESENTATION-PLAN.md).
-- [ ] (A17/A15 priority) Deliver services plan S01-S03: one implementation page, scoped enquiry intake and existing shared/report CTA journey; then S04-S06 discovery, verified private attribution and qualification review. Preserve software pricing/rights and avoid promises of AI placement. Research complete does not mean service funnel live.
+- [~] (A17/A15 priority) Deliver services plan S01-S03: one implementation page, scoped enquiry intake and existing shared/report CTA journey; then S04-S06 discovery, verified private attribution and qualification review. Preserve software pricing/rights and avoid promises of AI placement. Initial page and CTA path are implemented; production valid-enquiry/readback and notification acceptance remain open.
 
 
 - Revenue plan (2026-10-12, owner request; rationale in docs/RESEARCH.md):
@@ -202,3 +202,7 @@ Based on the full code review from 2026-10-03.
 
 - [x] (2026-10-25, A17 measurement) Extend the existing read-only GSC Overview with bounded targeted query/page retrieval, complete JSON labels, finalized Web/Pacific dates, explicit coverage and error status. Verify actual post-merge output before interpreting query/page evidence; do not commit raw analytics.
 - [ ] Review targeted Overview pairs for the priority guides, then compare the first complete post-change window against matching filters/dates. Verify country/device segments before narrower ranking claims.
+
+- [x] (2026-10-25, services S01/S03) Ship the scoped implementation page, service contact mode, canonical discovery, updated shared CTA and one report placement; keep scanner access, pricing and report rights intact.
+- [~] (services S02) Validate and confirm service leads through the current private contact store with mocked receipt/error coverage and live schema metadata inspection. Real authorized production enquiry/readback, notification delivery and owner review acceptance remain unverified; do not send unsolicited tests.
+- [ ] Continue services S04-S06: restrained navigation/home/pricing placement after first-path acceptance, verified privacy-safe analytics, and actual qualified-enquiry/delivery review. Do not infer events from the presence of GTM alone.

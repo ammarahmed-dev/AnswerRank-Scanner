@@ -1,17 +1,15 @@
 import Link from "next/link";
+import { SERVICES_PATH } from "@/lib/service-enquiry";
 
-export default function ServiceCta() {
+export default function ServiceCta({ placement = "content" }: { placement?: "content" | "report" }) {
   return (
-    <aside className="service-cta surface" aria-label="Optimization help">
+    <aside className={`service-cta surface${placement === "report" ? " print-hidden" : ""}`} aria-label="Implementation help">
       <div className="service-cta-text">
-        <h2>Need help optimizing for AEO, GEO and SEO?</h2>
-        <p>
-          Tell us about your site and we will reply with what to fix first. Reach out for an AI search and SEO
-          review, or help implementing the fixes.
-        </p>
+        <h2>{placement === "report" ? "Want help implementing these fixes?" : "Get help applying this to your website"}</h2>
+        <p>Explore hands-on AEO, GEO and SEO implementation with an agreed scope and verification. Services are separate from scanner plans.</p>
       </div>
-      <Link href="/contact?subject=services" className="btn btn-primary service-cta-btn">
-        Talk to us
+      <Link href={`${SERVICES_PATH}?source=${placement}`} className="btn btn-primary service-cta-btn">
+        Explore implementation
       </Link>
     </aside>
   );

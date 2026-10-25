@@ -1,4 +1,6 @@
-import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
+import { randomUUID } from "node:crypto";
+import { serviceMessage, validateServiceEnquiry } from "@/lib/service-enquiry";
+import { BodyTooLargeError, readBoundedText, readJsonObject } from "@/lib/bounded-body";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { hasSupabaseConfig } from "@/lib/supabase-config";
@@ -126,8 +128,10 @@ export async function POST(req: NextRequest) {
   }
 
   let body: ContactPayload = {};
+  let serviceInput: unknown;
   try {
     const payload = await readJsonObject(req);
+    serviceInput = payload.service;
     body = {
       name: typeof payload.name === "string" ? payload.name : "",
       email: typeof payload.email === "string" ? payload.email : "",
@@ -139,6 +143,9 @@ export async function POST(req: NextRequest) {
   }
 
   const errors = validate(body);
+  const service = body.subject?.trim() === "Optimization services" ? validateServiceEnquiry(serviceInput) : null;
+  if (service && !service.ok) Object.assign(errors, service.errors);
+  if (service && (body.message?.trim().length ?? 0) > 10000) errors.message = "Keep your request under 10,000 characters.";
   if (Object.keys(errors).length > 0) {
     return NextResponse.json({ errors }, { status: 400 });
   }
@@ -146,7 +153,8 @@ export async function POST(req: NextRequest) {
   const name = body.name!.trim();
   const email = body.email!.trim().toLowerCase();
   const subject = body.subject!.trim();
-  const message = body.message!.trim();
+  const message = service?.ok ? serviceMessage(service.value, body.message!.trim()) : body.message!.trim();
+  const requestId = service?.ok ? randomUUID() : undefined;
 
   if (!hasSupabaseConfig()) {
     return NextResponse.json(
@@ -155,27 +163,28 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const insertRes = await fetch(`${supabaseUrl}/rest/v1/contact_messages`, {
-    method: "POST",
-    headers: {
-      ...getSupabaseServiceHeaders(),
-      Prefer: "return=minimal",
-    },
-    body: JSON.stringify({
-      name,
-      email,
-      subject,
-      message,
-      status: "new",
-    }),
-  });
-
-  if (!insertRes.ok) {
-    const details = await insertRes.text().catch(() => "");
-    console.error("Contact form Supabase insert failed:", details);
+  try {
+    const deadline = AbortSignal.timeout(10_000);
+    const insertRes = await fetch(`${supabaseUrl}/rest/v1/contact_messages${requestId ? "?select=id" : ""}`, {
+      method: "POST",
+      signal: deadline,
+      headers: {
+        ...getSupabaseServiceHeaders(),
+        Prefer: requestId ? "return=representation" : "return=minimal",
+      },
+      body: JSON.stringify({ ...(requestId ? { id: requestId } : {}), name, email, subject, message, status: "new" }),
+    });
+    if (!insertRes.ok) throw new Error("Contact save failed");
+    if (requestId) {
+      const receipt: unknown = JSON.parse(await readBoundedText(insertRes, 16_384, deadline));
+      if (!Array.isArray(receipt) || receipt.length !== 1 || receipt[0]?.id !== requestId) {
+        throw new Error("Contact save unconfirmed");
+      }
+    }
+  } catch {
     return NextResponse.json(
-      { error: "Could not save contact message. Please try again." },
-      { status: 500 }
+      { error: "We could not confirm your request was saved. Please email hello@aeocheck.co before resubmitting." },
+      { status: 503 }
     );
   }
 

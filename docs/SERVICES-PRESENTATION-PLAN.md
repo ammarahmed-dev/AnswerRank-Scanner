@@ -1,6 +1,6 @@
 # AEO/GEO implementation services: research and delivery plan
 
-Research date: 25 October 2026. Status: researched and prioritized; the service page, new placements and lead attribution are not implemented. This plan extends A17 growth/business validation and A15 conversion measurement. Preserve ongoing non-branded SEO and the complete audit. Urgent security, paid-rights and data-integrity failures retain precedence.
+Research date: 25 October 2026. Status: initial page, scoped intake and shared/report CTA path implemented; broader placements, production notification acceptance and analytics attribution remain open. This plan extends A17 growth/business validation and A15 conversion measurement. Preserve ongoing non-branded SEO and the complete audit. Urgent security, paid-rights and data-integrity failures retain precedence.
 
 ## Decision
 
@@ -82,13 +82,21 @@ Private funnel: service CTA interactions -> service-page visits -> saved enquiri
 
 ## Implementation batches
 
-- [ ] S01 Page and scope: implement canonical service page, copy, package concepts, honest proof, FAQ and enquiry journey. Add metadata and canonical sitemap/discovery entries; use truthful Service/WebPage structured data without fake aggregate ratings, prices or special-AI-schema claims.
-- [ ] S02 Intake: reuse contact submission with service context, bounded server validation and saved-lead confirmation. Verify existing subjects, disabled/retry/error behavior and mobile/keyboard accessibility. Keep notification delivery status explicit. Do not add billing or publish rates.
-- [ ] S03 Intent placements: update shared CTA and add the single completed-report block; verify all existing placements and both public/owner report states. No expansion of report visibility or paid rights.
+- [x] S01 Page and scope: implement canonical service page, copy, package concepts, honest proof, FAQ and enquiry journey. Add metadata and canonical sitemap/discovery entries; use truthful Service/WebPage structured data without fake aggregate ratings, prices or special-AI-schema claims.
+- [~] S02 Intake: reuse contact submission with service context, bounded server validation and saved-lead confirmation. Verify existing subjects, disabled/retry/error behavior and mobile/keyboard accessibility. Keep notification delivery status explicit. Do not add billing or publish rates.
+- [x] S03 Intent placements: update shared CTA and add the single completed-report block; verify all existing placements and both public/owner report states. No expansion of report visibility or paid rights.
 - [ ] S04 Discovery: add the restrained homepage/pricing/footer/header placements after S01-S03 pass, with mobile hierarchy intact and no duplicate promotions.
 - [ ] S05 Attribution: audit analytics configuration, implement privacy-safe allowed events/source codes and verify delivery where access exists; otherwise record the inaccessible destination and use private saved-lead evidence.
 - [ ] S06 Review: assess qualified enquiries and delivery effort over the first available meaningful window. Adjust scope/placement based on evidence; public service prices or commitments require an owner decision. Add real case evidence only with authorization.
 
-Ship S01-S03 as one coherent initial material release if feasible; split only where review/verification requires it. S04-S05 follow without delaying the first verified enquiry path unnecessarily. Scope research is complete; all six implementation items remain open.
+Ship S01-S03 as one coherent initial material release if feasible; split only where review/verification requires it. S04-S05 follow without delaying the first verified enquiry path unnecessarily. Scope research and the initial S01/S03 path are implemented. S02 has mocked persistence/UI coverage and a verified live table contract; a real production saved-lead/readback and notification-delivery acceptance remain unverified. S04-S06 remain open.
 
 Release gate: meaningful contact/CTA/access regression tests, type checking, lint, production build and CI. Check desktop/mobile screenshots at 1280 and 390 px, keyboard focus, form errors and narrow cards. After merge verify GitHub Vercel success, public route/canonical/links and the actual enquiry flow without sending unsolicited messages. Distinguish page deployed, storage tested, notification delivered and analytics destination verified. Continue the full audit and non-branded growth measurement in parallel.
+
+## Initial implementation evidence (25 October)
+
+The canonical page and its scoped form use the existing contact endpoint/table. Service requests validate a website URL without credentials/query/fragment, optional controlled platform/scope values, a bounded request description and an explicitly self-reported source code. The service context is serialized into the existing private message field. A service save inserts a server-generated ID and requires that exact ID in a bounded, deadline-protected receipt before returning success. Uncertain saves ask the visitor to contact us before resubmitting; durable retry identity remains future work.
+
+The shared CTA now links to this page; report placement adds one public service link without a URL/report ID/token. Reading, upgrade, export and report-access logic are preserved. The page has Service metadata and XML/HTML discovery. No software-price/limit change or schema migration. Live metadata inspection verified text message storage, RLS and service-role-only table grants without reading customer records.
+
+Validation uses mocked storage/email and browser request interception, plus invalid-input smoke checks that cannot create a lead. Desktop/mobile screenshots and keyboard/error-state acceptance must be inspected before treating the initial page and shared/report placements as visually verified. Local browser startup was blocked by the execution environment and the hosted preview requires Vercel sign-in. A credential-free CI Chromium journey captures synthetic desktop/mobile page, form and full/preview report screenshots; CI success and artifact inspection gate merge. Real production notification delivery, a production valid enquiry/readback, owner review workflow, analytics event delivery, broader promotion and qualified-enquiry results remain explicitly open; no test email or unsolicited message is sent.

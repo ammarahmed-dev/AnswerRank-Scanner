@@ -31,6 +31,7 @@ export default function HtmlSitemapPage() {
             <li><Link href="/">Home</Link> - Free AEO and AI search readiness scanner</li>
             <li><a href="/about">About</a> - Who we are and what AEOCheck does</li>
             <li><a href="/team">Team</a> - Meet the people behind AEOCheck</li>
+            <li><Link href="/services/aeo-geo-implementation">Implementation services</Link> - Scoped AEO, GEO and SEO implementation</li>
             <li><a href="/contact">Contact</a> - Get in touch with the AEOCheck team</li>
             <li><a href="/sample-report">Sample Report</a> - See a full AEO report before you scan</li>
           </ul>

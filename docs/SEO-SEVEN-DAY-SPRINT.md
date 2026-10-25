@@ -44,7 +44,7 @@ Continue using the existing implementation task for follow-through; do not creat
 
 Fresh read-only Search Console retrieval succeeded on 25 October through the existing GitHub Actions `GSC Overview` service-account connection. The refreshed performance data ends on 23 October, before the sprint changes. The earlier blanket access blocker is resolved. Keep raw logs, exports and private performance metrics out of public documentation.
 
-The overview currently limits query rows and reports queries and pages separately; its joint query/page section covers tools only. A targeted joint query/page pull for the priority guides remains pending. A missing query in the limited overview is not evidence of zero impressions. Compare matching dates and filters before attributing any change.
+Superseded by PR #43 runtime verification: the reviewed Overview now retrieves actual priority-guide query/page pairs. The successful read-only run on 25 October was inspected; no configured pagination cap was reached, which does not establish API completeness. A missing query in the limited overview is not evidence of zero impressions. Compare matching dates and filters before attributing any change.
 
 Primary guidance:
 
@@ -94,4 +94,4 @@ Every section shares one Pacific-calendar date range, Web search type and finali
 
 The existing Overview workflow runs manually or after diagnostic-file changes reach main. It uses read-only OAuth scope and contents:read, writes no repository reports, and sends no issues or messages. This adds no recurring schedule. Keep raw output and performance metrics out of repository files/public documentation. The Google API contract is documented at https://developers.google.com/webmaster-tools/v1/searchanalytics/query.
 
-After the release, inspect the actual job output before declaring a current query/page pairing verified. All performance data ending before the 25 October releases is a baseline, not evidence of their impact. Country/device segmentation, saved-lead conversion verification and future matching-window review remain separate work.
+Runtime verification completed on 25 October: the reviewed successful job returned actual priority-guide pairs. All performance data ending before the 25 October releases is a baseline, not evidence of their impact. Country/device segmentation, saved-lead conversion verification and future matching-window review remain separate work.

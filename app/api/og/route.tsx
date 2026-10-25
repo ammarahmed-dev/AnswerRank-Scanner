@@ -1,9 +1,7 @@
 ﻿import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "AEOCheck - Free AEO & AI Search Readiness Scanner";
-export const contentType = "image/png";
-export const size = {
+const size = {
   width: 1200,
   height: 630,
 };

@@ -1,3 +1,9 @@
+# 2026-10-25 - Launch scoped AEO/GEO implementation enquiries
+
+CI now runs isolated Chromium service/contact/report journeys and retains synthetic screenshots for seven days. External browser requests are blocked; valid submissions are intercepted, so no customer record or email is created. Desktop/mobile screenshots at 1280/390 px must be inspected before merge. Local production HTTP smoke checks return 200 for the new page, both sitemaps and existing image endpoints, with 400 for empty contact input. PR #43's reviewed live query/page output is verified; stale targeted-retrieval blockers are corrected without publishing private metrics.
+
+Added the dedicated implementation-services page, clear engagement scopes, process/FAQ and enquiry form. Existing blog/tool service CTAs and one completed-report CTA lead to the same canonical page, now listed in XML/HTML sitemaps. Service enquiries reuse private contact-message storage with bounded validation and a matching save receipt before success. No prices, software entitlements, private report exposure, database migration or production test email. Validation covers API/storage failures with mocks, general-contact/report-access regression, type/lint/build/CI and desktop/mobile browser review. Removed unsupported metadata exports from two existing image route handlers, preserving their GET responses and dimensions, so route type validation also passes with webpack. Real production saved-lead/readback, notification delivery, analytics attribution and broader placements remain open; full audit completion is not claimed.
+
 # 2026-10-25 - Retrieve targeted Search Console query/page evidence
 
 Extended read-only GSC Overview with actual query/page pairs for checker intent, priority guides and long-query candidates. Fixed the shared Pacific-date window, finalized Web scope, bounded pagination, label precision and failure reporting. Overview uses read-only OAuth; sitemap submission keeps its existing scope. The existing workflow refreshes on diagnostic changes to main as well as manual runs, with no new recurring schedule, metric commits or notifications. Mocked regression tests, type/lint checks, production build and CI gate the release; inspect real post-merge output before claiming evidence coverage. No customer-facing content, price, entitlement or database change. Raw analytics stay out of this repository.
@@ -101,6 +107,8 @@ Configured quota storage errors now return service unavailable before starting s
 Resolved page URLs now determine scanner origin/path checks; streamed response and request bodies are bounded; cancellation reaches scanner fetches; llms.txt HTML errors are rejected. Performance is labeled as Lighthouse lab data, with a TBT field and compatibility for old reports. These corrections can lower a new scan score if a soft error was previously counted as valid llms.txt or the actual destination blocks crawling. Stored historical overall scores are unchanged. See IMPLEMENTATION-STATUS.md for remaining database work.
 
 # Changelog
+
+Browser verification for the initial implementation-services release now runs in CI against the built local app, blocks external browser requests, uses synthetic report fixtures and intercepts valid contact submissions. Screenshots are retained for seven days; no production credentials or test email. Visual acceptance remains pending until the artifact is inspected.
 
 Newest first. Every autonomous session adds an entry: date, what shipped, how it was verified, follow-ups.
 

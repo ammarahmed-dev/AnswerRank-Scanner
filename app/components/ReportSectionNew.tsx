@@ -15,6 +15,7 @@ import { getReportPresentation } from "@/lib/report-presentation";
 import { toolsForCheck } from "@/lib/tool-links";
 import ReportChanges from "./ReportChanges";
 import FixPackSection from "./FixPackSection";
+import ServiceCta from "./ServiceCta";
 import { MetaRow, PriorityColumn } from "./ReportParts";
 import {
   CATEGORY_LABELS, aboutContactSnapshotPhrase, badgeTone, categoryNote, contradictsAboutContact, getSchemaRecommendation,
@@ -734,6 +735,7 @@ const downloadPdf = async () => {
       </section>
 
       <FixPackSection report={report} hasFullReportAccess={hasFullReportAccess} onUpgrade={() => setIsUpgradeModalOpen(true)} />
+      <ServiceCta placement="report" />
 
       <section className="surface report-card print-section">
         <h3 className="section-heading">PDF Export</h3>

@@ -34,6 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/blog`, changeFrequency: "weekly" as const, priority: 0.8 },
     { url: `${SITE_URL}/about`, changeFrequency: "monthly" as const, priority: 0.7 },
     { url: `${SITE_URL}/team`, changeFrequency: "monthly" as const, priority: 0.7 },
+    { url: `${SITE_URL}/services/aeo-geo-implementation`, changeFrequency: "monthly" as const, priority: 0.8 },
     { url: `${SITE_URL}/contact`, changeFrequency: "monthly" as const, priority: 0.6 },
     { url: `${SITE_URL}/ai-seo-audit`, changeFrequency: "monthly" as const, priority: 0.9 },
     { url: `${SITE_URL}/research/ai-readiness-study`, changeFrequency: "yearly" as const, priority: 0.8 },
