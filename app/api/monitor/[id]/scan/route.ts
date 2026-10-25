@@ -1,3 +1,4 @@
+import { saveMonitorSnapshot } from "@/lib/monitor-persistence";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isProUser } from "@/lib/access";
@@ -51,33 +52,13 @@ export async function POST(req: Request, { params }: RouteContext) {
   }
 
   const { score, categoryScores } = scanResult;
-  const now = new Date().toISOString();
-
-  const snapRes = await fetch(`${supabaseUrl}/rest/v1/monitor_snapshots`, {
-    method: "POST",
-    headers: { ...getSupabaseServiceHeaders(), Prefer: "return=representation" },
-    body: JSON.stringify({
-      monitored_url_id: id,
-      score,
-      category_scores: categoryScores,
-      methodology_version: scanResult.methodology?.version ?? null,
-      scanned_at: now,
-    }),
-  });
-
-  if (!snapRes.ok) {
-    const detail = await snapRes.text().catch(() => "");
-    console.error("[monitor/scan] snapshot insert failed:", detail);
-    return NextResponse.json({ error: "Failed to save snapshot." }, { status: 500 });
+  try {
+    const snapshot = await saveMonitorSnapshot({
+      monitorId: id, userId: auth.user.id, score,
+      categoryScores: categoryScores as Record<string, number>, methodologyVersion: scanResult.methodology?.version,
+    });
+    return NextResponse.json({ snapshot, score }, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Failed to save monitor scan. Please retry." }, { status: 503 });
   }
-
-  // Update last_scanned_at on the monitored URL (non-fatal if it fails)
-  await fetch(`${supabaseUrl}/rest/v1/monitored_urls?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: { ...getSupabaseServiceHeaders(), Prefer: "return=minimal" },
-    body: JSON.stringify({ last_scanned_at: now }),
-  }).catch(() => null);
-
-  const [snapshot] = (await snapRes.json()) as Array<{ id: string; score: number; scanned_at: string }>;
-  return NextResponse.json({ snapshot, score }, { status: 201 });
 }

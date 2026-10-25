@@ -79,13 +79,34 @@ describe("monitor API method propagation", () => {
     expect(decodeURIComponent(fetch.mock.calls[1][0])).toContain("methodology_version");
   });
   it("writes the producing method on a manual snapshot, including a valid zero score", async () => {
-    const fetch = vi.fn(async (url: string, init?: RequestInit) => Response.json(init?.method === "POST" ? [{ id: "snapshot", score: 0 }] : url.includes("/monitored_urls") && !init?.method ? [{ id: "monitor-id", url: "https://example.invalid" }] : []));
+    const fetch = vi.fn(async (url: string, init?: RequestInit) => Response.json(init?.method === "POST" ? [{ id: "snapshot", score: 0, scanned_at: "2026-10-25T00:00:00Z" }] : url.includes("/monitored_urls") && !init?.method ? [{ id: "monitor-id", url: "https://example.invalid" }] : []));
     vi.stubGlobal("fetch", fetch);
     const response = await manualScan(request(), ctx());
     expect(response.status).toBe(201);
     const body = JSON.parse(fetch.mock.calls.find(([, init]) => init?.method === "POST")![1]!.body as string);
-    expect(body).toMatchObject({ methodology_version: "v1", score: 0, category_scores: { metadata: 0 } });
+    expect(body).toMatchObject({ p_methodology_version: "v1", p_score: 0, p_category_scores: { metadata: 0 } });
     expect(fetch.mock.calls[0][0]).toContain("user_id=eq.owner");
+  });
+  it("manual scan returns unavailable when atomic persistence fails, with no split writes", async () => {
+    const fetch = vi.fn(async (_url: string, init?: RequestInit) => init?.method === "POST"
+      ? new Response("unavailable", { status: 503 })
+      : Response.json([{ id: "monitor-id", url: "https://example.invalid" }]));
+    vi.stubGlobal("fetch", fetch);
+    expect((await manualScan(request(), ctx())).status).toBe(503);
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch.mock.calls.some(([, init]) => init?.method === "PATCH")).toBe(false);
+  });
+  it("does not email or count completion after an atomic persistence error", async () => {
+    vi.spyOn(console, "info").mockImplementation(() => undefined);
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === "POST") return new Response("unavailable", { status: 503 });
+      if (url.includes("/monitored_urls?")) return Response.json(url.includes("frequency=eq.weekly") ? [{ id: "monitor-id", url: "https://example.invalid", user_id: "owner", frequency: "weekly" }] : []);
+      return Response.json([]);
+    }));
+    const response = await cron(request());
+    expect((await response.json()).processed).toBe(0);
+    expect(send).not.toHaveBeenCalled();
   });
   it.each(["v1", "v2", undefined])("cron writes the scan version and protects email comparisons against %s", async previous => {
     vi.spyOn(console, "info").mockImplementation(() => undefined);
@@ -93,12 +114,12 @@ describe("monitor API method propagation", () => {
       if (url.includes("/monitored_urls?") && !init?.method) return Response.json(url.includes("frequency=eq.weekly") ? [{ id: "monitor-id", url: "https://example.invalid", user_id: "owner", frequency: "weekly" }] : []);
       if (url.includes("/monitor_snapshots?") && !init?.method) return Response.json([{ ...snapshot(previous, 90), category_scores: { metadata: 100 } }]);
       if (url.includes("/auth/v1/")) return Response.json({ email: "owner@example.invalid" });
-      return new Response(null, { status: 201 });
+      return Response.json([{ id: "snapshot", score: 0, scanned_at: "2026-10-25T00:00:00Z" }]);
     });
     vi.stubGlobal("fetch", fetch);
     expect((await cron(request())).status).toBe(200);
     const body = JSON.parse(fetch.mock.calls.find(([, init]) => init?.method === "POST")![1]!.body as string);
-    expect(body.methodology_version).toBe("v1");
+    expect(body.p_methodology_version).toBe("v1");
     expect(send).toHaveBeenCalledOnce();
     expect(send.mock.calls[0][0].subject.startsWith("Alert")).toBe(previous === "v1");
   });

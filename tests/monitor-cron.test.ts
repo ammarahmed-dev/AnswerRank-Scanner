@@ -70,9 +70,9 @@ describe("monitor cron", () => {
           ? [row("w1", "https://new.com/", "weekly", null), row("w2", "https://broken.com/", "weekly", "2026-09-01T00:00:00Z")]
           : [row("m1", "https://old.com/", "monthly", "2026-08-01T00:00:00Z")]), { status: 200 });
       }
-      if (url.includes("/monitor_snapshots") && init?.method === "POST") {
-        snapshots.push(JSON.parse(String(init.body)).monitored_url_id);
-        return new Response(null, { status: 201 });
+      if (url.includes("/rpc/save_monitor_snapshot") && init?.method === "POST") {
+        snapshots.push(JSON.parse(String(init.body)).p_monitor_id);
+        return Response.json([{ id: "snapshot", score: 70, scanned_at: "2026-10-25T00:00:00Z" }]);
       }
       return new Response("[]", { status: 200 });
     });
