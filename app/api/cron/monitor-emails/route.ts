@@ -1,3 +1,4 @@
+import { saveMonitorSnapshot } from "@/lib/monitor-persistence";
 // Add CRON_SECRET to Vercel environment variables (any random string).
 // Schedule: daily at 9am UTC (see vercel.json). Each monitor is still scanned and emailed only
 // when due (weekly: 6+ days, monthly: 28+ days since the last scan); running daily spreads the
@@ -100,29 +101,6 @@ async function getLastSnapshots(monitoredUrlId: string): Promise<Snapshot[]> {
   return (await res.json()) as Snapshot[];
 }
 
-async function saveSnapshot(monitoredUrlId: string, score: number, categoryScores: Record<string, number>, methodologyVersion?: string) {
-  const now = new Date().toISOString();
-
-  const snapRes = await fetch(`${supabaseUrl}/rest/v1/monitor_snapshots`, {
-    method: "POST",
-    headers: { ...getSupabaseServiceHeaders(), Prefer: "return=minimal" },
-    body: JSON.stringify({ monitored_url_id: monitoredUrlId, score, category_scores: categoryScores, scanned_at: now, methodology_version: methodologyVersion ?? null }),
-  });
-  if (!snapRes.ok) {
-    const detail = await snapRes.text().catch(() => "");
-    console.error(`[cron/monitor-emails] snapshot insert failed for ${monitoredUrlId}:`, detail);
-    throw new Error("Failed to save monitor snapshot");
-  }
-
-  const updateRes = await fetch(`${supabaseUrl}/rest/v1/monitored_urls?id=eq.${monitoredUrlId}`, {
-    method: "PATCH",
-    headers: { ...getSupabaseServiceHeaders(), Prefer: "return=minimal" },
-    body: JSON.stringify({ last_scanned_at: now }),
-  });
-  if (!updateRes.ok) throw new Error("Failed to update monitor schedule");
-}
-
-
 export async function GET(req: Request) {
   // Verify cron secret (required in production, optional in development)
   const cronSecret = process.env.CRON_SECRET;
@@ -173,7 +151,7 @@ export async function GET(req: Request) {
       const previousScore = previousSnapshots[0]?.score ?? null;
 
       // 3. Save snapshot + update last_scanned_at
-      await saveSnapshot(row.id, score, categoryScores as Record<string, number>, scanResult.methodology?.version);
+      await saveMonitorSnapshot({ monitorId: row.id, userId: row.user_id, score, categoryScores: categoryScores as Record<string, number>, methodologyVersion: scanResult.methodology?.version });
 
       // 4. Send email if Resend is configured
       if (resend) {

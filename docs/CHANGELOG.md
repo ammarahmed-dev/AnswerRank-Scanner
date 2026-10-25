@@ -1,3 +1,7 @@
+# 2026-10-25 - Commit monitor snapshots and schedules atomically
+
+Manual and scheduled scans now persist their snapshot and last-scanned timestamp in one database transaction. Failed or silently suppressed writes roll back; manual saves return 503 and cron skips email after persistence failure. The shared client bounds RPC responses and validates the saved observation without a split-write fallback. The additive service-only invoker function is applied and verified in production. Validation: 457 tests, type checking, lint (0 errors, 18 existing warnings), production build and local smoke checks. Leases, idempotent recovery and durable email delivery remain open; no actual email or customer-row change was used for verification.
+
 # 2026-10-25 - Version monitor observations and guard comparisons
 
 New manual/scheduled monitor snapshots record their producing scoring method. List deltas and email score/category alerts require matching recorded methods. History retains all observations but connects only compatible adjacent points, avoiding misleading trends across method changes or unknown legacy methods. The nullable additive migration is applied and checked in production; existing scores/data/access remain intact and old writers stay compatible. No actual emails or live cron were triggered for verification. Validation: 439 tests, type checking, lint (0 errors, 18 existing warnings) and clean production build. Signed-in history and visual acceptance remain unverified. Durable monitor jobs, atomic snapshot/schedule writes and the email outbox remain open.

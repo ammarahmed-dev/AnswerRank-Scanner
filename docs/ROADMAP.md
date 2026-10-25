@@ -36,6 +36,8 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
+- [x] (2026-10-25, audit A08) Atomically insert monitor snapshots and advance schedules with a service-only owned-monitor RPC; share it across manual and cron scans and fail closed on persistence errors. Leases, idempotency and durable email outbox remain open.
+
 - [x] (2026-10-25, audit A05) Record monitor scoring methods on new snapshots; suppress incompatible list/email deltas and break chart lines across changed/unknown methods. Nullable production column applied and verified; legacy observations preserved. Full signed-in/email acceptance remains open.
 
 - [x] (2026-10-25, audit A05) Guard report/dashboard score and check deltas by recorded scoring-method compatibility; explain different/unknown methods without interpreting them as site improvement. Monitor/email history remains pending versioned snapshots.
