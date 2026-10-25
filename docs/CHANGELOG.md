@@ -1,3 +1,7 @@
+# 2026-10-25 - Enforce monitor creation caps in one transaction
+
+Monitor creation now serializes the current account cap check and insert with an advisory transaction lock, preventing separate requests from independently accepting the same remaining slot. Existing plan caps, weekly creation and duplicate responses are preserved. The additive migration is applied and verified without customer-monitor changes. The RPC client bounds and validates responses and has no separate count/direct-insert fallback. Validation: 566 tests, type checking, lint (0 errors, 18 existing warnings), production build and local access-control checks. Signed-in production creation and true multi-connection contention remain unverified; durable monitoring jobs, recovery and email delivery remain open.
+
 # 2026-10-25 - Commit audit page results and progress atomically
 
 Audit-page saves now lock the owned audit and append to current results, preventing stale requests from overwriting another page's saved result. Target, duplicate and finished-state checks run again inside the transaction. Progress, aggregate and completion commit together; zero scores count and failed-page-only averages remain unavailable. RPC failures have no legacy replacement-write fallback. The additive migration is applied and verified without customer-audit writes. Validation: 538 tests, type checking, lint (0 errors, 18 existing warnings), production build and local access-control checks. Durable jobs, leases, recovery and signed-in/multi-connection acceptance remain open.

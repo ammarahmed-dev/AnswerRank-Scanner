@@ -9,14 +9,12 @@ vi.mock("@/lib/supabase-config", () => ({ getSupabaseServerUrl: () => "https://d
 vi.mock("@/lib/page-discovery", () => ({ discoverPages }));
 vi.mock("@/lib/url-safety", () => ({ assertPublicUrl: vi.fn() }));
 import { POST as audit } from "@/app/api/audit/route";
-import { POST as monitor } from "@/app/api/monitor/route";
 
 afterEach(() => { vi.unstubAllGlobals(); vi.clearAllMocks(); auth.plan = "free"; });
 const request = (body: unknown) => new Request("https://aeocheck.co/api/test", { method: "POST", body: JSON.stringify(body) });
 
 describe.each([
   ["audit", audit, { domain: "example.test" }],
-  ["monitor", monitor, { url: "https://example.test" }],
 ] as const)("%s count verification", (_name, handler, body) => {
   it.each([null, "*/*", "garbage", "bad/0"])("fails closed for count header %s", async header => {
     const fetch = vi.fn(async () => new Response("[]", { headers: header ? { "content-range": header } : {} }));
@@ -50,14 +48,6 @@ describe("successful exact counts", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response("[]", { headers: { "content-range": "0-0/1" } })));
     expect((await audit(request({ domain: "example.test" }))).status).toBe(429);
     expect(discoverPages).not.toHaveBeenCalled();
-  });
-  it("accepts a verified empty monitor count and inserts once", async () => {
-    const fetch = vi.fn(async (_url: string, init?: RequestInit) => init?.method === "POST"
-      ? new Response(JSON.stringify([{ id: "monitor-id" }]), { status: 201 })
-      : new Response("[]", { headers: { "content-range": "*/0" } }));
-    vi.stubGlobal("fetch", fetch);
-    expect((await monitor(request({ url: "https://example.test" }))).status).toBe(201);
-    expect(fetch).toHaveBeenCalledTimes(2);
   });
   it("checks the one-time monthly count before discovery", async () => {
     auth.plan = "onetime";

@@ -1,6 +1,6 @@
+import { createMonitorWithLimit, MonitorCreationConflict } from "@/lib/monitor-creation";
 import { getScoringComparison } from "@/lib/scoring-comparison";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
-import { CountUnavailableError, fetchExactCount } from "@/lib/exact-count";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { assertPublicUrl } from "@/lib/url-safety";
@@ -131,39 +131,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: (e as Error).message }, { status: 400 });
   }
 
-  // Count existing entries to enforce cap
-  const total = await fetchExactCount(
-    `${supabaseUrl}/rest/v1/monitored_urls?user_id=eq.${auth.user.id}&select=id`,
-    { headers: { ...getSupabaseServiceHeaders(), Prefer: "count=exact" }, cache: "no-store" }
-  );
-  if (total >= monitorLimit) {
-    return NextResponse.json({ error: `Maximum ${monitorLimit} monitored URLs reached.` }, { status: 422 });
-  }
-
-  const insertRes = await fetch(`${supabaseUrl}/rest/v1/monitored_urls`, {
-    method: "POST",
-    headers: { ...getSupabaseServiceHeaders(), Prefer: "return=representation" },
-    body: JSON.stringify({
-      user_id: auth.user.id,
-      url: normalized,
+  try {
+    const item = await createMonitorWithLimit({
+      userId: auth.user.id, url: normalized,
       label: typeof body.label === "string" ? body.label.trim() || null : null,
-      frequency: "weekly",
-    }),
-  });
-
-  if (insertRes.status === 409) {
-    return NextResponse.json({ error: "Already monitoring this URL." }, { status: 409 });
+      limit: monitorLimit,
+    });
+    return NextResponse.json({ item }, { status: 201 });
+  } catch (error) {
+    if (error instanceof MonitorCreationConflict) {
+      return error.reason === "limit"
+        ? NextResponse.json({ error: `Maximum ${monitorLimit} monitored URLs reached.` }, { status: 422 })
+        : NextResponse.json({ error: "Already monitoring this URL." }, { status: 409 });
+    }
+    return NextResponse.json({ error: "Could not add URL. Reload your monitors before retrying." }, { status: 503 });
   }
-  if (!insertRes.ok) {
-    const detail = await insertRes.text().catch(() => "");
-    console.error("[monitor POST] insert failed:", detail);
-    return NextResponse.json({ error: "Failed to add URL." }, { status: 500 });
-  }
-
-  const [row] = (await insertRes.json()) as MonitorItem[];
-  return NextResponse.json({ item: row }, { status: 201 });
   } catch (err) {
-    if (err instanceof CountUnavailableError) return NextResponse.json({ error: err.message }, { status: 503 });
     console.error("[monitor POST] Unhandled error:", err);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }
