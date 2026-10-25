@@ -1,3 +1,4 @@
+import { getScoringComparison } from "@/lib/scoring-comparison";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { CountUnavailableError, fetchExactCount } from "@/lib/exact-count";
 import { NextResponse } from "next/server";
@@ -14,6 +15,7 @@ type RawSnapshot = {
   score: number;
   category_scores: Record<string, number> | null;
   scanned_at: string;
+  methodology_version?: string | null;
 };
 
 type RawRow = {
@@ -47,7 +49,7 @@ export async function GET(req: Request) {
 
   const params = new URLSearchParams({
     user_id: `eq.${auth.user.id}`,
-    select: "id,url,label,frequency,last_scanned_at,created_at,monitor_snapshots(score,category_scores,scanned_at)",
+    select: "id,url,label,frequency,last_scanned_at,created_at,monitor_snapshots(score,category_scores,scanned_at,methodology_version)",
     order: "created_at.asc",
     "monitor_snapshots.order": "scanned_at.desc",
     "monitor_snapshots.limit": "2",
@@ -84,7 +86,7 @@ export async function GET(req: Request) {
       latest_score: latest?.score ?? null,
       latest_category_scores: latest?.category_scores ?? null,
       previous_score: previous?.score ?? null,
-      score_delta: latest != null && previous != null ? latest.score - previous.score : null,
+      score_delta: latest != null && previous != null && getScoringComparison(latest.methodology_version, previous.methodology_version) === "same_method" ? latest.score - previous.score : null,
     };
   });
 
