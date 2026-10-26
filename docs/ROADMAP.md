@@ -208,3 +208,5 @@ Based on the full code review from 2026-10-03.
 - [ ] Continue services S04-S06: restrained navigation/home/pricing placement after first-path acceptance, verified privacy-safe analytics, and actual qualified-enquiry/delivery review. Do not infer events from the presence of GTM alone.
 
 - [x] (2026-10-25, owner request, S04) Repair public mobile navigation and tablet breakpoint gap; add shared header/footer service links and contextual homepage/pricing CTAs. Add scoped USD service starting prices with proposal confirmation. Software plans remain unchanged. Verify browser artifacts and deployed output before live acceptance; S02/S05/S06 remain open.
+
+- [x] (2026-10-26, A13) Validate bounded AI insight output before persistence; reject raw malformed response fallback while preserving deterministic scan completion and schema grounding. Provenance, prompt isolation and provider spend controls remain open.

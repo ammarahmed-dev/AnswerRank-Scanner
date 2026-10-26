@@ -1,3 +1,7 @@
+# 2026-10-26 - Validate generated insight responses
+
+Reject malformed/incomplete AI response objects and enforce response/field/array limits before saving report insights. Stop treating raw provider failure text as completed AI analysis; fall back to the existing local recommendations without changing deterministic scores, checks or report rights. Keep scraper schema detection and editorial recommendation guards authoritative. Tests cover valid and invalid complete scan/save paths plus parser boundaries. Full audit, live provider acceptance, provenance, prompt isolation and cost controls remain open. No new growth claims or production test email.
+
 # 2026-10-26 - Reconcile the canonical comparison-guide hub
 
 Consolidated the tools pillar on the published comparison guide and removed the obsolete planned hub generation slot. Preserved the legacy permanent redirect and all publication dates/titles. Updated two published spoke links to the canonical URL and linked both live tools spokes from the hub. The site-wide content-link check now runs in CI; regression checks reject a missing required hub link. No ranking or conversion gains claimed. Full audit, service enquiry delivery and analytics acceptance remain open.

@@ -3,6 +3,7 @@ import { BodyTooLargeError, readBoundedText } from "@/lib/bounded-body";
 import { NextRequest, NextResponse, after } from "next/server";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { buildAIPrompt } from "@/lib/build-ai-prompt";
+import { parseValidatedAIInsights } from "@/lib/ai-insight-validation";
 import { generateAIInsights } from "@/lib/ai-provider";
 import { runScanCore } from "@/lib/scan-core";
 import { getPreviousReportSummary, saveReportRecord } from "@/lib/report-db";
@@ -252,51 +253,12 @@ async function getAIInsightsWithBudget(
   }
 }
 
-function parseAIInsights(raw: string, fallbackDetected: string[] = []): AIInsights {
-  const cleaned = raw
-    .trim()
-    .replace(/^```(?:json)?/i, "")
-    .replace(/```$/i, "")
-    .trim();
-  const firstBrace = cleaned.indexOf("{");
-  const lastBrace = cleaned.lastIndexOf("}");
-
-  if (firstBrace >= 0 && lastBrace > firstBrace) {
-    try {
-      const parsed = JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
-      return {
-        recommendations: Array.isArray(parsed.recommendations)
-          ? parsed.recommendations.filter((item: unknown) => typeof item === "string").slice(0, 5)
-          : [],
-        quickWin:
-          typeof parsed.quickWin === "string"
-            ? parsed.quickWin
-            : "Improve the clearest missing AI visibility signal first.",
-        contentGap:
-          typeof parsed.contentGap === "string"
-            ? parsed.contentGap
-            : "Add more explicit answer-focused content for the target audience.",
-        summary:
-          typeof parsed.summary === "string"
-            ? parsed.summary
-            : "AI analysis completed, but the summary was not returned in the expected shape.",
-        schemaRecommendations: parseSchemaRecommendations(parsed as Record<string, unknown>, fallbackDetected),
-      };
-    } catch (err) {
-      console.warn("AI response was not valid JSON; using text fallback.", err);
-    }
-  }
-
+function parseAIInsights(raw: string, fallbackDetected: string[] = []): AIInsights | null {
+  const parsed = parseValidatedAIInsights(raw);
+  if (!parsed) return null;
   return {
-    recommendations: [
-      "Add clear FAQ-style answer blocks for the most important buyer questions.",
-      "Strengthen page metadata so the primary entity, offer, and audience are explicit.",
-      "Add or expand structured data relevant to your page type.",
-    ],
-    quickWin: "Improve the clearest missing AI visibility signal first.",
-    contentGap: "The page needs more explicit, answer-ready content that maps brand, category, audience, use cases, and proof.",
-    summary: cleaned.slice(0, 500) || "AI analysis completed, but the provider returned an empty response.",
-    schemaRecommendations: parseSchemaRecommendations({}, fallbackDetected),
+    ...parsed,
+    schemaRecommendations: parseSchemaRecommendations({ schemaRecommendations: parsed.schemaRecommendations }, fallbackDetected),
   };
 }
 

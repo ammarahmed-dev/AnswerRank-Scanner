@@ -91,3 +91,29 @@ describe("scan lifecycle cancellation", () => {
     expect(releaseUsage).not.toHaveBeenCalled();
   });
 });
+
+
+describe("invalid AI output does not invalidate a deterministic scan", () => {
+  it("retains valid insights while grounding schema in the scraper", async () => {
+    runScanCore.mockResolvedValue({ ...core, scrapedData: { ...scrapedData, schemaTypes: ["Organization"] } });
+    generateAIInsights.mockResolvedValue(JSON.stringify({ recommendations: ["Clarify product facts."], quickWin: "Review headings.", contentGap: "Clarify the offer.", summary: "Review missing signals.", schemaRecommendations: { detected: ["Invented"], missing: ["Organization", "Article", "Product"], priority: "Organization", reasoning: "Review applicable types." } }));
+    const req = new Request("https://aeocheck.co/api/scan", { method: "POST", body: JSON.stringify({ url: "https://valid-ai-output.test", includeAI: true }) });
+    const response = await POST(req as never);
+    await response.text();
+    expect(saveReportRecord.mock.calls[0][0].aiInsights.schemaRecommendations).toEqual({ detected: ["Organization"], missing: ["Product"], priority: "Product", reasoning: "Review applicable types." });
+    expect(saveReportRecord.mock.calls[0][0].score).toBe(core.score);
+  });
+  it("saves the unchanged score without provider error text or invented insights", async () => {
+    generateAIInsights.mockResolvedValue("provider-error-secret: not JSON");
+    const req = new Request("https://aeocheck.co/api/scan", { method: "POST", body: JSON.stringify({ url: "https://invalid-ai-output.test", includeAI: true }) });
+    const response = await POST(req as never);
+    const output = await response.text();
+    expect(generateAIInsights).toHaveBeenCalledTimes(1);
+    expect(output).not.toContain("provider-error-secret");
+    expect(output).toContain('"label":"Using local recommendations","status":"skipped"');
+    expect(saveReportRecord).toHaveBeenCalledTimes(1);
+    expect(saveReportRecord.mock.calls[0][0].score).toBe(core.score);
+    expect(saveReportRecord.mock.calls[0][0].aiInsights).toBeNull();
+    expect(commitUsage).toHaveBeenCalledTimes(1);
+  });
+});
