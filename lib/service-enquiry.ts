@@ -1,9 +1,9 @@
 export const SERVICES_PATH = "/services/aeo-geo-implementation";
 export const SERVICE_ENGAGEMENTS = [
   { value: "unsure", label: "Help me choose" },
-  { value: "fixes", label: "Website fixes sprint" },
-  { value: "key-pages", label: "Key-page improvement" },
-  { value: "ongoing", label: "Ongoing improvement" },
+  { value: "fixes", label: "Fixes Sprint" },
+  { value: "key-pages", label: "AEO/GEO Foundation" },
+  { value: "ongoing", label: "Ongoing Optimization" },
 ] as const;
 export const SERVICE_PLATFORMS = [
   { value: "unsure", label: "Not sure yet" },

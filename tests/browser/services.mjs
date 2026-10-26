@@ -90,8 +90,19 @@ try {
   await page.setViewportSize({ width: 1280, height: 900 });
   assert.equal(await page.getByRole('button', { name: 'Open menu', exact: true }).isVisible(), false);
   assert.equal(await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Implementation services' }).getAttribute('href'), path);
-  assert.equal(await page.locator('.services-price strong').allTextContents().then(prices => prices.join(',')), '$499,$999,$499');
+  assert.equal(await page.locator('.services-price strong').allTextContents().then(prices => prices.join(',')), '$499,$1,499,$999');
   checks.push('Mobile menu without auth config, keyboard/Escape/link close, scrollable features, tablet breakpoints and service pricing');
+
+  assert.equal(await page.locator('.services-recommended').innerText(), 'Recommended starting point');
+  assert.match(await page.locator('.services-package').nth(1).innerText(), /12 hours/);
+  assert.match(await page.locator('.services-package').nth(2).innerText(), /8 hours per month/);
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.locator('#scope').scrollIntoViewIfNeeded();
+    await noOverflow();
+    await screenshot(`service-packages-${width}`, true);
+  }
+  await page.locator('#service-engagement').selectOption({ label: 'AEO/GEO Foundation' });
 
   const submit = page.locator('form button[type="submit"]');
   await submit.click();
@@ -128,6 +139,7 @@ try {
   await page.locator('.contact-success').waitFor();
   assert.match(await page.locator('.contact-success').innerText(), /has been saved/);
   assert.equal(payload.service.source, 'report');
+  assert.equal(payload.service.engagement, 'key-pages');
   assert.deepEqual(Object.keys(payload.service).sort(), ['engagement', 'platform', 'source', 'website']);
   checks.push('Intercepted sending, failure/retry and confirmed-success UI; no valid lead sent');
 
