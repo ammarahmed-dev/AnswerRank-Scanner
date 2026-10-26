@@ -1,3 +1,4 @@
+import RecommendationSource from "./RecommendationSource";
 import { ScanResult } from "@/types/index";
 import { getNormalizedIssues } from "@/lib/report-issues";
 import { mapReportCategory, type ReportCategory } from "@/lib/report-category-scores";
@@ -430,6 +431,7 @@ export default function PrintLayout({ report, presentationData }: Props) {
         </table>
 
         <h2 className="pl-section-title">AI Answer Snapshot</h2>
+        <RecommendationSource insights={report.aiInsights} />
         <div className="pl-ai-snapshot-grid">
           <div className="pl-ai-snapshot-card">
             <strong>If AI summarized this page</strong>

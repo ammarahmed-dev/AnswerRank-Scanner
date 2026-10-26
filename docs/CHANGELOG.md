@@ -1,3 +1,7 @@
+# 2026-10-27 - Disclose recommendation sources in reports
+
+Add consistent screen/print source notes for generated, local and unknown historical/illustrative analyses. Show original generation time and separate requested/provider-reported models, with explicit verification and observed-citation limits. Preserve scores and report access. Regression/type/lint/build/browser gates and desktop/mobile visual review required before release; live provider and service/analytics acceptance remain open.
+
 # 2026-10-26 - Retain server-controlled recommendation provenance
 
 Store provider, requested/reported model identifiers and completion time with validated AI insights. Keep routing aliases distinct, omit malformed model IDs and reject generated provenance claims. Preserve generation time across cached scans; legacy reports remain unknown. Full CI type/lint/test/build/browser gates release. No migration, scoring or rights change. Report display and live-provider acceptance remain open.

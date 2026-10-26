@@ -197,6 +197,44 @@ try {
     }
   }
   checks.push('Synthetic full/preview reports at both widths; one CTA, no private report context');
+
+  for (const state of ['generated', 'legacy', 'local']) {
+    const id = `source-${state}`;
+    const insights = state === 'local' ? null : { ...sample.aiInsights };
+    if (state === 'generated') insights.provenance = {
+      kind: 'provider_generated', provider: 'OpenRouter', requestedModel: 'openrouter/free',
+      responseModel: 'vendor/model-v2', generatedAt: '2026-10-25T10:15:00.000Z',
+    };
+    const fixture = { ...sample, reportId: id, url: 'https://example.invalid', aiInsights: insights, unlocked: true, isFullReport: true };
+    await page.addInitScript(({ id, fixture }) => sessionStorage.setItem(`aeocheck_report:${id}`, JSON.stringify(fixture)), { id, fixture });
+    for (const width of [1280, 390]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      await goto('/report?id=' + id);
+      const note = page.locator('.report-stack .recommendation-source');
+      await note.waitFor();
+      const text = await note.innerText();
+      assert.match(text, state === 'generated' ? /AI-generated guidance with rule-based checks/ : state === 'legacy' ? /Analysis source unavailable/ : /Local rule-based guidance/);
+      if (state === 'generated') {
+        assert.match(text, /2026-10-25 10:15:00 UTC/);
+        assert.match(text, /Requested model: openrouter\/free/);
+        assert.match(text, /Provider-reported model: vendor\/model-v2/);
+      } else assert.equal(await note.locator('time').count(), 0);
+      await noOverflow();
+      await note.locator('..').scrollIntoViewIfNeeded();
+      await screenshot(`recommendation-${state}-${width}`);
+      if (state === 'generated' && width === 1280) {
+        await page.emulateMedia({ media: 'print' });
+        const printed = page.locator('.print-layout .recommendation-source');
+        assert.equal(await printed.isVisible(), true);
+        assert.equal(await printed.innerText(), text);
+        await printed.scrollIntoViewIfNeeded();
+        await screenshot('recommendation-print');
+        await page.emulateMedia({ media: 'screen' });
+      }
+    }
+  }
+  checks.push('Generated, unknown legacy and local recommendation disclosures at both widths; matching printable provenance');
+
   assert.deepEqual(errors, [], 'Browser page errors');
   await writeFile(`${output}/checks.json`, JSON.stringify({ checks, pageErrors: errors, synthetic: true }, null, 2));
   console.log(JSON.stringify({ passed: checks, pageErrors: errors, screenshots: output }));
