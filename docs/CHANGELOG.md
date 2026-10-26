@@ -1,3 +1,7 @@
+# 2026-10-26 - Bound simultaneous recommendation generation
+
+Limit scan AI generation to two active chains per server process, preserving cache hits at capacity. Saturated new work uses local recommendations without creating a cooldown entry. Release slots only when work settles, including failures/cancellation. CI regression/type/lint/build/browser checks gate release. Shared cross-instance budgets, provenance and live-provider acceptance remain open.
+
 # 2026-10-26 - Separate provider instructions from page evidence
 
 Use provider-native system instructions for application rules and user content for bounded scan evidence. Exact trusted-prefix matching prevents caller/page strings from being promoted. Preserve existing validation, grounding, cancellation and deterministic completion. Mocked provider payload regression checks and full CI gate release; no live provider safety claim.

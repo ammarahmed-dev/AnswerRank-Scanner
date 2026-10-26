@@ -222,3 +222,5 @@ Based on the full code review from 2026-10-03.
 Owner update 26 October: approved a deliverable-led service page inspired by Brickell Digital. Public packages describe outputs instead of hours: sprint up to 3 fixes; Foundation review and coordinated work on up to 3 existing pages; ongoing monthly plan up to 2 existing-page improvements. One review round, explicit proposal boundaries and custom scope for templates/integrations/new pages. Prices remain $499/$1,499/$999 monthly. Internal planning must validate effort before quoting. Page now explains buyer questions, retrieval/entity/content work, implementation evidence and measured discovery separately from observed AI citations. No new monitoring capability or outcome guarantee.
 
 - [x] (2026-10-26, A13) Separate application instructions and untrusted evidence through native provider roles; verify all provider payloads in CI. Live adversarial acceptance remains open.
+
+- [x] (2026-10-26, A13) Bound simultaneous scan AI generation chains per process; preserve cached results and local fallback under saturation. Distributed budgets remain open.
