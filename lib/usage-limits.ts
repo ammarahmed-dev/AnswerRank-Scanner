@@ -1,3 +1,4 @@
+import { readBoundedText } from "@/lib/bounded-body";
 import { createHash } from "node:crypto";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
 
@@ -45,6 +46,29 @@ export function getPlanLimit(plan: "guest" | "free" | "onetime" | "pro" | "agenc
   return PRO_MONTHLY_SCAN_LIMIT;
 }
 
+// Keep the deadline active through decoded-body consumption. Do not retry mutations:
+// a lost response can follow a committed reservation/release in the database.
+async function withUsageResponse<T>(path: string, init: RequestInit, consume: (response: Response, signal: AbortSignal) => Promise<T>): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10_000);
+  let response: Response | undefined;
+  try {
+    response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
+      ...init,
+      headers: getSupabaseServiceHeaders(),
+      cache: "no-store",
+      redirect: "error",
+      signal: controller.signal,
+    });
+    controller.signal.throwIfAborted();
+    return await consume(response, controller.signal);
+  } finally {
+    // Cancel unread error/release bodies rather than draining untrusted data.
+    await response?.body?.cancel().catch(() => undefined);
+    clearTimeout(timer);
+  }
+}
+
 async function readUsageCount(clientKey: string) {
   if (!hasSupabaseConfig()) return 0;
 
@@ -56,17 +80,13 @@ async function readUsageCount(clientKey: string) {
     limit: "1",
   });
 
-  const readRes = await fetch(`${supabaseUrl}/rest/v1/scan_usage?${params.toString()}`, {
-    headers: getSupabaseServiceHeaders(),
-    cache: "no-store",
+  const rows: unknown = await withUsageResponse(`scan_usage?${params.toString()}`, {}, async (response, signal) => {
+    if (!response.ok) {
+      console.error("Supabase usage read failed:", response.status);
+      throw new Error("Usage storage is unavailable.");
+    }
+    return JSON.parse(await readBoundedText(response, 4096, signal)) as unknown;
   });
-
-  if (!readRes.ok) {
-    console.error("Supabase usage read failed:", readRes.status);
-    throw new Error("Usage storage is unavailable.");
-  }
-
-  const rows: unknown = await readRes.json();
   if (!Array.isArray(rows) || rows.length > 1) throw new Error("Invalid usage storage response.");
   const count: unknown = rows.length ? rows[0]?.scan_count : 0;
   if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) throw new Error("Invalid usage storage response.");
@@ -77,15 +97,6 @@ export async function getUsageCount(clientKey: string) {
   return readUsageCount(clientKey);
 }
 
-
-async function callRpc(name: string, args: Record<string, unknown>): Promise<Response> {
-  return fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
-    method: "POST",
-    headers: getSupabaseServiceHeaders(),
-    body: JSON.stringify(args),
-    cache: "no-store",
-  });
-}
 
 /**
  * Atomically reserves one unit of usage before doing the work, so concurrent requests cannot
@@ -103,21 +114,21 @@ export async function reserveUsage(clientKey: string, limit: number): Promise<Us
   }
 
   try {
-    const res = await callRpc("reserve_scan_usage", {
-      p_client_key: clientKey,
-      p_usage_date: usageDate,
-      p_limit: limit,
-    });
-    if (res.ok) {
-      const count: unknown = await res.json();
+    return await withUsageResponse("rpc/reserve_scan_usage", {
+      method: "POST",
+      body: JSON.stringify({ p_client_key: clientKey, p_usage_date: usageDate, p_limit: limit }),
+    }, async (res, signal): Promise<UsageReservation> => {
+      if (!res.ok) {
+        console.error("Supabase reserve_scan_usage failed:", res.status);
+        return unavailable();
+      }
+      const count: unknown = JSON.parse(await readBoundedText(res, 4096, signal));
       if (count === -1) {
         return { allowed: false, count: limit, remaining: 0, limit, reserved: false, usageDate };
       }
       if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 1 || count > limit) return unavailable();
       return { allowed: true, count, remaining: Math.max(0, limit - count), limit, reserved: true, usageDate };
-    }
-    console.error("Supabase reserve_scan_usage failed:", res.status);
-    return unavailable();
+    });
   } catch (err) {
     console.error("Supabase reserve_scan_usage error:", err instanceof Error ? err.name : "unknown");
     return unavailable();
@@ -136,9 +147,13 @@ export async function commitUsage(_clientKey: string, reservation: UsageReservat
 export async function releaseUsage(clientKey: string, reservation: UsageReservation): Promise<void> {
   if (!reservation.reserved || !hasSupabaseConfig()) return;
   try {
-    const res = await callRpc("release_scan_usage", { p_client_key: clientKey, p_usage_date: reservation.usageDate });
-    if (!res.ok) console.error("Supabase release_scan_usage failed:", res.status);
+    await withUsageResponse("rpc/release_scan_usage", {
+      method: "POST",
+      body: JSON.stringify({ p_client_key: clientKey, p_usage_date: reservation.usageDate }),
+    }, async res => {
+      if (!res.ok) console.error("Supabase release_scan_usage failed:", res.status);
+    });
   } catch (err) {
-    console.error("Supabase release_scan_usage error:", err instanceof Error ? err.message : err);
+    console.error("Supabase release_scan_usage error:", err instanceof Error ? err.name : "unknown");
   }
 }
