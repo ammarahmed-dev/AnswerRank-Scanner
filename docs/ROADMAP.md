@@ -210,3 +210,5 @@ Based on the full code review from 2026-10-03.
 - [x] (2026-10-25, owner request, S04) Repair public mobile navigation and tablet breakpoint gap; add shared header/footer service links and contextual homepage/pricing CTAs. Add scoped USD service starting prices with proposal confirmation. Software plans remain unchanged. Verify browser artifacts and deployed output before live acceptance; S02/S05/S06 remain open.
 
 - [x] (2026-10-26, A13) Validate bounded AI insight output before persistence; reject raw malformed response fallback while preserving deterministic scan completion and schema grounding. Provenance, prompt isolation and provider spend controls remain open.
+
+- [x] (2026-10-26, A11/A13) Bound all AI prompt fields and final serialized size; frame page/context as untrusted JSON. Validate invalid configuration and encoded expansion with provider-skipping scan regression. Provider-role separation/live adversarial testing remain open.

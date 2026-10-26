@@ -117,3 +117,19 @@ describe("invalid AI output does not invalidate a deterministic scan", () => {
     expect(commitUsage).toHaveBeenCalledTimes(1);
   });
 });
+
+
+describe("oversized encoded AI input", () => {
+  it("skips the provider and still saves deterministic results", async () => {
+    vi.stubEnv("AI_MAX_INPUT_CHARS", "8000");
+    runScanCore.mockResolvedValue({ ...core, scrapedData: { ...scrapedData, bodyText: "\u0000".repeat(8000) } });
+    const req = new Request("https://aeocheck.co/api/scan", { method: "POST", body: JSON.stringify({ url: "https://oversized-ai-input.test", includeAI: true }) });
+    const response = await POST(req as never);
+    await response.text();
+    expect(generateAIInsights).not.toHaveBeenCalled();
+    expect(saveReportRecord).toHaveBeenCalledTimes(1);
+    expect(saveReportRecord.mock.calls[0][0].score).toBe(core.score);
+    expect(saveReportRecord.mock.calls[0][0].aiInsights).toBeNull();
+    expect(commitUsage).toHaveBeenCalledTimes(1);
+  });
+});
