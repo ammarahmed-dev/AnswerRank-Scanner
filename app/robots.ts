@@ -18,19 +18,22 @@ export default function robots(): MetadataRoute.Robots {
     "/vs/profound",
   ];
 
+  // Named crawler groups do not inherit the wildcard group's exclusions.
+  const sharedDisallow = ["/dashboard", "/report", "/login", "/signup", "/api"];
+
   return {
     rules: [
       {
         userAgent: "*",
         allow: sharedAllow,
-        disallow: ["/dashboard", "/report", "/login", "/signup", "/api"],
+        disallow: sharedDisallow,
       },
-      { userAgent: "GPTBot",         allow: sharedAllow },
-      { userAgent: "ChatGPT-User",   allow: sharedAllow },
-      { userAgent: "Google-Extended", allow: sharedAllow },
-      { userAgent: "PerplexityBot",  allow: sharedAllow },
-      { userAgent: "ClaudeBot",      allow: sharedAllow },
-      { userAgent: "anthropic-ai",   allow: sharedAllow },
+      { userAgent: "GPTBot",         allow: sharedAllow, disallow: sharedDisallow },
+      { userAgent: "ChatGPT-User",   allow: sharedAllow, disallow: sharedDisallow },
+      { userAgent: "Google-Extended", allow: sharedAllow, disallow: sharedDisallow },
+      { userAgent: "PerplexityBot",  allow: sharedAllow, disallow: sharedDisallow },
+      { userAgent: "ClaudeBot",      allow: sharedAllow, disallow: sharedDisallow },
+      { userAgent: "anthropic-ai",   allow: sharedAllow, disallow: sharedDisallow },
     ],
     sitemap: "https://www.aeocheck.co/sitemap.xml",
   };
