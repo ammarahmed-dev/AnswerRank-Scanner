@@ -220,7 +220,8 @@ try {
         assert.match(text, /Provider-reported model: vendor\/model-v2/);
       } else assert.equal(await note.locator('time').count(), 0);
       await noOverflow();
-      await note.locator('..').scrollIntoViewIfNeeded();
+      await note.evaluate(el => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 100));
+      assert(await note.evaluate(el => el.getBoundingClientRect().top >= 90), 'Source note clears sticky header');
       await screenshot(`recommendation-${state}-${width}`);
       if (state === 'generated' && width === 1280) {
         // Guest reports intentionally do not mount paid PrintLayout. Review its synthetic
