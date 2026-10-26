@@ -1,5 +1,6 @@
 "use client";
 
+import { trustedCheckoutUrl } from "@/lib/checkout-url";
 import { useState } from "react";
 import { getBrowserAccessToken } from "@/lib/supabase-browser-lazy";
 
@@ -52,25 +53,21 @@ export default function UpgradeButton({
       });
       const data = (await res.json()) as { checkoutUrl?: string; error?: string };
       if (!res.ok || !data.checkoutUrl) {
-        console.error("[upgrade] Checkout error:", data.error);
+        console.error("[upgrade] Checkout unavailable");
         setError(CHECKOUT_ERROR);
         setLoading(false);
         return;
       }
-      try {
-        const checkoutUrl = new URL(data.checkoutUrl);
-        if (!checkoutUrl.hostname.endsWith("lemonsqueezy.com")) {
-          throw new Error("Unexpected checkout hostname");
-        }
-        window.location.href = data.checkoutUrl;
-      } catch (e) {
-        console.error("[upgrade] Invalid checkout URL:", e);
+      const checkoutUrl = trustedCheckoutUrl(data.checkoutUrl);
+      if (!checkoutUrl) {
+        console.error("[upgrade] Invalid checkout destination");
         setError(CHECKOUT_ERROR);
         setLoading(false);
         return;
       }
-    } catch (err) {
-      console.error("[upgrade] Unexpected error:", err);
+      window.location.href = checkoutUrl;
+    } catch {
+      console.error("[upgrade] Request failed");
       setError(CHECKOUT_ERROR);
       setLoading(false);
     }

@@ -1,3 +1,7 @@
+# 2026-10-27 - Bound and validate hosted checkout responses
+
+Reject lookalike/non-HTTPS checkout destinations with the same shared server/client rule; preserve valid provider-signed URLs. Bound provider responses and deadlines through body reads, propagate cancellation, reject redirects and remove raw provider error logging. Existing variant/account/return payloads, prices and entitlements remain unchanged. Regression/type/lint/build/browser CI gates release; no real payment/activation acceptance or growth gain claimed.
+
 # 2026-10-27 - Disclose recommendation sources in reports
 
 Add consistent screen/print source notes for generated, local and unknown historical/illustrative analyses. Show original generation time and separate requested/provider-reported models, with explicit verification and observed-citation limits. Preserve scores and report access. Regression/type/lint/build/browser gates and desktop/mobile visual review required before release; live provider and service/analytics acceptance remain open.
