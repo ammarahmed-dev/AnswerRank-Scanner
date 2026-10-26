@@ -46,3 +46,16 @@ jobs:
           name: services-ui
           path: test-results/services/
           retention-days: 7
+
+  public-smoke:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify deployed main and public routes
+        run: node scripts/verify-public-release.mjs
