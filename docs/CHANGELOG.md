@@ -1,3 +1,7 @@
+# 2026-10-26 - Align AI crawler exclusions
+
+Fixed named AI crawler groups omitting the wildcard group's existing report, account and API exclusions. Public guides, tools, services and all sitemap entries remain allowed. Regression checks cover group precedence, excluded descendants/query URLs and public discovery. No authentication, report rights, content titles or publication dates changed. Robots policy does not establish crawler compliance, indexing or AI citations.
+
 # 2026-10-26 - Reuse validated insights on unchanged repeat scans
 
 Replaced the timestamp-only AI cooldown with a bounded cache keyed by requested URL and a fingerprint of the complete prompt. Matching scans reuse validated results; changed evidence does not receive stale insights. Preserve ten-minute cooldown, 500-entry bound and independent deterministic scan/save/usage. Cache returns copies, suppresses concurrent duplicate generation and does not publish failed/cancelled results. This is process-local only; distributed provider spend control and provenance remain open. Regression/type/lint/build/CI gate release. Fresh read-only Search Console retrieval still covers pre-release dates; no ranking gains claimed.

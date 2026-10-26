@@ -214,3 +214,5 @@ Based on the full code review from 2026-10-03.
 - [x] (2026-10-26, A11/A13) Bound all AI prompt fields and final serialized size; frame page/context as untrusted JSON. Validate invalid configuration and encoded expansion with provider-skipping scan regression. Provider-role separation/live adversarial testing remain open.
 
 - [x] (2026-10-26, A13) Reuse validated AI insights for exact prompt evidence within the bounded process-local cooldown; preserve per-scan persistence/usage and avoid stale/mutated cache values. Distributed budgets, provenance and live-provider acceptance remain open.
+
+- [x] (2026-10-26, A17 crawl health) Apply existing private/account/API crawl exclusions to every named AI crawler group; verify public sitemap URLs remain allowed. Robots directives are not access control or proof of indexing.
