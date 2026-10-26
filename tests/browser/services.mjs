@@ -223,6 +223,12 @@ try {
       await note.locator('..').scrollIntoViewIfNeeded();
       await screenshot(`recommendation-${state}-${width}`);
       if (state === 'generated' && width === 1280) {
+        // Guest reports intentionally do not mount paid PrintLayout. Review its synthetic
+        // SSR fixture with the same loaded styles, without modifying application access.
+        assert.equal(await page.locator('.print-layout').count(), 0);
+        const styles = await page.locator('link[rel="stylesheet"]').evaluateAll(links => links.map(link => link.outerHTML).join(''));
+        const printHtml = await readFile(`${output}/print-source-fixture.html`, 'utf8');
+        await page.setContent(`<html><head>${styles}</head><body>${printHtml}</body></html>`, { waitUntil: 'networkidle' });
         await page.emulateMedia({ media: 'print' });
         const printed = page.locator('.print-layout .recommendation-source');
         assert.equal(await printed.isVisible(), true);

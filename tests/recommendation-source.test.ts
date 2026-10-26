@@ -1,3 +1,5 @@
+import { mkdirSync, writeFileSync } from "node:fs";
+import PrintLayout from "@/app/components/PrintLayout";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -12,6 +14,14 @@ const generated: AIInsights = { ...SAMPLE_REPORT.aiInsights!, provenance: {
 } };
 const render = (insights?: AIInsights | null) => renderToStaticMarkup(createElement(RecommendationSource, { insights }));
 describe("Recommendation source disclosure", () => {
+  it("renders the shared source note in the isolated printable report fixture", () => {
+    const html = renderToStaticMarkup(createElement(PrintLayout, { report: { ...SAMPLE_REPORT, aiInsights: generated } }));
+    expect(html).toContain("AI-generated guidance with rule-based checks");
+    expect(html).toContain("2026-10-25 10:15:00 UTC");
+    // Browser visual review consumes synthetic SSR output without granting guest PDF access.
+    mkdirSync("test-results/services", { recursive: true });
+    writeFileSync("test-results/services/print-source-fixture.html", html);
+  });
   it("distinguishes requested and provider-reported models, retaining original UTC generation time", () => {
     const html = render(generated);
     expect(html).toContain("AI-generated guidance with rule-based checks");
