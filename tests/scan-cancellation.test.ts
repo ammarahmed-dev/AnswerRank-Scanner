@@ -133,3 +133,19 @@ describe("oversized encoded AI input", () => {
     expect(commitUsage).toHaveBeenCalledTimes(1);
   });
 });
+
+
+describe("repeat scan AI reuse", () => {
+  it("saves validated insights on both scans without a second provider call", async () => {
+    generateAIInsights.mockResolvedValue(JSON.stringify({ recommendations: ["Clarify product facts."], quickWin: "Review headings.", contentGap: "Clarify the offer.", summary: "Review missing signals." }));
+    for (let i = 0; i < 2; i++) {
+      const req = new Request("https://aeocheck.co/api/scan", { method: "POST", body: JSON.stringify({ url: "https://cache-reuse.test", includeAI: true }) });
+      await (await POST(req as never)).text();
+    }
+    expect(generateAIInsights).toHaveBeenCalledTimes(1);
+    expect(saveReportRecord).toHaveBeenCalledTimes(2);
+    expect(saveReportRecord.mock.calls[1][0].aiInsights).toEqual(saveReportRecord.mock.calls[0][0].aiInsights);
+    expect(saveReportRecord.mock.calls[1][0].score).toBe(core.score);
+    expect(commitUsage).toHaveBeenCalledTimes(2);
+  });
+});

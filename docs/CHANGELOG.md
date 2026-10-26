@@ -1,3 +1,7 @@
+# 2026-10-26 - Reuse validated insights on unchanged repeat scans
+
+Replaced the timestamp-only AI cooldown with a bounded cache keyed by requested URL and a fingerprint of the complete prompt. Matching scans reuse validated results; changed evidence does not receive stale insights. Preserve ten-minute cooldown, 500-entry bound and independent deterministic scan/save/usage. Cache returns copies, suppresses concurrent duplicate generation and does not publish failed/cancelled results. This is process-local only; distributed provider spend control and provenance remain open. Regression/type/lint/build/CI gate release. Fresh read-only Search Console retrieval still covers pre-release dates; no ranking gains claimed.
+
 # 2026-10-26 - Bound AI prompt input
 
 Capped page metadata, headings, schema strings and scan-context input as well as body text. Invalid body-budget settings fall back safely; excessive settings cap at 8,000 characters. Prompts over 48,000 characters after JSON encoding skip AI while preserving deterministic scan completion. Serialized page/context evidence is explicitly untrusted data; this does not prove immunity to prompt injection. Regression coverage includes encoded instruction-like text, oversized metadata, configuration edge cases and a complete scan/save that never calls the provider when the final budget is exceeded. No scoring, rights, prices or provider API contract changes; live adversarial/provider acceptance and the full audit remain open.
