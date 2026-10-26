@@ -1,3 +1,7 @@
+# 2026-10-26 - Present implementation services through client deliverables
+
+Reworked the service page around discovery problems, technical/entity/content improvements, measured evidence and a review-build-verify journey. Replaced public hour allocations with bounded deliverables and one review round; approved prices retained. Clarified custom work and separate AI-answer monitoring. Browser checks cover new headline, page limits and absence of hourly sales copy; desktop/mobile screenshots gate merge.
+
 # 2026-10-26 - Repackage implementation services
 
 Owner-approved service pricing: retain $499 Fixes Sprint; introduce AEO/GEO Foundation from $1,499 with 12 hours and Ongoing Optimization from $999/month with 8 hours. Highlight Foundation as the recommended starting point and align contact scope labels. Keep explicit delivery limits, custom proposals for broader work and exclusions for quantified AI monitoring. No software pricing, entitlement, automatic billing or historical lead-data changes. Unit/type/lint/build/CI and synthetic desktop/mobile browser checks gate release; real enquiry delivery and analytics acceptance remain open.
