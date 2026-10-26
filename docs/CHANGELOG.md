@@ -1,3 +1,7 @@
+# 2026-10-27 - Bound quota storage requests and responses
+
+Usage reads and atomic reserve/release requests now have a ten-second deadline; read/reserve decoded JSON is capped at 4 KiB with the deadline active through streaming. Reject redirects, cancel unused error/release bodies, and log only error names/statuses. Invalid or uncertain reservations fail closed without starting work, retrying a mutation or releasing an unconfirmed reservation. Existing limits, RPC payloads and monthly accounting remain unchanged. A lost reply can still follow a committed write; durable reservation identity/expiry/reconciliation remains open. Regression/type/lint/build and browser CI gate release; no production quota mutation or signed-in acceptance claimed. Available GSC evidence remains pre-release, so no content churn or growth attribution.
+
 # 2026-10-27 - Add outcome-based application funnel signals
 
 Audit the published GTM configuration and add privacy-safe data-layer signals for scan attempts/completion and service CTA/form interaction/confirmed saves. Preserve product tasks when analytics is missing or throws; include only controlled placement/package codes. No new vendor, storage, direct analytics transport or GTM publication. Unit and isolated browser failure/success checks gate release. Actual GTM routing, consent and GA4 receipt remain unverified; no conversion totals or ranking gains claimed.
