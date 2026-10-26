@@ -1,3 +1,7 @@
+# 2026-10-26 - Bound AI prompt input
+
+Capped page metadata, headings, schema strings and scan-context input as well as body text. Invalid body-budget settings fall back safely; excessive settings cap at 8,000 characters. Prompts over 48,000 characters after JSON encoding skip AI while preserving deterministic scan completion. Serialized page/context evidence is explicitly untrusted data; this does not prove immunity to prompt injection. Regression coverage includes encoded instruction-like text, oversized metadata, configuration edge cases and a complete scan/save that never calls the provider when the final budget is exceeded. No scoring, rights, prices or provider API contract changes; live adversarial/provider acceptance and the full audit remain open.
+
 # 2026-10-26 - Validate generated insight responses
 
 Reject malformed/incomplete AI response objects and enforce response/field/array limits before saving report insights. Stop treating raw provider failure text as completed AI analysis; fall back to the existing local recommendations without changing deterministic scores, checks or report rights. Keep scraper schema detection and editorial recommendation guards authoritative. Tests cover valid and invalid complete scan/save paths plus parser boundaries. Full audit, live provider acceptance, provenance, prompt isolation and cost controls remain open. No new growth claims or production test email.
