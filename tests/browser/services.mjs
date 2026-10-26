@@ -53,7 +53,7 @@ try {
   page.on('pageerror', error => errors.push(error.message));
   await goto(path + '?source=report');
   assert.match(await page.title(), /AEO.*GEO.*Implementation/i);
-  assert.equal(await page.locator('h1').innerText(), 'Turn your website audit into implemented fixes.');
+  assert.equal(await page.locator('h1').innerText(), 'Make your website clearer for AI search and your buyers.');
   assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co' + path);
   assert.equal(await page.locator('.services-package').count(), 3);
   await noOverflow();
@@ -93,9 +93,10 @@ try {
   assert.equal(await page.locator('.services-price strong').allTextContents().then(prices => prices.join(',')), '$499,$1,499,$999');
   checks.push('Mobile menu without auth config, keyboard/Escape/link close, scrollable features, tablet breakpoints and service pricing');
 
+  assert.doesNotMatch(await page.locator('main').innerText(), /\b(hours?|hourly)\b/i);
   assert.equal(await page.locator('.services-recommended').innerText(), 'Recommended starting point');
-  assert.match(await page.locator('.services-package').nth(1).innerText(), /12 hours/);
-  assert.match(await page.locator('.services-package').nth(2).innerText(), /8 hours per month/);
+  assert.match(await page.locator('.services-package').nth(1).innerText(), /up to 3 existing priority pages/);
+  assert.match(await page.locator('.services-package').nth(2).innerText(), /up to 2 existing-page improvements/);
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.locator('#scope').scrollIntoViewIfNeeded();
