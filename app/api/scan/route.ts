@@ -3,6 +3,7 @@ import { BodyTooLargeError, readBoundedText } from "@/lib/bounded-body";
 import { NextRequest, NextResponse, after } from "next/server";
 import { normalizeUrl, validateUrl } from "@/lib/scrape";
 import { buildAIPrompt } from "@/lib/build-ai-prompt";
+import { createAIInsightCache } from "@/lib/ai-insight-cache";
 import { parseValidatedAIInsights } from "@/lib/ai-insight-validation";
 import { generateAIInsights } from "@/lib/ai-provider";
 import { runScanCore } from "@/lib/scan-core";
@@ -18,26 +19,8 @@ import { ScrapedData, ScanResult, AIInsights, CompetitorScanResult, SchemaRecomm
 
 export const runtime = "nodejs";
 
-const aiCallCache = new Map<string, number>();
-const AI_COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes
-const AI_CACHE_MAX_SIZE = 500;
+const cachedAIInsights = createAIInsightCache();
 let didLogDevScanLimitBypass = false;
-
-function checkAIRateLimit(url: string): boolean {
-  const lastCall = aiCallCache.get(url);
-  const now = Date.now();
-
-  if (!lastCall || now - lastCall > AI_COOLDOWN_MS) {
-    if (aiCallCache.size >= AI_CACHE_MAX_SIZE) {
-      // FIFO eviction: remove the oldest entry
-      const oldestKey = aiCallCache.keys().next().value;
-      if (oldestKey !== undefined) aiCallCache.delete(oldestKey);
-    }
-    aiCallCache.set(url, now);
-    return true;
-  }
-  return false;
-}
 
 function isDevScanLimitBypassEnabled(): boolean {
   const enabled = process.env.AEO_DEV_BYPASS_SCAN_LIMIT === "true";
@@ -219,6 +202,7 @@ function groundAIInsights(aiInsights: AIInsights | null, facts: DeterministicFac
 }
 
 async function getAIInsightsWithBudget(
+  url: string,
   scrapedData: ScrapedData,
   context?: {
     overallScore: number;
@@ -238,11 +222,10 @@ async function getAIInsightsWithBudget(
 ): Promise<AIInsights | null> {
   try {
     const prompt = buildAIPrompt(scrapedData, context);
-    const aiRawResponse = await generateAIInsights(prompt, signal);
-
-    if (!aiRawResponse) return null;
-
-    return parseAIInsights(aiRawResponse, scrapedData.schemaTypes);
+    return await cachedAIInsights(url, prompt, async () => {
+      const aiRawResponse = await generateAIInsights(prompt, signal);
+      return aiRawResponse ? parseAIInsights(aiRawResponse, scrapedData.schemaTypes) : null;
+    }, signal);
   } catch (err: unknown) {
     signal?.throwIfAborted();
     console.error(
@@ -586,17 +569,14 @@ export async function POST(req: NextRequest) {
           .filter((check) => check.status === "pass")
           .map((check) => check.label);
 
-        const includeAIThisRequest = wantAI && checkAIRateLimit(url);
         emitProgress(5, "Generating AI insights", "started");
 
         let aiInsights: AIInsights | null = null;
         if (!wantAI) {
           emitProgress(5, "Using local recommendations", "skipped");
-        } else if (!includeAIThisRequest) {
-          emitProgress(5, "Using local recommendations", "skipped");
         } else {
           try {
-            aiInsights = await getAIInsightsWithBudget(scrapedData, {
+            aiInsights = await getAIInsightsWithBudget(url, scrapedData, {
               overallScore: score,
               detectedSchemas,
               missingSchemas,
