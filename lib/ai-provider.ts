@@ -1,3 +1,4 @@
+import { AI_SYSTEM_INSTRUCTIONS, AI_EVIDENCE_MARKER } from "@/lib/build-ai-prompt";
 import { readBoundedText } from "@/lib/bounded-body";
 
 export async function generateAIInsights(prompt: string, signal?: AbortSignal): Promise<string | null> {
@@ -53,6 +54,20 @@ export async function generateAIInsights(prompt: string, signal?: AbortSignal): 
   return null;
 }
 
+// Only the exact application-owned prefix is eligible for the system role.
+// Unknown callers stay entirely in user content, never promoted to instructions.
+function evidenceContent(prompt: string): string {
+  const prefix = AI_SYSTEM_INSTRUCTIONS + AI_EVIDENCE_MARKER;
+  return prompt.startsWith(prefix) ? prompt.slice(prefix.length) : prompt;
+}
+
+function chatMessages(prompt: string) {
+  return [
+    { role: "system", content: AI_SYSTEM_INSTRUCTIONS },
+    { role: "user", content: evidenceContent(prompt) },
+  ];
+}
+
 type ProviderResponse = {
   choices?: Array<{ message?: { content?: unknown } }>;
   candidates?: Array<{ content?: { parts?: Array<{ text?: unknown }> } }>;
@@ -88,7 +103,7 @@ async function callDeepSeek(prompt: string, apiKey: string, signal?: AbortSignal
     },
     body: JSON.stringify({
       model,
-      messages: [{ role: "user", content: prompt }],
+      messages: chatMessages(prompt),
       temperature: 0.2,
       max_tokens: maxTokens,
       response_format: { type: "json_object" },
@@ -115,7 +130,7 @@ async function callOpenRouter(prompt: string, apiKey: string, signal?: AbortSign
     },
     body: JSON.stringify({
       model,
-      messages: [{ role: "user", content: prompt }],
+      messages: chatMessages(prompt),
       temperature: 0.2,
       max_tokens: maxTokens,
       response_format: { type: "json_object" },
@@ -138,7 +153,8 @@ async function callGemini(prompt: string, apiKey: string, signal?: AbortSignal):
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      systemInstruction: { parts: [{ text: AI_SYSTEM_INSTRUCTIONS }] },
+      contents: [{ role: "user", parts: [{ text: evidenceContent(prompt) }] }],
       generationConfig: { temperature: 0.2, maxOutputTokens: maxTokens },
     }),
   }, timeoutMs, signal);

@@ -1,3 +1,7 @@
+# 2026-10-26 - Separate provider instructions from page evidence
+
+Use provider-native system instructions for application rules and user content for bounded scan evidence. Exact trusted-prefix matching prevents caller/page strings from being promoted. Preserve existing validation, grounding, cancellation and deterministic completion. Mocked provider payload regression checks and full CI gate release; no live provider safety claim.
+
 # 2026-10-26 - Present implementation services through client deliverables
 
 Reworked the service page around discovery problems, technical/entity/content improvements, measured evidence and a review-build-verify journey. Replaced public hour allocations with bounded deliverables and one review round; approved prices retained. Clarified custom work and separate AI-answer monitoring. Browser checks cover new headline, page limits and absence of hourly sales copy; desktop/mobile screenshots gate merge.
