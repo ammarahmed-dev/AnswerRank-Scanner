@@ -1,3 +1,7 @@
+# 2026-10-26 - Retain server-controlled recommendation provenance
+
+Store provider, requested/reported model identifiers and completion time with validated AI insights. Keep routing aliases distinct, omit malformed model IDs and reject generated provenance claims. Preserve generation time across cached scans; legacy reports remain unknown. Full CI type/lint/test/build/browser gates release. No migration, scoring or rights change. Report display and live-provider acceptance remain open.
+
 # 2026-10-26 - Correct machine-readable site discovery
 
 Align llms.txt with deterministic readiness and lab-performance limits. List canonical blog URLs and implementation services; remove misleading indexing directives from this descriptive file. Tests compare discovery destinations to the sitemap and preserve the readiness/observed-inclusion distinction. No scoring, pricing or publication-date changes; no ranking or AI-citation gain claimed.

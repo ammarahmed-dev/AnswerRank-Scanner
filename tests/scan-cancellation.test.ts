@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ScanResult, ScrapedData } from "@/types/index";
+import type { ScanResult, ScrapedData, AIRecommendationProvenance } from "@/types/index";
 const { runScanCore, generateAIInsights, saveReportRecord, commitUsage, releaseUsage } = vi.hoisted(() => ({
   runScanCore: vi.fn(), generateAIInsights: vi.fn(), saveReportRecord: vi.fn(), commitUsage: vi.fn(), releaseUsage: vi.fn(),
 }));
@@ -147,5 +147,31 @@ describe("repeat scan AI reuse", () => {
     expect(saveReportRecord.mock.calls[1][0].aiInsights).toEqual(saveReportRecord.mock.calls[0][0].aiInsights);
     expect(saveReportRecord.mock.calls[1][0].score).toBe(core.score);
     expect(commitUsage).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("validated recommendation provenance persistence", () => {
+  it("saves server metadata and preserves original generation time on reuse", async () => {
+    const provenance: AIRecommendationProvenance = { kind: "provider_generated", provider: "OpenRouter", requestedModel: "openrouter/free", responseModel: "fixture/model", generatedAt: "2026-10-26T10:00:00.000Z" };
+    generateAIInsights.mockImplementation(async (_prompt: string, _signal: AbortSignal, receipt: (p: AIRecommendationProvenance) => void) => {
+      receipt(provenance);
+      return JSON.stringify({ recommendations: ["Review heading."], quickWin: "Clarify heading.", contentGap: "Clarify offer.", summary: "Review signals.", provenance: { provider: "forged", generatedAt: "future" } });
+    });
+    for (let i = 0; i < 2; i++) await (await POST(request({ url: "https://provenance-reuse.test", includeAI: true }) as never)).text();
+    expect(generateAIInsights).toHaveBeenCalledTimes(1);
+    expect(saveReportRecord).toHaveBeenCalledTimes(2);
+    for (const [report] of saveReportRecord.mock.calls) {
+      expect(report.aiInsights.provenance).toEqual(provenance);
+      expect(report.score).toBe(core.score);
+    }
+    expect(commitUsage).toHaveBeenCalledTimes(2);
+  });
+  it("does not save provenance for invalid generated output", async () => {
+    generateAIInsights.mockImplementation(async (_prompt: string, _signal: AbortSignal, receipt: (p: AIRecommendationProvenance) => void) => {
+      receipt({ kind: "provider_generated", provider: "DeepSeek", generatedAt: "2026-10-26T10:00:00.000Z" });
+      return "invalid output";
+    });
+    await (await POST(request({ url: "https://invalid-provenance.test", includeAI: true }) as never)).text();
+    expect(saveReportRecord.mock.calls[0][0].aiInsights).toBeNull();
   });
 });

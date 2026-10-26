@@ -1,7 +1,8 @@
 import { AI_SYSTEM_INSTRUCTIONS, AI_EVIDENCE_MARKER } from "@/lib/build-ai-prompt";
+import type { AIRecommendationProvenance } from "@/types/index";
 import { readBoundedText } from "@/lib/bounded-body";
 
-export async function generateAIInsights(prompt: string, signal?: AbortSignal): Promise<string | null> {
+export async function generateAIInsights(prompt: string, signal?: AbortSignal, onResult?: (provenance: AIRecommendationProvenance) => void): Promise<string | null> {
   const deepseekKey = process.env.DEEPSEEK_API_KEY;
   const openRouterKey = process.env.OPENROUTER_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
@@ -9,7 +10,7 @@ export async function generateAIInsights(prompt: string, signal?: AbortSignal): 
   const allowFallbacks = process.env.AI_PROVIDER_FALLBACKS !== "false";
 
   // Provider order: DeepSeek primary, OpenRouter + Gemini as optional fallbacks
-  let providers =
+  let providers: Array<{ name: AIRecommendationProvenance["provider"]; key: string | undefined; call: typeof callDeepSeek }> =
     primaryProvider === "openrouter"
       ? [
           { name: "OpenRouter", key: openRouterKey, call: callOpenRouter },
@@ -39,7 +40,8 @@ export async function generateAIInsights(prompt: string, signal?: AbortSignal): 
     try {
       const result = await provider.call(prompt, provider.key, signal);
       if (result) {
-        return result;
+        onResult?.({ kind: "provider_generated", provider: provider.name, requestedModel: result.requestedModel, responseModel: result.responseModel, generatedAt: new Date().toISOString() });
+        return result.text;
       }
     } catch (err) {
       signal?.throwIfAborted();
@@ -68,7 +70,15 @@ function chatMessages(prompt: string) {
   ];
 }
 
+type ProviderResult = { text: string; requestedModel?: string; responseModel?: string };
+
+function modelIdentifier(value: unknown): string | undefined {
+  return typeof value === "string" && /^[a-zA-Z0-9][a-zA-Z0-9._:/@+-]{0,159}$/.test(value) ? value : undefined;
+}
+
 type ProviderResponse = {
+  model?: unknown;
+  modelVersion?: unknown;
   choices?: Array<{ message?: { content?: unknown } }>;
   candidates?: Array<{ content?: { parts?: Array<{ text?: unknown }> } }>;
 };
@@ -90,7 +100,7 @@ async function fetchProviderJson(url: string, init: RequestInit, timeoutMs: numb
   }
 }
 
-async function callDeepSeek(prompt: string, apiKey: string, signal?: AbortSignal): Promise<string | null> {
+async function callDeepSeek(prompt: string, apiKey: string, signal?: AbortSignal): Promise<ProviderResult> {
   const model = process.env.DEEPSEEK_MODEL || "deepseek-chat";
   const maxTokens = Number(process.env.AI_MAX_OUTPUT_TOKENS ?? 400);
   const timeoutMs = Number(process.env.AI_PROVIDER_TIMEOUT_MS ?? 8000);
@@ -112,10 +122,10 @@ async function callDeepSeek(prompt: string, apiKey: string, signal?: AbortSignal
 
   const text = data?.choices?.[0]?.message?.content;
   if (typeof text !== "string" || !text.trim()) throw new Error("DeepSeek returned empty response");
-  return text;
+  return { text, requestedModel: modelIdentifier(model), responseModel: modelIdentifier(data.model ?? data.modelVersion) };
 }
 
-async function callOpenRouter(prompt: string, apiKey: string, signal?: AbortSignal): Promise<string | null> {
+async function callOpenRouter(prompt: string, apiKey: string, signal?: AbortSignal): Promise<ProviderResult> {
   const model = process.env.OPENROUTER_MODEL || "openrouter/free";
   const maxTokens = Number(process.env.AI_MAX_OUTPUT_TOKENS ?? 600);
   const timeoutMs = Number(process.env.AI_PROVIDER_TIMEOUT_MS ?? 5000);
@@ -139,10 +149,10 @@ async function callOpenRouter(prompt: string, apiKey: string, signal?: AbortSign
 
   const text = data?.choices?.[0]?.message?.content;
   if (typeof text !== "string" || !text.trim()) throw new Error("OpenRouter returned empty response");
-  return text;
+  return { text, requestedModel: modelIdentifier(model), responseModel: modelIdentifier(data.model ?? data.modelVersion) };
 }
 
-async function callGemini(prompt: string, apiKey: string, signal?: AbortSignal): Promise<string | null> {
+async function callGemini(prompt: string, apiKey: string, signal?: AbortSignal): Promise<ProviderResult> {
   const model = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
   const maxTokens = Number(process.env.AI_MAX_OUTPUT_TOKENS ?? 600);
   const timeoutMs = Number(process.env.AI_PROVIDER_TIMEOUT_MS ?? 5000);
@@ -161,5 +171,5 @@ async function callGemini(prompt: string, apiKey: string, signal?: AbortSignal):
 
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (typeof text !== "string" || !text.trim()) throw new Error("Gemini returned empty response");
-  return text;
+  return { text, requestedModel: modelIdentifier(model), responseModel: modelIdentifier(data.model ?? data.modelVersion) };
 }
