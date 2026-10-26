@@ -1,9 +1,11 @@
 "use client";
 
 import { CheckCircle2 } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SERVICE_ENGAGEMENTS, SERVICE_PLATFORMS, serviceSource, type ServiceEnquiry, type ServiceErrors } from "@/lib/service-enquiry";
+
+import { emitFunnelEvent } from "@/lib/funnel-events";
 
 type SubjectOption =
   | "General question"
@@ -40,6 +42,8 @@ const INITIAL_VALUES: ContactFormValues = {
 
 export default function ContactForm({ services = false }: { services?: boolean }) {
   const searchParams = useSearchParams();
+  const formStarted = useRef(false);
+  const leadSaved = useRef(false);
   const [values, setValues] = useState<ContactFormValues>(() => ({ ...INITIAL_VALUES, subject: services ? "Optimization services" : "General question" }));
   const [service, setService] = useState<Omit<ServiceEnquiry, "source">>({ website: "", platform: "unsure", engagement: "unsure" });
   const [errors, setErrors] = useState<ContactErrors>({});
@@ -101,7 +105,11 @@ export default function ContactForm({ services = false }: { services?: boolean }
         return;
       }
 
-      if (data?.success) {
+      if (data?.success === true) {
+        if (isServiceForm && !leadSaved.current) {
+          leadSaved.current = true;
+          emitFunnelEvent("service_lead_saved", { source: serviceSource(searchParams.get("source")), engagement: service.engagement });
+        }
         setStatus("success");
         return;
       }
@@ -128,7 +136,13 @@ export default function ContactForm({ services = false }: { services?: boolean }
   }
 
   return (
-    <form className={`contact-form${isServiceForm ? " service-enquiry-form" : ""}`} onSubmit={handleSubmit} noValidate>
+    <form className={`contact-form${isServiceForm ? " service-enquiry-form" : ""}`} onSubmit={handleSubmit} noValidate
+      onFocusCapture={() => {
+        if (isServiceForm && !formStarted.current) {
+          formStarted.current = true;
+          emitFunnelEvent("service_form_start", { source: serviceSource(searchParams.get("source")), engagement: service.engagement });
+        }
+      }}>
       {isUpgradeRequest && (
         <div className="contact-upgrade-note">
           Tell us which plan you want and we&apos;ll help activate access manually.

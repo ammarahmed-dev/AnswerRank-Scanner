@@ -1,3 +1,7 @@
+# 2026-10-27 - Add outcome-based application funnel signals
+
+Audit the published GTM configuration and add privacy-safe data-layer signals for scan attempts/completion and service CTA/form interaction/confirmed saves. Preserve product tasks when analytics is missing or throws; include only controlled placement/package codes. No new vendor, storage, direct analytics transport or GTM publication. Unit and isolated browser failure/success checks gate release. Actual GTM routing, consent and GA4 receipt remain unverified; no conversion totals or ranking gains claimed.
+
 # 2026-10-27 - Bound and validate hosted checkout responses
 
 Reject lookalike/non-HTTPS checkout destinations with the same shared server/client rule; preserve valid provider-signed URLs. Bound provider responses and deadlines through body reads, propagate cancellation, reject redirects and remove raw provider error logging. Existing variant/account/return payloads, prices and entitlements remain unchanged. Regression/type/lint/build/browser CI gates release; no real payment/activation acceptance or growth gain claimed.

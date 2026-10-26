@@ -37,6 +37,9 @@ async function screenshot(name, fullPage = false) {
 async function noOverflow() {
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Horizontal overflow');
 }
+async function funnelEvents() {
+  return page.evaluate(() => (window.dataLayer || []).filter(item => item && ['scan_start', 'scan_complete', 'service_cta_click', 'service_form_start', 'service_lead_saved'].includes(item.event)));
+}
 async function goto(url) {
   await page.goto(origin + url, { waitUntil: 'networkidle' });
 }
@@ -121,6 +124,8 @@ try {
   await screenshot('services-mobile', true);
   await page.locator('#service-website').scrollIntoViewIfNeeded();
   await screenshot('form-mobile-error');
+  assert.equal((await funnelEvents()).filter(item => item.event === 'service_form_start').length, 1);
+  assert.equal((await funnelEvents()).filter(item => item.event === 'service_lead_saved').length, 0);
   checks.push('Real invalid API responses, field focus and mobile error layout');
 
   await page.locator('#service-website').fill('https://example.invalid');
@@ -135,6 +140,7 @@ try {
   await until(() => submit.isDisabled(), 'sending disabled state');
   await page.getByText('Synthetic storage unavailable. Please retry.', { exact: true }).waitFor();
   await until(() => submit.isEnabled(), 'retry enabled state');
+  assert.equal((await funnelEvents()).filter(item => item.event === 'service_lead_saved').length, 0);
   succeed = true;
   await submit.click();
   await page.locator('.contact-success').waitFor();
@@ -142,7 +148,10 @@ try {
   assert.equal(payload.service.source, 'report');
   assert.equal(payload.service.engagement, 'key-pages');
   assert.deepEqual(Object.keys(payload.service).sort(), ['engagement', 'platform', 'source', 'website']);
-  checks.push('Intercepted sending, failure/retry and confirmed-success UI; no valid lead sent');
+  const savedEvents = (await funnelEvents()).filter(item => item.event === 'service_lead_saved');
+  assert.deepEqual(savedEvents, [{ event: 'service_lead_saved', aeocheck_event_version: 1, aeocheck_source: 'report', aeocheck_engagement: 'key-pages' }]);
+  assert.equal((await funnelEvents()).filter(item => item.event === 'service_form_start').length, 1);
+  checks.push('Intercepted sending, failure/retry and confirmed-success UI; no valid lead sent; one privacy-safe saved event only after success');
 
   await goto('/contact?subject=services');
   await page.locator('#service-website').waitFor();
@@ -152,12 +161,17 @@ try {
   await goto('/contact');
   assert.equal(await page.locator('#contact-subject').inputValue(), 'General question');
   assert.equal(await page.locator('#service-website').count(), 0);
+  await page.locator('#contact-name').focus();
+  assert.deepEqual(await funnelEvents(), []);
   checks.push('Existing service and general contact subjects');
   for (const url of ['/blog/best-aeo-tools-ai-search-visibility', '/tools/schema-checker']) {
     await goto(url);
     const link = page.getByRole('link', { name: 'Explore implementation', exact: true });
     assert.equal(await link.count(), 1);
     assert.equal(await link.getAttribute('href'), path + '?source=content');
+    await link.click();
+    await page.waitForURL(origin + path + '?source=content');
+    assert.deepEqual((await funnelEvents()).filter(item => item.event === 'service_cta_click'), [{ event: 'service_cta_click', aeocheck_event_version: 1, aeocheck_source: 'content', aeocheck_engagement: null }]);
   }
   checks.push('Comparison guide and tool service discovery');
   for (const [url, source] of [['/', 'home'], ['/pricing', 'pricing']]) {
@@ -171,6 +185,9 @@ try {
       await block.scrollIntoViewIfNeeded();
       await screenshot(`${source}-cta-${width}`);
     }
+    await block.locator('a').click();
+    await page.waitForURL(origin + path + '?source=' + source);
+    assert.equal((await funnelEvents()).find(item => item.event === 'service_cta_click')?.aeocheck_source, source);
   }
   checks.push('One homepage/pricing CTA and responsive neighboring sections');
 
@@ -178,6 +195,33 @@ try {
   const compiled = ts.transpileModule(await readFile('lib/sample-report.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } });
   vm.runInNewContext(compiled.outputText, { exports: fixtureModule.exports });
   const sample = fixtureModule.exports.SAMPLE_REPORT;
+  await goto('/blog/best-aeo-tools-ai-search-visibility');
+  assert.equal(await page.getByRole('link', { name: 'view a sample report', exact: true }).getAttribute('href'), '/sample-report');
+  await page.getByRole('link', { name: 'Run the free AEO checker', exact: true }).click();
+  await page.waitForURL(origin + '/');
+  await page.getByRole('form', { name: 'Scan a website', exact: true }).waitFor();
+  checks.push('Existing best-checker guide to scanner and sample-report journey');
+  let scanSucceeds = false;
+  await page.route('**/api/scan', async route => {
+    const result = { ...sample, reportId: 'funnel-synthetic', url: 'https://example.invalid/private?token=secret', isFullReport: false, unlocked: false };
+    const stream = [{ type: 'progress', step: 6, label: 'Complete', status: 'complete' }, { type: 'result', result }].map(event => 'data: ' + JSON.stringify(event) + '\n\n').join('');
+    await route.fulfill(scanSucceeds ? { status: 200, contentType: 'text/event-stream', body: stream } : { status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'Synthetic failed scan' }) });
+  });
+  for (const success of [false, true]) {
+    scanSucceeds = success;
+    await goto('/');
+    const form = page.getByRole('form', { name: 'Scan a website', exact: true });
+    await form.locator('input').fill('https://example.invalid/private?token=secret');
+    await form.getByRole('button', { name: 'Scan My Website', exact: true }).click();
+    if (success) await page.waitForURL(origin + '/report?id=funnel-synthetic');
+    else await page.getByText('Synthetic failed scan', { exact: true }).waitFor();
+    const events = await funnelEvents();
+    assert.deepEqual(events.map(item => item.event), success ? ['scan_start', 'scan_complete'] : ['scan_start']);
+    for (const event of events) assert.deepEqual(Object.keys(event).sort(), ['aeocheck_engagement', 'aeocheck_event_version', 'aeocheck_source', 'event']);
+    assert.doesNotMatch(JSON.stringify(events), /example\.invalid|secret|funnel-synthetic/);
+  }
+  checks.push('Synthetic scanner dispatch/completion signals, no completion on failure, and no scanned URL/report token in event payloads');
+
   for (const full of [true, false]) {
     const id = full ? 'synthetic-full' : 'synthetic-preview';
     const fixture = { ...sample, reportId: id, url: 'https://example.invalid', unlocked: full, isFullReport: full, redacted: !full };
