@@ -51,3 +51,5 @@
 .services-price strong { font-size: 40px; line-height: 1.1; color: var(--color-ink); letter-spacing: -.03em; }
 .services-price span { font-size: 13px; color: var(--color-ink-soft); }
 .services-package .btn { white-space: normal; text-align: center; }
+
+.services-package .services-recommended { color: #00e5a0; font-size: 12px; font-weight: 650; line-height: 1.5; margin-bottom: 12px; }

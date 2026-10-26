@@ -39,7 +39,7 @@ describe("service context validation", () => {
   it("formats explicit self-reported context using controlled labels", () => {
     const result = validateServiceEnquiry(service);
     if (!result.ok) throw new Error("Invalid fixture");
-    expect(serviceMessage(result.value, "Request details")).toContain("Scope preference: Website fixes sprint");
+    expect(serviceMessage(result.value, "Request details")).toContain("Scope preference: Fixes Sprint");
     expect(serviceMessage(result.value, "Request details")).toContain("Entry point (self-reported): report");
   });
 });

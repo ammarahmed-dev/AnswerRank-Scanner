@@ -301,3 +301,7 @@ Replace the timestamp-only AI cooldown with a bounded process-local cache of val
 ## Consistent published crawl policy
 
 Named AI crawler groups now carry the same existing report, account and API exclusions as the wildcard group. Regression checks exercise specific-group selection and every public sitemap URL; public content remains eligible under the published policy. Robots directives are voluntary crawl instructions, not authorization, deindexing or proof of AI inclusion. Authentication and report rights are unchanged. Full audit and actual conversion/visibility measurement remain open.
+
+## Owner-approved service package revision
+
+Retain the $499 sprint; introduce the $1,499/12-hour Foundation and $999/month/8-hour ongoing scopes, with a recommended Foundation card and aligned enquiry labels. All allowances include verification; ongoing work follows a foundation review. Software pricing and entitlements are unchanged. Browser regression checks verify prices, scope, mobile layout and synthetic Foundation submissions. Real production enquiry delivery, analytics and qualification remain open.

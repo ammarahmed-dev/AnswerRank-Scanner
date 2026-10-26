@@ -1,3 +1,7 @@
+# 2026-10-26 - Repackage implementation services
+
+Owner-approved service pricing: retain $499 Fixes Sprint; introduce AEO/GEO Foundation from $1,499 with 12 hours and Ongoing Optimization from $999/month with 8 hours. Highlight Foundation as the recommended starting point and align contact scope labels. Keep explicit delivery limits, custom proposals for broader work and exclusions for quantified AI monitoring. No software pricing, entitlement, automatic billing or historical lead-data changes. Unit/type/lint/build/CI and synthetic desktop/mobile browser checks gate release; real enquiry delivery and analytics acceptance remain open.
+
 # 2026-10-26 - Align AI crawler exclusions
 
 Fixed named AI crawler groups omitting the wildcard group's existing report, account and API exclusions. Public guides, tools, services and all sitemap entries remain allowed. Regression checks cover group precedence, excluded descendants/query URLs and public discovery. No authentication, report rights, content titles or publication dates changed. Robots policy does not establish crawler compliance, indexing or AI citations.
