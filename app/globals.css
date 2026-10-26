@@ -10679,3 +10679,8 @@ textarea.contact-control {
 @media (min-width: 1201px) {
   .site-header .nav-hamburger, .site-header .nav-mobile-menu { display: none; }
 }
+
+/* Shared source note remains readable in both screen and print reports. */
+.recommendation-source { margin: 12px 0 16px; padding: 12px 14px; border: 1px solid currentColor; border-radius: 8px; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.recommendation-source p { margin: 0; }
+.recommendation-source p + p { margin-top: 6px; }

@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { CompetitorScanResult, ScanResult } from "@/types/index";
+import RecommendationSource from "./RecommendationSource";
 import ScoreCircle from "./ScoreCircle";
 import { AlertCircle, BarChart2, Bot, Check, CheckCircle2, ChevronDown, Code, Copy, Download, ExternalLink, FileText, Link2, Lock, RotateCcw, Search, TrendingUp, Zap } from "lucide-react";
 import { CSSProperties, useEffect, useMemo, useState } from "react";
@@ -443,6 +444,7 @@ const downloadPdf = async () => {
       <section className="surface report-card print-section">
         <h3 className="section-heading">AI Answer Snapshot</h3>
         <p className="section-kicker mt-1">How an AI assistant may understand this page from the visible content.</p>
+        <RecommendationSource insights={report.aiInsights} />
         <div className="ai-snapshot-grid mt-4">
           <article className="ai-snapshot-card">
             <p className="ai-snapshot-label">If AI summarized this page</p>
