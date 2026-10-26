@@ -1,3 +1,7 @@
+# 2026-10-26 - Correct machine-readable site discovery
+
+Align llms.txt with deterministic readiness and lab-performance limits. List canonical blog URLs and implementation services; remove misleading indexing directives from this descriptive file. Tests compare discovery destinations to the sitemap and preserve the readiness/observed-inclusion distinction. No scoring, pricing or publication-date changes; no ranking or AI-citation gain claimed.
+
 # 2026-10-26 - Bound simultaneous recommendation generation
 
 Limit scan AI generation to two active chains per server process, preserving cache hits at capacity. Saturated new work uses local recommendations without creating a cooldown entry. Release slots only when work settles, including failures/cancellation. CI regression/type/lint/build/browser checks gate release. Shared cross-instance budgets, provenance and live-provider acceptance remain open.

@@ -1,11 +1,14 @@
 import { getAllBlogPosts } from "@/lib/blog";
+import topicalMap from "@/content/topical-map.json";
+import { SERVICES_PATH } from "@/lib/service-enquiry";
 import { SITE_URL } from "@/lib/seo";
 
 export const dynamic = "force-static";
 export const revalidate = 3600;
 
 export function GET() {
-  const posts = getAllBlogPosts();
+  const redirected = new Set(topicalMap.slots.filter(slot => slot.status === "redirected").map(slot => slot.slug));
+  const posts = getAllBlogPosts().filter(post => !redirected.has(post.slug));
 
   const blogLines = posts
     .map((post) => `- ${SITE_URL}/blog/${post.slug}: ${post.title}`)
@@ -14,17 +17,17 @@ export function GET() {
   const body = `# AEOCheck
 > AEO and GEO readiness scanner for AI search visibility
 
-AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) and Generative Engine Optimization (GEO) signals. It scores a page on how well it can be understood, extracted, and cited by AI answer engines including ChatGPT, Perplexity, Google AI Overviews, and Microsoft Copilot.
+AEOCheck runs 25 deterministic checks on a public webpage across metadata, structured data, content, trust, crawler access and lab performance. The score describes page readiness for AI search; it does not measure actual inclusion, citations or rankings in ChatGPT, Perplexity, Google AI Overviews or other answer engines. Optional generated recommendations supplement the checks.
 
 ## Checks covered
 - Schema markup (JSON-LD presence, FAQPage, Article, Organization)
 - Metadata quality (title, meta description, Open Graph tags)
 - Heading structure (H1, H2/H3 hierarchy)
 - Content clarity (word count, readability, internal links, alt text)
-- AI crawler access (GPTBot, PerplexityBot, ClaudeBot allowlisting in robots.txt)
+- AI crawler access (path-specific robots.txt policy, distinguishing search crawlers, training crawlers and user-request agents)
 - Trust signals (HTTPS, sitemap, About/Contact pages, author attribution, content freshness)
 - AI readiness (llms.txt, E-E-A-T signals, entity signals)
-- Performance (Core Web Vitals via PageSpeed API)
+- Lab performance (PageSpeed/Lighthouse measurements when available; not a real-user Core Web Vitals assessment)
 
 ## Features
 - Scan: free for guests; limited monthly scans for free accounts
@@ -48,6 +51,10 @@ AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) 
 - Blog: ${SITE_URL}/blog
 - About: ${SITE_URL}/about
 - Contact: ${SITE_URL}/contact
+- Implementation services: ${SITE_URL}${SERVICES_PATH}
+
+## Implementation services
+Scoped technical SEO, applicable structured-data and existing-page content improvements. The service page lists deliverables and starting prices; final scope is agreed in a proposal. Implementation services are separate from scanner subscriptions. Readiness improvements do not guarantee rankings or AI citations.
 
 ## Research
 - ${SITE_URL}/research/ai-readiness-study: robots.txt, llms.txt and schema signals on 85 well-known sites
@@ -73,10 +80,8 @@ AEOCheck audits any public webpage against 25+ Answer Engine Optimization (AEO) 
 ## Blog posts
 ${blogLines}
 
-## Do not index
-- /api/*
-- /dashboard
-- /admin
+## Access and indexing policy
+Crawl instructions are published in robots.txt; page-level robots directives and authentication are enforced separately. This file is descriptive and does not control indexing or grant access.
 `;
 
   return new Response(body, {

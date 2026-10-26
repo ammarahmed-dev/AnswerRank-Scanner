@@ -224,3 +224,7 @@ Owner update 26 October: approved a deliverable-led service page inspired by Bri
 - [x] (2026-10-26, A13) Separate application instructions and untrusted evidence through native provider roles; verify all provider payloads in CI. Live adversarial acceptance remains open.
 
 - [x] (2026-10-26, A13) Bound simultaneous scan AI generation chains per process; preserve cached results and local fallback under saturation. Distributed budgets remain open.
+
+## Machine-readable discovery accuracy (26 October)
+
+Corrected llms.txt to describe 25 deterministic readiness checks, optional generated recommendations and unavailable-aware lab performance rather than a real-user Core Web Vitals or observed AI inclusion assessment. Separate crawler categories, link canonical implementation services, exclude redirected blog slugs and clarify that the file does not control indexing/access. Regression compares listed blog URLs with canonical sitemap entries. No scoring, rights, prices or publication dates changed; this is descriptive/discovery hygiene, not proof that an AI system consumes the file or cites the site. Full audit and organic/conversion measurement remain open.
