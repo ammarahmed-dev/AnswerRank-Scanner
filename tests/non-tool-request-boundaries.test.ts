@@ -103,11 +103,11 @@ it.each(["email", "userId"])("rejects non-string welcome %s before sending", asy
 });
 
 it("retains checkout variant selection and return URL for a valid request", async () => {
-  const fetch = vi.fn(async (_url: string, _init?: RequestInit) => Response.json({ data: { attributes: { url: "https://checkout.example.invalid/" } } }));
+  const fetch = vi.fn(async (_url: string, _init?: RequestInit) => Response.json({ data: { attributes: { url: "https://test-store.lemonsqueezy.com/checkout/buy/synthetic" } } }));
   vi.stubGlobal("fetch", fetch);
   const res = await checkout(request('{"plan":"pro"}'));
   expect(res.status).toBe(200);
-  expect(await res.json()).toEqual({ checkoutUrl: "https://checkout.example.invalid/" });
+  expect(await res.json()).toEqual({ checkoutUrl: "https://test-store.lemonsqueezy.com/checkout/buy/synthetic" });
   const payload = JSON.parse(fetch.mock.calls[0][1]!.body as string);
   expect(payload.data.relationships.variant.data.id).toBe("mock-pro");
   expect(payload.data.attributes.checkout_data.custom.user_id).toBe("owner-id");

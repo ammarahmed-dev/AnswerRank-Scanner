@@ -1,6 +1,8 @@
-import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
+import { BodyTooLargeError, readBoundedText, readJsonObject } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
+
+import { trustedCheckoutUrl } from "@/lib/checkout-url";
 
 export const runtime = "nodejs";
 
@@ -62,32 +64,47 @@ export async function POST(req: Request) {
       },
     };
 
-    const res = await fetch(LS_API, {
-      method: "POST",
-      headers: {
-        Accept: "application/vnd.api+json",
-        "Content-Type": "application/vnd.api+json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    const controller = new AbortController();
+    const signal = AbortSignal.any([req.signal, controller.signal]);
+    const timeout = setTimeout(() => controller.abort(), 15_000);
+    try {
+      signal.throwIfAborted();
+      const res = await fetch(LS_API, {
+        method: "POST",
+        redirect: "error",
+        signal,
+        headers: {
+          Accept: "application/vnd.api+json",
+          "Content-Type": "application/vnd.api+json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
-    if (!res.ok) {
-      const detail = await res.text().catch(() => "");
-      console.error("[checkout] Lemon Squeezy error:", res.status, detail);
-      return NextResponse.json({ error: "Failed to create checkout." }, { status: 500 });
+      if (!res.ok) {
+        await res.body?.cancel().catch(() => undefined);
+        console.error("[checkout] Provider HTTP error:", res.status);
+        return NextResponse.json({ error: "Failed to create checkout." }, { status: 500 });
+      }
+
+      const data: unknown = JSON.parse(await readBoundedText(res, 65_536, signal));
+      const object = (value: unknown): Record<string, unknown> | null => value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
+      const attributes = object(object(object(data)?.data)?.attributes);
+      const checkoutUrl = trustedCheckoutUrl(attributes?.url);
+      if (!checkoutUrl) {
+        console.error("[checkout] Invalid provider response");
+        return NextResponse.json({ error: "Failed to create checkout." }, { status: 502 });
+      }
+      return NextResponse.json({ checkoutUrl });
+    } catch {
+      // Provider bodies/errors can contain checkout tokens or customer data.
+      console.error("[checkout] Provider request failed");
+      return NextResponse.json({ error: "Failed to create checkout." }, { status: 502 });
+    } finally {
+      clearTimeout(timeout);
     }
-
-    const data = (await res.json()) as { data?: { attributes?: { url?: string } } };
-    const checkoutUrl = data.data?.attributes?.url;
-    if (!checkoutUrl) {
-      console.error("[checkout] No URL in LS response");
-      return NextResponse.json({ error: "Failed to create checkout." }, { status: 500 });
-    }
-
-    return NextResponse.json({ checkoutUrl });
-  } catch (err) {
-    console.error("[checkout] Unhandled error:", err);
+  } catch {
+    console.error("[checkout] Request failed");
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }
 }
