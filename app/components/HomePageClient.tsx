@@ -4,6 +4,7 @@ import { ReactNode, Suspense, useEffect, useMemo, useRef, useState } from "react
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { emitFunnelEvent } from "@/lib/funnel-events";
 import LoadingState from "./LoadingState";
 import SiteHeader from "./SiteHeader";
 import TopBar from "./TopBar";
@@ -198,6 +199,7 @@ function HomeInner({ heroContent, staticSections }: HomePageClientProps) {
 
     try {
       const token = await getBrowserAccessToken();
+      emitFunnelEvent("scan_start");
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: {
@@ -260,6 +262,7 @@ function HomeInner({ heroContent, staticSections }: HomePageClientProps) {
         setReport(result);
         document.body.style.overflow = "";
         setState("done");
+        emitFunnelEvent("scan_complete");
         router.push(result.reportId ? `/report?id=${result.reportId}` : `/report?url=${encodeURIComponent(result.url)}`);
       };
 
