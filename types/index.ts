@@ -73,7 +73,18 @@ export interface SchemaRecommendation {
   reasoning: string;
 }
 
+export interface AIRecommendationProvenance {
+  kind: "provider_generated";
+  provider: "DeepSeek" | "OpenRouter" | "Gemini";
+  requestedModel?: string;
+  /** Identifier reported by the response envelope, not independently verified. */
+  responseModel?: string;
+  /** Server completion time, retained when validated insights are reused. */
+  generatedAt: string;
+}
+
 export interface AIInsights {
+  provenance?: AIRecommendationProvenance;
   recommendations: string[];
   quickWin: string;
   contentGap: string;

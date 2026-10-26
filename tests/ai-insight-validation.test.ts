@@ -4,10 +4,11 @@ const valid = { recommendations: ["Clarify the product heading."], quickWin: "Re
 const parse = (value: unknown) => parseValidatedAIInsights(JSON.stringify(value));
 describe("AI insight response boundary", () => {
   it("accepts a bounded response but drops extra fields and claimed detections", () => {
-    const result = parse({ ...valid, secret: "not report data" });
+    const result = parse({ ...valid, secret: "not report data", provenance: { provider: "forged" } });
     expect(result?.recommendations).toEqual(valid.recommendations);
     expect(result?.schemaRecommendations?.detected).toEqual([]);
     expect(result).not.toHaveProperty("secret");
+    expect(result).not.toHaveProperty("provenance");
   });
   it("accepts a complete JSON fence and optional absent schema", () => {
     expect(parseValidatedAIInsights('```json\n'+JSON.stringify(valid)+'\n```')).not.toBeNull();

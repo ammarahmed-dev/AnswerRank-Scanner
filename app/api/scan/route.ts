@@ -15,7 +15,7 @@ import { isMasterAdmin } from "@/lib/admin";
 import { reportForViewer } from "@/lib/report-access";
 import { maybeSendLimitReachedEmail } from "@/lib/limit-email";
 import { getSupabaseServerUrl, getSupabaseServiceHeaders, hasSupabaseConfig } from "@/lib/supabase-config";
-import { ScrapedData, ScanResult, AIInsights, CompetitorScanResult, SchemaRecommendation } from "@/types/index";
+import { ScrapedData, ScanResult, AIInsights, AIRecommendationProvenance, CompetitorScanResult, SchemaRecommendation } from "@/types/index";
 
 export const runtime = "nodejs";
 
@@ -223,8 +223,11 @@ async function getAIInsightsWithBudget(
   try {
     const prompt = buildAIPrompt(scrapedData, context);
     return await cachedAIInsights(url, prompt, async () => {
-      const aiRawResponse = await generateAIInsights(prompt, signal);
-      return aiRawResponse ? parseAIInsights(aiRawResponse, scrapedData.schemaTypes) : null;
+      let provenance: AIRecommendationProvenance | undefined;
+      const aiRawResponse = await generateAIInsights(prompt, signal, metadata => { provenance = metadata; });
+      const insights = aiRawResponse ? parseAIInsights(aiRawResponse, scrapedData.schemaTypes) : null;
+      // Provenance comes from the server/provider envelope, never generated JSON.
+      return insights && provenance ? { ...insights, provenance } : insights;
     }, signal);
   } catch (err: unknown) {
     signal?.throwIfAborted();
