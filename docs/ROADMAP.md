@@ -13,6 +13,8 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 1 - Critical revenue and security fixes
 
+- [x] (2026-10-27, A02/A11) Require valid authoritative billing profile rows before webhook acknowledgement/mutation; missing or malformed profiles remain retryable, valid event/rights policy unchanged. Durable recovery and live sandbox remain open.
+
 - [x] (2026-10-27, audit A02/A11) Stop unavailable authenticated profile verification becoming Free/guest work; require bounded authoritative reads/bootstrap readback and a shared retryable 503 guard at every current API consumer. Valid rights/expiration and anonymous policy stay unchanged; client recovery and production signed-in acceptance remain open.
 
 

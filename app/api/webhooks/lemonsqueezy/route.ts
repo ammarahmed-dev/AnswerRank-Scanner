@@ -44,21 +44,24 @@ function verifySignature(rawBody: string, signature: string): boolean {
   }
 }
 
-async function fetchProfile(userId: string): Promise<Profile | null> {
+async function fetchProfile(userId: string): Promise<Profile> {
   const signal = AbortSignal.timeout(10_000);
   const res = await fetch(
     `${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=plan,plan_expires_at,lemonsqueezy_subscription_id`,
-    { headers: getSupabaseServiceHeaders(), cache: "no-store", signal }
+    { headers: getSupabaseServiceHeaders(), cache: "no-store", redirect: "error", signal }
   );
   if (!res.ok) { await res.body?.cancel().catch(() => undefined); throw new Error("Billing profile read failed."); }
-  const rows = JSON.parse(await readBoundedText(res, 16_384, signal)) as Array<Partial<Profile>>;
+  const rows: unknown = JSON.parse(await readBoundedText(res, 16_384, signal));
+  // These fields are billing authority, never defaults inferred from an error envelope.
+  if (!Array.isArray(rows) || rows.length !== 1) throw new Error("Billing profile authority is unavailable.");
   const row = rows[0];
-  if (!row) return null;
-  return {
-    plan: row.plan ?? "free",
-    plan_expires_at: row.plan_expires_at ?? null,
-    lemonsqueezy_subscription_id: row.lemonsqueezy_subscription_id ?? null,
-  };
+  if (!row || typeof row !== "object" || Array.isArray(row) ||
+      !["free", "onetime", "pro", "agency"].includes(row.plan) ||
+      !(row.plan_expires_at === null || (typeof row.plan_expires_at === "string" && Number.isFinite(Date.parse(row.plan_expires_at)))) ||
+      !(row.lemonsqueezy_subscription_id === null || (typeof row.lemonsqueezy_subscription_id === "string" && row.lemonsqueezy_subscription_id.length > 0 && row.lemonsqueezy_subscription_id.length <= 256))) {
+    throw new Error("Billing profile authority is invalid.");
+  }
+  return { plan: row.plan, plan_expires_at: row.plan_expires_at, lemonsqueezy_subscription_id: row.lemonsqueezy_subscription_id };
 }
 
 async function patchProfile(userId: string, fields: Record<string, unknown>, eventId: string, expected: Profile | null) {
@@ -223,7 +226,7 @@ export async function POST(req: Request) {
         break;
     }
   } catch (err) {
-    console.error("[ls-webhook] Handler error:", eventName, err instanceof Error ? err.message : err);
+    console.error("[ls-webhook] Handler failed", { code: err instanceof SyntaxError ? "invalid_response" : "processing_failed" });
     // Non-2xx makes Lemon Squeezy retry, so a transient DB failure does not lose a payment.
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
