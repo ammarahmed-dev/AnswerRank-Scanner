@@ -49,6 +49,8 @@ Without AI keys, reports use deterministic recommendations.
 
 CI (`.github/workflows/ci.yml`) runs typecheck, lint, tests and build on every push and PR.
 
+For database setup, follow [the tested install and upgrade guide](supabase/README.md). The old root schema SQL is retired; fresh bootstrapping must never run against an existing database.
+
 ## Project layout
 
 ```

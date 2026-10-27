@@ -68,7 +68,7 @@ Based on the full code review from 2026-10-03.
 - [x] Unify `isMasterAdmin`: admin only from MASTER_ADMIN_EMAILS via `/api/account` `isAdmin`; Agency customers no longer see the Admin tab / Master Admin badge
 - [x] `getAuthContext`: profile is created only when missing (was a write on every authenticated request)
 - [~] (2026-10-25, audit A02) Exact-body mutation receipts now commit atomically with whitelisted profile patches and optimistic state checks. Missing/failed writes stay retryable. Distinct-event ordering, failed/ignored inbox, authoritative recovery and live sandbox remain open; PR #9's fail-open implementation is superseded.
-- [ ] Reconcile the full base schema for `profiles`, `webhook_events` and `app_stats`, then retire `supabase-schema.sql`. Production schema inspection is available; a verified baseline and clean-install/upgrade coverage are still required.
+- [x] (2026-10-27, audit A10) Reconcile missing historical base definitions and retire the incomplete root schema entrypoint. Add the explicit fresh-install manifest and full real-SQL clean/known-historical upgrade tests, including RPC/access/FK/preserved-fixture checks. See supabase/README.md. Hosted Auth/Data API acceptance, arbitrary drift and lifecycle decisions remain open; no production bootstrap or DDL.
 - [x] Fix stale copy: welcome email scan count from config, removed fake "87/100" stat (UA domain and APP_URL fixed earlier)
 - [x] `UpgradeButton`: show checkout errors to the user; `/upgrade/success` now redirects to `/dashboard?upgraded=1`
 - [x] Encode PostgREST filter values built from route params (audit scan, monitor scan); the rest use URLSearchParams
