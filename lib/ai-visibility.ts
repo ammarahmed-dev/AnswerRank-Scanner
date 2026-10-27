@@ -12,6 +12,16 @@ export type Brand = { name: string; domain: string };
 
 export type EngineAnswer = { answer: string; citations: string[]; requestedModel?: string };
 
+export type CitationEvidence = {
+  sourceUrl: string;
+  state: "resolved" | "unverified";
+  finalUrl?: string;
+  httpStatus?: number;
+  reason?: "request_failed" | "deadline" | "budget" | "http_error" | "not_checked";
+};
+
+export const VISIBILITY_METHOD = "visibility-2026-10-v3";
+
 export type PromptResult = {
   prompt: string;
   engine: EngineName;
@@ -24,6 +34,7 @@ export type PromptResult = {
   requestedModel?: string;
   recordedAt?: string;
   citationVerified?: boolean;
+  citationEvidence?: Array<Omit<CitationEvidence, "sourceUrl"> & { sourceIndex: number }>;
   promptKind?: "branded" | "unbranded";
   methodologyVersion?: string;
   error?: string;
@@ -156,7 +167,8 @@ export function availableEngines(): Array<{ name: EngineName; ask: (prompt: stri
 export async function runVisibilityCheck(
   brand: Brand,
   prompts: string[],
-  engines: Array<{ name: EngineName; ask: (prompt: string) => Promise<EngineAnswer> }>
+  engines: Array<{ name: EngineName; ask: (prompt: string) => Promise<EngineAnswer> }>,
+  verifyCitations?: (urls: string[]) => Promise<CitationEvidence[]>
 ): Promise<VisibilitySummary> {
   const tasks = prompts.flatMap((prompt) => engines.map((engine) => ({ prompt, engine })));
   const results = await Promise.all(
@@ -176,13 +188,12 @@ export async function runVisibilityCheck(
         }
         if (sourceUrls.length > 100) throw new Error("Engine returned too many source URLs");
         const analysis = analyzeAnswer(answer, sourceUrls, brand);
-        const unresolved = sourceUrls.some(source => normalizeDomain(source) === "vertexaisearch.cloud.google.com");
         return {
           prompt, engine: engine.name, ...analysis, citations: sourceUrls.slice(0, 100),
           answer, requestedModel, recordedAt: new Date().toISOString(),
-          citationVerified: analysis.cited || !unresolved,
+          citationVerified: false,
           promptKind: mentionPattern(brand).test(prompt) ? "branded" : "unbranded",
-          methodologyVersion: "visibility-2026-10-v2",
+          methodologyVersion: VISIBILITY_METHOD,
         };
       } catch (err) {
         return {
@@ -197,6 +208,24 @@ export async function runVisibilityCheck(
       }
     })
   );
+  // One bounded destination pass across the run; engine source labels alone are not verification.
+  const urls = [...new Set(results.filter(r => !r.error).flatMap(r => r.citations))];
+  let evidence: CitationEvidence[] = [];
+  try { evidence = await verifyCitations?.(urls) ?? []; } catch { /* Keep usable answers, mark sources unknown. */ }
+  const bySource = new Map(evidence.map(item => [item.sourceUrl, item]));
+  for (const result of results) {
+    if (result.error) continue;
+    result.citationEvidence = result.citations.map((sourceUrl, sourceIndex) => {
+      const item = bySource.get(sourceUrl);
+      return item
+        ? { sourceIndex, state: item.state, ...(item.finalUrl ? { finalUrl: item.finalUrl } : {}), ...(item.httpStatus ? { httpStatus: item.httpStatus } : {}), ...(item.reason ? { reason: item.reason } : {}) }
+        : { sourceIndex, state: "unverified", reason: "not_checked" };
+    });
+    const destinations = result.citationEvidence.filter(item => item.state === "resolved" && item.finalUrl).map(item => item.finalUrl!);
+    result.cited = analyzeAnswer(result.answer ?? "", destinations, brand).cited;
+    // A verified positive is useful even if another source is unknown. A negative needs all sources checked.
+    result.citationVerified = result.cited || result.citationEvidence.every(item => item.state === "resolved");
+  }
   const ok = results.filter((r) => !r.error);
   const citationResults = ok.filter(r => r.citationVerified !== false);
   const rate = (n: number, denominator = ok.length) => (denominator ? Math.round((n / denominator) * 100) : 0);

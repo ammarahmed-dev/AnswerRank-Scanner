@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
 import { availableEngines, normalizeDomain, runVisibilityCheck, suggestPrompts } from "@/lib/ai-visibility";
+import { verifyCitationDestinations } from "@/lib/citation-destinations";
 import { listVisibilityRuns, saveVisibilityRun } from "@/lib/ai-visibility-store";
 
 export const runtime = "nodejs";
@@ -64,7 +65,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No AI engines configured (PERPLEXITY_API_KEY or GEMINI_API_KEY)." }, { status: 503 });
   }
 
-  const summary = await runVisibilityCheck({ name: brandName, domain }, finalPrompts, engines);
+  const summary = await runVisibilityCheck({ name: brandName, domain }, finalPrompts, engines, verifyCitationDestinations);
   const engineNames = engines.map((e) => e.name);
   if (summary.checked === 0) {
     return NextResponse.json({ error: "AI visibility is unavailable: no engine returned a usable answer.", results: summary.results }, { status: 502 });

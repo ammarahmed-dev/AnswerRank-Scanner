@@ -45,7 +45,7 @@ describe("runVisibilityCheck", () => {
       name: "gemini", ask: async () => ({ answer: "AEOCheck is one option.", citations: ["https://vertexaisearch.cloud.google.com/redirect"], requestedModel: "test-model" }),
     }]);
     expect(summary).toMatchObject({ checked: 2, citationChecked: 0, brandedChecked: 1, unbrandedChecked: 1 });
-    expect(summary.results[0]).toMatchObject({ citationVerified: false, answer: "AEOCheck is one option.", requestedModel: "test-model", methodologyVersion: "visibility-2026-10-v2" });
+    expect(summary.results[0]).toMatchObject({ citationVerified: false, answer: "AEOCheck is one option.", requestedModel: "test-model", methodologyVersion: "visibility-2026-10-v3" });
     expect(summary.results[0].recordedAt).toBeTruthy();
   });
 
@@ -64,7 +64,7 @@ describe("runVisibilityCheck", () => {
     const summary = await runVisibilityCheck(brand, ["a", "b"], [
       { name: "perplexity", ask: async (p) => ({ answer: p === "a" ? "AEOCheck is great" : "Other tools", citations: p === "a" ? ["https://aeocheck.co/"] : [] }) },
       { name: "gemini", ask: async () => { throw new Error("HTTP 429"); } },
-    ]);
+    ], async urls => urls.map(sourceUrl => ({ sourceUrl, state: "resolved", finalUrl: sourceUrl, httpStatus: 200 })));
     expect(summary.checked).toBe(2);
     expect(summary.mentionRate).toBe(50);
     expect(summary.citationRate).toBe(50);
