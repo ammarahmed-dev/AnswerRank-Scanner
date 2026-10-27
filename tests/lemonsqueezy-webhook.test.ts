@@ -47,6 +47,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 function send(eventName: string, data: { id?: string; attributes: Record<string, unknown> }, signature?: string) {
@@ -61,6 +62,58 @@ const sub = (id: string, variant: string, status: string, extra: Record<string, 
 });
 
 describe("lemonsqueezy webhook", () => {
+  it.each(["profile", "mutation"])("returns retryable 500 for stalled %s transport without retry or compensation", async boundary => {
+    vi.useFakeTimers();
+    const fetch = vi.fn(async (url: string) => {
+      if (boundary === "profile" || url.includes("/rpc/")) return new Promise<Response>(() => {});
+      return Response.json([profile]);
+    });
+    vi.stubGlobal("fetch", fetch);
+    const result = send("subscription_created", sub("s1", "200", "active"));
+    await vi.advanceTimersByTimeAsync(10_001);
+    expect((await result).status).toBe(500);
+    expect(fetch).toHaveBeenCalledTimes(boundary === "profile" ? 1 : 2);
+    expect(patches).toHaveLength(0); expect(processedEvents.size).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("rejects mutation redirects and cancels the unread body without another dispatch", async () => {
+    const cancel = vi.fn();
+    const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+      if (!url.includes("/rpc/")) return Response.json([profile]);
+      expect(init?.redirect).toBe("error");
+      expect(init?.cache).toBe("no-store");
+      return new Response(new ReadableStream({ cancel }), { status: 307, headers: { location: "https://other.test/rpc" } });
+    });
+    vi.stubGlobal("fetch", fetch);
+    expect((await send("subscription_created", sub("s1", "200", "active"))).status).toBe(500);
+    expect(fetch).toHaveBeenCalledTimes(2); expect(cancel).toHaveBeenCalledOnce();
+    expect(processedEvents.size).toBe(0);
+  });
+
+  it("keeps a lost committed mutation reply retryable and lets the exact receipt prevent a second mutation", async () => {
+    vi.useFakeTimers();
+    const database = globalThis.fetch;
+    let loseReply = true;
+    const fetch = vi.fn(async (url: string, init?: RequestInit) => {
+      const result = await database(url, init);
+      if (url.includes("/rpc/") && loseReply) {
+        loseReply = false;
+        return new Promise<Response>(() => {});
+      }
+      return result;
+    });
+    vi.stubGlobal("fetch", fetch);
+    const data = sub("s1", "200", "active");
+    const first = send("subscription_created", data);
+    await vi.advanceTimersByTimeAsync(10_001);
+    expect((await first).status).toBe(500);
+    expect(profile?.plan).toBe("pro"); expect(patches).toHaveLength(1);
+    expect(fetch).toHaveBeenCalledTimes(2); // No automatic retry/compensating write.
+    expect((await send("subscription_created", data)).status).toBe(200);
+    expect(patches).toHaveLength(1); expect(processedEvents.size).toBe(1);
+  });
+
   it("does not apply an exact replay after a later profile change", async () => {
     const data = sub("s1", "200", "active");
     expect((await send("subscription_created", data)).status).toBe(200);

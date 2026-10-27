@@ -434,3 +434,16 @@ Local validation: 1,102 tests / 101 files (including existing score-parity fixtu
 Crawler-tool follow-up: final review caught a user-triggered-only restriction missing from the summary decision tree. The parser/individual row was correct, but the summary incorrectly said no listed token was disallowed. Add a distinct warning and keep actual access/provider-compliance limits explicit. Regressions cover each of the three user-triggered tokens and desktop/mobile rendering; no parser/scoring/quota change. Full release gates apply.
 
 User-triggered-only follow-up validation: 1,105 tests / 101 files, type check, lint (18 existing warnings), content links and fresh production build pass locally. All three new regressions fail the prior summary. CI/browser and 1280/390 screenshot review gate release; no valid production tool request or quota mutation.
+
+
+## Billing storage transport integrity (27 October)
+
+A02/A11: billing profile reads and the atomic event RPC now share one ten-second per-request deadline through headers/body parsing, including transports or cancellation promises that ignore abort. Requests reject redirects, use no-store, retain the existing 16 KiB decoded JSON cap, cancel failed/unread/late bodies and expose only a controlled failure. The RPC's POST body, service headers, authoritative profile validation, boolean receipt semantics, signatures and billing mappings remain unchanged. Timers/listeners are cleared on settlement. No caller-disconnect cancellation is added to an already dispatched billing mutation.
+
+A lost reply may follow a committed transaction. The handler returns the existing retryable 500 without automatically retrying or compensating. Synthetic delivery-retry coverage preserves the exact-body receipt and demonstrates one mutation after a lost committed reply. This does not implement durable failed-event recovery, distinct-event ordering, reconciliation or live payment acceptance. No schema, price, entitlement or production billing/account/refund mutation. Supabase changelog and current function documentation reviewed; no TLS configuration change or live TLS compatibility claim.
+
+Growth assessment: current private GSC evidence ends 25 October and is not a matching post-change window. Existing guide-to-scanner/sample checks remain in browser CI. No repeated retrieval/title/content edit or organic/citation/conversion gain is claimed. Historical issue/history/copy cleanup, service/email and analytics receipt remain open alongside the full audit.
+
+Validation includes stalled headers and body, total deadline/late cleanup, redirect rejection, bounded responses, stalled failed-body cancellation, sanitized failures, unchanged RPC payload/results and signed synthetic webhook retry behavior. Local regression, type/lint, content-link and fresh production build checks plus exact-head CI and same-SHA deployment/public checks gate release; real provider/payment acceptance remains open.
+
+Local release verification: 1,125 tests / 102 files, type check, lint (18 existing warnings), content links and fresh production build pass. Three signed-handler regressions fail the prior code. Built public home/pricing 200 and unsigned webhook 400 checked without production credentials; exact-head CI and same-SHA deployment/public checks remain required.

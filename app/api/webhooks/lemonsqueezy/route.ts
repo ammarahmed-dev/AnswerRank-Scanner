@@ -1,13 +1,11 @@
 import { BodyTooLargeError, readBoundedText } from "@/lib/bounded-body";
 import { applyBillingEvent } from "@/lib/billing-persistence";
+import { requestBillingJson } from "@/lib/billing-storage";
 import { NextResponse } from "next/server";
 import { createHash, createHmac, timingSafeEqual } from "crypto";
-import { getSupabaseServerUrl, getSupabaseServiceHeaders } from "@/lib/supabase-config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const supabaseUrl = getSupabaseServerUrl();
 
 type PaidPlan = "onetime" | "pro" | "agency";
 
@@ -45,13 +43,9 @@ function verifySignature(rawBody: string, signature: string): boolean {
 }
 
 async function fetchProfile(userId: string): Promise<Profile> {
-  const signal = AbortSignal.timeout(10_000);
-  const res = await fetch(
-    `${supabaseUrl}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=plan,plan_expires_at,lemonsqueezy_subscription_id`,
-    { headers: getSupabaseServiceHeaders(), cache: "no-store", redirect: "error", signal }
+  const rows = await requestBillingJson(
+    `/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=plan,plan_expires_at,lemonsqueezy_subscription_id`
   );
-  if (!res.ok) { await res.body?.cancel().catch(() => undefined); throw new Error("Billing profile read failed."); }
-  const rows: unknown = JSON.parse(await readBoundedText(res, 16_384, signal));
   // These fields are billing authority, never defaults inferred from an error envelope.
   if (!Array.isArray(rows) || rows.length !== 1) throw new Error("Billing profile authority is unavailable.");
   const row = rows[0];
