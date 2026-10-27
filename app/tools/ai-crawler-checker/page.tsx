@@ -16,15 +16,15 @@ export const metadata: Metadata = buildPageMetadata({
 const faqs = [
   {
     q: "How do I know if GPTBot is blocked on my site?",
-    a: "Enter your domain above. The checker reads your robots.txt the way crawlers do, including grouped User-agent lines and the * wildcard group, and shows whether GPTBot and every other major AI crawler is allowed or blocked.",
+    a: "Enter a page URL above. The checker tests robots.txt rules for its path and query, including grouped User-agent lines, wildcards and end anchors. It does not fetch the page, resolve its redirects or verify that a crawler visited it.",
   },
   {
     q: "What is the difference between GPTBot and OAI-SearchBot?",
-    a: "GPTBot is OpenAI's training crawler. OAI-SearchBot powers ChatGPT search results. Blocking GPTBot keeps your content out of model training but does not remove you from ChatGPT search; blocking OAI-SearchBot does.",
+    a: "GPTBot is OpenAI's training crawler; its robots preference is independent of OAI-SearchBot, which is used for ChatGPT search. Disallowing OAI-SearchBot opts out of ChatGPT search answers, though navigational links may remain. Allowing it does not prove that your page appears or is cited.",
   },
   {
     q: "Will blocking Google-Extended hide me from AI Overviews?",
-    a: "No. Google-Extended is a token that controls use of your content for Gemini training and grounding in Gemini apps. AI Overviews in Google Search are served using the regular Googlebot crawl.",
+    a: "No. Google-Extended controls Gemini training and specified grounding uses in Gemini Apps and Vertex AI. It does not control Google Search inclusion or ranking; Googlebot crawl preferences apply to Google Search features.",
   },
   {
     q: "Does this tool see firewall or CDN blocks?",
@@ -65,8 +65,8 @@ export default function AiCrawlerCheckerPage() {
             <p className="launch-eyebrow">Free tool</p>
             <h1>AI Crawler Checker</h1>
             <p>
-              See which AI crawlers your robots.txt lets in. Check GPTBot, OAI-SearchBot, PerplexityBot, ClaudeBot,
-              Google-Extended and more, split into search access and training access.
+              Test robots.txt rules for a specific page. Check GPTBot, OAI-SearchBot, PerplexityBot, ClaudeBot,
+              Google-Extended and more, grouped by search, training/reuse and user-triggered purposes.
             </p>
           </div>
           <AiCrawlerChecker />

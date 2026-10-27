@@ -45,6 +45,8 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
+- [x] (2026-10-27, A06/A11/A17) Test the crawler tool against the submitted page path/query; keep unverified policy responses unknown, bound streamed reads, and remove robots-based visibility/training guarantees from results and FAQ/schema. Preserve scanner scores/tool limits; reader provenance and broader acceptance remain open.
+
 - [x] (2026-10-27, audit A12/A17) Correct live software-offer JSON-LD's negative monitor sentinel and unsupported catalog relationship; share existing published software offer facts and paid identifiers between pricing and checkout without changing prices, entitlements, variants or visible markup. Provider reconciliation/activation and other surfaces remain open.
 
 

@@ -8,11 +8,11 @@ const CLIENT_STORAGE_KEY = "aeocheck_client_id_v1";
 
 type Kind = "search" | "training" | "user";
 type Crawler = { token: string; label: string; kind: Kind; allowed: boolean; source: "own" | "wildcard" | "default" };
-type Result = { origin: string; robotsUrl: string; found: boolean; crawlers: Crawler[]; robotsTxt?: string };
+type Result = { checkedUrl: string; requestedRobotsUrl: string; origin: string; robotsUrl: string; found: boolean; crawlers: Crawler[]; robotsTxt?: string };
 
 const KIND_COPY: Record<Kind, { title: string; blurb: string }> = {
-  search: { title: "AI search crawlers", blurb: "Decide whether you can appear and be cited in answers. Blocking these removes you from that engine." },
-  training: { title: "AI training crawlers", blurb: "Decide whether your content trains future models. Blocking these does not remove you from AI search answers." },
+  search: { title: "AI search crawlers", blurb: "Robots rules for search crawlers. Permission to crawl does not establish indexing, appearance in answers or citations." },
+  training: { title: "Training and reuse controls", blurb: "Training or other reuse preferences, depending on the vendor. Google-Extended also controls specified Gemini grounding uses; it does not control Google Search inclusion." },
   user: { title: "User-triggered agents", blurb: "Fetch a page when a person asks about it. Vendors note robots.txt may not apply to these." },
 };
 
@@ -29,24 +29,25 @@ function getClientId(): string | undefined {
   }
 }
 
-function verdict(crawlers: Crawler[]): { tone: "good" | "warn" | "bad"; title: string; text: string } {
+export function crawlerVerdict(crawlers: Crawler[], found = true): { tone: "good" | "warn" | "bad"; title: string; text: string } {
+  if (!found) return { tone: "warn", title: "No robots policy found (HTTP 404)", text: "Default rules do not disallow the listed tokens. This does not verify actual crawling, indexing, training use or AI inclusion." };
   const searchBlocked = crawlers.filter((c) => c.kind === "search" && !c.allowed);
   const trainingBlocked = crawlers.filter((c) => c.kind === "training" && !c.allowed);
   if (searchBlocked.length) {
     return {
       tone: "bad",
-      title: "Blocked from AI search",
-      text: `${searchBlocked.map((c) => c.label).join(", ")} cannot read this site, so it cannot appear in those AI answers.`,
+      title: "Search crawling disallowed by robots.txt",
+      text: `${searchBlocked.map((c) => c.label).join(", ")} are disallowed for the checked page by these rules. This is not a test of network access or observed AI answers.`,
     };
   }
   if (trainingBlocked.length) {
     return {
       tone: "warn",
-      title: "Visible in AI search, opted out of training",
-      text: `AI search crawlers are allowed. ${trainingBlocked.length} training crawler${trainingBlocked.length === 1 ? " is" : "s are"} blocked, which keeps your content out of model training.`,
+      title: "Search rules allow; other controls restrict",
+      text: `Listed search tokens are permitted by these rules. ${trainingBlocked.length} training/reuse token${trainingBlocked.length === 1 ? " is" : "s are"} disallowed. Actual crawling, training use and citations are not verified.`,
     };
   }
-  return { tone: "good", title: "Open to AI crawlers", text: "No AI crawler is blocked from your site root." };
+  return { tone: "good", title: "No listed token disallowed", text: "These robots rules do not block the checked page for the listed tokens. This does not verify actual crawling, indexing, training use or AI inclusion." };
 }
 
 export default function AiCrawlerChecker() {
@@ -60,6 +61,7 @@ export default function AiCrawlerChecker() {
     if (!url.trim() || state === "loading") return;
     setState("loading");
     setError("");
+    setResult(null);
     try {
       const res = await fetch("/api/tools/ai-crawler-check", {
         method: "POST",
@@ -80,7 +82,7 @@ export default function AiCrawlerChecker() {
     }
   }
 
-  const summary = result ? verdict(result.crawlers) : null;
+  const summary = result ? crawlerVerdict(result.crawlers, result.found) : null;
 
   return (
     <div className="surface llms-tool">
@@ -112,9 +114,12 @@ export default function AiCrawlerChecker() {
               {result.found ? (
                 <>Read from <code>{result.robotsUrl}</code></>
               ) : (
-                <>No robots.txt found at <code>{result.robotsUrl}</code>, so every crawler is allowed by default.</>
+                <>HTTP 404 from <code>{result.robotsUrl}</code>. No published policy was found.</>
               )}
             </p>
+            <p className="crawler-verdict-meta">Rule scope: <code>{result.checkedUrl}</code>. The page itself was not fetched, and page redirects were not resolved.</p>
+            <p className="crawler-verdict-meta">Policy requested from <code>{result.requestedRobotsUrl}</code>. Redirected policy contents remain scoped to that original authority.</p>
+            <p className="crawler-verdict-meta">Allowed/Blocked below describes robots rules only. It does not test firewalls, bot identity, access controls or provider compliance.</p>
           </div>
 
           {(["search", "training", "user"] as const).map((kind) => (
