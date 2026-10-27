@@ -361,8 +361,8 @@ try {
     assert.equal(route.request().postDataJSON().url, crawlerUrl);
     if (crawlerOutcome === 'error') return route.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ error: 'The robots.txt response was not a verified text policy. No crawler access verdict is available; check the response and retry.' }) });
     const crawlers = [
-      { token: 'oai-searchbot', label: 'OAI-SearchBot (ChatGPT search)', kind: 'search', allowed: crawlerOutcome !== 'search', source: 'wildcard' },
-      { token: 'gptbot', label: 'GPTBot (OpenAI)', kind: 'training', allowed: crawlerOutcome === 'missing', source: 'own' },
+      { token: 'oai-searchbot', label: 'OAI-SearchBot (ChatGPT search)', kind: 'search', allowed: crawlerOutcome !== 'search', source: crawlerOutcome === 'missing' ? 'default' : 'wildcard' },
+      { token: 'gptbot', label: 'GPTBot (OpenAI)', kind: 'training', allowed: crawlerOutcome === 'missing', source: crawlerOutcome === 'missing' ? 'default' : 'own' },
       { token: 'chatgpt-user', label: 'ChatGPT-User', kind: 'user', allowed: true, source: 'default' },
     ];
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ origin: 'https://example.invalid', checkedUrl: crawlerUrl, requestedRobotsUrl: 'https://example.invalid/robots.txt', robotsUrl: 'https://cdn.example.invalid/policy', found: crawlerOutcome !== 'missing', crawlers }) });
