@@ -174,6 +174,24 @@ try {
     assert.deepEqual((await funnelEvents()).filter(item => item.event === 'service_cta_click'), [{ event: 'service_cta_click', aeocheck_event_version: 1, aeocheck_source: 'content', aeocheck_engagement: null }]);
   }
   checks.push('Comparison guide and tool service discovery');
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await goto('/pricing');
+    const software = await page.locator('script[type="application/ld+json"]').evaluateAll(nodes => nodes.map(node => JSON.parse(node.textContent)).find(value => value['@type'] === 'SoftwareApplication'));
+    assert.equal(software.hasOfferCatalog, undefined);
+    assert.deepEqual(software.offers.map(offer => [offer.name, offer.price, offer.priceCurrency]), [['Free', '0', 'USD'], ['Starter', '9', 'USD'], ['Pro', '19', 'USD'], ['Agency', '49', 'USD']]);
+    assert.match(software.offers[3].description, /Unlimited monitored URLs/);
+    assert.doesNotMatch(JSON.stringify(software), /-1 monitored/);
+    assert.deepEqual(software.offers.filter(offer => offer.priceSpecification).map(offer => offer.name), ['Pro', 'Agency']);
+    for (const price of ['$0', '$9', '$19', '$49']) assert.equal(await page.getByText(price, { exact: true }).count(), 1);
+    await noOverflow();
+    for (const [label, price] of [['starter', '$9'], ['agency', '$49']]) {
+      await page.getByText(price, { exact: true }).scrollIntoViewIfNeeded();
+      await screenshot(`software-pricing-${label}-${width}`);
+    }
+  }
+  checks.push('Software pricing at both widths: preserved visible prices, direct offers/intervals, unlimited sentinel translated and canonical JSON-LD');
+
   for (const [url, source] of [['/', 'home'], ['/pricing', 'pricing']]) {
     await goto(url);
     const block = page.getByRole('complementary', { name: 'Implementation help' });

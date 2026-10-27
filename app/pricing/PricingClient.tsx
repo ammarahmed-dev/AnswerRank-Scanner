@@ -5,9 +5,7 @@ import { Check, Minus } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import UpgradeButton from "@/app/components/UpgradeButton";
 import { PLAN_LIMITS } from "@/lib/access";
-
-type PaidPlan = "onetime" | "pro" | "agency";
-type PlanKey = "free" | PaidPlan;
+import { SOFTWARE_PLANS as PLANS, softwarePriceLabel, type PaidSoftwarePlan as PaidPlan, type SoftwarePlanKey as PlanKey } from "@/lib/software-offers";
 
 const PLAN_RANK: Record<string, number> = {
   guest: 0,
@@ -16,74 +14,6 @@ const PLAN_RANK: Record<string, number> = {
   pro: 2,
   agency: 3,
 };
-
-type PlanDef = {
-  key: PlanKey;
-  name: string;
-  price: string;
-  period: string;
-  description: string;
-  highlights: string[];
-  popular?: true;
-};
-
-const PLANS: PlanDef[] = [
-  {
-    key: "free",
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    description: "Try AEO scanning on your most important pages - no commitment.",
-    highlights: [
-      `${PLAN_LIMITS.free.scanPerMonth} scans per month`,
-      `${PLAN_LIMITS.free.auditPages}-page audit runs`,
-      `${PLAN_LIMITS.free.monitorUrls} monitored URL`,
-    ],
-  },
-  {
-    key: "onetime",
-    name: "Starter",
-    price: "$9",
-    period: "one-time",
-    description: "A single deep-dive audit - great for one-off projects or clients.",
-    highlights: [
-      "1 full report URL · preview on all others",
-      `${PLAN_LIMITS.onetime.auditPages}-page audit runs`,
-      `${PLAN_LIMITS.onetime.monitorUrls} monitored URLs`,
-      `${PLAN_LIMITS.onetime.auditRescans} re-scan snapshots`,
-      "PDF export included",
-    ],
-  },
-  {
-    key: "pro",
-    name: "Pro",
-    price: "$19",
-    period: "/ month",
-    description: "Ongoing monitoring and reports for growing businesses.",
-    popular: true,
-    highlights: [
-      "Unlimited scans",
-      `${PLAN_LIMITS.pro.auditPages}-page audit runs`,
-      `${PLAN_LIMITS.pro.monitorUrls} monitored URLs`,
-      `${PLAN_LIMITS.pro.auditRescans} re-scan snapshots`,
-      "PDF export + priority support",
-    ],
-  },
-  {
-    key: "agency",
-    name: "Agency",
-    price: "$49",
-    period: "/ month",
-    description: "Unlimited scale for agencies managing multiple clients.",
-    highlights: [
-      "Unlimited scans",
-      `${PLAN_LIMITS.agency.auditPages}-page audit runs`,
-      "Unlimited monitored URLs",
-      `${PLAN_LIMITS.agency.auditRescans} re-scan snapshots`,
-      "PDF export + priority support",
-    ],
-  },
-];
 
 type FeatureRow = {
   label: string;
@@ -144,7 +74,7 @@ const FAQ_ITEMS: Array<{ q: string; a: string }> = [
   },
   {
     q: "What is the Starter one-time plan?",
-    a: `A single payment of $9 that gives you ${PLAN_LIMITS.onetime.auditPages}-page audit runs, ${PLAN_LIMITS.onetime.monitorUrls} monitored URLs, and ${PLAN_LIMITS.onetime.auditRescans} re-scan snapshots - no subscription, no recurring charges.`,
+    a: `A single payment of ${softwarePriceLabel("onetime")} that gives you ${PLAN_LIMITS.onetime.auditPages}-page audit runs, ${PLAN_LIMITS.onetime.monitorUrls} monitored URLs, and ${PLAN_LIMITS.onetime.auditRescans} re-scan snapshots - no subscription, no recurring charges.`,
   },
   {
     q: "Can I cancel my subscription at any time?",
@@ -255,7 +185,7 @@ export default function PricingClient() {
 
     const ctaLabel =
       planKey === "onetime"
-        ? "Buy once - $9"
+        ? `Buy once - ${softwarePriceLabel("onetime")}`
         : planKey === "pro"
         ? "Start Pro"
         : "Start Agency";

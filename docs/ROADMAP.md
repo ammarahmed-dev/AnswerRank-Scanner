@@ -40,6 +40,9 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
+- [x] (2026-10-27, audit A12/A17) Correct live software-offer JSON-LD's negative monitor sentinel and unsupported catalog relationship; share existing published software offer facts and paid identifiers between pricing and checkout without changing prices, entitlements, variants or visible markup. Provider reconciliation/activation and other surfaces remain open.
+
+
 - [x] (2026-10-27, audit A14) Resolve AI source destinations with bounded SSRF-safe HEAD checks; preserve unknown/capped/blocked outcomes and separate older citation methods. Destination checks are not answer entailment, live provider acceptance or ranking evidence; distributed spend and separate branded/unbranded series remain open.
 
 
@@ -106,7 +109,7 @@ Based on the full code review from 2026-10-03.
 ## Phase 5 - Continuous streams (run every weekend once Phases 1-3 are done or blocked)
 
 - [x] (2026-10-25, owner request) Apply long-query discovery to the private GSC export and improve the existing SaaS guide for relevant product-discovery and measurement intent; preserve original dates/title and distinguish intent candidates from verified query/page mappings.
-- [ ] Retrieve targeted joint query/page evidence for shortlisted long-query intents; assess matching-window organic performance after data catches up, keeping raw metrics private and avoiding word-count-only prioritization.
+- [~] Targeted joint query/page evidence for shortlisted long-query intents is implemented and runtime-verified through the reviewed Overview (PR #43); the earlier 40-row retrieval blocker is resolved. Assess matching-window organic performance after data catches up, keeping raw metrics private and avoiding word-count-only prioritization.
 
 
 - [x] (2026-10-25, owner request) Research AEO/GEO service presentation using Brickell Digital and tool-plus-service references; document the existing CTA/contact flow and a scoped delivery plan in [SERVICES-PRESENTATION-PLAN.md](SERVICES-PRESENTATION-PLAN.md).
@@ -217,7 +220,7 @@ Based on the full code review from 2026-10-03.
 
 - [x] (2026-10-25, services S01/S03) Ship the scoped implementation page, service contact mode, canonical discovery, updated shared CTA and one report placement; keep scanner access, pricing and report rights intact.
 - [~] (services S02) Validate and confirm service leads through the current private contact store with mocked receipt/error coverage and live schema metadata inspection. Real authorized production enquiry/readback, notification delivery and owner review acceptance remain unverified; do not send unsolicited tests.
-- [ ] Continue services S04-S06: restrained navigation/home/pricing placement after first-path acceptance, verified privacy-safe analytics, and actual qualified-enquiry/delivery review. Do not infer events from the presence of GTM alone.
+- [~] Services S04 discovery is shipped; S05 app events are implemented but destination/consent/receipt acceptance and S06 qualified-enquiry/delivery review remain open. Do not infer conversions from a data-layer queue or GTM presence.
 
 - [x] (2026-10-25, owner request, S04) Repair public mobile navigation and tablet breakpoint gap; add shared header/footer service links and contextual homepage/pricing CTAs. Add scoped USD service starting prices with proposal confirmation. Software plans remain unchanged. Verify browser artifacts and deployed output before live acceptance; S02/S05/S06 remain open.
 

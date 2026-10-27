@@ -2,13 +2,14 @@ import { BodyTooLargeError, readBoundedText, readJsonObject } from "@/lib/bounde
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 
+import { PAID_SOFTWARE_PLANS } from "@/lib/software-offers";
 import { trustedCheckoutUrl } from "@/lib/checkout-url";
 
 export const runtime = "nodejs";
 
 const LS_API = "https://api.lemonsqueezy.com/v1/checkouts";
 
-const PLANS = ["onetime", "pro", "agency"] as const;
+const PLANS = PAID_SOFTWARE_PLANS;
 type Plan = (typeof PLANS)[number];
 
 function getVariantId(plan: Plan): string | undefined {

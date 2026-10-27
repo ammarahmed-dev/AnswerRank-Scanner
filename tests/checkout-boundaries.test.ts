@@ -29,6 +29,27 @@ describe("Hosted checkout destination", () => {
   it.each(invalid)("rejects an unsafe destination: %j", value => { expect(trustedCheckoutUrl(value)).toBeNull(); });
 });
 describe("Checkout provider boundary", () => {
+  it.each(["onetime", "pro", "agency"])("preserves variant and request behavior for published plan %s", async plan => {
+    vi.stubEnv("LEMONSQUEEZY_VARIANT_ONETIME", "synthetic-onetime");
+    vi.stubEnv("LEMONSQUEEZY_VARIANT_AGENCY", "synthetic-agency");
+    const fetch = vi.fn(async () => Response.json({ data: { attributes: { url: valid } } }));
+    vi.stubGlobal("fetch", fetch);
+    const res = await POST(new Request("https://aeocheck.co/api/checkout", { method: "POST", body: JSON.stringify({ plan }) }));
+    expect(res.status).toBe(200);
+    expect(fetch).toHaveBeenCalledOnce();
+    const call = fetch.mock.calls[0] as unknown as [string, RequestInit];
+    const payload = JSON.parse(call[1].body as string);
+    expect(payload.data.relationships.variant.data.id).toBe(`synthetic-${plan}`);
+    expect(payload.data.attributes.checkout_data.custom.user_id).toBe("owner");
+    expect(payload.data.attributes.product_options.redirect_url).toMatch(/\/dashboard\?upgraded=1$/);
+  });
+  it.each(["free", "guest", "starter", "admin"])("rejects unpublished checkout identifier %s before dispatch", async plan => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    const res = await POST(new Request("https://aeocheck.co/api/checkout", { method: "POST", body: JSON.stringify({ plan }) }));
+    expect(res.status).toBe(400);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it("retains signed URL, account, variant, return path and one provider request", async () => {
     const fetch = vi.fn(async () => Response.json({ data: { attributes: { url: valid } } }));
     vi.stubGlobal("fetch", fetch);
