@@ -40,6 +40,9 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
+- [x] (2026-10-27, audit A10/A14) Reconcile missing server SELECT/INSERT on ai_visibility_runs with explicit grants and RLS precondition; test actual base/repair SQL on clean/existing fixtures while preserving browser denial and saved observations. Production privilege verification gates operational acceptance; full baseline and live tracker/provider acceptance remain open.
+
+
 - [x] (2026-10-27, audit A09/A11) Bound quota storage reads/reserve/release with ten-second deadlines, 4 KiB read/reserve JSON caps, redirect rejection and safe cleanup/logging. Keep uncertain reservations fail closed without retries; durable identity/expiry/reconciliation and signed-in acceptance remain open.
 
 
