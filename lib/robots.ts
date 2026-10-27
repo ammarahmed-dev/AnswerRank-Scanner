@@ -127,20 +127,12 @@ export type CrawlerAccess = {
   source: "own" | "wildcard" | "default";
 };
 
-/** Per-crawler access for every known AI crawler, with the group that decided it. */
-export function describeAiCrawlerAccess(robotsBody: string): CrawlerAccess[] {
-  const groups = parseRobotsGroups(robotsBody);
+/** Per-token robots rule test for the requested path/query; not observed crawler access. */
+export function describeAiCrawlerAccess(robotsBody: string, pathWithQuery = "/"): CrawlerAccess[] {
   return Object.entries(AI_CRAWLERS).map(([token, label]) => {
     const kind: CrawlerKind = AI_SEARCH_CRAWLERS.includes(token) ? "search" : AI_USER_AGENTS.includes(token) ? "user" : "training";
-    const hasOwn = groups.some((g) => g.agents.includes(token));
-    const hasWildcard = groups.some((g) => g.agents.includes("*"));
-    return {
-      token,
-      label,
-      kind,
-      allowed: isRootAllowed(groups, token),
-      source: hasOwn ? "own" : hasWildcard ? "wildcard" : "default",
-    };
+    const access = testRobotsAccess(robotsBody, token, pathWithQuery);
+    return { token, label, kind, allowed: access.allowed, source: access.source === "none" ? "default" : access.source };
   });
 }
 

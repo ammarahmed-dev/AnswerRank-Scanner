@@ -353,6 +353,48 @@ try {
   }
   checks.push('Synthetic actual tracker markup at both widths: checked destinations, unavailable sources and older-method history labels; no provider/admin acceptance claimed');
 
+  // Actual crawler-tool UI, isolated API responses; no external site crawl or quota mutation.
+  let crawlerOutcome = 'training';
+  const crawlerUrl = 'https://example.invalid/private?mode=secret';
+  await page.route('**/api/tools/ai-crawler-check', async route => {
+    assert.equal(route.request().method(), 'POST');
+    assert.equal(route.request().postDataJSON().url, crawlerUrl);
+    if (crawlerOutcome === 'error') return route.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ error: 'The robots.txt response was not a verified text policy. No crawler access verdict is available; check the response and retry.' }) });
+    const crawlers = [
+      { token: 'oai-searchbot', label: 'OAI-SearchBot (ChatGPT search)', kind: 'search', allowed: crawlerOutcome !== 'search', source: crawlerOutcome === 'missing' ? 'default' : 'wildcard' },
+      { token: 'gptbot', label: 'GPTBot (OpenAI)', kind: 'training', allowed: crawlerOutcome === 'missing', source: crawlerOutcome === 'missing' ? 'default' : 'own' },
+      { token: 'chatgpt-user', label: 'ChatGPT-User', kind: 'user', allowed: true, source: 'default' },
+    ];
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ origin: 'https://example.invalid', checkedUrl: crawlerUrl, requestedRobotsUrl: 'https://example.invalid/robots.txt', robotsUrl: 'https://cdn.example.invalid/policy', found: crawlerOutcome !== 'missing', crawlers }) });
+  });
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await goto('/tools/ai-crawler-checker');
+    const faq = JSON.parse(await page.locator('script[type="application/ld+json"]').first().textContent());
+    assert.match(JSON.stringify(faq), /Allowing it does not prove/);
+    await page.getByRole('textbox', { name: 'Website URL' }).fill(crawlerUrl);
+    for (const outcome of ['training', 'search', 'missing', 'error']) {
+      crawlerOutcome = outcome;
+      await page.getByRole('button', { name: 'Check AI crawlers', exact: true }).click();
+      if (outcome === 'error') {
+        await page.getByRole('alert').waitFor();
+        assert.equal(await page.locator('.llms-tool-result').count(), 0);
+      } else {
+        await page.locator('.crawler-verdict').waitFor();
+        const expected = outcome === 'training' ? 'Search rules allow; other controls restrict' : outcome === 'search' ? 'Search crawling disallowed by robots.txt' : 'No robots policy found (HTTP 404)';
+        await until(async () => (await page.locator('.crawler-verdict strong').innerText()) === expected, 'crawler verdict');
+        assert.match(await page.locator('.crawler-verdict').innerText(), /not fetched/);
+        assert.match(await page.locator('.crawler-verdict').innerText(), /private\?mode=secret/);
+        assert.doesNotMatch(await page.locator('.llms-tool-result').innerText(), /Visible in AI search|cannot appear|keeps your content out/);
+        assert.equal(await page.getByRole('heading', { name: 'Training and reuse controls', exact: true }).count(), 1);
+      }
+      await noOverflow();
+      await screenshot(`crawler-${outcome}-${width}`, true);
+    }
+  }
+  await page.unroute('**/api/tools/ai-crawler-check');
+  checks.push('Crawler tool desktop/mobile: submitted page scope, search versus training/reuse rule labels, HTTP404 defaults and unavailable retry without stale verdict; FAQ/schema agree; no actual crawl or inclusion claim');
+
   assert.deepEqual(errors, [], 'Browser page errors');
   await writeFile(`${output}/checks.json`, JSON.stringify({ checks, pageErrors: errors, synthetic: true }, null, 2));
   console.log(JSON.stringify({ passed: checks, pageErrors: errors, screenshots: output }));

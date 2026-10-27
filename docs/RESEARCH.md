@@ -2,6 +2,12 @@
 
 Market and product research that feeds `docs/ROADMAP.md`. Newest first. Cite sources.
 
+## Crawler-tool evidence boundary - 27 October 2026
+
+Source review for A06/A17: robots rules describe crawl preferences, not observed visits or citations. OpenAI separates OAI-SearchBot, GPTBot and user-triggered ChatGPT-User; a search opt-out can still leave navigational links, and user-triggered requests may not follow robots rules. Google-Extended controls specified Gemini training/grounding uses, independently of Google Search inclusion/ranking. Do not present a training preference as confirmed removal of existing model data or a search permission as observed inclusion.
+
+Primary sources: [OpenAI crawlers](https://developers.openai.com/api/docs/bots), [Google robots introduction](https://developers.google.com/search/docs/crawling-indexing/robots/intro), [Google-Extended](https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers#google-extended). Apply these limits to the existing tool; preserve scores and publication dates. No measured organic/citation improvement is established by this source review.
+
 ## 2026-10-25 - Implementation services presentation
 
 Owner request: research how AEOCheck should show hands-on AEO/GEO services, using the Brickell Digital reference, then add the result to the plan. Findings and direct sources: [SERVICES-PRESENTATION-PLAN.md](SERVICES-PRESENTATION-PLAN.md).

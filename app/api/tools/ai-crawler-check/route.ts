@@ -36,7 +36,9 @@ export async function POST(req: Request) {
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 400 });
   }
-  const origin = new URL(url).origin;
+  const target = new URL(url);
+  const origin = target.origin;
+  const pathWithQuery = target.pathname + target.search;
   const robotsUrl = `${origin}/robots.txt`;
 
   const auth = await getAuthContext(req);
@@ -56,15 +58,16 @@ export async function POST(req: Request) {
   }
 
   try {
+    const signal = AbortSignal.any([req.signal, AbortSignal.timeout(8000)]);
     const { response, finalUrl } = await safeFetch(robotsUrl, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; AEOCheckScanner/1.0; +https://www.aeocheck.co)", Accept: "text/plain,*/*" },
-      signal: AbortSignal.timeout(8000),
+      signal,
     });
 
-    if (response.status === 404 || response.status === 410) {
+    if (response.status === 404) {
       await response.body?.cancel().catch(() => undefined);
       await commitUsage(usageKey, usage);
-      return NextResponse.json({ origin, robotsUrl: finalUrl, found: false, crawlers: describeAiCrawlerAccess("") });
+      return NextResponse.json({ origin, checkedUrl: url, requestedRobotsUrl: robotsUrl, robotsUrl: finalUrl, found: false, crawlers: describeAiCrawlerAccess("", pathWithQuery) });
     }
     if (response.status !== 200) {
       await response.body?.cancel().catch(() => undefined);
@@ -80,13 +83,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const text = await readBoundedText(response, MAX_ROBOTS_BYTES);
-    if (!/user-agent\s*:/i.test(text) && /<html[\s>]/i.test(text)) {
-      await commitUsage(usageKey, usage);
-      return NextResponse.json({ origin, robotsUrl: finalUrl, found: false, crawlers: describeAiCrawlerAccess("") });
+    const text = await readBoundedText(response, MAX_ROBOTS_BYTES, signal);
+    const contentType = (response.headers.get("content-type") || "").toLowerCase();
+    if (contentType.includes("text/html") || contentType.includes("application/xhtml+xml") ||
+        /<(?:!doctype|html|head|body)\b/i.test(text) ||
+        (!contentType.includes("text/plain") && !/^\s*user-agent\s*:/im.test(text))) {
+      await releaseUsage(usageKey, usage);
+      return NextResponse.json({ error: "The robots.txt response was not a verified text policy. No crawler access verdict is available; check the response and retry." }, { status: 502 });
     }
     await commitUsage(usageKey, usage);
-    return NextResponse.json({ origin, robotsUrl: finalUrl, found: true, crawlers: describeAiCrawlerAccess(text), robotsTxt: text });
+    return NextResponse.json({ origin, checkedUrl: url, requestedRobotsUrl: robotsUrl, robotsUrl: finalUrl, found: true, crawlers: describeAiCrawlerAccess(text, pathWithQuery), robotsTxt: text });
   } catch {
     await releaseUsage(usageKey, usage);
     return NextResponse.json({ error: "We couldn't fetch this site's robots.txt. Check the URL and try again." }, { status: 502 });
