@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { createMonitorWithLimit, MonitorCreationConflict } from "@/lib/monitor-creation";
 import { getScoringComparison } from "@/lib/scoring-comparison";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
@@ -44,6 +45,8 @@ export type MonitorItem = {
 export async function GET(req: Request) {
   try {
   const auth = await getAuthContext(req);
+  const authUnavailable = authUnavailableResponse(auth);
+  if (authUnavailable) return authUnavailable;
   if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!hasSupabaseConfig()) return NextResponse.json({ items: [] });
 
@@ -100,6 +103,8 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
   const auth = await getAuthContext(req);
+  const authUnavailable = authUnavailableResponse(auth);
+  if (authUnavailable) return authUnavailable;
   if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   // Any signed-in user may monitor; the cap below is 1 URL on Free/Starter (matches PLAN_LIMITS).

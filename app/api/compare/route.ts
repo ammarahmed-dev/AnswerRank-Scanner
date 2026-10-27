@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { BodyTooLargeError, readBoundedText } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { runScanCore } from "@/lib/scan-core";
@@ -76,6 +77,8 @@ function domainFromUrl(rawUrl: string): string {
 
 export async function POST(req: Request) {
   const auth = await getAuthContext(req);
+  const authUnavailable = authUnavailableResponse(auth);
+  if (authUnavailable) return authUnavailable;
   const isAdmin = auth.user ? isMasterAdmin(auth.user.email) : false;
   const effectivePlan = isAdmin ? "agency" : auth.plan;
   const clientKey = auth.user

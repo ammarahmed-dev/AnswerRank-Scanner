@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { AuditSaveConflict, saveAuditPageResult } from "@/lib/audit-persistence";
 import { loadScanRows } from "@/lib/scan-resource";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
@@ -49,6 +50,8 @@ export async function POST(req: Request, ctx: RouteContext) {
   let persistenceStarted = false;
   try {
     const auth = await getAuthContext(req);
+    const authUnavailable = authUnavailableResponse(auth);
+    if (authUnavailable) return authUnavailable;
     if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     if (!hasSupabaseConfig()) return NextResponse.json({ error: "Service unavailable." }, { status: 503 });
 

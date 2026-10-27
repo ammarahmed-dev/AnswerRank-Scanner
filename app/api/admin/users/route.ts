@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin } from "@/lib/admin";
@@ -87,6 +88,8 @@ async function getAuthUsersMap(userIds: string[]) {
 export async function GET(req: Request) {
   try {
     const auth = await getAuthContext(req);
+    const authUnavailable = authUnavailableResponse(auth);
+    if (authUnavailable) return authUnavailable;
     if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     if (!isMasterAdmin(auth.user.email)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     if (!hasSupabaseConfig()) return NextResponse.json({ users: [] });

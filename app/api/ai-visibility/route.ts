@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
@@ -18,6 +19,8 @@ async function authorizeAdmin(req: Request) {
     return { error: NextResponse.json({ error: "Not found" }, { status: 404 }) };
   }
   const auth = await getAuthContext(req);
+  const authUnavailable = authUnavailableResponse(auth);
+  if (authUnavailable) return { error: authUnavailable };
   if (!auth.user) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
   if (!isMasterAdmin(auth.user.email)) return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
   return { user: auth.user };

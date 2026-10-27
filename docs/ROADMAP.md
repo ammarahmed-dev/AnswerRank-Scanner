@@ -13,6 +13,9 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 1 - Critical revenue and security fixes
 
+- [x] (2026-10-27, audit A02/A11) Stop unavailable authenticated profile verification becoming Free/guest work; require bounded authoritative reads/bootstrap readback and a shared retryable 503 guard at every current API consumer. Valid rights/expiration and anonymous policy stay unchanged; client recovery and production signed-in acceptance remain open.
+
+
 - [x] Paywall: guest/free scans were returned with `isFullReport: true`, unlocking the paid report for everyone (`app/api/scan/route.ts`)
 - [x] Lemon Squeezy webhook: respect subscription `status`/`ends_at`, handle expired/refunded/resumed/payment-failed, allow downgrades, return 500 on DB failure so LS retries
 - [x] Drop the `USING (true)` select policy on `compare_runs` (all reads go through the service role)
