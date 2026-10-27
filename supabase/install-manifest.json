@@ -1,0 +1,30 @@
+{
+  "version": "2026-10-27",
+  "base": "bootstrap/base.sql",
+  "migrations": [
+    "20260511_add_waitlist_table.sql",
+    "20260524_monitor.sql",
+    "20260525_audit.sql",
+    "20260529_compare_runs.sql",
+    "20260529_portal_url.sql",
+    "20260625_add_onetime_url.sql",
+    "20260625_fix_plan_check_constraint.sql",
+    "20260627_backfill_missing_columns.sql",
+    "20260627_compare_runs_result.sql",
+    "20261003_atomic_scan_usage.sql",
+    "20261003_drop_public_compare_runs_policy.sql",
+    "20261003_limit_email.sql",
+    "20261004_ai_visibility_runs.sql",
+    "20261024213440_restrict_public_table_privileges.sql",
+    "20261025022537_add_monitor_methodology_version.sql",
+    "20261025032921_atomic_monitor_snapshot.sql",
+    "20261025043328_atomic_billing_event.sql",
+    "20261025062756_atomic_audit_page_result.sql",
+    "20261025073228_atomic_monitor_creation.sql",
+    "20261025082909_atomic_audit_creation.sql",
+    "20261025094214_atomic_onetime_report_save.sql",
+    "20261027002206_restore_ai_visibility_server_access.sql"
+  ],
+  "finalize": "bootstrap/finalize.sql",
+  "verify": "bootstrap/verify.sql"
+}
