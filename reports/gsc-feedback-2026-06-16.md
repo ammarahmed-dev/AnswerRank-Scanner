@@ -1,15 +1,5 @@
-# GSC Feedback Report - 2026-06-16
+# Search Console feedback publication retired
 
-Window: 2026-05-16 to 2026-06-13 (vs prior 28 days)
+Private query/page performance details have been removed from this tracked file. Use authorized read-only GSC Overview output for current evidence; do not commit its metrics or create public summary issues.
 
-## Striking distance (position 4-20, >=50 impressions)
-
-None found.
-
-## Decaying pages (clicks down >30%) - 0 flagged for refresh in topical-map.json
-
-None found.
-
-## Content gaps (queries with >=100 impressions, no mapped page)
-
-None found.
+This replacement does not remove earlier Git history, issues, caches or copies. Historical exposure requires a separately reviewed cleanup; no history is rewritten by this release.

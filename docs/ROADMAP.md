@@ -208,7 +208,7 @@ Based on the full code review from 2026-10-03.
 - Run new migrations in `supabase/migrations/` against production (Supabase SQL editor), in order:
   `20261003_drop_public_compare_runs_policy.sql`, `20261003_atomic_scan_usage.sql`, `20261003_limit_email.sql`,
   `20261004_ai_visibility_runs.sql` (only needed once the AI tracker is enabled)
-- RESOLVED 2026-10-04: Google Search Console automation works again (new service account, secrets `GSC_CLIENT_EMAIL` / `GSC_PRIVATE_KEY`, variable `GSC_SITE_URL`). The `GSC Feedback Loop` workflow had been auto-disabled for inactivity and was re-enabled; its first run succeeded. Run the manual `GSC Overview` workflow (sitemaps, top queries/pages, tool pages) whenever planning.
+- RESOLVED 2026-10-04: Google Search Console automation works again (new service account, secrets `GSC_CLIENT_EMAIL` / `GSC_PRIVATE_KEY`, variable `GSC_SITE_URL`). The legacy `GSC Feedback Loop` public publisher is retired as of 27 October; do not re-enable its writes/issues. Earlier public history/issues may retain metrics and require separately reviewed cleanup. Run the manual `GSC Overview` workflow (sitemaps, top queries/pages, tool pages) whenever planning.
 - Optional: AI cover images stopped working (Hugging Face no longer serves FLUX.1-schnell via the
   free `hf-inference` provider). Covers now fall back to branded images automatically. To get AI
   illustrations back, add Hugging Face inference credits (the script tries provider "auto" first).
@@ -263,3 +263,5 @@ Bound hosted-checkout response bodies to 64 KiB and keep a 15-second provider de
 ## Application funnel signals (27 October)
 
 Read-only inspection of the published GTM resource found a GA4 destination and click-text tags, but no rules for scan completion or confirmed saved-service leads. Added bounded, allowlisted data-layer events for scanner dispatch/completion and shared service CTA/form-start/save outcomes. No URLs, report tokens, identity, messages or raw context are included; no new storage/vendor/direct analytics transport. Saved events follow literal successful storage responses, with component-lifetime guards; failed scans do not emit completion. Existing scanner/report rights and form behavior remain. See [FUNNEL-MEASUREMENT.md](FUNNEL-MEASUREMENT.md) for the exact contract and remaining GTM consent/routing/GA4-receipt acceptance. Published configuration is not proof of receipt or conversion counts; GTM editing/GA4 reporting tools are unavailable. S05/A15 instrumentation is partial, with destination acceptance blocked; S02/S06 and the full audit remain open. Available GSC data still predates releases; no title/content rewrite or ranking/AI-inclusion gain is claimed.
+
+- [x] (2026-10-27, A15/A17 privacy) Retire scheduled public GSC metric commits/issues; make legacy caller inert and replace tracked reports with privacy notices. Private Overview remains available; historical exposure cleanup is separate.

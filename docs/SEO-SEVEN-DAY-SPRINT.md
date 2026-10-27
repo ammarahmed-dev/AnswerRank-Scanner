@@ -100,3 +100,7 @@ Runtime verification completed on 25 October: the reviewed successful job return
 ## Measurement refresh: 27 October
 
 The historically reviewed read-only Overview diagnostic completed another retrieval. Its Pacific-calendar window rolled forward to end on 25 October, including the first release calendar day. This is not a complete matching post-change window and does not isolate publication time, countries/devices or the effect of any release. Do not compare rolled totals or page-aggregated positions as like-for-like gains against the earlier window or owner export. No configured paired-section cap was reached; anonymization/unavailable rows still prevent completeness claims. Raw query/page metrics remain private. No repeated best-guide/SaaS title or content edit is justified solely by this refresh; continue the scanner/sample journey and independent technical fixes while data catches up.
+
+## Private evidence publication boundary
+
+The legacy Feedback Loop publisher is retired after an automatic public report commit on 27 October. Do not re-enable its schedule, repository writes or public issues. Tracked feedback files now carry notices, not performance evidence; use authorized private Overview outputs. Replacing current files does not erase earlier history, issues or external copies. Historical cleanup remains separate and no complete removal is claimed.
