@@ -34,6 +34,13 @@ const needsFix = (checks: CheckResult[], id: string) => {
   return s !== undefined && s !== "pass";
 };
 
+function resourceNeedsStarter(checks: CheckResult[], id: string) {
+  const check = checks.find(c => c.id === id);
+  // New fetch evidence takes precedence over a warn/fail score. Legacy starters
+  // stay available for review, without claiming an unknown file is missing.
+  return needsFix(checks, id) && (!check?.diagnostic || check.diagnostic.state === "not_found");
+}
+
 function escapeAttr(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -57,19 +64,19 @@ export function buildFixPack(input: FixInput): FixPackItem[] {
 
   // Only a confirmed block counts: "warn" means the scanner could not verify access.
   const botsBlocked = statusOf(checks, "ai_bot_access") === "fail";
-  if (botsBlocked || needsFix(checks, "robots")) {
+  if (botsBlocked || resourceNeedsStarter(checks, "robots")) {
     items.push({
       id: "robots",
       title: "robots.txt that welcomes AI crawlers",
-      placement: `Publish at ${origin}/robots.txt (replace the file, or merge it and keep any Disallow rules for private paths).`,
+      placement: `Review and merge at ${origin}/robots.txt. Preserve intentional private-path exclusions and existing sitemap declarations before publishing.`,
       filename: "robots.txt",
       content: buildRobotsTxt({
         policy: "open",
         sitemapUrl: needsFix(checks, "sitemap") ? `${origin}/sitemap.xml` : undefined,
       }),
       why: botsBlocked
-        ? "Your robots.txt blocks at least one AI crawler, so those engines cannot read or cite your pages."
-        : "No robots.txt was found. An explicit file states which crawlers are welcome.",
+        ? "Observed rules restrict at least one tested crawler/path. Review whether that restriction is intentional; allowance does not prove AI citations."
+        : "Robots policy needs review. Check the observed request outcome and any existing file before using this starter.",
       checkIds: ["ai_bot_access", "robots"].filter((id) => needsFix(checks, id)),
     });
   }
@@ -89,18 +96,18 @@ export function buildFixPack(input: FixInput): FixPackItem[] {
     });
   }
 
-  if (needsFix(checks, "llms_txt")) {
+  if (resourceNeedsStarter(checks, "llms_txt")) {
     items.push({
       id: "llms-txt",
       title: "llms.txt starter",
-      placement: `Publish at ${origin}/llms.txt.`,
+      placement: `Review any existing ${origin}/llms.txt before publishing this optional summary.`,
       filename: "llms.txt",
       content: buildLlmsTxt({
         siteName,
         summary: description,
         pages: [{ url: input.url, title: title || siteName, description }],
       }),
-      why: "A short summary file for AI systems. This lists the scanned page only: use the llms.txt generator to add your key pages.",
+      why: "An optional summary convention, not proof of rankings or AI citations. This lists only the scanned page; review facts and links before adding other pages.",
       checkIds: ["llms_txt"],
     });
   }

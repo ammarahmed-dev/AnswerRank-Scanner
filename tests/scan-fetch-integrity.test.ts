@@ -32,6 +32,7 @@ describe("scan fetch integrity", () => {
     robotsBody = "User-agent: OAI-SearchBot\nDisallow: /private/";
     const result = await runScanCore("http://old.test:8080/start");
     expect(result.scrapedData.url).toBe("https://www.final.test:8443/private/page?x=1");
+    expect(result.methodology.evidence.resources).toEqual({ robots: {state:"available",httpStatus:200}, sitemap: {state:"available",httpStatus:200}, llms: {state:"available",httpStatus:200} });
     expect(result.methodology).toMatchObject({
       version: "aeocheck-2026-10-24-v1",
       overall: { aggregation: "weighted", statusCredit: { pass: 1, warn: 0.5, fail: 0 } },
@@ -56,6 +57,7 @@ describe("scan fetch integrity", () => {
     const result = await runScanCore("http://old.test:8080/start", { includePageSpeed: false });
     expect(result.checks.find(c => c.id === "llms_txt")?.status).toBe("warn");
     expect(result.scrapedData.hasLlmsTxt).toBe(false);
+    expect(result.methodology.evidence.resources?.llms).toEqual({state:"invalid_response",httpStatus:200});
   });
 
   it("reports inaccessible robots as unverified rather than found", async () => {

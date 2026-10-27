@@ -9,6 +9,7 @@ export type NormalizedIssue = {
   status: CheckResult["status"];
   weight: number;
   priority: ReportPriority;
+  diagnostic?: CheckResult["diagnostic"];
 };
 
 function priorityFromWeight(weight: number): ReportPriority {
@@ -26,6 +27,7 @@ function makeIssue(check: CheckResult): NormalizedIssue {
     status: check.status,
     weight: check.weight,
     priority: priorityFromWeight(check.weight),
+    ...(check.diagnostic ? { diagnostic: check.diagnostic } : {}),
   };
 }
 

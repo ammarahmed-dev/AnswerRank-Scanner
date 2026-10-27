@@ -40,6 +40,9 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
+- [x] (2026-10-27, audit A06/A11) Distinguish auxiliary-resource HTTP absence, scanner restrictions, invalid responses and incomplete fetches in saved/displayed evidence; use evidence-aware remediation and body-active deadlines without changing score credit/version. Reader provenance and crawler-purpose acceptance remain open.
+
+
 - [x] (2026-10-27, audit A10/A14) Reconcile missing server SELECT/INSERT on ai_visibility_runs with explicit grants and RLS precondition; test actual base/repair SQL on clean/existing fixtures while preserving browser denial and saved observations. Production privilege verification gates operational acceptance; full baseline and live tracker/provider acceptance remain open.
 
 
