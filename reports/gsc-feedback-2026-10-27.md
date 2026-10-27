@@ -1,16 +1,5 @@
-# GSC Feedback Report - 2026-10-27
+# Search Console feedback publication retired
 
-Window: 2026-09-26 to 2026-10-24 (vs prior 28 days)
+Private query/page performance details have been removed from this tracked file. Use authorized read-only GSC Overview output for current evidence; do not commit its metrics or create public summary issues.
 
-## Striking distance (position 4-20, >=50 impressions)
-
-- **aeo checker** -> https://www.aeocheck.co/blog/best-aeo-tools-ai-search-visibility | pos 11.3 | 60 impr, 0 clicks. Action: add a section directly answering this query; consider title/H2 update.
-
-## Decaying pages (clicks down >30%) - 0 flagged for refresh in topical-map.json
-
-None found.
-
-## Content gaps (queries with >=100 impressions, no mapped page)
-
-- "tools for analyzing featured snippet performance in ai-generated answers" | 104 impr | pos 82.4 -> candidate new T3 slot
-- "schema checker" | 101 impr | pos 78.6 -> candidate new T3 slot
+This replacement does not remove earlier Git history, issues, caches or copies. Historical exposure requires a separately reviewed cleanup; no history is rewritten by this release.
