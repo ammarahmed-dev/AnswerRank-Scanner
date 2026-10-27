@@ -100,6 +100,41 @@ describe("lemonsqueezy webhook", () => {
     expect((await send("subscription_created", sub("s1", "200", "active"))).status).toBe(500);
   });
 
+  it.each(["order_created", "order_refunded", "subscription_created", "subscription_updated"])("keeps missing-profile %s retryable without mutation/receipt", async eventName => {
+    profile = null;
+    const data = eventName.startsWith("order_")
+      ? { id: "o1", attributes: { status: eventName === "order_refunded" ? "refunded" : "paid", first_order_item: { variant_id: 100 } } }
+      : sub("s1", "200", "active");
+    expect((await send(eventName, data)).status).toBe(500);
+    expect(patches).toHaveLength(0); expect(processedEvents.size).toBe(0);
+  });
+  it.each([{}, { 0: { plan: "free" } }, null, [null], [[]], [{}], [{ plan: "mystery", plan_expires_at: null, lemonsqueezy_subscription_id: null }],
+    [{ plan: "pro", plan_expires_at: "bad", lemonsqueezy_subscription_id: "s1" }],
+    [{ plan: "pro", plan_expires_at: null, lemonsqueezy_subscription_id: 42 }],
+    [{ plan: "free", plan_expires_at: null }],
+    [{ plan: "free", plan_expires_at: null, lemonsqueezy_subscription_id: null }, { plan: "agency" }]
+  ])("rejects malformed profile authority %j before acknowledgement or persistence", async rows => {
+    const fetch = vi.fn(async () => Response.json(rows)); vi.stubGlobal("fetch", fetch);
+    expect((await send("order_refunded", { id: "o1", attributes: { status: "refunded", first_order_item: { variant_id: 100 } } })).status).toBe(500);
+    expect(fetch).toHaveBeenCalledOnce(); expect(processedEvents.size).toBe(0);
+  });
+  it("allows a missing-profile refund delivery to be retried after profile recovery", async () => {
+    const data = { id: "o1", attributes: { status: "refunded", first_order_item: { variant_id: 100 } } };
+    profile = null;
+    expect((await send("order_refunded", data)).status).toBe(500);
+    expect(processedEvents.size).toBe(0);
+    profile = { plan: "onetime", plan_expires_at: null, lemonsqueezy_subscription_id: null };
+    expect((await send("order_refunded", data)).status).toBe(200);
+    expect(profile.plan).toBe("free"); expect(processedEvents.size).toBe(1);
+  });
+  it("does not log raw transport failure text or follow profile redirects", async () => {
+    const fetch = vi.fn(async (_url: string, _init?: RequestInit) => { throw new Error("private-provider-body private-customer-id"); });
+    vi.stubGlobal("fetch", fetch);
+    expect((await send("subscription_created", sub("s1", "200", "active"))).status).toBe(500);
+    expect(fetch.mock.calls[0][1]?.redirect).toBe("error");
+    expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toMatch(/private-provider-body|private-customer-id/);
+  });
+
   it("rejects a bad signature", async () => {
     const res = await send("subscription_created", sub("s1", "200", "active"), "00".repeat(32));
     expect(res.status).toBe(400);
