@@ -76,6 +76,14 @@ describe("crawler page rule evidence", () => {
     expect(result.title + result.text).not.toMatch(/Visible in AI search|cannot appear|keeps your content out|site root/);
     expect(result.text).toMatch(/not (a test|verified)|does not verify/);
   });
+  it.each(["chatgpt-user", "claude-user", "perplexity-user"])("does not report all tokens permitted when only %s is disallowed", name => {
+    const rows = describeAiCrawlerAccess(`User-agent: ${name}\nDisallow: /private\n`, "/private");
+    expect(token(rows, name).allowed).toBe(false);
+    const result = crawlerVerdict(rows);
+    expect(result).toMatchObject({ tone: "warn", title: "User-triggered rules restrict this page" });
+    expect(result.text).toContain("1 user-triggered token is disallowed");
+    expect(result.text).toContain("not verified");
+  });
   it("distinguishes a missing policy from verified permission", () => {
     expect(crawlerVerdict(describeAiCrawlerAccess(""), false)).toMatchObject({ tone: "warn", title: "No robots policy found (HTTP 404)" });
   });
