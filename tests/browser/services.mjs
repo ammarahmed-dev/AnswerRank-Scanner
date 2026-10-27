@@ -362,8 +362,8 @@ try {
     if (crawlerOutcome === 'error') return route.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ error: 'The robots.txt response was not a verified text policy. No crawler access verdict is available; check the response and retry.' }) });
     const crawlers = [
       { token: 'oai-searchbot', label: 'OAI-SearchBot (ChatGPT search)', kind: 'search', allowed: crawlerOutcome !== 'search', source: crawlerOutcome === 'missing' ? 'default' : 'wildcard' },
-      { token: 'gptbot', label: 'GPTBot (OpenAI)', kind: 'training', allowed: crawlerOutcome === 'missing', source: crawlerOutcome === 'missing' ? 'default' : 'own' },
-      { token: 'chatgpt-user', label: 'ChatGPT-User', kind: 'user', allowed: true, source: 'default' },
+      { token: 'gptbot', label: 'GPTBot (OpenAI)', kind: 'training', allowed: crawlerOutcome === 'missing' || crawlerOutcome === 'user', source: crawlerOutcome === 'missing' ? 'default' : 'own' },
+      { token: 'chatgpt-user', label: 'ChatGPT-User', kind: 'user', allowed: crawlerOutcome !== 'user', source: crawlerOutcome === 'user' ? 'own' : 'default' },
     ];
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ origin: 'https://example.invalid', checkedUrl: crawlerUrl, requestedRobotsUrl: 'https://example.invalid/robots.txt', robotsUrl: 'https://cdn.example.invalid/policy', found: crawlerOutcome !== 'missing', crawlers }) });
   });
@@ -373,7 +373,7 @@ try {
     const faq = JSON.parse(await page.locator('script[type="application/ld+json"]').first().textContent());
     assert.match(JSON.stringify(faq), /Allowing it does not prove/);
     await page.getByRole('textbox', { name: 'Website URL' }).fill(crawlerUrl);
-    for (const outcome of ['training', 'search', 'missing', 'error']) {
+    for (const outcome of ['training', 'search', 'user', 'missing', 'error']) {
       crawlerOutcome = outcome;
       await page.getByRole('button', { name: 'Check AI crawlers', exact: true }).click();
       if (outcome === 'error') {
@@ -381,7 +381,7 @@ try {
         assert.equal(await page.locator('.llms-tool-result').count(), 0);
       } else {
         await page.locator('.crawler-verdict').waitFor();
-        const expected = outcome === 'training' ? 'Search rules allow; other controls restrict' : outcome === 'search' ? 'Search crawling disallowed by robots.txt' : 'No robots policy found (HTTP 404)';
+        const expected = outcome === 'training' ? 'Search rules allow; other controls restrict' : outcome === 'search' ? 'Search crawling disallowed by robots.txt' : outcome === 'user' ? 'User-triggered rules restrict this page' : 'No robots policy found (HTTP 404)';
         await until(async () => (await page.locator('.crawler-verdict strong').innerText()) === expected, 'crawler verdict');
         assert.match(await page.locator('.crawler-verdict').innerText(), /not fetched/);
         assert.match(await page.locator('.crawler-verdict').innerText(), /private\?mode=secret/);

@@ -1,3 +1,7 @@
+# 2026-10-27 - Cover user-triggered-only crawler restrictions
+
+Final release review found a missed summary branch: when only a user-triggered token was disallowed, the correct blocked row was paired with an all-tokens-permitted summary. Add an explicit warning without implying that user-triggered requests necessarily follow robots rules. Test ChatGPT-User, Claude-User and Perplexity-User, plus actual desktop/mobile tool rendering. Parser, policy fetching, quota and scanner scores are unchanged; no production crawl or usage mutation. Local validation: 1,105 tests / 101 files, type check, lint (18 existing warnings), content links and fresh production build pass; all three new regressions fail the prior summary. Exact-head browser/visual review and same-SHA public verification gate release. This corrects the preceding tool release's coverage gap; full audit and growth attribution remain open.
+
 # 2026-10-27 - Make crawler-tool results page-scoped and evidence-limited
 
 The free AI crawler checker now evaluates the submitted page path/query with the shared wildcard/end-anchor matcher instead of silently checking the root. Return the normalized checked URL and original policy request scope separately from the redirected policy source. HTML/unrecognized policies, 410 and other failed responses no longer become missing-file/all-allowed results; only HTTP 404 is labelled absent. Keep the eight-second signal active through streamed bodies and propagate caller cancellation. Existing tool limits and scanner scores/versions are unchanged.

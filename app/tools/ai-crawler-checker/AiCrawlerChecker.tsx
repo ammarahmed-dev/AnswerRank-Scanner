@@ -47,6 +47,14 @@ export function crawlerVerdict(crawlers: Crawler[], found = true): { tone: "good
       text: `Listed search tokens are permitted by these rules. ${trainingBlocked.length} training/reuse token${trainingBlocked.length === 1 ? " is" : "s are"} disallowed. Actual crawling, training use and citations are not verified.`,
     };
   }
+  const userBlocked = crawlers.filter((c) => c.kind === "user" && !c.allowed);
+  if (userBlocked.length) {
+    return {
+      tone: "warn",
+      title: "User-triggered rules restrict this page",
+      text: `Listed search and training/reuse tokens are permitted by these rules. ${userBlocked.length} user-triggered token${userBlocked.length === 1 ? " is" : "s are"} disallowed. Those requests may not follow robots rules; actual access and AI inclusion are not verified.`,
+    };
+  }
   return { tone: "good", title: "No listed token disallowed", text: "These robots rules do not block the checked page for the listed tokens. This does not verify actual crawling, indexing, training use or AI inclusion." };
 }
 
