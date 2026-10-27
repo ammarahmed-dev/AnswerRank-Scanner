@@ -133,7 +133,7 @@ export default function AiVisibilityClient() {
               {run.checked} answer{run.checked === 1 ? "" : "s"} checked. {run.saved ? "Saved to history." : "History could not be saved."}
             </p>
             <p className="crawler-verdict-meta">{run.citationChecked ?? 0} of {run.checked} answers have a checked citation outcome. An empty returned source list counts as no citation in that response.</p>
-            <p className="crawler-verdict-meta">Totals include {run.unbrandedChecked ?? 0} unbranded and {run.brandedChecked ?? 0} branded answers. Citation rates use checked source destinations and exclude unresolved negatives. HEAD requests may be blocked, so unavailable evidence is not a missing citation. List position is within an answer, not a search ranking.</p>
+            <p className="crawler-verdict-meta">Totals include {run.unbrandedChecked ?? 0} unbranded and {run.brandedChecked ?? 0} branded answers. Citation rates use checked source destinations and exclude unresolved negatives. Up to 20 unique sources are checked per run. HEAD requests may be blocked, so unavailable evidence is not a missing citation. List position is within an answer, not a search ranking.</p>
           </div>
           <ul className="extract-list">
             {run.results.map((r, i) => (

@@ -32,6 +32,7 @@ describe("destination-checked visibility presentation", () => {
     expect(html).toContain("not answer-to-source entailment or citation quality");
     expect(html).not.toContain("private=secret");
     expect(html).toContain("older or unverified citation method");
+    expect(html).toContain("Up to 20 unique sources are checked per run.");
     expect(html).toContain("destination-checked method");
     mkdirSync("test-results/services", { recursive: true });
     writeFileSync("test-results/services/visibility-destination-fixture.html", html);
