@@ -84,7 +84,7 @@ The owner's uploaded three-month export was reviewed privately using a four-or-m
 
 The first content batch improves the existing SaaS guide's direct product-discovery answers and repeatable measurement steps, while correcting unsupported technical/visibility claims. Preserve its original publication date and title, record the actual update date and link to relevant existing tools/guides. This is an intent-based candidate selection: the export has separate query/page tables, so it does not prove which URL earned a query or establish current post-release results. No private metrics or raw query export is committed.
 
-Next: obtain targeted joint query/page evidence for shortlisted intents using the authorized read-only GSC connection; compare matching dates and filters before attributing any change. The current 40-row overview is insufficient to establish all long-query/page matches. Keep best-checker commercial intent prioritized alongside this SaaS follow-through, without duplicate pages or daily title churn.
+Targeted joint query/page evidence for shortlisted intents is now implemented and runtime-verified through the authorized read-only Overview (PR #43). The separate top-query table remains limited context; use the bounded paired sections described below. The earlier targeted-retrieval blocker is resolved. Next compare matching post-change dates and filters once data catches up, without treating the pre-release baseline as growth. Keep best-checker commercial intent prioritized alongside this SaaS follow-through, without duplicate pages or daily title churn.
 
 ## Targeted query/page diagnostic (25 October)
 
