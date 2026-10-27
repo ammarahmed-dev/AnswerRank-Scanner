@@ -17,6 +17,8 @@ describe("bounded citation destination evidence", () => {
     const negative = await run(["https://aeocheck.co/redirect-away"]);
     expect(negative.results[0]).toMatchObject({ mentioned: true, cited: false, citationVerified: true });
     expect(negative.citationRate).toBe(0);
+    expect(positive.results[0].citationEvidence?.[0]).toHaveProperty("sourceIndex", 0);
+    expect(positive.results[0].citationEvidence?.[0]).not.toHaveProperty("sourceUrl");
     expect(safeFetch).toHaveBeenCalledWith("https://wrapper.example/source", expect.objectContaining({ method: "HEAD", maxRedirects: 3, signal: expect.any(AbortSignal) }));
     expect(safeFetch.mock.calls[0][1].headers).not.toHaveProperty("Authorization");
   });

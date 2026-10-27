@@ -156,7 +156,7 @@ export default function AiVisibilityClient() {
                     <summary>Source destination checks</summary>
                     {r.citationEvidence.map((source, index) => (
                       <p key={index} style={{ overflowWrap: "anywhere" }}>
-                        {sourceHost(source.sourceUrl)}: {source.state === "resolved" && source.finalUrl
+                        {sourceHost(r.citations[source.sourceIndex])}: {source.state === "resolved" && source.finalUrl
                           ? `reached ${sourceHost(source.finalUrl)} (HTTP ${source.httpStatus})`
                           : `not verified (${source.reason ?? "not_checked"}${source.httpStatus ? `, HTTP ${source.httpStatus}` : ""})`}
                       </p>

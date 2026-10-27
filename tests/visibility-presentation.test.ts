@@ -10,9 +10,9 @@ import AiVisibilityClient from "@/app/ai-visibility/AiVisibilityClient";
 import { VISIBILITY_METHOD } from "@/lib/ai-visibility";
 
 const resolved = { prompt: "Best tools?", engine: "gemini", mentioned: true, cited: true, position: 2, citations: ["https://wrapper.example/?private=secret"], citationVerified: true, methodologyVersion: VISIBILITY_METHOD,
-  citationEvidence: [{ sourceUrl: "https://wrapper.example/?private=secret", state: "resolved", finalUrl: "https://aeocheck.co/guide?private=secret", httpStatus: 200 }] };
-const unknown = { ...resolved, prompt: "What should I use?", mentioned: false, cited: false, citationVerified: false,
-  citationEvidence: [{ sourceUrl: "https://unknown.example/", state: "unverified", reason: "http_error", httpStatus: 403 }] };
+  citationEvidence: [{ sourceIndex: 0, state: "resolved", finalUrl: "https://aeocheck.co/guide?private=secret", httpStatus: 200 }] };
+const unknown = { ...resolved, citations: ["https://unknown.example/"], prompt: "What should I use?", mentioned: false, cited: false, citationVerified: false,
+  citationEvidence: [{ sourceIndex: 0, state: "unverified", reason: "http_error", httpStatus: 403 }] };
 const response = { brand: { name: "AEOCheck", domain: "aeocheck.co" }, engines: ["gemini"], saved: true, results: [resolved, unknown], mentionRate: 50, citationRate: 100, citationChecked: 1, checked: 2, brandedChecked: 0, unbrandedChecked: 2 };
 function render(citationChecked = 1) {
   hooks.values = ["AEOCheck", "aeocheck.co", "Tools", "Best tools?", "done", "", { ...response, citationChecked }, [

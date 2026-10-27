@@ -34,7 +34,7 @@ export type PromptResult = {
   requestedModel?: string;
   recordedAt?: string;
   citationVerified?: boolean;
-  citationEvidence?: CitationEvidence[];
+  citationEvidence?: Array<Omit<CitationEvidence, "sourceUrl"> & { sourceIndex: number }>;
   promptKind?: "branded" | "unbranded";
   methodologyVersion?: string;
   error?: string;
@@ -215,7 +215,12 @@ export async function runVisibilityCheck(
   const bySource = new Map(evidence.map(item => [item.sourceUrl, item]));
   for (const result of results) {
     if (result.error) continue;
-    result.citationEvidence = result.citations.map(sourceUrl => bySource.get(sourceUrl) ?? { sourceUrl, state: "unverified", reason: "not_checked" });
+    result.citationEvidence = result.citations.map((sourceUrl, sourceIndex) => {
+      const item = bySource.get(sourceUrl);
+      return item
+        ? { sourceIndex, state: item.state, ...(item.finalUrl ? { finalUrl: item.finalUrl } : {}), ...(item.httpStatus ? { httpStatus: item.httpStatus } : {}), ...(item.reason ? { reason: item.reason } : {}) }
+        : { sourceIndex, state: "unverified", reason: "not_checked" };
+    });
     const destinations = result.citationEvidence.filter(item => item.state === "resolved" && item.finalUrl).map(item => item.finalUrl!);
     result.cited = analyzeAnswer(result.answer ?? "", destinations, brand).cited;
     // A verified positive is useful even if another source is unknown. A negative needs all sources checked.
