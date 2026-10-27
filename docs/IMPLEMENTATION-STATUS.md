@@ -447,3 +447,10 @@ Growth assessment: current private GSC evidence ends 25 October and is not a mat
 Validation includes stalled headers and body, total deadline/late cleanup, redirect rejection, bounded responses, stalled failed-body cancellation, sanitized failures, unchanged RPC payload/results and signed synthetic webhook retry behavior. Local regression, type/lint, content-link and fresh production build checks plus exact-head CI and same-SHA deployment/public checks gate release; real provider/payment acceptance remains open.
 
 Local release verification: 1,125 tests / 102 files, type check, lint (18 existing warnings), content links and fresh production build pass. Three signed-handler regressions fail the prior code. Built public home/pricing 200 and unsigned webhook 400 checked without production credentials; exact-head CI and same-SHA deployment/public checks remain required.
+
+
+## Deterministic crawler-error browser assertion (27 October)
+
+The post-merge billing release's browser check exposed an existing ambiguous alert selector: Next.js's route announcer and the tool error both have role=alert. The same PR head had passed; the failure does not demonstrate a billing or product error. Scope the assertion to the actual crawler-error text, and deliberately include a second visible alert at both widths so future runs exercise the ambiguity. Keep exact error text, stale-result absence, overflow/page-error checks and screenshots; remove the synthetic announcement before capturing. No application/UI behavior changes or disabled gate. CI and same-SHA public verification remain required. Full audit and all production acceptance limitations remain open.
+
+Follow-up local validation: 1,125 tests / 102 files, type check, lint (18 existing warnings), content links, browser-script syntax and fresh production build pass. The browser assertion with two simultaneous alerts must pass in exact-head CI before merge; no product behavior changed.

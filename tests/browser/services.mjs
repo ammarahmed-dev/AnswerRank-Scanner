@@ -377,7 +377,20 @@ try {
       crawlerOutcome = outcome;
       await page.getByRole('button', { name: 'Check AI crawlers', exact: true }).click();
       if (outcome === 'error') {
-        await page.getByRole('alert').waitFor();
+        // Next's route announcer can also have role=alert. Keep a second visible alert
+        // present so this regression cannot pass merely because navigation was fast.
+        await page.evaluate(() => {
+          const announcement = document.createElement('div');
+          announcement.id = 'synthetic-navigation-alert';
+          announcement.setAttribute('role', 'alert');
+          announcement.textContent = 'Navigation announcement test fixture';
+          document.body.append(announcement);
+        });
+        const toolError = page.getByRole('alert').filter({ hasText: 'No crawler access verdict is available' });
+        await toolError.waitFor();
+        assert.ok(await page.getByRole('alert').count() >= 2, 'exercise multiple alert roles');
+        assert.equal(await toolError.innerText(), 'The robots.txt response was not a verified text policy. No crawler access verdict is available; check the response and retry.');
+        await page.locator('#synthetic-navigation-alert').evaluate(element => element.remove());
         assert.equal(await page.locator('.llms-tool-result').count(), 0);
       } else {
         await page.locator('.crawler-verdict').waitFor();

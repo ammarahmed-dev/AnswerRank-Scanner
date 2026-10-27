@@ -35,6 +35,8 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 2 - Foundations for safe automation
 
+- [x] (2026-10-27, A15) Scope crawler browser error assertion to the tool message and exercise a second alert explicitly; avoid intermittent strict-selector failures from Next route announcements without weakening the browser gate.
+
 - [x] CI workflow: typecheck + build on every push and PR (`.github/workflows/ci.yml`)
 - [x] Rewrite `CLAUDE.md` so it matches the real stack (Next 16, Supabase auth, root `app/` + `lib/`, DeepSeek/OpenRouter/Gemini)
 - [x] Add a test runner (Vitest) and unit tests for `lib/url-safety.ts`, `lib/usage-limits.ts` (key derivation), the webhook plan mapping and `lib/score-engine.ts`; run them in CI (`npm test`, `tests/`)
