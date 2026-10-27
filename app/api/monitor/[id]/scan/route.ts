@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { loadScanRows } from "@/lib/scan-resource";
 import { saveMonitorSnapshot } from "@/lib/monitor-persistence";
 import { NextResponse } from "next/server";
@@ -15,6 +16,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(req: Request, { params }: RouteContext) {
   const auth = await getAuthContext(req);
+  const authUnavailable = authUnavailableResponse(auth);
+  if (authUnavailable) return authUnavailable;
   if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const isAdmin = isMasterAdmin(auth.user.email);

@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { NextResponse } from "next/server";
 import { getReportRecord } from "@/lib/report-db";
 import { getAuthContext } from "@/lib/auth-server";
@@ -21,6 +22,8 @@ export async function GET(
   }
 
   const auth = await getAuthContext(req);
+  const authUnavailable = authUnavailableResponse(auth);
+  if (authUnavailable) return authUnavailable;
   const { user_id: reportUserId, ...responseReport } = report as typeof report & { user_id?: string | null };
   const isAdmin = auth.user ? isMasterAdmin(auth.user.email) : false;
   const isOwner = Boolean(auth.user && reportUserId && reportUserId === auth.user.id);

@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { saveOnetimeReport, OnetimeReportSaveError } from "@/lib/onetime-report";
 import { BodyTooLargeError, readBoundedText } from "@/lib/bounded-body";
 import { NextRequest, NextResponse, after } from "next/server";
@@ -367,6 +368,8 @@ export async function POST(req: NextRequest) {
   }
 
   const authContext = await getAuthContext(req);
+  const authUnavailable = authUnavailableResponse(authContext);
+  if (authUnavailable) return authUnavailable;
   const isAdmin = authContext.user ? isMasterAdmin(authContext.user.email) : false;
   const effectivePlan = isAdmin ? "agency" : authContext.plan;
   const usageKey = authContext.user ? `user:${authContext.user.id}` : getClientKey(body.clientId, req);

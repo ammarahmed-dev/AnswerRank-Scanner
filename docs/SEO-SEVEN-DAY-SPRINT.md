@@ -95,3 +95,8 @@ Every section shares one Pacific-calendar date range, Web search type and finali
 The existing Overview workflow runs manually or after diagnostic-file changes reach main. It uses read-only OAuth scope and contents:read, writes no repository reports, and sends no issues or messages. This adds no recurring schedule. Keep raw output and performance metrics out of repository files/public documentation. The Google API contract is documented at https://developers.google.com/webmaster-tools/v1/searchanalytics/query.
 
 Runtime verification completed on 25 October: the reviewed successful job returned actual priority-guide pairs. All performance data ending before the 25 October releases is a baseline, not evidence of their impact. Country/device segmentation, saved-lead conversion verification and future matching-window review remain separate work.
+
+
+## Measurement refresh: 27 October
+
+The historically reviewed read-only Overview diagnostic completed another retrieval. Its Pacific-calendar window rolled forward to end on 25 October, including the first release calendar day. This is not a complete matching post-change window and does not isolate publication time, countries/devices or the effect of any release. Do not compare rolled totals or page-aggregated positions as like-for-like gains against the earlier window or owner export. No configured paired-section cap was reached; anonymization/unavailable rows still prevent completeness claims. Raw query/page metrics remain private. No repeated best-guide/SaaS title or content edit is justified solely by this refresh; continue the scanner/sample journey and independent technical fixes while data catches up.

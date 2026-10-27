@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
 import { isMasterAdmin as isMasterAdminEmail } from "@/lib/admin";
@@ -30,6 +31,8 @@ export async function POST(
     }
 
     const auth = await getAuthContext(req);
+    const authUnavailable = authUnavailableResponse(auth);
+    if (authUnavailable) return authUnavailable;
     if (!auth.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

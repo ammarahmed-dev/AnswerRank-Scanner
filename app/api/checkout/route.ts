@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { BodyTooLargeError, readBoundedText, readJsonObject } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
@@ -21,6 +22,8 @@ function getVariantId(plan: Plan): string | undefined {
 export async function POST(req: Request) {
   try {
     const auth = await getAuthContext(req);
+    const authUnavailable = authUnavailableResponse(auth);
+    if (authUnavailable) return authUnavailable;
     if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     let body: { plan?: unknown };

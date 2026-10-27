@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { fetchHtml, normalizeUrl, validateUrl } from "@/lib/scrape";
@@ -36,6 +37,8 @@ export async function POST(req: Request) {
   }
 
   const auth = await getAuthContext(req);
+  const authUnavailable = authUnavailableResponse(auth);
+  if (authUnavailable) return authUnavailable;
   const clientId = typeof body.clientId === "string" ? body.clientId : undefined;
   const usageKey = `tool:schema:${auth.user ? `user:${auth.user.id}` : getClientKey(clientId, req)}`;
   const usage = await reserveUsage(usageKey, TOOL_MONTHLY_LIMIT);

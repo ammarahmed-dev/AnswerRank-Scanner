@@ -1,3 +1,4 @@
+import { authUnavailableResponse } from "@/lib/auth-response";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth-server";
@@ -11,6 +12,8 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: Request, { params }: RouteContext) {
   const auth = await getAuthContext(req);
+  const authUnavailable = authUnavailableResponse(auth);
+  if (authUnavailable) return authUnavailable;
   if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   if (!hasSupabaseConfig()) return NextResponse.json({ error: "Service unavailable." }, { status: 503 });
@@ -41,6 +44,8 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
 export async function DELETE(req: Request, { params }: RouteContext) {
   const auth = await getAuthContext(req);
+  const authUnavailable = authUnavailableResponse(auth);
+  if (authUnavailable) return authUnavailable;
   if (!auth.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   if (!hasSupabaseConfig()) return NextResponse.json({ error: "Service unavailable." }, { status: 503 });
