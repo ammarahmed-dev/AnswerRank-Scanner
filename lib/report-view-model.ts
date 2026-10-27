@@ -94,10 +94,10 @@ export function whyItMattersById(id: string): string {
     og_tags: "Open Graph tags control how your page appears when shared or cited. Missing OG tags mean AI-assisted tools and social platforms display incomplete or inaccurate previews.",
     og_image: "An OG image is pulled whenever your page is cited or previewed. Without one, platforms display a blank or auto-generated placeholder that reduces click-through.",
     https: "HTTPS is a baseline trust signal. Pages served over HTTP are deprioritized by crawlers and flagged as insecure by browsers, reducing crawl frequency and citation confidence.",
-    robots: "A missing or misconfigured robots.txt can inadvertently block AI crawlers from indexing your page, making it invisible to systems that rely on crawl data.",
-    ai_bot_access: "If GPTBot, ClaudeBot, or PerplexityBot are blocked in your robots.txt, those AI engines cannot crawl or cite your pages, no matter how well-optimized your content is.",
-    sitemap: "A sitemap tells crawlers exactly which pages exist and when they were last updated. Without one, new or updated pages are discovered more slowly.",
-    llms_txt: "llms.txt is the new standard for AI crawler guidance. Without it, AI engines like ChatGPT and Perplexity must guess what your site is about. Sites with llms.txt get significantly more accurate AI citations and better representation in AI-generated answers.",
+    robots: "robots.txt publishes voluntary crawl directives. A missing file, a disallow rule and an unreachable response are different findings. Crawl access alone does not establish indexing or AI citations.",
+    ai_bot_access: "Crawler rules depend on the named agent and requested path. Search, training and user-request agents serve different purposes; a rule for one does not prove whether your page appears in AI answers.",
+    sitemap: "A sitemap helps crawlers discover listed URLs. It does not guarantee crawling or indexing, and an unsuccessful scanner request does not prove that no sitemap exists.",
+    llms_txt: "llms.txt is an optional summary convention for AI systems. A file with a recognizable heading does not establish that an engine uses it, improve rankings by itself or prove AI citations.",
     alt_text: "Alt text is how AI vision systems and crawlers understand your images. Missing alt text leaves image content invisible to indexing and answer systems.",
     word_count: "Thin content gives AI assistants very little to extract or cite. Pages with insufficient depth are rarely chosen as sources for detailed answers.",
     internal_links: "Internal links help AI crawlers discover related pages and understand your site structure. Few internal links means important pages get crawled less frequently.",
@@ -117,6 +117,9 @@ export function whyItMattersById(id: string): string {
 }
 
 export function recommendedFix(check: CheckResult) {
+  if (["robots", "sitemap", "llms_txt"].includes(check.id) && check.status !== "pass" && check.diagnostic?.state !== "not_found") {
+    return "Verify the resource URL, scanner request status, access rules and response contents, then retry before creating or replacing a file. Preserve intentional restrictions for private paths.";
+  }
   if (check.id === "title") return "Rewrite the title to include the primary offer and audience in 30-60 characters.";
   if (check.id === "meta_desc") return "Add a clear 120-160 character meta description with problem, solution, and proof.";
   if (check.id === "h1") return "Use one H1 that states exactly what the page offers and who it is for.";
@@ -127,10 +130,10 @@ export function recommendedFix(check: CheckResult) {
   if (check.id === "structured_density") return "Layer additional schema types relevant to this page. If it has navigation, add BreadcrumbList. If it has a FAQ section, add FAQPage. If it represents your brand, add Organization and WebSite.";
   if (check.id.includes("schema")) return "Add JSON-LD schema relevant to this page type. Visit schema.org to find the right type for your content.";
   if (check.id === "https") return "Serve the page on HTTPS and redirect all HTTP requests.";
-  if (check.id === "robots") return "Create a robots.txt at yourdomain.com/robots.txt. Make sure it does not block important pages. Validate it at search.google.com/search-console and ensure AI crawlers (GPTBot, ClaudeBot) are not blocked.";
-  if (check.id === "ai_bot_access") return "Check your robots.txt and ensure GPTBot, ClaudeBot, and PerplexityBot are not blocked. Add explicit allow rules for AI crawlers.";
+  if (check.id === "robots") return "Publish a robots.txt policy matching your intended public crawler access. Preserve private-path exclusions and verify the named agent/path rules before publishing.";
+  if (check.id === "ai_bot_access") return "Review the named crawler and scanned path in your robots policy. Decide which search, training and user-request crawlers you intend to permit; preserve deliberate restrictions. Allowance does not establish AI citations.";
   if (check.id === "sitemap") return "Create a sitemap.xml listing all important pages and submit it in Google Search Console under Sitemaps. Most CMS platforms (Webflow, WordPress) generate this automatically - check your settings.";
-  if (check.id === "llms_txt") return "Create a /llms.txt file at your domain root. Visit llmstxt.org for the standard format and generator tools.";
+  if (check.id === "llms_txt") return "If useful for your site, create an optional /llms.txt summary at the domain root. Review factual content and links; this does not guarantee AI inclusion.";
   if (check.id === "canonical") return "Add <link rel=\"canonical\" href=\"https://yourdomain.com/this-page\"> in the page head, pointing to the preferred URL of this page on your own domain.";
   if (check.id === "qa_structure") return "Add 2-3 H2/H3 headings phrased as the questions your buyers ask (for example \"How does X work?\"), each followed by a 40-60 word direct answer.";
   if (check.id === "eeat_author") return "Add an author byline with a link to an author bio page. Implement Person schema with name, url, and jobTitle fields.";
@@ -174,6 +177,7 @@ export function normalizeIssuesFromNormalized(issueRows: ReturnType<typeof getNo
       detail: issue.detail,
       status: issue.status,
       weight: issue.weight,
+      ...(issue.diagnostic ? { diagnostic: issue.diagnostic } : {}),
     };
 
     return {

@@ -242,6 +242,36 @@ try {
   }
   checks.push('Synthetic full/preview reports at both widths; one CTA, no private report context');
 
+  {
+    const id = 'synthetic-resource-evidence';
+    const checks = [
+      { id: 'robots', label: 'Robots policy', status: 'warn', detail: 'robots.txt could not be verified: scanner request restricted (HTTP 403); absence is not established', weight: 2, diagnostic: { state: 'blocked', httpStatus: 403 } },
+      { id: 'sitemap', label: 'Sitemap response', status: 'warn', detail: 'sitemap.xml could not be verified: HTTP 503; absence is not established', weight: 2, diagnostic: { state: 'http_error', httpStatus: 503 } },
+      { id: 'llms_txt', label: 'Optional llms summary', status: 'warn', detail: 'llms.txt not found (HTTP 404)', weight: 2, diagnostic: { state: 'not_found', httpStatus: 404 } },
+    ];
+    const fixture = { ...sample, reportId: id, url: 'https://example.invalid', checks, aiInsights: null, unlocked: true, isFullReport: true };
+    await page.addInitScript(({ id, fixture }) => sessionStorage.setItem(`aeocheck_report:${id}`, JSON.stringify(fixture)), { id, fixture });
+    for (const width of [1280, 390]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      await goto('/report?id=' + id);
+      for (const title of ['Robots policy', 'Sitemap response', 'Optional llms summary']) {
+        const card = page.locator('.issue-accordion-card').filter({ has: page.locator('.issue-toggle-title', { hasText: title }) });
+        await card.getByRole('button', { name: 'Expand details for ' + title, exact: true }).click();
+        const text = await card.locator('.issue-expanded').innerText();
+        assert.match(text, title === 'Optional llms summary' ? /optional \/llms\.txt summary/ : /retry before creating or replacing a file/);
+        if (title !== 'Optional llms summary') assert.match(text, /absence is not established/);
+        else assert.match(text, /does not guarantee AI inclusion/);
+        await noOverflow();
+        await card.scrollIntoViewIfNeeded();
+        if (title !== 'Sitemap response') await screenshot(`resource-${title === 'Robots policy' ? 'restricted' : 'missing'}-${width}`);
+      }
+      const pack = page.getByRole('region', { name: 'Fix pack', exact: true });
+      assert.equal(await pack.getByRole('heading', { name: 'robots.txt that welcomes AI crawlers', exact: true }).count(), 0);
+      await pack.getByRole('heading', { name: 'llms.txt starter', exact: true }).waitFor();
+    }
+  }
+  checks.push('Resource evidence at desktop/mobile: restricted/error verification-first guidance, optional confirmed-missing summary, no replacement robots starter');
+
   for (const state of ['generated', 'legacy', 'local']) {
     const id = `source-${state}`;
     const insights = state === 'local' ? null : { ...sample.aiInsights };

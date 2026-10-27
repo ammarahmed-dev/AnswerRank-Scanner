@@ -28,6 +28,13 @@ export interface ScrapedData {
   source?: "html" | "reader";
 }
 
+/** Scanner-observed auxiliary fetch outcome, not a crawler policy or indexing result. */
+export interface ResourceDiagnostic {
+  state: "available" | "not_found" | "blocked" | "http_error" | "invalid_response" | "unreachable";
+  httpStatus?: number;
+  reason?: "timeout" | "fetch_failed" | "body_limit";
+}
+
 /** Immutable description of how a newly stored score was produced. Legacy reports omit it. */
 export interface ScoringMethodology {
   version: string;
@@ -45,6 +52,8 @@ export interface ScoringMethodology {
     resolvedUrl?: string;
     finalUrlVerified: boolean;
     pageSpeed: "measured" | "unavailable" | "not_requested";
+    /** Absent on older reports; never infer availability from missing evidence. */
+    resources?: { robots: ResourceDiagnostic; sitemap: ResourceDiagnostic; llms: ResourceDiagnostic };
   };
 }
 
@@ -64,6 +73,7 @@ export interface CheckResult {
   status: "pass" | "warn" | "fail";
   detail: string;
   weight: number;
+  diagnostic?: ResourceDiagnostic;
 }
 
 export interface SchemaRecommendation {

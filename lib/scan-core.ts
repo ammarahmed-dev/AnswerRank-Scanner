@@ -9,21 +9,17 @@ import {
   validateUrl,
 } from "@/lib/scrape";
 import { getPageSpeedScore } from "@/lib/pagespeed";
-import { assertPublicUrl, safeFetch, type SafeResponse } from "@/lib/url-safety";
+import { assertPublicUrl } from "@/lib/url-safety";
+import { checkRobotsTxt, checkSitemapXml, checkLlmsTxt } from "@/lib/resource-diagnostics";
 import { calculateScore, runDeterministicChecks } from "@/lib/score-engine";
-import { readBoundedText } from "@/lib/bounded-body";
 import { analyzeAiCrawlerAccess } from "@/lib/robots";
-import { CheckResult, ScrapedData, ScanMetadata, ScanResult } from "@/types/index";
+import { CheckResult, ResourceDiagnostic, ScrapedData, ScanMetadata, ScanResult } from "@/types/index";
 
 type TrustValidationStatus = "pass" | "warn" | "fail";
 type TrustValidationResult = {
   status: TrustValidationStatus;
   detail: string;
-};
-
-type RobotsValidationResult = TrustValidationResult & {
-  body?: string;
-  finalUrl?: string;
+  diagnostic?: ResourceDiagnostic;
 };
 
 type CoreProgressPhase =
@@ -90,161 +86,26 @@ async function scrapeUrlWithFallback(url: string, signal?: AbortSignal): Promise
   }
 }
 
-function extractSitemapFromRobots(robotsBody?: string): string | null {
-  if (!robotsBody) return null;
-  const lines = robotsBody.split(/\r?\n/);
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const match = trimmed.match(/^sitemap:\s*(.+)$/i);
-    if (!match) continue;
-    const url = match[1].trim();
-    try {
-      return new URL(url).toString();
-    } catch {
-      continue;
-    }
-  }
-  return null;
-}
-
-async function fetchWithTimeoutAndRedirects(
-  targetUrl: string,
-  timeoutMs = 5000,
-  maxRedirects = 2,
-  signal?: AbortSignal
-): Promise<{ response: SafeResponse; body: string; finalUrl: string }> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const { response, finalUrl } = await safeFetch(targetUrl, {
-      signal: signal ? AbortSignal.any([signal, controller.signal]) : controller.signal,
-      maxRedirects,
-      headers: {
-        "User-Agent": "AEOCheckScanner/1.0 (+https://www.aeocheck.co)",
-        Accept: "text/plain, application/xml, text/xml;q=0.9, */*;q=0.8",
-      },
-    });
-    if (!response.ok) {
-      await response.body?.cancel().catch(() => undefined);
-      return { response, body: "", finalUrl };
-    }
-    const body = await readBoundedText(response, 2_500_000);
-    return { response, body, finalUrl };
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-async function checkRobotsTxt(baseUrl: string, signal?: AbortSignal): Promise<RobotsValidationResult> {
-  const candidates = [new URL(baseUrl).origin];
-  if (!candidates.length) {
-    return { status: "warn", detail: "robots.txt could not be verified" };
-  }
-
-  let sawNotFound = false;
-  for (const candidate of candidates) {
-    const robotsUrl = `${candidate}/robots.txt`;
-    try {
-      const { response, body, finalUrl } = await fetchWithTimeoutAndRedirects(robotsUrl, 5000, 5, signal);
-      if (response.status === 404) {
-        sawNotFound = true;
-        continue;
-      }
-      if (response.status !== 200) continue;
-
-      const contentType = (response.headers.get("content-type") || "").toLowerCase();
-      if (!/<(?:!doctype|html|head|body)\b/i.test(body) &&
-          (contentType.includes("text/plain") || /^\s*user-agent\s*:/im.test(body))) {
-        return {
-          status: "pass",
-          detail: "robots.txt found and accessible",
-          body,
-          finalUrl,
-        };
-      }
-      return {
-        status: "warn",
-        detail: "robots.txt could not be verified",
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message.toLowerCase() : "";
-      if (message.includes("timeout") || message.includes("abort")) {
-        return { status: "warn", detail: "robots.txt could not be verified" };
-      }
-      continue;
-    }
-  }
-
-  if (sawNotFound) {
-    return { status: "fail", detail: "robots.txt not found" };
-  }
-  return { status: "warn", detail: "robots.txt could not be verified" };
-}
-
-async function checkSitemapXml(baseUrl: string, robotsBody?: string, signal?: AbortSignal): Promise<TrustValidationResult> {
-  const robotsSitemapUrl = extractSitemapFromRobots(robotsBody);
-  const candidates: string[] = [];
-  if (robotsSitemapUrl) {
-    candidates.push(robotsSitemapUrl);
-  } else {
-    for (const domain of [new URL(baseUrl).origin]) {
-      candidates.push(`${domain}/sitemap.xml`);
-    }
-  }
-  if (!candidates.length) {
-    return { status: "warn", detail: "sitemap.xml could not be verified" };
-  }
-
-  let sawNotFound = false;
-  for (const sitemapUrl of candidates) {
-    try {
-      const { response, body } = await fetchWithTimeoutAndRedirects(sitemapUrl, 5000, 2, signal);
-      if (response.status === 404) {
-        sawNotFound = true;
-        continue;
-      }
-      if (response.status !== 200) continue;
-
-      if (/<urlset\b/i.test(body) || /<sitemapindex\b/i.test(body)) {
-        return { status: "pass", detail: "sitemap.xml found and valid" };
-      }
-      return { status: "warn", detail: "sitemap.xml could not be verified" };
-    } catch (error) {
-      const message = error instanceof Error ? error.message.toLowerCase() : "";
-      if (message.includes("timeout") || message.includes("abort")) {
-        return { status: "warn", detail: "sitemap.xml could not be verified" };
-      }
-      continue;
-    }
-  }
-
-  if (sawNotFound) {
-    return { status: "fail", detail: "sitemap.xml not found" };
-  }
-  return { status: "warn", detail: "sitemap.xml could not be verified" };
-}
-
 function applyTrustValidationChecks(
   checks: CheckResult[],
   robots: TrustValidationResult,
   sitemap: TrustValidationResult,
   aiBotResult?: { status: "pass" | "warn" | "fail"; detail: string },
-  llmsTxtResult?: { status: "pass" | "warn" | "fail"; detail: string },
+  llmsTxtResult?: TrustValidationResult,
   cwvResult?: { status: "pass" | "warn" | "fail"; detail: string }
 ): CheckResult[] {
   return checks.map((check) => {
     if (check.id === "robots") {
-      return { ...check, status: robots.status, detail: robots.detail };
+      return { ...check, status: robots.status, detail: robots.detail, diagnostic: robots.diagnostic };
     }
     if (check.id === "sitemap") {
-      return { ...check, status: sitemap.status, detail: sitemap.detail };
+      return { ...check, status: sitemap.status, detail: sitemap.detail, diagnostic: sitemap.diagnostic };
     }
     if (check.id === "ai_bot_access" && aiBotResult) {
       return { ...check, status: aiBotResult.status, detail: aiBotResult.detail };
     }
     if (check.id === "llms_txt" && llmsTxtResult) {
-      return { ...check, status: llmsTxtResult.status, detail: llmsTxtResult.detail };
+      return { ...check, status: llmsTxtResult.status, detail: llmsTxtResult.detail, diagnostic: llmsTxtResult.diagnostic };
     }
     if (check.id === "core_web_vitals" && cwvResult) {
       return { ...check, status: cwvResult.status, detail: cwvResult.detail };
@@ -293,35 +154,12 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
     aiBotDetail = access.detail;
   }
 
-  let llmsTxtStatus: "pass" | "warn" | "fail" = "warn";
-  let llmsTxtDetail = "No llms.txt file found - add one to guide AI crawlers";
-  try {
-    const llmsUrl = new URL("/llms.txt", resolvedUrl).toString();
-    const { response: llmsRes } = await safeFetch(llmsUrl, {
-      method: "GET",
-      signal: options.signal ? AbortSignal.any([options.signal, AbortSignal.timeout(5000)]) : AbortSignal.timeout(5000),
-      headers: { "User-Agent": "AEOCheckScanner/1.0 (+https://www.aeocheck.co)" },
-    });
-    if (llmsRes.ok) {
-      const llmsBody = await readBoundedText(llmsRes, 500_000);
-      const contentType = llmsRes.headers.get("content-type") || "";
-      if (!contentType.includes("text/html") && !/<(?:!doctype|html|head|body)\b/i.test(llmsBody) && /^#\s+\S/m.test(llmsBody)) {
-        llmsTxtStatus = "pass";
-        llmsTxtDetail = "llms.txt found with a Markdown heading - optional guidance is available";
-      } else {
-        llmsTxtDetail = "llms.txt did not contain recognizable Markdown guidance";
-      }
-    } else {
-      await llmsRes.body?.cancel().catch(() => undefined);
-    }
-  } catch {
-    // keep warn
-  }
+  const llmsCheck = await checkLlmsTxt(resolvedUrl, options.signal);
 
   scrapedData.hasRobotsTxt = robotsCheck.status === "pass";
   scrapedData.hasSitemap = sitemapCheck.status === "pass";
   scrapedData.allowsAiBots = aiBotStatus === "pass";
-  scrapedData.hasLlmsTxt = llmsTxtStatus === "pass";
+  scrapedData.hasLlmsTxt = llmsCheck.status === "pass";
 
   options.onProgress?.("pagespeed_started");
   let pagespeed: ScanResult["pagespeed"] = null;
@@ -389,7 +227,7 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
     robotsCheck,
     sitemapCheck,
     { status: aiBotStatus, detail: aiBotDetail },
-    { status: llmsTxtStatus, detail: llmsTxtDetail },
+    llmsCheck,
     { status: cwvStatus, detail: cwvDetail }
   );
   const score = calculateScore(checks);
@@ -410,6 +248,7 @@ export async function runScanCore(rawUrl: string, options: RunScanCoreOptions = 
       requestedUrl: url,
       resolvedUrl: scrapedData.source === "reader" ? undefined : scrapedData.url,
       finalUrlVerified: scrapedData.source !== "reader",
+      resources: { robots: robotsCheck.diagnostic, sitemap: sitemapCheck.diagnostic, llms: llmsCheck.diagnostic },
       pageSpeed: !includePageSpeed ? "not_requested" : pagespeed ? "measured" : "unavailable",
     }),
   };
