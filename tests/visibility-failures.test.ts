@@ -17,6 +17,7 @@ describe("visibility failure responses", () => {
     expect(data.error).toContain("unavailable");
     expect(data).not.toHaveProperty("mentionRate");
     expect(saveVisibilityRun).not.toHaveBeenCalled();
+    expect(runVisibilityCheck.mock.calls[0][3]).toBeTypeOf("function");
   });
   it("rejects null body before starting paid provider calls", async () => {
     vi.stubEnv("AI_VISIBILITY_ENABLED", "true");

@@ -316,6 +316,25 @@ try {
   }
   checks.push('Generated, unknown legacy and local recommendation disclosures at both widths; matching printable provenance');
 
+  // Actual tracker markup with synthetic hook data only; no admin login or provider request.
+  await goto('/ai-visibility');
+  const trackerStyles = await page.locator('link[rel="stylesheet"]').evaluateAll(links => links.map(link => link.outerHTML).join(''));
+  const trackerHtml = await readFile(`${output}/visibility-destination-fixture.html`, 'utf8');
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+    await page.setContent(`<html><head>${trackerStyles}</head><body><main><section class="launch-section llms-tool-section"><div class="launch-container">${trackerHtml}</div></section></main></body></html>`, { waitUntil: 'networkidle' });
+    for (const summary of await page.locator('summary').all()) await summary.click();
+    assert.match(await page.locator('body').innerText(), /wrapper.example: reached aeocheck.co/);
+    assert.match(await page.locator('body').innerText(), /source destination not verified/);
+    assert.match(await page.locator('body').innerText(), /older or unverified citation method/);
+    await noOverflow();
+    await page.locator('.llms-tool-result').scrollIntoViewIfNeeded();
+    await screenshot(`visibility-destinations-${width}`);
+    await page.locator('.vis-history').scrollIntoViewIfNeeded();
+    await screenshot(`visibility-history-${width}`);
+  }
+  checks.push('Synthetic actual tracker markup at both widths: checked destinations, unavailable sources and older-method history labels; no provider/admin acceptance claimed');
+
   assert.deepEqual(errors, [], 'Browser page errors');
   await writeFile(`${output}/checks.json`, JSON.stringify({ checks, pageErrors: errors, synthetic: true }, null, 2));
   console.log(JSON.stringify({ passed: checks, pageErrors: errors, screenshots: output }));

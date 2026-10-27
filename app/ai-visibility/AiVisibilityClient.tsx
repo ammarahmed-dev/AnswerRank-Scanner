@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { getBrowserAccessToken } from "@/lib/supabase-browser-lazy";
-import { normalizeDomain, suggestPrompts, type PromptResult } from "@/lib/ai-visibility";
+import { normalizeDomain, suggestPrompts, type PromptResult, VISIBILITY_METHOD } from "@/lib/ai-visibility";
 import type { StoredRun } from "@/lib/ai-visibility-store";
 
 type RunResponse = {
@@ -39,6 +39,10 @@ function Rates({ mention, citation }: { mention: number; citation: number | null
       <span><strong>{citation === null ? "Unavailable" : `${citation}%`}</strong> citation rate</span>
     </p>
   );
+}
+
+function sourceHost(url: string): string {
+  try { return new URL(url).hostname; } catch { return "Unknown source"; }
 }
 
 export default function AiVisibilityClient() {
@@ -128,7 +132,8 @@ export default function AiVisibilityClient() {
             <p className="crawler-verdict-meta">
               {run.checked} answer{run.checked === 1 ? "" : "s"} checked. {run.saved ? "Saved to history." : "History could not be saved."}
             </p>
-            <p className="crawler-verdict-meta">Totals include {run.unbrandedChecked ?? 0} unbranded and {run.brandedChecked ?? 0} branded answers. Citation rates exclude unresolved source redirects. List position is within an answer, not a search ranking.</p>
+            <p className="crawler-verdict-meta">{run.citationChecked ?? 0} of {run.checked} answers have a checked citation outcome. An empty returned source list counts as no citation in that response.</p>
+            <p className="crawler-verdict-meta">Totals include {run.unbrandedChecked ?? 0} unbranded and {run.brandedChecked ?? 0} branded answers. Citation rates use checked source destinations and exclude unresolved negatives. HEAD requests may be blocked, so unavailable evidence is not a missing citation. List position is within an answer, not a search ranking.</p>
           </div>
           <ul className="extract-list">
             {run.results.map((r, i) => (
@@ -143,8 +148,21 @@ export default function AiVisibilityClient() {
                 ) : (
                   <p className="extract-text">
                     {r.mentioned ? "Mentioned" : "Not mentioned"}
-                    {r.position ? ` (list position ${r.position})` : ""} · {r.citationVerified === false ? "source redirect not verified" : r.cited ? "domain cited as a source" : "domain not cited"}
+                    {r.position ? ` (list position ${r.position})` : ""} · {r.citationVerified === false ? "source destination not verified" : r.cited ? "domain cited as a source" : "domain not cited"}
                   </p>
+                )}
+                {!r.error && !!r.citationEvidence?.length && (
+                  <details className="crawler-verdict-meta">
+                    <summary>Source destination checks</summary>
+                    {r.citationEvidence.map((source, index) => (
+                      <p key={index} style={{ overflowWrap: "anywhere" }}>
+                        {sourceHost(source.sourceUrl)}: {source.state === "resolved" && source.finalUrl
+                          ? `reached ${sourceHost(source.finalUrl)} (HTTP ${source.httpStatus})`
+                          : `not verified (${source.reason ?? "not_checked"}${source.httpStatus ? `, HTTP ${source.httpStatus}` : ""})`}
+                      </p>
+                    ))}
+                    <p>Destinations are checked with HEAD requests, not answer-to-source entailment or citation quality. Original source URLs remain in the saved observation.</p>
+                  </details>
                 )}
               </li>
             ))}
@@ -160,7 +178,7 @@ export default function AiVisibilityClient() {
               <li key={h.id}>
                 <span>{new Date(h.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                 <span className="vis-bar" aria-hidden="true"><i style={{ width: `${h.mentionRate}%` }} /></span>
-                <span>{h.mentionRate}% mentioned · {h.results.some(r => r.citationVerified === true) ? `${h.citationRate}% cited` : "citation data unverified"}</span>
+                <span>{h.mentionRate}% mentioned · {h.results.some(r => !r.error) && h.results.filter(r => !r.error).every(r => r.methodologyVersion === VISIBILITY_METHOD) && h.results.some(r => r.citationVerified === true) ? `${h.citationRate}% cited (destination-checked method)` : "older or unverified citation method"}</span>
               </li>
             ))}
           </ul>

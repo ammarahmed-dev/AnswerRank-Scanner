@@ -40,6 +40,9 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 3 - Correctness and reliability
 
+- [x] (2026-10-27, audit A14) Resolve AI source destinations with bounded SSRF-safe HEAD checks; preserve unknown/capped/blocked outcomes and separate older citation methods. Destination checks are not answer entailment, live provider acceptance or ranking evidence; distributed spend and separate branded/unbranded series remain open.
+
+
 - [x] (2026-10-27, audit A06/A11) Distinguish auxiliary-resource HTTP absence, scanner restrictions, invalid responses and incomplete fetches in saved/displayed evidence; use evidence-aware remediation and body-active deadlines without changing score credit/version. Reader provenance and crawler-purpose acceptance remain open.
 
 
