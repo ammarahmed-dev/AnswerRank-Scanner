@@ -1,0 +1,99 @@
+---
+title: 'How to Fix the "FAQ Schema" Warning in Your AEOCheck Report'
+description: >-
+  Your scan says the page has Q&A content but no FAQPage schema. Here is what
+  triggers the warning, how to add valid JSON-LD, and how to verify the fix.
+date: 2026-10-31T00:00:00.000Z
+slug: fix-faq-schema-warning
+tags:
+  - faq-schema
+  - json-ld
+  - structured-data
+  - technical-aeo
+author: Ammar Ahmed
+coverImage: /images/blog/fix-faq-schema-warning.png
+coverImageAlt: 'Cover for How to Fix the FAQ Schema Warning'
+faqs:
+  - question: Why does my scan warn about FAQ schema when I have no FAQ section?
+    answer: >-
+      The check looks at your headings and the start of your page text. Question-style
+      headings, or the words "FAQ" or "frequently asked" near the top, count as Q&A
+      content. If you do not want FAQ schema, rewrite the headings so they are not
+      phrased as questions, or add a real FAQ section and mark it up.
+  - question: Can I mark up questions that are not visible on the page?
+    answer: >-
+      No. The questions and answers in your JSON-LD must match text that visitors
+      can see on the same page. Hidden or mismatched FAQ markup can be ignored and
+      may be treated as a structured data guideline violation by Google.
+  - question: Does FAQPage schema guarantee citations in AI answers?
+    answer: >-
+      No. It makes your question and answer pairs easier for machines to parse, but
+      no engine promises to cite a page because it has the markup. Treat it as a
+      clarity improvement, not a ranking lever.
+  - question: How long until the warning disappears?
+    answer: >-
+      Run a new scan after you deploy. The check reads the live page, so the warning
+      clears on the next scan once the JSON-LD is in the served HTML.
+---
+
+If your report shows **FAQ Schema: Page has Q&A content but no FAQPage schema**, the scanner found question-style content and no `FAQPage` JSON-LD in the page HTML. This guide shows how to fix it in a few minutes. It is part of the checklist in our [technical AEO guide](/blog/technical-aeo-guide).
+
+## What triggers the warning
+
+The check passes in two cases: the page already has `FAQPage` markup, or the page has no FAQ-like content at all. It warns when it sees Q&A signals without the markup. Those signals are question marks, "how to", "what is" or "why" in your headings, or the word "FAQ" in the first part of the page text.
+
+The warning is about machine readability. Your visitors see the same page either way.
+
+## Step 1: Write real questions and answers
+
+Pick 3 to 6 questions your customers actually ask. Put them on the page as visible text, each with a direct answer of one to three sentences. The answer should stand on its own, because that is the unit an answer engine is most likely to lift.
+
+## Step 2: Generate the JSON-LD
+
+Use the free [FAQ schema generator](/tools/faq-schema-generator) to paste your questions and answers and copy the output. The result looks like this:
+
+```html
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How long does setup take?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Most teams finish setup in under an hour."
+      }
+    }
+  ]
+}
+</script>
+```
+
+Place the script in the page `<head>` or body. It must be in the served HTML, not injected only after a client-side render, because many crawlers do not run JavaScript.
+
+## Step 3: Keep markup and page text identical
+
+Each `name` must match a question visible on the page, and each `text` must match the visible answer. Do not add questions to the JSON-LD that visitors cannot see.
+
+## Step 4: Validate and rescan
+
+1. Paste your URL into the [FAQ schema validator](/tools/faq-schema-validator) to confirm the markup parses and every question has an answer.
+2. Run the [AEOCheck scanner](/#scanner) on the same URL. The FAQ Schema check should now pass.
+
+## When not to add it
+
+If the page is not really a Q&A page, such as a product page that only has a heading ending in a question mark, do not force FAQ markup. Rephrase the heading or accept the warning. Only mark up content you genuinely present as questions and answers.
+
+For the full list of checks and what each one rewards, see the [AEO checklist](/blog/aeo-checklist). Plans that unlock the complete report with fix guidance are on the [pricing page](/pricing).
+
+## FAQ
+
+**Why does my scan warn about FAQ schema when I have no FAQ section?** Question-style headings or the word "FAQ" near the top of the page count as Q&A content. Rephrase them or add a real, marked-up FAQ.
+
+**Can I mark up questions that are not visible on the page?** No. The JSON-LD must match visible text.
+
+**Does FAQPage schema guarantee citations in AI answers?** No. It improves clarity for machines, not a promise of citation.
+
+**How long until the warning disappears?** Rescan after deploying. The check reads the live page.
