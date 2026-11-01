@@ -1,0 +1,104 @@
+---
+title: 'How to Fix the "Sitemap.xml" Warning in Your AEOCheck Report'
+description: >-
+  Your scan says no sitemap.xml was found or could not be verified. Here is what
+  the check reads, how to publish a valid sitemap, and how to confirm the fix.
+date: 2026-11-01T00:00:00.000Z
+slug: fix-sitemap-xml-warning
+tags:
+  - sitemap
+  - technical-aeo
+  - crawlability
+author: Ammar Ahmed
+coverImage: /images/blog/fix-sitemap-xml-warning.png
+coverImageAlt: 'Cover for How to Fix the Sitemap.xml Warning'
+faqs:
+  - question: Why does my scan warn even though I have a sitemap?
+    answer: >-
+      The scanner requests the sitemap URL declared in a Sitemap line in robots.txt,
+      or /sitemap.xml if none is declared. It warns if that URL does not return HTTP
+      200, or returns something without a urlset or sitemapindex root element, such
+      as an HTML error page. A sitemap at a different path works only if robots.txt
+      points to it.
+  - question: Does a sitemap make AI engines cite my pages?
+    answer: >-
+      No. A sitemap helps crawlers discover URLs and see when they changed. No
+      engine promises to index or cite a page because it is listed.
+  - question: Do I need a sitemap index for a small site?
+    answer: >-
+      No. A single sitemap file can hold up to 50,000 URLs and 50 MB uncompressed.
+      Use a sitemap index only when you exceed those limits or want to split by
+      section.
+  - question: How long until the warning clears?
+    answer: >-
+      Rescan after deploying. The check fetches the live file, so it clears on the
+      next scan once the sitemap returns 200 with valid XML.
+---
+
+If your report shows **Sitemap.xml: No sitemap.xml found** or a note that the sitemap could not be verified, the scanner did not get a recognizable sitemap from your site. This guide shows how to fix it. It is one item in the [technical AEO guide](/blog/technical-aeo-guide).
+
+## What the check reads
+
+1. It looks for a `Sitemap:` line in your `robots.txt` and uses the first valid URL there.
+2. If there is none, it requests `/sitemap.xml` on your domain.
+3. It passes when the response is HTTP 200 and contains a `<urlset>` or `<sitemapindex>` element.
+
+It warns when the file is missing, returns another status, is an HTML page served with a 200, is too large to read, or the request times out. A timeout means absence was not established, so rescan before changing anything.
+
+## Step 1: Generate the sitemap
+
+Most frameworks and CMSs can do this for you:
+
+- **Next.js:** add `app/sitemap.ts` exporting a function that returns your URLs.
+- **WordPress:** core serves `/wp-sitemap.xml`; SEO plugins serve their own path.
+- **Static sites:** use your generator's sitemap plugin or write the file by hand.
+
+A minimal valid file looks like this:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://example.com/</loc>
+    <lastmod>2026-11-01</lastmod>
+  </url>
+  <url>
+    <loc>https://example.com/pricing</loc>
+  </url>
+</urlset>
+```
+
+List only canonical, indexable URLs that return 200. Leave out redirects, noindex pages and duplicates.
+
+## Step 2: Point robots.txt at it
+
+Add one line to `robots.txt`. This is also what lets the scanner find a sitemap that is not at the default path:
+
+```txt
+Sitemap: https://example.com/sitemap.xml
+```
+
+Use the absolute URL. If you are also reviewing which crawlers may fetch your pages, see [robots.txt for AI crawlers](/blog/robots-txt-ai-crawlers).
+
+## Step 3: Confirm it serves XML, not HTML
+
+Single-page apps and catch-all routes often return the homepage HTML with status 200 for unknown paths. That counts as an unrecognized response. Open the URL in a browser: you should see XML, and the content type should be an XML type.
+
+## Step 4: Validate and rescan
+
+1. Paste the sitemap URL into the free [sitemap checker](/tools/sitemap-checker).
+2. Run the [AEOCheck scanner](/#scanner) on your page. The Sitemap.xml check should pass.
+
+## When not to worry
+
+Sitemap.xml carries a small weight in the score. A tiny site that is fully linked from its homepage can be crawled without one, but publishing a sitemap costs a few minutes and gives crawlers a clean list. The complete report with fix guidance for every check is on the [pricing page](/pricing). The wider checklist is in the [AEO checklist](/blog/aeo-checklist).
+
+## FAQ
+
+**Why does my scan warn even though I have a sitemap?** The file must return 200 with a `urlset` or `sitemapindex` root at the URL declared in robots.txt or at `/sitemap.xml`.
+
+**Does a sitemap make AI engines cite my pages?** No. It aids discovery, not citation.
+
+**Do I need a sitemap index for a small site?** No. One file holds up to 50,000 URLs.
+
+**How long until the warning clears?** Rescan after deploying.
