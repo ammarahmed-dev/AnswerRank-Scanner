@@ -1,3 +1,7 @@
+# 2026-11-01 - Minor and patch dependency updates
+
+Lockfile-only `npm update` inside the existing semver ranges (no package.json change). Verification: tsc, 1,125 tests, lint (18 existing warnings, 0 errors) and a fresh production build pass; `npm audit --omit=dev` reports 0 vulnerabilities. Follow-up: dev-only vitest 5 major bump.
+
 # 2026-10-27 - Make crawler-error browser checks deterministic
 
 Post-merge CI found the crawler unavailable-state assertion matching both its error message and Next.js's route announcer. Scope the locator to the actual error text and exercise a second visible alert at desktop/mobile widths. Preserve exact message, stale-result, overflow and page-error assertions; remove the fixture before screenshots. No application behavior change or bypassed gate. Local 1,125 tests / 102 files, type check, lint (18 existing warnings), content links, browser-script syntax and fresh production build pass; exact-head browser CI remains the merge gate. The preceding billing PR passed its exact-head CI; its first main browser run failed on this unrelated selector, so final verification requires this tested follow-up. Full audit and production payment/provider/delivery/analytics acceptance remain open.
