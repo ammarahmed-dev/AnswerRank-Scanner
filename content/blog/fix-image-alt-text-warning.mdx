@@ -1,0 +1,107 @@
+---
+title: 'How to Fix the "Image Alt Text" Check in Your AEOCheck Report'
+description: >-
+  Your scan flagged images without alt text. Here is how the check counts them,
+  how to write useful alt text, and how to mark decorative images correctly.
+date: 2026-11-08T00:00:00.000Z
+slug: fix-image-alt-text-warning
+tags:
+  - alt-text
+  - technical-aeo
+  - accessibility
+  - on-page-seo
+author: Ammar Ahmed
+coverImage: /images/blog/fix-image-alt-text-warning.png
+coverImageAlt: 'Cover for How to Fix the Image Alt Text Check'
+faqs:
+  - question: What does the Image Alt Text check test?
+    answer: >-
+      It counts the img tags on the page that carry an alt attribute. It passes when
+      at least 80% do, warns from 50% to 79%, and fails below 50%. A page with no
+      images passes.
+  - question: Does an empty alt attribute count as a problem?
+    answer: >-
+      No. alt="" is the correct way to mark a decorative image, so the scanner counts
+      it as present. Images with role="presentation", role="none" or aria-hidden="true"
+      are also treated as decorative. Only a missing alt attribute counts against you.
+  - question: Do AI engines read alt text?
+    answer: >-
+      Text-only crawlers cannot see an image, so alt text is often the only
+      description they get. We do not claim it changes citations. It is an
+      accessibility requirement and a clear signal of what the image shows.
+  - question: Should I put keywords in alt text?
+    answer: >-
+      No. Describe what the image shows and why it is on the page. Keyword lists make
+      the text worse for screen reader users and for crawlers.
+---
+
+If your report shows **Image Alt Text** as failed or warned, too many `img` tags on the page have no `alt` attribute at all. This guide covers how the check counts, how to fix each case and how to confirm it. It belongs to the checklist in our [technical AEO guide](/blog/technical-aeo-guide).
+
+## What each result means
+
+| Result | Share of images with an alt attribute |
+| --- | --- |
+| Pass | 80% or more, or the page has no images |
+| Warn | 50% to 79% |
+| Fail | Under 50% |
+
+The check looks at whether the attribute exists, not at how good the text is. Quality is your job, and Step 2 covers it.
+
+## Step 1: Find the images with no alt attribute
+
+Open the page, view the source and search for `<img`. Any tag without `alt=` is counted against you. In the browser console, this lists them:
+
+```js
+[...document.images].filter(i => !i.hasAttribute("alt")).map(i => i.src)
+```
+
+Note that this reads the rendered page. The scanner reads the served HTML, so images added by client-side JavaScript after load are not part of its count.
+
+## Step 2: Write alt text that describes the image
+
+Say what the image shows and, if it carries information, what it means. Keep it to a short phrase or one sentence.
+
+Weak: `<img src="chart.png" alt="chart">`
+
+Better: `<img src="chart.png" alt="Bar chart: AEO score rose from 54 to 81 after adding FAQ schema">`
+
+If the image holds text, repeat that text. If the image is a link, describe where it goes. Skip phrases like "image of", since assistive tools already announce an image.
+
+## Step 3: Mark decorative images as decorative
+
+Dividers, background flourishes and repeated icons next to text add nothing for someone who cannot see them. Give them an empty alt so screen readers skip them:
+
+```html
+<img src="divider.svg" alt="" />
+```
+
+The scanner counts `alt=""` as present, and so it does `role="presentation"`, `role="none"` and `aria-hidden="true"`. Do not use an empty alt on an image that carries information.
+
+In Next.js, the `Image` component requires the `alt` prop, so pass a string or an empty string explicitly:
+
+```tsx
+<Image src="/chart.png" alt="Bar chart of AEO score before and after" width={800} height={450} />
+```
+
+Most CMS media libraries have an alt field per image. Fill it at upload time so every placement inherits it, and check the theme's templates for hard-coded `img` tags that skip it.
+
+## Step 4: Verify and rescan
+
+1. Reload the page source and confirm every `img` has an `alt` attribute.
+2. Run the [AEOCheck scanner](/#scanner) again. The check reads the live page, so it clears on the next scan after you deploy.
+
+## What not to do
+
+Do not paste the same alt text on every image, and do not stuff keywords. Do not use `alt="image"` just to clear the check, since a placeholder satisfies the scanner but helps nobody.
+
+For the other checks in the report, see the [AEO checklist](/blog/aeo-checklist). The complete report with fix guidance for every issue is available on the [pricing page](/pricing).
+
+## FAQ
+
+**What does the Image Alt Text check test?** The share of img tags that have an alt attribute: 80% passes, 50% to 79% warns, below 50% fails.
+
+**Does an empty alt attribute count as a problem?** No. It is the right way to mark decorative images.
+
+**Do AI engines read alt text?** Text-only crawlers see it instead of the image, but we do not claim it changes citations.
+
+**Should I put keywords in alt text?** No. Describe the image.
