@@ -1,0 +1,99 @@
+---
+title: 'How to Fix the "Meta Description" Check in Your AEOCheck Report'
+description: >-
+  Your scan flagged a missing, short or long meta description. Here is what each
+  result means, how to write one that fits, and how to verify the fix.
+date: 2026-11-08T00:00:00.000Z
+slug: fix-meta-description-warning
+tags:
+  - meta-description
+  - technical-aeo
+  - meta-tags
+  - on-page-seo
+author: Ammar Ahmed
+coverImage: /images/blog/fix-meta-description-warning.png
+coverImageAlt: 'Cover for How to Fix the Meta Description Check'
+faqs:
+  - question: What does the Meta Description check test?
+    answer: >-
+      It reads the meta description tag in the page HTML. It fails when the tag is
+      missing, extremely short or extremely long, warns when the text is present but
+      outside 120-160 characters, and passes when the length is in that range.
+  - question: Does the meta description directly affect rankings or AI citations?
+    answer: >-
+      Not as a documented ranking factor. It is a clear, machine-readable summary of
+      the page that search results and some AI tools can use, and it affects whether
+      people click. Treat it as a quality signal, not a lever.
+  - question: Will Google always show my meta description?
+    answer: >-
+      No. Search engines often rewrite the snippet to match the query. A good
+      description is still the best default summary you can offer.
+  - question: Should every page have a unique description?
+    answer: >-
+      Yes. Duplicate descriptions across pages make them harder to tell apart. Write
+      one per page that describes that page only.
+---
+
+If your report shows **Meta Description** as failed or warned, the scanner either found no description in the page HTML or found one whose length is far from the target. This guide covers each result and the fix. It belongs to the checklist in our [technical AEO guide](/blog/technical-aeo-guide).
+
+## What each result means
+
+| Result | What the scanner saw |
+| --- | --- |
+| Fail | No meta description, or one under 30 or over 250 characters |
+| Warn | A description of 30-119 or 161-250 characters |
+| Pass | A description of 120-160 characters |
+
+## Step 1: Write the summary
+
+Describe what the page answers in one or two sentences, in plain words. Lead with the subject, not your brand name. Include the main topic once, naturally, and a reason to read on. Aim for 120-160 characters so it is neither a fragment nor cut off in results.
+
+Weak: `Welcome to our website. We offer great services.`
+
+Better: `Compare AEO tools by price, checks and reporting, with a free scanner that shows what ChatGPT and Perplexity can read on your page.`
+
+## Step 2: Add the tag to the page head
+
+```html
+<meta name="description" content="Your 120-160 character summary of this page." />
+```
+
+The tag must be in the served HTML, not injected by client-side JavaScript, because many crawlers do not run scripts.
+
+In Next.js, set it through metadata:
+
+```ts
+export const metadata = {
+  description: "Your 120-160 character summary of this page.",
+};
+```
+
+Most CMS SEO plugins have a field that renders the same tag.
+
+## Step 3: Fix the warnings
+
+- **Too short:** add the specific detail a reader wants, such as who it is for or what they get.
+- **Too long:** cut filler and keep the most useful clause first, so the important part survives any truncation.
+- **Template duplicates:** if every page shares one description, generate it from each page's own summary.
+- **Several tags:** keep exactly one description per page. Themes and plugins sometimes each add their own.
+
+## Step 4: Verify and rescan
+
+1. Open the [meta tag checker](/tools/meta-tag-checker) with your URL to see the description as a crawler reads it, with its length, next to your title and Open Graph tags.
+2. Run the [AEOCheck scanner](/#scanner) again. The check reads the live page, so it clears on the next scan after you deploy.
+
+## What not to do
+
+Do not stuff keywords, and do not copy the first paragraph verbatim. A description that reads like a list of search terms is a worse summary for both people and machines.
+
+For the other checks in the report, see the [AEO checklist](/blog/aeo-checklist). The complete report with fix guidance for every issue is available on the [pricing page](/pricing).
+
+## FAQ
+
+**What does the Meta Description check test?** The presence and length of the meta description tag in the HTML.
+
+**Does the meta description directly affect rankings or AI citations?** Not as a documented factor, but it is a clear summary of the page.
+
+**Will Google always show my meta description?** No. Snippets are often rewritten to match the query.
+
+**Should every page have a unique description?** Yes, one per page.
