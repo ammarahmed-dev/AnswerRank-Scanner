@@ -6,6 +6,7 @@ import { isMasterAdmin } from "@/lib/admin";
 import { availableEngines, normalizeDomain, runVisibilityCheck, suggestPrompts } from "@/lib/ai-visibility";
 import { verifyCitationDestinations } from "@/lib/citation-destinations";
 import { listVisibilityRuns, saveVisibilityRun } from "@/lib/ai-visibility-store";
+import { deleteTrack, upsertTrack } from "@/lib/ai-visibility-tracks";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
   const gate = await authorizeAdmin(req);
   if (gate.error) return gate.error;
 
-  let body: { brandName?: unknown; domain?: unknown; prompts?: unknown };
+  let body: { brandName?: unknown; domain?: unknown; prompts?: unknown; track?: unknown };
   try {
     body = (await readJsonObject(req)) as typeof body;
   } catch (error) {
@@ -75,5 +76,19 @@ export async function POST(req: Request) {
   }
   // Only keep runs where at least one engine answered; an all-error run says nothing about the brand.
   const saved = summary.checked > 0 ? await saveVisibilityRun(gate.user.id, { name: brandName, domain }, finalPrompts, engineNames, summary) : false;
-  return NextResponse.json({ brand: { name: brandName, domain }, prompts: finalPrompts, engines: engineNames, saved, ...summary });
+  // `track: true` also enrols the brand in the weekly cron (/api/cron/ai-visibility). When this run
+  // was saved it counts as the latest run, so the cron waits a full interval before repeating it.
+  const tracked =
+    body.track === true ? await upsertTrack(gate.user.id, { name: brandName, domain }, finalPrompts, saved ? new Date() : null) : undefined;
+  return NextResponse.json({ brand: { name: brandName, domain }, prompts: finalPrompts, engines: engineNames, saved, tracked, ...summary });
+}
+
+/** Stop weekly runs for a brand: `?domain=example.com`. */
+export async function DELETE(req: Request) {
+  const gate = await authorizeAdmin(req);
+  if (gate.error) return gate.error;
+  const domain = new URL(req.url).searchParams.get("domain");
+  if (!domain) return NextResponse.json({ error: "domain is required." }, { status: 400 });
+  const ok = await deleteTrack(gate.user.id, normalizeDomain(domain));
+  return NextResponse.json({ ok }, { status: ok ? 200 : 500 });
 }

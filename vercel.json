@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/followup-email",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/ai-visibility",
+      "schedule": "30 9 * * *"
     }
   ],
   "git": {
