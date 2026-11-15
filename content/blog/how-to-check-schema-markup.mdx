@@ -1,0 +1,115 @@
+---
+title: "How to Check Schema Markup on Any Website (JSON-LD Guide)"
+description: "Learn how to check JSON-LD schema markup, identify missing fields, and distinguish a schema check from Google's rich-result eligibility test."
+date: "2026-11-16"
+slug: "how-to-check-schema-markup"
+author: "Ammar Ahmed"
+tags: ["schema markup", "json-ld checker", "structured data", "technical seo"]
+coverImage: "/images/blog/how-to-check-schema-markup.svg"
+coverImageAlt: "Illustration of structured data nodes being checked against a JSON-LD document"
+faqs:
+  - question: "How do I check schema markup on a website?"
+    answer: "Enter the public URL in a JSON-LD checker to extract structured data blocks and review types and properties. Then use Google's Rich Results Test if you need to check eligibility for a supported Google search enhancement."
+  - question: "Is valid JSON-LD enough for a Google rich result?"
+    answer: "No. Syntax, supported type-specific properties, visible content, Google guidelines and eligibility all matter. Google does not guarantee a rich result even for valid markup."
+  - question: "What if the checker reports no JSON-LD?"
+    answer: "Check the rendered HTML and look for microdata or RDFa. Some sites publish structured data in formats other than JSON-LD, which a JSON-LD-only checker will not detect."
+  - question: "Can schema markup guarantee AI citations?"
+    answer: "No. Structured data supplies explicit machine-readable context but does not guarantee an AI assistant will mention or cite a page."
+---
+
+A **schema markup checker** helps answer a practical question: what structured data does a public webpage actually declare? You can check the JSON-LD on a page in seconds with the [free Schema Markup Checker](/tools/schema-checker), then use the results to find omissions or mismatches.
+
+The key is not to confuse three different tests: whether code parses, whether it accurately describes the page, and whether it meets the special requirements of a particular Google search feature. Passing the first does not prove the others.
+
+## How do you check schema markup on a website?
+
+1. Open the [AEOCheck JSON-LD schema checker](/tools/schema-checker).
+2. Paste the exact URL of a public page, including https.
+3. Run the check and inspect the structured-data types found. A product page might declare Product; an article may declare BlogPosting or Article; a business homepage may declare Organization.
+4. Review reported missing properties. Compare the output with the *actual visible page*, not only the JSON.
+5. For a Google-supported rich result, run the URL through [Google's Rich Results Test](https://search.google.com/test/rich-results). For general schema vocabulary validation, use [Schema Markup Validator](https://validator.schema.org/).
+6. Correct the page, deploy, then test the public URL again. Check Google Search Console after Google recrawls it.
+
+A URL test is preferable to checking a copied code fragment alone: the public page can contain multiple markup blocks, nested types, or a different deployed version from your editor.
+
+## What is JSON-LD and what does a schema checker find?
+
+JSON-LD is structured data expressed in JSON, often inside an HTML script element with the type application/ld+json. Google supports JSON-LD, Microdata and RDFa, and recommends JSON-LD for most implementations because it is easier to maintain.
+
+A useful checker identifies each JSON-LD block, whether it parses, its declared types and important properties. It can reveal issues such as a missing Article author, an Organization object with no identifying URL, or a FAQPage object lacking readable question-answer pairs. The severity of those findings depends on the schema type and the specific search feature you want to support.
+
+The AEOCheck checker focuses on JSON-LD and common field checks; it is **not** a complete schema.org vocabulary validator or a Google rich-result eligibility test.
+
+## Common schema markup errors and how to fix them
+
+### Invalid JSON syntax
+
+A missing comma, unmatched brace or quotation error can make the entire block unreadable. Copy the JSON-LD into a JSON parser, fix syntax, and recheck the deployed page. Avoid pasting smart quotation marks from word processors.
+
+### The wrong type for the page
+
+A page about a service should not claim to be a Product simply to qualify for a rich search appearance. Choose types that accurately describe the visible content. Google requires structured data to be representative and up to date.
+
+### Missing properties on nested objects
+
+Some properties require an object rather than a bare string. For example, a FAQPage mainEntity is a list of Question objects, each with a name and acceptedAnswer. If your real page presents a frequently asked question and answer section, [validate the FAQ schema separately](/tools/faq-schema-validator).
+
+### Structured data does not match the visible content
+
+Do not mark up reviews, prices, questions or claims that users cannot see or verify on the page. A syntactically valid block can still violate Google's structured-data quality guidelines. Fix the page itself or remove the unsupported claim from the markup.
+
+### Markup exists only in an inaccessible rendering path
+
+A crawler may see a different version of your content from your browser. Test the public URL, review the rendered HTML when relevant, and ensure important pages are crawlable. A URL marked noindex or blocked from Googlebot should not be expected to show a Google rich result.
+
+### Duplicated or contradictory entities
+
+Multiple JSON-LD script elements can be valid, but inconsistent names, URLs, canonical references or organization identities create ambiguity. Keep stable identifiers for the same entity and ensure each declaration agrees with the page.
+
+## JSON-LD checker vs Schema Markup Validator vs Rich Results Test
+
+| Tool | Best for | Important limitation |
+| --- | --- | --- |
+| [AEOCheck Schema Checker](/tools/schema-checker) | Quick page-level JSON-LD discovery and common property checks | JSON-LD-focused; not full vocabulary or Google eligibility validation |
+| [Schema Markup Validator](https://validator.schema.org/) | General schema.org validation | Does not decide whether Google will show a particular rich result |
+| [Google Rich Results Test](https://search.google.com/test/rich-results) | Testing supported Google rich-result requirements | Does not cover every schema.org type, and passing is not a display guarantee |
+| Google Search Console URL Inspection | Checking how Google indexed and crawled a URL | Requires access to the property; reports Google's indexed perspective |
+
+Google's [structured data policies](https://developers.google.com/search/docs/appearance/structured-data/sd-policies) explain why technically correct markup may still not qualify for enhanced presentation.
+
+## Should you add FAQ schema to every article?
+
+No. Add it only when the page actually contains a relevant question-and-answer section and the markup accurately represents the content. Google substantially restricted FAQ rich results to authoritative government and health sites, so a FAQPage block is **not** a shortcut to a visible FAQ result for ordinary websites.
+
+If you need help formatting it, create the data with the [FAQ schema generator](/tools/faq-schema-generator) and then run the [FAQ schema validator](/tools/faq-schema-validator). The generator and validator solve different problems.
+
+## Does schema markup improve AI search visibility?
+
+Structured data gives machines an explicit description of entities and relationships, but no search platform guarantees AI citations because JSON-LD is present. A useful strategy starts with crawlable, clear, original content; schema is an additional clarification layer. The [technical AEO guide](/blog/technical-aeo-guide) covers the other checks to consider.
+
+For a wider diagnosis, [run a free AEO readiness scan](/) on the page after fixing your markup. Treat the readiness score as a technical assessment rather than proof that ChatGPT or Perplexity has actually cited your URL.
+
+## A sensible verification workflow
+
+Before publishing: test JSON syntax, match each schema claim to visible copy, inspect the page's canonical URL and robots rules, and run the relevant official Google test. After publishing: retest the deployed URL, check for regressions, and use Search Console to monitor indexing and results over time. Avoid attributing traffic changes to one edit without comparison data.
+
+**Start with the [free schema markup checker](/tools/schema-checker)**, and address errors that affect real user-facing information before adding more markup.
+
+## Frequently asked questions
+
+### How do I check schema markup on a website?
+
+Paste a public URL into a checker to see its JSON-LD blocks and types, then use Schema Markup Validator or Google's Rich Results Test for the kind of validation you need.
+
+### Does valid JSON-LD guarantee Google rich results?
+
+No. Google can decline to show a rich result even when technical validation succeeds.
+
+### Why does a JSON-LD checker find nothing?
+
+The page may use Microdata or RDFa, or the structured data might not be present in the HTML that was fetched. Inspect the rendered HTML and use a validator that supports those formats.
+
+### Does adding FAQ schema make ChatGPT cite me?
+
+No. There is no guaranteed connection between adding one schema type and receiving an AI citation.

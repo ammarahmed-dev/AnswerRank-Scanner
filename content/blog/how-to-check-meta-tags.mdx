@@ -1,0 +1,113 @@
+---
+title: "How to Check Meta Tags on Any Website (Title, Description & OG)"
+description: "Check a website's title tag, meta description, robots directives, canonical URL and Open Graph preview with a practical step-by-step guide."
+date: "2026-11-16"
+slug: "how-to-check-meta-tags"
+author: "Ammar Ahmed"
+tags: ["meta tag checker", "meta description", "open graph", "technical seo"]
+coverImage: "/images/blog/how-to-check-meta-tags.svg"
+coverImageAlt: "Illustration of a website search-result preview next to metadata code fields"
+faqs:
+  - question: "How can I check meta tags on any webpage?"
+    answer: "Paste the URL into an online meta tag checker, or view the page's HTML source and inspect the head element for title, description, robots, canonical and Open Graph tags."
+  - question: "Does Google always use my meta description?"
+    answer: "No. Google primarily builds snippets from page content and sometimes uses the meta description if it better represents the page for a specific query."
+  - question: "Is there a strict meta description character limit?"
+    answer: "No. Google truncates snippets based on available display width and query context, not a universal fixed character limit."
+  - question: "What does the canonical link element do?"
+    answer: "It signals the preferred URL when duplicate or similar pages exist. Google considers it a hint, not an absolute directive."
+---
+
+To **check meta tags on a website**, enter a public page URL into the [free Meta Tag Checker](/tools/meta-tag-checker). It shows the title, description, canonical, robots and social-preview metadata that the page publishes, alongside missing-field warnings.
+
+You can also inspect the page source manually. The useful distinction is that a *meta tag check* tells you what the page declares, while Google may choose different titles and snippets for individual search queries.
+
+## How to check your meta tags online
+
+1. Copy the exact public page URL.
+2. Open the [AEOCheck Meta Tag Checker](/tools/meta-tag-checker).
+3. Paste the URL and run the check.
+4. Review the page title and meta description for clarity and duplication.
+5. Check robots directives, canonical URL, Open Graph title/description/image, and Twitter card information.
+6. Compare the tool's preview against the page's actual purpose, then update the source or CMS settings if anything is wrong.
+
+Run the test again after publishing changes. If your site has multiple templates, check a homepage, article and product or service page: a working template is not proof every route is configured correctly.
+
+## Which meta tags matter most for SEO?
+
+### HTML title element
+
+The title element is a strong source for the title link Google may show in results. Write a distinct, accurate title that tells readers what the page offers. Avoid generic titles like 'Home' or repeated templates that hide the important page topic.
+
+An example for a free tool page: 'Meta Tag Checker: Title, Description and OG Preview'. It describes the actual functionality rather than promising rankings.
+
+### Meta description
+
+Write a short, useful explanation of the page's value. Google's [snippet guidance](https://developers.google.com/search/docs/appearance/snippet) says it primarily generates snippets from page content and may use the meta description when that is more helpful. **Google does not guarantee it will show your exact description.**
+
+There is no universal character limit. A concise description is easier to scan, but pixel width and search context determine what a result can display. If your checker warns that a description is long, treat it as an editorial prompt, not a Google penalty.
+
+### Robots meta tag
+
+The robots directives tell compatible crawlers whether a page may be indexed or followed. A mistaken noindex on an important landing page can prevent it from appearing in Google Search. Verify robots.txt separately: it controls crawling, while a robots meta tag can control indexing when a crawler is able to access it.
+
+### Canonical URL
+
+A canonical link helps search engines identify a preferred URL for duplicate or very similar content. It is a **hint**, not a guarantee. For example, a tracking-parameter variation should usually refer to the primary canonical page, but each indexable page that covers a genuinely distinct topic should not be forced to canonicalize to the homepage.
+
+### Open Graph and Twitter card metadata
+
+Open Graph fields influence how platforms prepare link previews, including title, summary and image. They are not a substitute for the HTML title and description or the content of the page. A preview image should be relevant, publicly fetchable and sized to work in a wide card.
+
+Use the [Open Graph Checker](/tools/open-graph-checker) to inspect your social preview separately.
+
+## Common meta tag mistakes to fix
+
+| Symptom | What to check | Recommended action |
+| --- | --- | --- |
+| Search result shows an unexpected title | Title element, visible H1, links to the page | Make the page's primary topic clear and consistent; Google can still rewrite titles |
+| Description is missing or generic | Meta description and first visible paragraph | Add a unique, relevant summary without keyword stuffing |
+| Important page is missing from Google | Robots meta directives, robots.txt, canonical and indexing | Check Search Console URL Inspection before guessing at the cause |
+| Social image is blank | og:image URL and public availability | Use an absolute image URL, accessible over HTTPS, and re-scrape the link |
+| Several pages compete for the same query | Duplicate titles, overlapping content, canonicals | Consolidate where intent overlaps; keep separate pages for distinct jobs |
+| A preview looks fine, but CTR remains low | Search query, ranking position, intent and competition | Improve relevance and test changes over equal time windows, not just one screenshot |
+
+## Can changing meta tags fix a low click-through rate?
+
+Sometimes, especially when a page is already visible for relevant queries. But **position and query intent matter**: a result around position 60 is unlikely to get many clicks regardless of how polished its snippet looks. Start by understanding which queries trigger the page, whether the content satisfies those queries, and whether users can complete the promised task.
+
+Google Search Console reports impressions, clicks, CTR and average position by page and query. Compare meaningful periods and avoid treating a ranking change as proof that a title edit caused it.
+
+For utility pages, show the working tool quickly. Users searching for a 'meta tag checker' usually want to paste a URL, not navigate a long marketing page first. Educational copy should help interpret results without burying the input.
+
+## A five-minute metadata QA checklist
+
+- Confirm each indexable page has a useful, unique title.
+- Read the meta description as a visitor; remove vague or unsupported claims.
+- Make sure the canonical points to the intended preferred URL.
+- Check for accidental noindex directives on public pages.
+- Verify the Open Graph image resolves and matches the page.
+- Test one page from each important template, including mobile behavior.
+- Check Google Search Console for actual query and page performance after changes.
+
+When metadata is correct, move on to content, headings, structured data and crawlability. The [technical AEO guide](/blog/technical-aeo-guide) explains those complementary checks, while the [Schema Markup Checker](/tools/schema-checker) can inspect JSON-LD on your page.
+
+**[Check your meta tags for free](/tools/meta-tag-checker)**, and [run a full AI search readiness scan](/) if you want to review more than metadata.
+
+## Frequently asked questions
+
+### How do I check my meta tags?
+
+Use a URL-based checker to inspect the title, description, canonical, robots and social tags, or read the HTML head of the page manually.
+
+### Does Google always use the meta description I write?
+
+No. Google may generate a snippet from other parts of the page when that text better answers a search query.
+
+### Should my title be exactly 60 characters?
+
+No. There is no fixed universal title-length requirement; make it descriptive and avoid unnecessary truncation.
+
+### Is the canonical tag the same as noindex?
+
+No. A canonical indicates a preferred duplicate URL, while noindex instructs compatible crawlers not to index a page.

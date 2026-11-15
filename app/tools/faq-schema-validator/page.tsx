@@ -79,7 +79,8 @@ export default function FaqSchemaValidatorPage() {
             ))}
             <p>
               No FAQ markup yet? Build it with the <Link href="/tools/faq-schema-generator">FAQ schema generator</Link>. To inspect every schema type on a page, use the{" "}
-              <Link href="/tools/schema-checker">JSON-LD checker</Link>.
+              <Link href="/tools/schema-checker">JSON-LD checker</Link>. For help interpreting warnings, see{" "}
+              <Link href="/blog/how-to-check-schema-markup">how to check schema markup</Link>.
             </p>
           </div>
         </div>

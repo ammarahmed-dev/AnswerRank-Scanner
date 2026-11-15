@@ -80,7 +80,9 @@ export default function MetaTagCheckerPage() {
               </div>
             ))}
             <p>
-              More on metadata in the <Link href="/blog/technical-aeo-guide">technical AEO guide</Link>. To check structured data too, use the{" "}
+              To interpret each field, read the{" "}
+              <Link href="/blog/how-to-check-meta-tags">step-by-step meta tag checking guide</Link>. For related on-page signals, see the{" "}
+              <Link href="/blog/technical-aeo-guide">technical AEO guide</Link> and the{" "}
               <Link href="/tools/schema-checker">schema markup checker</Link>.
             </p>
           </div>
