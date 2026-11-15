@@ -97,12 +97,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         image: imageUrl,
         datePublished: post.date,
         dateModified: post.updated ?? post.date,
-        author: {
-          "@type": "Person",
-          name: "Ammar Ahmed",
-          url: "https://www.linkedin.com/in/ummar-ahmed/",
-          sameAs: ["https://www.linkedin.com/in/ummar-ahmed/"],
-        },
+        author: post.author === "AEOCheck Team"
+          ? { "@type": "Organization", name: "AEOCheck", url: `${SITE_URL}/about` }
+          : { "@type": "Person", name: post.author },
         publisher: {
           "@type": "Organization",
           name: "AEOCheck",
@@ -151,7 +148,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <Link href="/blog" className="blog-back-link">Blog</Link>
           <time dateTime={post.date}>{formatDate(post.date)}</time>
           {post.updated && <p className="blog-post-author">Updated <time dateTime={post.updated}>{formatDate(post.updated)}</time></p>}
-          <p className="blog-post-author">By Ammar Ahmed</p>
+          <p className="blog-post-author">By {post.author}</p>
           <h1>{post.title}</h1>
           <p>{post.description}</p>
           {post.tags.length > 0 && (
