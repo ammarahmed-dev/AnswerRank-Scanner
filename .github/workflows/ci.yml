@@ -31,6 +31,8 @@ jobs:
         run: node scripts/link-lint.mjs
       - name: Unit tests
         run: npm test
+      - name: GSC opportunity selector tests
+        run: node --test scripts/tests/select-gsc-topic.test.mjs
       - name: Build
         run: npm run build
         env:
