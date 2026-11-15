@@ -7,9 +7,9 @@ import { buildPageMetadata, SITE_URL } from "@/lib/seo";
 import SchemaChecker from "./SchemaChecker";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Free JSON-LD Checker: Test Your Schema Markup | AEOCheck",
+  title: "Free Schema Markup Checker (JSON-LD) | AEOCheck",
   description:
-    "Check any page's JSON-LD structured data. See which schema types it has, which required properties are missing and what AI engines expect to find. Free, no signup.",
+    "Free schema markup checker: inspect JSON-LD on any URL, find schema types and missing properties, and learn how to verify Google rich-result eligibility.",
   path: "/tools/schema-checker",
 });
 
@@ -71,7 +71,7 @@ export default function SchemaCheckerPage() {
         <div className="launch-container">
           <div className="section-intro llms-tool-intro">
             <p className="launch-eyebrow">Free tool</p>
-            <h1>JSON-LD Schema Markup Checker</h1>
+            <h1>Free Schema Markup Checker for JSON-LD</h1>
             <p>
               Paste a page URL and see which JSON-LD structured data it has, what is missing and what to add so AI
               engines can tell who you are and what the page covers.
@@ -87,8 +87,10 @@ export default function SchemaCheckerPage() {
               </div>
             ))}
             <p>
-              Need markup to paste? Build it with the <Link href="/tools/faq-schema-generator">FAQ schema generator</Link>, or read the{" "}
-              <Link href="/blog/technical-aeo-guide">technical AEO guide</Link>.
+              Need help interpreting results? Follow the{" "}
+              <Link href="/blog/how-to-check-schema-markup">step-by-step schema markup checking guide</Link>, build FAQ markup with the{" "}
+              <Link href="/tools/faq-schema-generator">FAQ schema generator</Link>, or learn about the{" "}
+              <Link href="/blog/technical-aeo-guide">technical AEO fundamentals</Link>.
             </p>
           </div>
         </div>
