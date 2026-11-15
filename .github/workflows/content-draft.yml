@@ -2,7 +2,7 @@ name: Content Draft (Topical Map)
 
 on:
   schedule:
-    # Mon & Thu 06:00 UTC (11:00 PKT) - ~2 drafts/week
+    # Mon & Thu 06:00 UTC (11:00 PKT) - up to 2 evidence-backed draft PRs/week
     - cron: "0 6 * * 1,4"
   workflow_dispatch:
     inputs:
@@ -24,21 +24,33 @@ jobs:
         with:
           node-version: 22
 
+      - name: Choose topic from fresh, finalized Search Console evidence
+        id: choose
+        if: ${{ github.event_name == 'schedule' || inputs.target_slug == '' }}
+        env:
+          GSC_CLIENT_EMAIL: ${{ secrets.GSC_CLIENT_EMAIL }}
+          GSC_PRIVATE_KEY: ${{ secrets.GSC_PRIVATE_KEY }}
+          GSC_SITE_URL: ${{ vars.GSC_SITE_URL }}
+        run: node scripts/select-gsc-topic.mjs
+
       - name: Generate draft from topical map
+        if: ${{ inputs.target_slug != '' || steps.choose.outputs.slug != '' }}
         id: gen
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ANTHROPIC_MODEL: claude-sonnet-4-6
           BLOG_DIR: content/blog
-          TARGET_SLUG: ${{ github.event.inputs.target_slug }}
+          TARGET_SLUG: ${{ inputs.target_slug || steps.choose.outputs.slug }}
         run: node scripts/generate-draft.mjs
 
       - name: Lint internal links
+        if: ${{ steps.gen.outputs.slug != '' }}
         env:
           BLOG_DIR: content/blog
         run: node scripts/link-lint.mjs
 
       - name: Open PR for review
+        if: ${{ steps.gen.outputs.slug != '' }}
         uses: peter-evans/create-pull-request@v6
         with:
           branch: content/${{ steps.gen.outputs.slug }}
