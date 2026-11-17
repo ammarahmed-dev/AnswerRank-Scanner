@@ -71,7 +71,7 @@ export default function FaqSchemaValidatorPage() {
           <SchemaChecker focus="faq" />
           <div className="llms-tool-faq">
             <h2>How to check FAQ schema</h2>
-            <p>Paste the public URL of a page containing visible questions and answers. The checker reads JSON-LD blocks and reports whether FAQPage exists and its question and answer fields are present. It does not validate Microdata, RDFa or Google's search feature eligibility.</p>
+            <p>Paste the public URL of a page containing visible questions and answers. The checker reads JSON-LD blocks and reports whether FAQPage exists and its question and answer fields are present. It does not validate Microdata, RDFa or Google search feature eligibility.</p>
             <p>Google stopped showing FAQ rich results on May 7, 2026. Keep your FAQ markup accurate if you use it to describe real page content, but do not add it expecting a Google FAQ dropdown. See the <a href="https://developers.google.com/search/updates" target="_blank" rel="noopener noreferrer">Google Search documentation changelog</a> for the announcement.</p>
           </div>
           <div className="llms-tool-faq">
