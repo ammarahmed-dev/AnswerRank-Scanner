@@ -20,7 +20,7 @@ function getClientId(): string | undefined {
   }
 }
 
-export default function SchemaChecker() {
+export default function SchemaChecker({ focus = "all" }: { focus?: "all" | "faq" }) {
   const [url, setUrl] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [result, setResult] = useState<Result | null>(null);
@@ -52,7 +52,12 @@ export default function SchemaChecker() {
   }
 
   const invalid = result?.blocks.filter((b) => !b.valid) ?? [];
-  const tone = !result || !result.blocks.length || invalid.length ? "bad" : result.entities.some((e) => e.missingRequired.length) ? "warn" : "good";
+  const faqEntities = result?.entities.filter((entity) => entity.type === "FAQPage") ?? [];
+  const shownEntities = focus === "faq" ? faqEntities : result?.entities ?? [];
+  const faqNeedsFixes = faqEntities.some((entity) => entity.missingRequired.length > 0);
+  const tone = focus === "faq"
+    ? !result || !faqEntities.length || invalid.length ? "bad" : faqNeedsFixes ? "warn" : "good"
+    : !result || !result.blocks.length || invalid.length ? "bad" : result.entities.some((e) => e.missingRequired.length) ? "warn" : "good";
 
   return (
     <div className="surface llms-tool">
@@ -69,7 +74,7 @@ export default function SchemaChecker() {
           />
         </label>
         <button type="submit" className="btn btn-primary" disabled={state === "loading" || !url.trim()}>
-          {state === "loading" ? <><Loader2 className="h-4 w-4 animate-spin" /> Checking...</> : "Check schema"}
+          {state === "loading" ? <><Loader2 className="h-4 w-4 animate-spin" /> Checking...</> : focus === "faq" ? "Check FAQ schema" : "Check schema"}
         </button>
       </form>
 
@@ -79,12 +84,33 @@ export default function SchemaChecker() {
         <div className="llms-tool-result">
           <div className={`crawler-verdict crawler-verdict-${tone}`}>
             <strong>
-              {result.blocks.length
-                ? `${result.blocks.length} JSON-LD block${result.blocks.length === 1 ? "" : "s"}, ${result.types.length} type${result.types.length === 1 ? "" : "s"} found`
-                : "No structured data found"}
+              {focus === "faq"
+                ? !result.blocks.length
+                  ? "No JSON-LD blocks found"
+                  : !faqEntities.length
+                    ? "No FAQPage JSON-LD found"
+                    : invalid.length
+                      ? "FAQPage found, but some JSON-LD blocks are invalid"
+                      : faqNeedsFixes
+                        ? "FAQPage found with missing question or answer fields"
+                        : `${faqEntities.length} FAQPage declaration${faqEntities.length === 1 ? "" : "s"} found with required fields`
+                : result.blocks.length
+                  ? `${result.blocks.length} JSON-LD block${result.blocks.length === 1 ? "" : "s"}, ${result.types.length} type${result.types.length === 1 ? "" : "s"} found`
+                  : "No structured data found"}
             </strong>
-            {result.types.length > 0 && <p>{result.types.join(", ")}</p>}
-            {result.suggestions.map((s) => <p key={s} className="crawler-verdict-meta">{s}</p>)}
+            {focus === "faq" ? (
+              <>
+                <p>{faqEntities.length
+                  ? "Checks FAQPage declarations and their required question/answer fields. Compare the markup with the questions visible on your page."
+                  : "The page may contain other JSON-LD types, but no FAQPage declaration was detected."}</p>
+                <p className="crawler-verdict-meta">This is a JSON-LD field check, not a full schema.org validation or a Google rich-result eligibility test.</p>
+              </>
+            ) : (
+              <>
+                {result.types.length > 0 && <p>{result.types.join(", ")}</p>}
+                {result.suggestions.map((s) => <p key={s} className="crawler-verdict-meta">{s}</p>)}
+              </>
+            )}
           </div>
 
           {invalid.length > 0 && (
@@ -98,9 +124,9 @@ export default function SchemaChecker() {
             </ul>
           )}
 
-          {result.entities.length > 0 && (
+          {shownEntities.length > 0 && (
             <ul className="extract-list">
-              {result.entities.map((e, i) => {
+              {shownEntities.map((e, i) => {
                 const ok = e.missingRequired.length === 0;
                 return (
                   <li key={`${e.type}-${i}`} className={ok ? "is-allowed" : "is-blocked"}>
@@ -118,7 +144,9 @@ export default function SchemaChecker() {
           )}
 
           <div className="llms-tool-cta">
-            <p>This reads JSON-LD only. See how the page scores across 25 AI visibility signals, including schema.</p>
+            <p>{focus === "faq"
+              ? "FAQPage markup does not create a Google FAQ rich result. For wider crawlability, metadata, and content checks, try the AEO readiness scan."
+              : "This reads JSON-LD only. See how the page scores across 25 AI visibility signals, including schema."}</p>
             <Link href="/#scanner" className="btn btn-primary">Run a free AEO scan</Link>
           </div>
         </div>

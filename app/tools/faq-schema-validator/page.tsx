@@ -7,9 +7,9 @@ import { buildPageMetadata, SITE_URL } from "@/lib/seo";
 import SchemaChecker from "../schema-checker/SchemaChecker";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Free FAQ Schema Validator: Check Your FAQPage Markup | AEOCheck",
+  title: "Free FAQ Schema Checker & Validator | AEOCheck",
   description:
-    "Validate FAQPage structured data on any page. See whether your FAQ schema parses, which questions it lists and which required properties are missing. Free, no signup.",
+    "Check FAQ schema on any URL. Detect FAQPage JSON-LD, missing questions or answers, and invalid code. Free FAQ schema checker and validator.",
   path: "/tools/faq-schema-validator",
 });
 
@@ -23,8 +23,8 @@ const faqs = [
     a: "A FAQPage object with a mainEntity list. Each item is a Question with a name and an acceptedAnswer of type Answer containing the answer text. The questions and answers must also appear on the page itself.",
   },
   {
-    q: "Will FAQ schema give me a Google rich result?",
-    a: "Not necessarily. Google has limited FAQ rich results to a small set of authoritative sites, so most pages will not see an expandable FAQ in search. FAQ markup can still help machines understand the question and answer pairs on the page. This tool does not test eligibility for any search feature.",
+    q: "Does FAQ schema still produce Google FAQ rich results?",
+    a: "No. Google ended FAQ rich results in Search on May 7, 2026. FAQPage remains a schema.org type for describing visible questions and answers, but this checker does not predict Google search features or AI citations.",
   },
   {
     q: "Is this a full schema.org validator?",
@@ -63,12 +63,17 @@ export default function FaqSchemaValidatorPage() {
         <div className="launch-container">
           <div className="section-intro llms-tool-intro">
             <p className="launch-eyebrow">Free tool</p>
-            <h1>FAQ Schema Validator</h1>
+            <h1>Free FAQ Schema Checker & Validator</h1>
             <p>
-              Paste a page URL to see whether it has valid FAQPage markup, which questions it lists and what is missing.
+              Paste a page URL to detect FAQPage JSON-LD and check for missing questions, answers or invalid code. Get a focused FAQ result instead of a generic schema report.
             </p>
           </div>
-          <SchemaChecker />
+          <SchemaChecker focus="faq" />
+          <div className="llms-tool-faq">
+            <h2>How to check FAQ schema</h2>
+            <p>Paste the public URL of a page containing visible questions and answers. The checker reads JSON-LD blocks and reports whether FAQPage exists and its question and answer fields are present. It does not validate Microdata, RDFa or Google search feature eligibility.</p>
+            <p>Google stopped showing FAQ rich results on May 7, 2026. Keep your FAQ markup accurate if you use it to describe real page content, but do not add it expecting a Google FAQ dropdown. See the <a href="https://developers.google.com/search/updates" target="_blank" rel="noopener noreferrer">Google Search documentation changelog</a> for the announcement.</p>
+          </div>
           <div className="llms-tool-faq">
             <h2>FAQ schema questions</h2>
             {faqs.map((f) => (
