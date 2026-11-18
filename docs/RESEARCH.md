@@ -146,3 +146,8 @@ highest-leverage feature on the roadmap.
 **Status:** engine library and admin-only API shipped behind `AI_VISIBILITY_ENABLED` (off by
 default). Owner decisions needed before customers see it: which plans include it and how many
 prompts/runs, and API keys + budget. See ROADMAP "Owner actions".
+
+
+## Next.js security release review - 18 November 2026
+
+[Official v16.4.5 release](https://github.com/vercel/next.js/releases/tag/v16.4.5), published 3 November, lists fixes covering cache isolation/poisoning, response framing, SVG handling and Edge cookie-header exposure. [GHSA-f3mh-rxg3-f5g2](https://github.com/vercel/next.js/security/advisories/GHSA-f3mh-rxg3-f5g2) and [GHSA-vvgp-ww4w-46vf](https://github.com/vercel/next.js/security/advisories/GHSA-vvgp-ww4w-46vf) identify 16.4.5 as patched. App-specific preconditions differ; do not claim exploitation or full live vulnerability reproduction. Apply the narrow patch and matching toolchain rather than the pending broad dependency update. Preserve the existing Git deployment and all regression gates.

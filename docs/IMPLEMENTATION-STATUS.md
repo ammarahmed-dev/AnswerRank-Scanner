@@ -454,3 +454,14 @@ Local release verification: 1,125 tests / 102 files, type check, lint (18 existi
 The post-merge billing release's browser check exposed an existing ambiguous alert selector: Next.js's route announcer and the tool error both have role=alert. The same PR head had passed; the failure does not demonstrate a billing or product error. Scope the assertion to the actual crawler-error text, and deliberately include a second visible alert at both widths so future runs exercise the ambiguity. Keep exact error text, stale-result absence, overflow/page-error checks and screenshots; remove the synthetic announcement before capturing. No application/UI behavior changes or disabled gate. CI and same-SHA public verification remain required. Full audit and all production acceptance limitations remain open.
 
 Follow-up local validation: 1,125 tests / 102 files, type check, lint (18 existing warnings), content links, browser-script syntax and fresh production build pass. The browser assertion with two simultaneous alerts must pass in exact-head CI before merge; no product behavior changed.
+
+
+## Next.js November security patch (18 November)
+
+A01: a fresh production build flagged the locked Next.js 16.4.3 as affected by current advisories. Official Next.js 16.4.5 release notes and individual vendor advisories were reviewed; upgrade only Next.js, matching ESLint config/plugin, environment and platform compiler packages, pinned to 16.4.5. Preserve application logic, data, pricing, rights and deployment configuration. Open broad dependency PRs #75/#78 are not merged or overwritten. This is a vendor security patch, not proof that every advisory precondition exists here or that production was exploited.
+
+Security takes precedence over the GSC-supported schema coverage improvement, which is preserved separately as draft work. The verified finalized Web comparison ends 15 November and cannot establish effects of the 17/18 November releases. No raw private analytics enter this release. The latest successful Content Draft run skipped model generation; actual provider-auth acceptance remains open in Issue #88.
+
+Required gates: production dependency audit, full tests/type/lint/content links and selector checks, a fresh production build, isolated desktop/mobile browser journeys, then Vercel/same-commit public smoke. Full audit, development-tool advisory remediation and live signed-in/payment/provider/lead/email/analytics acceptance remain open.
+
+Local patch validation: 1,125 tests / 102 files and four selector tests, type check, lint (18 existing warnings), 19-file content-link check and fresh production build pass. Production dependency audit reports zero vulnerabilities. Credential-free built preview returns public/pricing/schema/FAQ pages 200, anonymous account 401 and unsigned webhook 400. Browser CI and same-commit production health remain the release gates; no signed production or provider mutation.
