@@ -177,6 +177,8 @@ Based on the full code review from 2026-10-03.
 
   - [ ] Re-verify the claims on all four `/vs/*` pages (prices, free trial, features) against each competitor's public pricing page, then bump the "last checked" month in `ComparisonPageClient.tsx`. Last full check: Profound 2026-10-04; others rely on the 2026-10-03 research notes
 - Maintenance: dependency updates (minor/patch weekly, majors with care), `npm audit`, runtime errors.
+  - [x] (2026-11-01) `npm update` within existing semver ranges (lockfile only: react 19.3.1, supabase-js 2.118, tailwind 4.3.3, resend 6.37, lucide, postcss, types). `npm audit --omit=dev`: 0 vulnerabilities.
+  - [ ] Dev-only: `vitest` 3 -> 5 major (clears the remaining moderate `@vitest/mocker` advisories, which only affect the dev test runner); also pending majors `typescript` 7, `eslint` 10, `undici` 8, `@types/node` 26 (evaluate separately).
 
 ---
 
