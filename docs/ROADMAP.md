@@ -13,6 +13,9 @@ Based on the full code review from 2026-10-03.
 
 ## Phase 1 - Critical revenue and security fixes
 
+- [x] (2026-11-18, A01) Apply the narrow Next.js 16.4.5 security patch with matching ESLint config/compiler lock entries; recheck production audit, all regression/build/browser gates and same-commit production health. Broader dev-tool advisories and open dependency PRs remain separate.
+
+
 - [x] (2026-10-27, A02/A11) Bound billing profile/RPC transport settlement and reject mutation redirects; retain exact receipts and retryable unknown outcomes without automatic retry/compensation. Durable recovery, ordering and live sandbox remain open.
 
 - [x] (2026-10-27, A02/A11) Require valid authoritative billing profile rows before webhook acknowledgement/mutation; missing or malformed profiles remain retryable, valid event/rights policy unchanged. Durable recovery and live sandbox remain open.
@@ -273,3 +276,10 @@ Bound hosted-checkout response bodies to 64 KiB and keep a 15-second provider de
 Read-only inspection of the published GTM resource found a GA4 destination and click-text tags, but no rules for scan completion or confirmed saved-service leads. Added bounded, allowlisted data-layer events for scanner dispatch/completion and shared service CTA/form-start/save outcomes. No URLs, report tokens, identity, messages or raw context are included; no new storage/vendor/direct analytics transport. Saved events follow literal successful storage responses, with component-lifetime guards; failed scans do not emit completion. Existing scanner/report rights and form behavior remain. See [FUNNEL-MEASUREMENT.md](FUNNEL-MEASUREMENT.md) for the exact contract and remaining GTM consent/routing/GA4-receipt acceptance. Published configuration is not proof of receipt or conversion counts; GTM editing/GA4 reporting tools are unavailable. S05/A15 instrumentation is partial, with destination acceptance blocked; S02/S06 and the full audit remain open. Available GSC data still predates releases; no title/content rewrite or ranking/AI-inclusion gain is claimed.
 
 - [x] (2026-10-27, A15/A17 privacy) Retire scheduled public GSC metric commits/issues; make legacy caller inert and replace tracked reports with privacy notices. Private Overview remains available; historical exposure cleanup is separate.
+
+
+## Daily growth and security decision - 18 November 2026
+
+Fresh authorized HYPD retrieval compared finalized Web data for 19 October-15 November with 21 September-18 October. Property totals were queried separately from page/query evidence; device/country and daily trends were inspected without treating small samples or average-position mixing as release attribution. Private rows and metrics remain outside this repository. Confirmed demand on the existing schema utility justified preparing explicit validation-coverage states, but a fresh production build exposed known Next.js advisories, so the framework security patch is today's production priority. Keep schema work as a separate reviewable draft; do not duplicate yesterday's FAQ tool release or churn guide titles.
+
+The latest 16 November Content Draft run (43897005212) skipped generation because no unpublished topic met its evidence threshold. That successful run did not test Anthropic auth, so Issue #88 remains unresolved. No secret edits, provider calls, schedule changes or new automated content work. Next review: final deployed patch health, prepared schema coverage/browser review, and comparable organic page/query evidence once enough finalized post-change data exists. Full audit and actual conversion/delivery acceptance remain unfinished.
