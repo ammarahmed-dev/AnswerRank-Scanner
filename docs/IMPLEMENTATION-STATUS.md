@@ -465,3 +465,12 @@ Security takes precedence over the GSC-supported schema coverage improvement, wh
 Required gates: production dependency audit, full tests/type/lint/content links and selector checks, a fresh production build, isolated desktop/mobile browser journeys, then Vercel/same-commit public smoke. Full audit, development-tool advisory remediation and live signed-in/payment/provider/lead/email/analytics acceptance remain open.
 
 Local patch validation: 1,125 tests / 102 files and four selector tests, type check, lint (18 existing warnings), 19-file content-link check and fresh production build pass. Production dependency audit reports zero vulnerabilities. Credential-free built preview returns public/pricing/schema/FAQ pages 200, anonymous account 401 and unsigned webhook 400. Browser CI and same-commit production health remain the release gates; no signed production or provider mutation.
+
+
+## Prepared schema-coverage follow-up (not released)
+
+Fresh private HYPD page/query evidence supported improving the existing schema utility. The current tool treats unsupported types as if property checks passed and can falsely report parse errors for prototype-named types. A separate draft adds explicit checklist coverage, warnings for unassessed/mixed/untyped results, safe lookup, accurate field-presence labels and official validator links. The shared FAQ mode is preserved and failed retries clear stale results. Titles, canonicals, field lists, fetching/quota and scanner scoring are not part of this change.
+
+Preparation: nineteen new parser/coverage tests pass; three selected cases fail the actual prior parser. Browser cases exercise desktop/mobile supported, unsupported, mixed, untyped, absent, syntax-error and retry outcomes with an unchanged FAQ-mode control. Full tests/type/lint/build/browser/visual review must pass on the security-patched base before this draft can be considered for release. It is not deployed as part of the security patch, and no ranking/citation/conversion result is claimed.
+
+Draft local validation on the patched framework: 1,144 tests / 103 files, type check, lint (18 existing warnings), content links, browser-script syntax and fresh production build pass. Browser CI and screenshot review are pending; this does not establish a production release.

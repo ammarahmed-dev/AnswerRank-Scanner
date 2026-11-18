@@ -1001,3 +1001,8 @@ Newest first. Every autonomous session adds an entry: date, what shipped, how it
   `/api/scan` rejects private URLs.
 - Ownership handed to Claude; weekend routine runs hourly on Sat/Sun.
 - Follow-ups: owner actions listed in docs/ROADMAP.md.
+
+
+## Prepared follow-up - schema-checker coverage (not released)
+
+A separate draft fixes unsupported-type false passes, prototype-name false parse errors, empty/mixed coverage summaries and stale retry results. Labels explain selected field-presence checks and link official validators. Nineteen parser/coverage regressions and desktop/mobile browser cases are prepared, with shared FAQ behavior preserved. This is not part of today's security deployment; release and measurement acceptance remain pending.

@@ -16,27 +16,27 @@ export const metadata: Metadata = buildPageMetadata({
 const faqs = [
   {
     q: "How do I check the schema markup on my page?",
-    a: "Enter the page URL above. The checker fetches the page, parses each JSON-LD block and lists the schema.org types it found, with any missing required or recommended properties. It works for FAQ, Article, Organization, Product and other common types, so it also answers whether your FAQ schema is present and complete.",
+    a: "Enter the page URL above. The checker fetches the page, parses each JSON-LD block and lists the schema.org types it found, with selected field-presence checks for common types. Types without a built-in checklist are labelled unassessed. For FAQ-specific question and answer checks, use the linked FAQ schema validator.",
   },
   {
     q: "Is this a JSON-LD validator?",
-    a: "It checks that each JSON-LD block parses and that common types have their key properties. It is not a full schema.org validator, so for edge cases also run the Schema.org validator. Use this tool for a fast read on what a page declares and what is missing.",
+    a: "It checks JSON syntax and selected fields on common types. It reports how many typed declarations received field checks. It is not a full schema.org validator, so for edge cases also run the Schema.org validator. Use this tool for a fast read on what a page declares and what is missing.",
   },
   {
     q: "What does the schema checker look at?",
-    a: "It fetches the page, reads every JSON-LD block, tells you whether each one parses, lists the schema.org types it finds and flags missing required and recommended properties for common types like Organization, WebSite, Article, FAQPage, Product and SoftwareApplication.",
+    a: "It fetches the page, reads every JSON-LD block, tells you whether each one parses, lists the schema.org types it finds and flags missing fields from this tool's checklists for common types like Organization, WebSite, Article, FAQPage, Product and SoftwareApplication.",
   },
   {
     q: "Is this the same as Google's Rich Results Test?",
-    a: "No. Google's tools check eligibility for Google rich results. This checker focuses on whether the markup is complete and consistent enough to help AI engines identify who you are and what the page is about. It does not test eligibility for any search feature.",
+    a: "No. Google's tools check eligibility for Google rich results. This checker tests JSON syntax and selected field presence. It does not verify property value types, expand contexts, compare markup with visible content or measure AI inclusion. It does not test eligibility for any search feature.",
   },
   {
     q: "Does it read microdata or RDFa?",
-    a: "No, only JSON-LD, which is the format Google recommends and the one most sites use. If your markup is in microdata or RDFa, the checker will report that no structured data was found.",
+    a: "No, only JSON-LD, which is the format Google recommends and the one most sites use. If your markup is in microdata or RDFa, the checker will report that no JSON-LD blocks were found; other structured data may still exist.",
   },
   {
     q: "Why does it say my markup is missing properties?",
-    a: "Each schema type has properties that are required for the markup to describe the entity at all and properties that are recommended because they add useful context. Required properties are flagged as problems; recommended ones are suggestions.",
+    a: "The tool applies a small field checklist for supported types. Missing checked fields and optional suggestions are review prompts, not universal schema.org requirements. Search features have their own rules; compare the actual page and use the appropriate validator.",
   },
   {
     q: "Is the checker free?",
@@ -73,8 +73,8 @@ export default function SchemaCheckerPage() {
             <p className="launch-eyebrow">Free tool</p>
             <h1>Free Schema Markup Checker for JSON-LD</h1>
             <p>
-              Paste a page URL and see which JSON-LD structured data it has, what is missing and what to add so AI
-              engines can tell who you are and what the page covers.
+              Paste a page URL to inspect JSON-LD syntax, detected types and selected fields. See which declarations
+              received field checks and which types still need a broader validator.
             </p>
           </div>
           <SchemaChecker />
