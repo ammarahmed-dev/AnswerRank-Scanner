@@ -177,6 +177,8 @@ Based on the full code review from 2026-10-03.
 
   - [ ] Re-verify the claims on all four `/vs/*` pages (prices, free trial, features) against each competitor's public pricing page, then bump the "last checked" month in `ComparisonPageClient.tsx`. Last full check: Profound 2026-10-04; others rely on the 2026-10-03 research notes
 - Maintenance: dependency updates (minor/patch weekly, majors with care), `npm audit`, runtime errors.
+  - [x] (2026-10-31) `npm audit fix` (lockfile only): clears the `vite` and `zod` high advisories. Production deps: 0 vulnerabilities (`npm audit --omit=dev`).
+  - [ ] Dev-only: `vitest` 3 -> 5 (fixes the critical `vitest`/`tinypool` advisories and 17 moderate dev-chain ones; major bump, check test config and run the whole suite). Minor/patch bumps available: supabase-js, react/react-dom 19.3, tailwindcss 4.3, resend, lucide-react (each needs a build + visual check).
 
 ---
 
