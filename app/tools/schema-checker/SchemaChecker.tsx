@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Code2, Loader2, XCircle } from "lucide-react";
+import { CheckCircle2, CircleHelp, Code2, Loader2, XCircle } from "lucide-react";
 import type { SchemaCheckResult } from "@/lib/schema-check";
+import { schemaCheckSummary } from "@/lib/schema-check-summary";
 
 const CLIENT_STORAGE_KEY = "aeocheck_client_id_v1";
 
@@ -31,6 +32,7 @@ export default function SchemaChecker({ focus = "all" }: { focus?: "all" | "faq"
     if (!url.trim() || state === "loading") return;
     setState("loading");
     setError("");
+    setResult(null);
     try {
       const res = await fetch("/api/tools/schema-checker", {
         method: "POST",
@@ -55,9 +57,10 @@ export default function SchemaChecker({ focus = "all" }: { focus?: "all" | "faq"
   const faqEntities = result?.entities.filter((entity) => entity.type === "FAQPage") ?? [];
   const shownEntities = focus === "faq" ? faqEntities : result?.entities ?? [];
   const faqNeedsFixes = faqEntities.some((entity) => entity.missingRequired.length > 0);
+  const summary = result ? schemaCheckSummary(result) : null;
   const tone = focus === "faq"
     ? !result || !faqEntities.length || invalid.length ? "bad" : faqNeedsFixes ? "warn" : "good"
-    : !result || !result.blocks.length || invalid.length ? "bad" : result.entities.some((e) => e.missingRequired.length) ? "warn" : "good";
+    : summary?.tone ?? "warn";
 
   return (
     <div className="surface llms-tool">
@@ -94,9 +97,7 @@ export default function SchemaChecker({ focus = "all" }: { focus?: "all" | "faq"
                       : faqNeedsFixes
                         ? "FAQPage found with missing question or answer fields"
                         : `${faqEntities.length} FAQPage declaration${faqEntities.length === 1 ? "" : "s"} found with required fields`
-                : result.blocks.length
-                  ? `${result.blocks.length} JSON-LD block${result.blocks.length === 1 ? "" : "s"}, ${result.types.length} type${result.types.length === 1 ? "" : "s"} found`
-                  : "No structured data found"}
+                : summary?.title}
             </strong>
             {focus === "faq" ? (
               <>
@@ -107,7 +108,12 @@ export default function SchemaChecker({ focus = "all" }: { focus?: "all" | "faq"
               </>
             ) : (
               <>
+                <p>{`JSON syntax: ${result.blocks.filter((block) => block.valid).length} of ${result.blocks.length} blocks parsed.`}</p>
+                <p className="schema-check-coverage">{`Field checklists applied to ${summary?.checked} of ${result.entities.length} extracted top-level/@graph type declarations.`}</p>
+                <p className="crawler-verdict-meta">Nested entities are not generally inspected. FAQPage question and answer fields have specific checks.</p>
                 {result.types.length > 0 && <p>{result.types.join(", ")}</p>}
+                <p className="crawler-verdict-meta">Checks JSON syntax and selected field presence only. Property value types, context expansion, visible-content accuracy and Google rich-result eligibility are not verified.</p>
+                {!result.blocks.length && <p className="crawler-verdict-meta">Microdata, RDFa or markup added after the fetched HTML may still exist.</p>}
                 {result.suggestions.map((s) => <p key={s} className="crawler-verdict-meta">{s}</p>)}
               </>
             )}
@@ -127,16 +133,18 @@ export default function SchemaChecker({ focus = "all" }: { focus?: "all" | "faq"
           {shownEntities.length > 0 && (
             <ul className="extract-list">
               {shownEntities.map((e, i) => {
+                const assessed = focus === "faq" || e.rulesChecked === true;
                 const ok = e.missingRequired.length === 0;
                 return (
-                  <li key={`${e.type}-${i}`} className={ok ? "is-allowed" : "is-blocked"}>
+                  <li key={`${e.type}-${i}`} className={assessed ? ok ? "is-allowed" : "is-blocked" : undefined}>
                     <div className="extract-head">
-                      {ok ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : <XCircle className="h-4 w-4" aria-hidden="true" />}
+                      {!assessed ? <CircleHelp className="h-4 w-4" aria-hidden="true" /> : ok ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : <XCircle className="h-4 w-4" aria-hidden="true" />}
                       <strong>{e.type}</strong>
                     </div>
-                    {e.missingRequired.length > 0 && <p className="extract-issue">Missing required: {e.missingRequired.join(", ")}</p>}
-                    {e.missingRecommended.length > 0 && <p className="extract-text">Recommended to add: {e.missingRecommended.join(", ")}</p>}
-                    {ok && e.missingRecommended.length === 0 && <p className="extract-text">Required and recommended properties present.</p>}
+                    {!assessed && <p className="extract-text">No field checklist is available for this type. Its properties were not assessed.</p>}
+                    {assessed && e.missingRequired.length > 0 && <p className="extract-issue">{focus === "faq" ? "Missing required" : "Missing checked fields"}: {e.missingRequired.join(", ")}</p>}
+                    {assessed && e.missingRecommended.length > 0 && <p className="extract-text">Optional fields to review: {e.missingRecommended.join(", ")}</p>}
+                    {assessed && ok && e.missingRecommended.length === 0 && <p className="extract-text">All fields in this tool&apos;s checklist are present.</p>}
                   </li>
                 );
               })}
@@ -146,7 +154,8 @@ export default function SchemaChecker({ focus = "all" }: { focus?: "all" | "faq"
           <div className="llms-tool-cta">
             <p>{focus === "faq"
               ? "FAQPage markup does not create a Google FAQ rich result. For wider crawlability, metadata, and content checks, try the AEO readiness scan."
-              : "This reads JSON-LD only. See how the page scores across 25 AI visibility signals, including schema."}</p>
+              : "For broader vocabulary checks use Schema Markup Validator, or Google’s Rich Results Test for supported search features. The AEO scan adds 25 readiness checks; a score does not prove AI citations."}</p>
+            {focus === "all" && <p><a href="https://validator.schema.org/">Schema Markup Validator</a>{" · "}<a href="https://search.google.com/test/rich-results">Google Rich Results Test</a></p>}
             <Link href="/#scanner" className="btn btn-primary">Run a free AEO scan</Link>
           </div>
         </div>

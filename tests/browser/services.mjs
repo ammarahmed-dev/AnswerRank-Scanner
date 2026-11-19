@@ -408,6 +408,90 @@ try {
   await page.unroute('**/api/tools/ai-crawler-check');
   checks.push('Crawler tool desktop/mobile: submitted page scope, search versus training/reuse rule labels, HTTP404 defaults and unavailable retry without stale verdict; FAQ/schema agree; no actual crawl or inclusion claim');
 
+  // Schema coverage is different from JSON syntax. All responses are synthetic and local.
+  let schemaOutcome = 'unsupported';
+  const checkedEntity = { type: 'Organization', rulesChecked: true, missingRequired: [], missingRecommended: [] };
+  const unassessedEntity = { type: 'Recipe', rulesChecked: false, missingRequired: [], missingRecommended: [] };
+  const schemaFixtures = {
+    unsupported: { title: 'Types detected; field checks unavailable', tone: 'warn', entities: [unassessedEntity] },
+    mixed: { title: 'Checked fields present; some types unassessed', tone: 'warn', entities: [checkedEntity, unassessedEntity] },
+    checked: { title: 'Checked fields present', tone: 'good', entities: [checkedEntity] },
+    missing: { title: 'Checked fields need review', tone: 'warn', entities: [{ ...checkedEntity, missingRequired: ['url'] }] },
+    untyped: { title: 'JSON parsed; no typed entities found', tone: 'warn', entities: [] },
+    syntax: { title: 'JSON-LD syntax errors found', tone: 'bad', entities: [checkedEntity] },
+    absent: { title: 'No JSON-LD blocks found', tone: 'warn', entities: [] },
+  };
+  await page.route('**/api/tools/schema-checker', async route => {
+    assert.equal(route.request().method(), 'POST');
+    assert.equal(route.request().postDataJSON().url, 'https://schema.example.invalid/page');
+    if (schemaOutcome === 'error') return route.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ error: 'Synthetic schema fetch unavailable. Try again.' }) });
+    const entities = schemaOutcome === 'faq' ? [{ type: 'FAQPage', rulesChecked: true, missingRequired: [], missingRecommended: [] }] : schemaFixtures[schemaOutcome].entities;
+    const types = entities.map(entity => entity.type);
+    const blocks = schemaOutcome === 'absent' ? [] : [{ index: 1, valid: true, types }];
+    if (schemaOutcome === 'syntax') blocks.push({ index: 2, valid: false, types: [], error: 'Synthetic JSON parse error' });
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ url: 'https://schema.example.invalid/page', blocks, types, entities, suggestions: [] }) });
+  });
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await goto('/tools/schema-checker');
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/tools/schema-checker');
+    await page.getByRole('textbox', { name: 'Page URL', exact: true }).fill('https://schema.example.invalid/page');
+    for (const outcome of Object.keys(schemaFixtures)) {
+      schemaOutcome = outcome;
+      await page.getByRole('button', { name: 'Check schema', exact: true }).click();
+      await until(async () => await page.locator('.crawler-verdict strong').textContent() === schemaFixtures[outcome].title, 'schema coverage summary');
+      assert(await page.locator(`.crawler-verdict-${schemaFixtures[outcome].tone}`).count() === 1);
+      const coverage = page.locator('.schema-check-coverage');
+      assert.equal(await coverage.innerText(), `Field checklists applied to ${schemaFixtures[outcome].entities.filter(entity => entity.rulesChecked).length} of ${schemaFixtures[outcome].entities.length} extracted top-level/@graph type declarations.`);
+      assert.match(await page.locator('.crawler-verdict').innerText(), /Nested entities are not generally inspected/);
+      // Document overflow can miss clipped inline text: check every rendered glyph in the
+      // coverage paragraph after each result transition, at desktop and both mobile widths.
+      const clippedCharacters = await coverage.evaluate(el => {
+        const bounds = el.getBoundingClientRect();
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        const clipped = [];
+        while (walker.nextNode()) {
+          const text = walker.currentNode;
+          for (let i = 0; i < text.textContent.length; i++) {
+            if (!text.textContent[i].trim()) continue;
+            const range = document.createRange();
+            range.setStart(text, i);
+            range.setEnd(text, i + 1);
+            for (const rect of range.getClientRects()) {
+              if (rect.left < bounds.left - 1 || rect.right > bounds.right + 1 || rect.top < bounds.top - 1 || rect.bottom > bounds.bottom + 1) clipped.push(text.textContent[i]);
+            }
+          }
+        }
+        return clipped;
+      });
+      assert.deepEqual(clippedCharacters, [], `${outcome} coverage glyphs stay within their paragraph at ${width}px`);
+      if (outcome === 'unsupported' || outcome === 'mixed') {
+        const recipe = page.locator('.extract-list li').filter({ has: page.getByText('Recipe', { exact: true }) });
+        assert.match(await recipe.innerText(), /properties were not assessed/);
+        assert.equal(await recipe.getAttribute('class'), null);
+      }
+      if (outcome === 'untyped' || outcome === 'absent') assert.equal(await page.locator('.extract-list').count(), 0);
+      if (outcome === 'syntax') assert.match(await page.locator('.extract-list').first().innerText(), /not valid JSON/);
+      assert.equal(await page.getByRole('link', { name: 'Schema Markup Validator', exact: true }).getAttribute('href'), 'https://validator.schema.org/');
+      await noOverflow();
+      if (['unsupported', 'mixed', 'untyped', 'checked'].includes(outcome)) await screenshot(`schema-${outcome}-${width}`, true);
+    }
+    schemaOutcome = 'error';
+    await page.getByRole('button', { name: 'Check schema', exact: true }).click();
+    await page.getByRole('alert').filter({ hasText: 'Synthetic schema fetch unavailable' }).waitFor();
+    assert.equal(await page.locator('.llms-tool-result').count(), 0, 'failed retry must not show stale coverage');
+    await noOverflow();
+    schemaOutcome = 'faq';
+    await goto('/tools/faq-schema-validator');
+    await page.getByRole('textbox', { name: 'Page URL', exact: true }).fill('https://schema.example.invalid/page');
+    await page.getByRole('button', { name: 'Check FAQ schema', exact: true }).click();
+    await until(async () => await page.locator('.crawler-verdict strong').textContent() === '1 FAQPage declaration found with required fields', 'FAQ mode remains focused');
+    assert.equal(await page.getByText('Types detected; field checks unavailable', { exact: true }).count(), 0);
+    await noOverflow();
+  }
+  await page.unroute('**/api/tools/schema-checker');
+  checks.push('Schema checker desktop/mobile: explicit top-level/@graph checked/unassessed coverage and glyph bounds at 1280/390/320, mixed and untyped/absent/syntax states, valid checklist result, failed retry without stale coverage, official validator links; shared FAQ mode preserved');
+
   assert.deepEqual(errors, [], 'Browser page errors');
   await writeFile(`${output}/checks.json`, JSON.stringify({ checks, pageErrors: errors, synthetic: true }, null, 2));
   console.log(JSON.stringify({ passed: checks, pageErrors: errors, screenshots: output }));

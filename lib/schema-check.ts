@@ -2,15 +2,21 @@ import * as cheerio from "cheerio";
 
 /**
  * JSON-LD inspection for the free schema checker: parses every ld+json block, lists the entity
- * types, and flags missing required/recommended properties for the types AI engines lean on.
- * Property lists follow schema.org and Google's structured data docs (simplified). Microdata and
- * RDFa are not read.
+ * types, and applies a small field-presence checklist where one is available. These are tool
+ * heuristics, not universal schema.org requirements or a Google eligibility test. Microdata and
+ * RDFa are not read; JSON-LD contexts are not expanded.
  */
 
 type Json = Record<string, unknown>;
 
 export type SchemaBlock = { index: number; valid: boolean; error?: string; types: string[] };
-export type SchemaEntity = { type: string; missingRequired: string[]; missingRecommended: string[] };
+export type SchemaEntity = {
+  type: string;
+  /** Explicit coverage; absent in an older response means unassessed, not a pass. */
+  rulesChecked?: boolean;
+  missingRequired: string[];
+  missingRecommended: string[];
+};
 export type SchemaCheckResult = {
   blocks: SchemaBlock[];
   entities: SchemaEntity[];
@@ -107,14 +113,15 @@ export function checkSchema(html: string): SchemaCheckResult {
           for (const v of values) if (isObject(v)) typesOf(v).forEach((t) => nestedTypes.add(t));
         }
         for (const type of typesOf(node)) {
-          const spec = SPECS[type] ?? SPECS[ALIASES[type] ?? ""];
+          const checklist = Object.hasOwn(ALIASES, type) ? ALIASES[type] : type;
+          const spec = Object.hasOwn(SPECS, checklist) ? SPECS[checklist] : undefined;
           if (!spec) {
-            entities.push({ type, missingRequired: [], missingRecommended: [] });
+            entities.push({ type, rulesChecked: false, missingRequired: [], missingRecommended: [] });
             continue;
           }
           const missingRequired = spec.required.filter((p) => !hasValue(node[p]));
           if (type === "FAQPage" && !missingRequired.length) missingRequired.push(...faqProblems(node));
-          entities.push({ type, missingRequired, missingRecommended: spec.recommended.filter((p) => !hasValue(node[p])) });
+          entities.push({ type, rulesChecked: true, missingRequired, missingRecommended: spec.recommended.filter((p) => !hasValue(node[p])) });
         }
       }
     } catch (err) {
@@ -126,7 +133,7 @@ export function checkSchema(html: string): SchemaCheckResult {
   const has = (...names: string[]) => names.some((n) => types.includes(n) || nestedTypes.has(n));
   const suggestions: string[] = [];
   if (!blocks.length) suggestions.push("No JSON-LD structured data found. Add Organization and WebSite markup to the homepage and Article markup to posts.");
-  if (blocks.some((b) => !b.valid)) suggestions.push("Fix the JSON-LD blocks that fail to parse. Invalid markup is ignored entirely.");
+  if (blocks.some((b) => !b.valid)) suggestions.push("Fix the blocks that fail to parse. Other parseable blocks are listed separately.");
   if (blocks.length && !has("Organization", "LocalBusiness", "Person")) suggestions.push("Add Organization (or LocalBusiness / Person) markup so AI engines can identify who publishes the page.");
   if (blocks.length && !has("WebSite", "WebPage", "Article", "BlogPosting", "NewsArticle", "Product", "SoftwareApplication")) suggestions.push("Add markup that describes the page itself (WebPage, Article, Product or SoftwareApplication).");
   if (blocks.length && !has("FAQPage")) suggestions.push("If the page answers common questions, add FAQPage markup that matches the visible Q&A.");
