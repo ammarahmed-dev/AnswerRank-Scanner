@@ -108,8 +108,9 @@ export default function SchemaChecker({ focus = "all" }: { focus?: "all" | "faq"
               </>
             ) : (
               <>
-                <p>JSON syntax: {result.blocks.filter((block) => block.valid).length} of {result.blocks.length} blocks parsed.
-                  {" "}Field checklists applied to {summary?.checked} of {result.entities.length} typed declarations.</p>
+                <p>{`JSON syntax: ${result.blocks.filter((block) => block.valid).length} of ${result.blocks.length} blocks parsed.`}</p>
+                <p className="schema-check-coverage">{`Field checklists applied to ${summary?.checked} of ${result.entities.length} extracted top-level/@graph type declarations.`}</p>
+                <p className="crawler-verdict-meta">Nested entities are not generally inspected. FAQPage question and answer fields have specific checks.</p>
                 {result.types.length > 0 && <p>{result.types.join(", ")}</p>}
                 <p className="crawler-verdict-meta">Checks JSON syntax and selected field presence only. Property value types, context expansion, visible-content accuracy and Google rich-result eligibility are not verified.</p>
                 {!result.blocks.length && <p className="crawler-verdict-meta">Microdata, RDFa or markup added after the fetched HTML may still exist.</p>}

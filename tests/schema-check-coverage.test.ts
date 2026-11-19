@@ -30,6 +30,13 @@ describe("schema check coverage", () => {
     expect(schemaCheckSummary(result)).toEqual({ tone: "warn", title: "Checked fields present; some types unassessed", checked: 1, unassessed: 1 });
   });
 
+  it("counts extracted top-level and graph type declarations without implying nested coverage", () => {
+    const result = checkSchema(page({ "@graph": [{ ...org, founder: { "@type": "Person" } }, { "@type": "Recipe", author: { "@type": "Person" } }] }));
+    expect(result.types).toEqual(["Organization", "Recipe"]);
+    expect(result.entities.map(entity => entity.type)).toEqual(["Organization", "Recipe"]);
+    expect(schemaCheckSummary(result)).toMatchObject({ checked: 1, unassessed: 1 });
+  });
+
   it("applies the parent checklist to full schema.org URL aliases", () => {
     const result = checkSchema(page({ ...org, "@type": "https://schema.org/Corporation" }));
     expect(result.entities[0].rulesChecked).toBe(true);

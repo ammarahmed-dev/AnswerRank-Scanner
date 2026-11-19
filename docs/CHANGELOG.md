@@ -1,3 +1,11 @@
+# 2026-11-19 - Show actual schema-checker coverage
+
+PR #91 fixes unsupported JSON-LD types receiving a false pass and prototype-named types producing false parse failures. Results now separate syntax from selected field presence, report extracted top-level/@graph type coverage, mark unsupported/mixed/untyped states cautiously, explain nested-entity limits and link to official validators. Failed retries clear stale results. Shared FAQ behavior, existing titles/canonicals, field lists, fetching/quota and scanner scoring stay unchanged.
+
+Twenty new parser/coverage tests include extraction-scope boundaries; three selected regressions fail the prior parser. Local validation passes: 1,145 tests / 103 files, four selector tests, type checking, lint (18 existing warnings), 19-file content-link validation and a fresh production build. Isolated browser CI tests all result/retry states at 1280/390/320 pixels with character bounds and a shared FAQ control; native-resolution screenshots require review before merge. Local Chromium download failed, so no local browser pass is claimed. Verify the merged commit's Vercel status and public routes before calling this live.
+
+Fresh private finalized GSC evidence supports improving the existing utility; no raw metrics enter this release and no ranking, AI-citation or conversion gain is claimed. Content Draft provider authentication (Issue #88), actual delivery/analytics acceptance and the full audit remain open.
+
 # 2026-11-18 - Apply the Next.js November security patch
 
 Pin Next.js and eslint-config-next to 16.4.5 and update only their matching framework/compiler packages in the lockfile. The production build identified 16.4.3 as affected; the official 3 November release supplies the relevant security fixes. This takes precedence over the prepared schema-checker coverage improvement, which remains separate draft work. No broad npm update, major upgrade, app logic, auth/payment policy or customer-data change.

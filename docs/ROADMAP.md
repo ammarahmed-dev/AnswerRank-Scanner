@@ -285,4 +285,11 @@ Fresh authorized HYPD retrieval compared finalized Web data for 19 October-15 No
 The latest 16 November Content Draft run (43897005212) skipped generation because no unpublished topic met its evidence threshold. That successful run did not test Anthropic auth, so Issue #88 remains unresolved. No secret edits, provider calls, schedule changes or new automated content work. Next review: final deployed patch health, prepared schema coverage/browser review, and comparable organic page/query evidence once enough finalized post-change data exists. Full audit and actual conversion/delivery acceptance remain unfinished.
 
 
-- [ ] (A11/A17 prepared follow-up) Review and release the separate schema-checker coverage draft after security patch verification: unsupported types must not receive a false pass; test actual browser coverage and shared FAQ mode. Reuse the existing page and fresh private page/query evidence; no new keyword page or title churn.
+- [x] (A11/A17, PR #91) Explicit schema-checker field coverage: unsupported types remain unassessed; prototype-named types do not invent parse failures. Extracted top-level/@graph scope and nested limits are visible; desktop/mobile result, retry and FAQ control checks gate release. Reuse the existing page, without a new keyword page or title churn.
+
+
+## Daily growth/product review - 19 November 2026
+
+Main CI, uptime and GitHub Vercel status were healthy on the security-patched base. Continue the existing PR #91 claim rather than opening overlapping schema work. Fresh authorized HYPD final-Web evidence across consecutive equal 28-day windows, property totals, page/query comparisons, daily trends and country/device segments supports improving the existing schema tool's accuracy. Keep private rows and metrics outside the repository; query anonymization, mixed average positions and small click counts limit conclusions. No causal release attribution is established.
+
+Resolve the draft review by explicitly labelling extracted top-level/@graph type coverage and checking mobile character bounds plus native-resolution captures. Existing FAQ tool and guide releases are not repeated. The latest inspected Content Draft success skipped generation, so no provider-auth fix is inferred from it; do not rerun paid generation or alter secrets. Next measurement: compare matching finalized post-release schema-page/query windows, separating FAQ intent and device mix, once enough data exists. Actual analytics routing/consent/receipt and service notification acceptance remain open; full audit unfinished.

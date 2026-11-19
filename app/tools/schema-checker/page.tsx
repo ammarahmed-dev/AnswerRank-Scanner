@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "What does the schema checker look at?",
-    a: "It fetches the page, reads every JSON-LD block, tells you whether each one parses, lists the schema.org types it finds and flags missing fields from this tool's checklists for common types like Organization, WebSite, Article, FAQPage, Product and SoftwareApplication.",
+    a: "It fetches the page, reads every JSON-LD block, tells you whether each one parses, lists types on top-level and @graph declarations and flags missing fields from this tool's checklists for common types like Organization, WebSite, Article, FAQPage, Product and SoftwareApplication. Nested entities are not generally inspected, apart from specific FAQPage question and answer checks.",
   },
   {
     q: "Is this the same as Google's Rich Results Test?",
