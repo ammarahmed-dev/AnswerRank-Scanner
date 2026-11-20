@@ -35,6 +35,7 @@ export default function MetaTagChecker() {
     if (!url.trim() || state === "loading") return;
     setState("loading");
     setError("");
+    setResult(null);
     setImageFailed(false);
     try {
       const res = await fetch("/api/tools/meta-tag-checker", {
@@ -79,15 +80,16 @@ export default function MetaTagChecker() {
           <div className={`crawler-verdict crawler-verdict-${fails ? "bad" : warns ? "warn" : "good"}`}>
             <strong>{fails} problem{fails === 1 ? "" : "s"}, {warns} warning{warns === 1 ? "" : "s"}</strong>
             <p className="crawler-verdict-meta">{result.url}</p>
+            <p className="crawler-verdict-meta">HTML meta inspection only: repeated generic robots and Googlebot tags are checked. HTTP X-Robots-Tag headers, other crawler-specific tags, robots.txt access and actual indexing are not verified.</p>
           </div>
 
           <div className="meta-previews">
-            <div className="meta-serp" aria-label="Search result preview">
+            <div className="meta-serp" aria-label="Illustrative search result preview">
               <span className="meta-serp-url">{host(result.url)}</span>
               <span className="meta-serp-title">{clip(v.title || "(no title)", 60)}</span>
               <span className="meta-serp-desc">{clip(v.description || "No meta description. Search engines will pick text from the page.", 160)}</span>
             </div>
-            <div className="meta-card" aria-label="Social card preview">
+            <div className="meta-card" aria-label="Illustrative social card preview">
               {v.ogImage && !imageFailed ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={v.ogImage} alt="" referrerPolicy="no-referrer" onError={() => setImageFailed(true)} />
@@ -115,7 +117,7 @@ export default function MetaTagChecker() {
           </ul>
 
           <div className="llms-tool-cta">
-            <p>Meta tags are 5 of 25 AI visibility signals. See how the whole page scores.</p>
+            <p>The scan adds 25 readiness checks. Metadata and illustrative previews do not prove indexing, rankings or AI citations.</p>
             <Link href="/#scanner" className="btn btn-primary">Run a free AEO scan</Link>
           </div>
         </div>

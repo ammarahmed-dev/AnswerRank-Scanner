@@ -13,6 +13,8 @@ export type MetaValues = {
   description: string;
   canonical: string;
   robots: string;
+  /** All Googlebot HTML meta values; optional for older client fixtures/responses. */
+  googlebotRobots?: string;
   lang: string;
   viewport: string;
   ogTitle: string;
@@ -32,12 +34,15 @@ const SCANNER_CHECKS = ["title", "meta_desc", "canonical", "og_tags", "og_image"
 export function extractMeta(html: string): MetaValues {
   const $ = cheerio.load(html);
   const meta = (selector: string) => ($(selector).first().attr("content") ?? "").trim();
+  const allMeta = (name: string) => $(`meta[name="${name}" i]`).toArray()
+    .map((node) => ($(node).attr("content") ?? "").trim()).filter(Boolean).join(", ");
   const og = (name: string) => meta(`meta[property="og:${name}" i], meta[name="og:${name}" i]`);
   return {
     title: $("title").first().text().replace(/\s+/g, " ").trim(),
     description: meta('meta[name="description" i]'),
     canonical: ($('link[rel="canonical" i]').first().attr("href") ?? "").trim(),
-    robots: meta('meta[name="robots" i]'),
+    robots: allMeta("robots"),
+    googlebotRobots: allMeta("googlebot"),
     lang: ($("html").attr("lang") ?? "").trim(),
     viewport: meta('meta[name="viewport" i]'),
     ogTitle: og("title"),
@@ -55,12 +60,24 @@ export function buildMetaReport(html: string, url: string): MetaReport {
   const scanner = runDeterministicChecks(parseHtmlToScrapedData(html, url)).filter((c) => SCANNER_CHECKS.includes(c.id));
   const checks: MetaCheck[] = scanner.map((c) => ({ id: c.id, label: c.label, status: c.status, detail: c.detail }));
 
-  const noindex = /(^|[\s,])(noindex|none)([\s,]|$)/i.test(values.robots);
-  checks.push(
-    noindex
-      ? { id: "robots_meta", label: "Robots meta tag", status: "fail", detail: `The page is marked "${values.robots}", so search and AI engines are told not to index it.` }
-      : { id: "robots_meta", label: "Robots meta tag", status: "pass", detail: values.robots ? `Robots meta is "${values.robots}", which allows indexing.` : "No robots meta tag, so the page can be indexed." }
-  );
+  // Combine repeated tags; an earlier index/all cannot override a later restriction.
+  // Ignore `none` used as a directive argument, e.g. max-image-preview: none.
+  const blocksIndexing = (value: string) => value.split(",").some((rule) => {
+    const tokens = rule.trim().split(/\s+/);
+    return tokens.some((token, i) => /^(?:noindex|none)$/i.test(token) && !tokens[i - 1]?.endsWith(":"));
+  });
+  const genericNoindex = blocksIndexing(values.robots);
+  const googlebotNoindex = blocksIndexing(values.googlebotRobots ?? "");
+  const evidence = [values.robots && `robots="${values.robots}"`, values.googlebotRobots && `googlebot="${values.googlebotRobots}"`].filter(Boolean).join("; ");
+  checks.push({
+    id: "robots_meta", label: "Robots meta tags (generic / Googlebot)",
+    status: genericNoindex || googlebotNoindex ? "fail" : "pass",
+    detail: genericNoindex
+      ? `An inspected generic robots meta tag contains noindex or none. This requests exclusion from search indexing when crawlers can read it. ${evidence}`
+      : googlebotNoindex
+        ? `An inspected Googlebot meta tag contains noindex or none. This requests exclusion from Google Search indexing; it does not establish other engines' behavior. ${evidence}`
+        : `No noindex or none directive detected in the inspected generic/Googlebot HTML meta tags.${evidence ? ` ${evidence}` : " No matching nonempty meta values found."} This is not confirmation that the page can be indexed.`,
+  });
   checks.push(
     values.viewport
       ? { id: "viewport", label: "Viewport", status: "pass", detail: "Viewport meta tag is set for mobile devices." }

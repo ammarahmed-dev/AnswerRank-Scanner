@@ -2,6 +2,11 @@
 
 Market and product research that feeds `docs/ROADMAP.md`. Newest first. Cite sources.
 
+## Robots meta evidence - 20 November 2026
+
+[Google's current robots-meta specification](https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag) documents repeated rules, restrictive conflicts, generic versus Googlebot scope, readable-page prerequisites, header controls and bare `none` versus preview arguments. Apply this to the existing meta tool's HTML-only findings; noindex absence is not proof of indexability. Label simulated previews and readiness separately from actual search/AI appearances. Preserve scanner scoring and fetch behavior. Private GSC evidence supports this accuracy task, with no causal performance claim.
+
+
 ## Crawler-tool evidence boundary - 27 October 2026
 
 Source review for A06/A17: robots rules describe crawl preferences, not observed visits or citations. OpenAI separates OAI-SearchBot, GPTBot and user-triggered ChatGPT-User; a search opt-out can still leave navigational links, and user-triggered requests may not follow robots rules. Google-Extended controls specified Gemini training/grounding uses, independently of Google Search inclusion/ranking. Do not present a training preference as confirmed removal of existing model data or a search permission as observed inclusion.
