@@ -492,6 +492,50 @@ try {
   await page.unroute('**/api/tools/schema-checker');
   checks.push('Schema checker desktop/mobile: explicit top-level/@graph checked/unassessed coverage and glyph bounds at 1280/390/320, mixed and untyped/absent/syntax states, valid checklist result, failed retry without stale coverage, official validator links; shared FAQ mode preserved');
 
+  // Meta robots verdicts are HTML evidence, not proof of indexability.
+  let metaOutcome = 'generic';
+  const metaFixtures = {
+    generic: { status: 'fail', detail: 'An inspected generic robots meta tag contains noindex or none. This requests exclusion from search indexing when crawlers can read it. robots="index, noindex"' },
+    googlebot: { status: 'fail', detail: "An inspected Googlebot meta tag contains noindex or none. This requests exclusion from Google Search indexing; it does not establish other engines' behavior. googlebot=\"index, noindex\"" },
+    clear: { status: 'pass', detail: 'No noindex or none directive detected in the inspected generic/Googlebot HTML meta tags. This is not confirmation that the page can be indexed.' },
+  };
+  await page.route('**/api/tools/meta-tag-checker', route => {
+    assert.equal(route.request().postDataJSON().url, 'https://meta.example.invalid/page');
+    if (metaOutcome === 'error') return route.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ error: 'Synthetic meta fetch unavailable. Try again.' }) });
+    const fixture = metaFixtures[metaOutcome];
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      url: 'https://meta.example.invalid/page',
+      values: { title: 'Example page title', description: 'Example page description', ogTitle: 'Example social title', ogDescription: 'Example social description', ogImage: '' },
+      checks: [{ id: 'robots_meta', label: 'Robots meta tags (generic / Googlebot)', status: fixture.status, detail: fixture.detail }],
+    }) });
+  });
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await goto('/tools/meta-tag-checker');
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/tools/meta-tag-checker');
+    await page.getByRole('textbox', { name: 'Page URL', exact: true }).fill('https://meta.example.invalid/page');
+    for (const outcome of Object.keys(metaFixtures)) {
+      metaOutcome = outcome;
+      await page.getByRole('button', { name: 'Check meta tags', exact: true }).click();
+      await until(async () => (await page.locator('.extract-list').innerText()).includes(metaFixtures[outcome].detail), 'meta robots result');
+      assert.match(await page.locator('.crawler-verdict').innerText(), /HTTP X-Robots-Tag headers/);
+      assert.match(await page.locator('.crawler-verdict').innerText(), /actual indexing are not verified/);
+      assert.equal(await page.getByLabel('Illustrative search result preview', { exact: true }).count(), 1);
+      assert.equal(await page.getByLabel('Illustrative social card preview', { exact: true }).count(), 1);
+      assert.equal(await page.locator('.extract-list .is-blocked').count(), outcome === 'clear' ? 0 : 1);
+      assert.equal(await page.locator('.llms-tool-cta a').getAttribute('href'), '/#scanner');
+      await noOverflow();
+      await screenshot(`meta-${outcome}-${width}`, true);
+    }
+    metaOutcome = 'error';
+    await page.getByRole('button', { name: 'Check meta tags', exact: true }).click();
+    await page.getByRole('alert').filter({ hasText: 'Synthetic meta fetch unavailable' }).waitFor();
+    assert.equal(await page.locator('.llms-tool-result').count(), 0, 'failed meta retry must not show old result');
+    await noOverflow();
+  }
+  await page.unroute('**/api/tools/meta-tag-checker');
+  checks.push('Meta checker desktop/mobile: generic/Googlebot restriction versus scoped no-noindex finding, HTML/header/crawl/indexing limits, illustrative previews, scanner link and failed retry without stale result');
+
   assert.deepEqual(errors, [], 'Browser page errors');
   await writeFile(`${output}/checks.json`, JSON.stringify({ checks, pageErrors: errors, synthetic: true }, null, 2));
   console.log(JSON.stringify({ passed: checks, pageErrors: errors, screenshots: output }));

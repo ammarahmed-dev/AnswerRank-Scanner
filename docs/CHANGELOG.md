@@ -1,3 +1,11 @@
+# 2026-11-20 - Correct robots-meta findings in the meta checker
+
+The existing utility now combines repeated generic robots tags and Googlebot tags, catches later noindex/none, and keeps crawler scope explicit. `max-image-preview: none` is not page noindex. Clear findings no longer promise indexability; HTTP headers, other crawler tags, robots.txt access and actual indexing remain unverified. Results/FAQ explain the limits, previews are illustrative, and failed retries clear stale results. Scanner grades, scores, title/canonical, thresholds, fetching/quota and software rights are unchanged.
+
+Sixteen new unit cases cover repeated/targeted directives and shared grading; fourteen selected regressions fail the prior implementation. Local validation passes: 1,161 tests / 103 files, four selector tests, typecheck, lint (18 existing warnings), 19-file content links and a fresh production build. Isolated built-preview CI covers result/retry states and preview/scanner links at 1280/390; inspect screenshots before merge and verify same-SHA Vercel/public routes before calling it live. No production tool submission/provider/lead/email call.
+
+Fresh private finalized GSC evidence supports the existing tool, without a duplicate page or title churn. No ranking/AI-inclusion/conversion improvement is claimed. The 19 November Content Draft success again skipped generation; Issue #88 remains unresolved. Full audit and actual delivery/analytics acceptance remain open.
+
 # 2026-11-19 - Show actual schema-checker coverage
 
 PR #91 fixes unsupported JSON-LD types receiving a false pass and prototype-named types producing false parse failures. Results now separate syntax from selected field presence, report extracted top-level/@graph type coverage, mark unsupported/mixed/untyped states cautiously, explain nested-entity limits and link to official validators. Failed retries clear stale results. Shared FAQ behavior, existing titles/canonicals, field lists, fetching/quota and scanner scoring stay unchanged.

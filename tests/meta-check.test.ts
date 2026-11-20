@@ -44,4 +44,45 @@ describe("meta checker", () => {
     expect(byId(report).robots_meta).toBe("fail");
     expect(byId(report).og_url_match).toBe("warn");
   });
+
+  it.each([
+    ['<meta name="robots" content="index,follow"><meta name="robots" content="noindex">', 'generic robots'],
+    ['<meta name="robots" content="noindex"><meta name="robots" content="index">', 'generic robots'],
+    ['<meta name="robots"><meta name="ROBOTS" content="NONE">', 'generic robots'],
+    ['<meta name="robots" content="index"><meta name="googlebot" content="noindex">', 'Googlebot'],
+    ['<meta name="GoogleBot" content="index"><meta name="GOOGLEBOT" content="None">', 'Googlebot'],
+    ['<meta name="googlebot" content="noindex"><meta name="robots" content="all">', 'Googlebot'],
+    ['<meta name="robots" content="INDEX NOINDEX FOLLOW">', 'generic robots'],
+  ])("detects restrictive matching tags regardless of earlier/later index: %s", (tags, scope) => {
+    const report = buildMetaReport(good.replace('</head>', `${tags}</head>`), 'https://example.com/');
+    const check = report.checks.find(c => c.id === 'robots_meta')!;
+    expect(check.status).toBe('fail');
+    expect(check.detail).toContain(scope);
+    expect(check.detail).not.toMatch(/search and AI engines/);
+    // Additional tool-only diagnostics must not alter the shared scanner grades.
+    expect(report.checks.filter(c => ['title', 'meta_desc', 'canonical', 'og_tags', 'og_image'].includes(c.id)))
+      .toEqual(buildMetaReport(good, 'https://example.com/').checks.filter(c => ['title', 'meta_desc', 'canonical', 'og_tags', 'og_image'].includes(c.id)));
+  });
+
+  it.each(['', 'index, follow', 'max-image-preview:none', 'max-image-preview: none', 'noimageindex, nosnippet', 'max-snippet:0', 'indexifembedded'])('does not mistake %j for a page noindex or promise indexability', content => {
+    const report = buildMetaReport(good.replace('</head>', `<meta name="robots" content="${content}"></head>`), 'https://example.com/');
+    const check = report.checks.find(c => c.id === 'robots_meta')!;
+    expect(check.status).toBe('pass');
+    expect(check.detail).toContain('not confirmation that the page can be indexed');
+    expect(check.detail).not.toContain('allows indexing');
+  });
+
+  it('retains all matching values and distinguishes Googlebot from other crawler targets', () => {
+    const tags = '<meta name="robots" content="index"><meta name="ROBOTS" content="follow"><meta name="googlebot" content="max-snippet:20"><meta name="googlebot-news" content="noindex"><meta name="otherbot" content="noindex">';
+    const report = buildMetaReport(good.replace('</head>', `${tags}</head>`), 'https://example.com/');
+    expect(report.values.robots).toBe('index, follow');
+    expect(report.values.googlebotRobots).toBe('max-snippet:20');
+    expect(byId(report).robots_meta).toBe('pass');
+  });
+
+  it('reads a matching tag in the body, including case and whitespace', () => {
+    const report = buildMetaReport(good.replace('</body>', '<meta name="Googlebot" content="  NoInDeX , follow  "></body>'), 'https://example.com/');
+    expect(byId(report).robots_meta).toBe('fail');
+  });
+
 });

@@ -16,11 +16,11 @@ export const metadata: Metadata = buildPageMetadata({
 const faqs = [
   {
     q: "How do I check my meta tags online?",
-    a: "Enter a page URL above. The checker reads the title, meta description, canonical, Open Graph and Twitter tags, shows how the page looks in search results and social cards, and lists what is missing or too long.",
+    a: "Enter a page URL above. The checker reads the title, meta description, canonical, Open Graph and Twitter tags, shows illustrative search and social previews, and lists what is missing or too long.",
   },
   {
     q: "What does the meta tag checker look at?",
-    a: "The title tag, meta description, canonical URL, Open Graph title, description and image, the robots meta tag, viewport, page language and Twitter card. It also shows how the page appears as a search result and a social card.",
+    a: "The title tag, meta description, canonical URL, Open Graph title, description and image, repeated generic robots and Googlebot meta tags, viewport, page language and Twitter card. Previews are illustrative; engines may use different titles, descriptions or images. HTTP X-Robots-Tag headers, robots.txt access and actual indexing are not verified.",
   },
   {
     q: "How long should a title and meta description be?",
@@ -32,7 +32,7 @@ const faqs = [
   },
   {
     q: "What does a noindex robots tag do?",
-    a: "It tells search engines not to index the page. If a page you want found has noindex, it will not appear in search results, and AI engines that rely on search indexes can miss it too. The checker flags it as a problem.",
+    a: "A readable generic noindex directive asks search crawlers to exclude the page; a Googlebot-specific directive addresses Google Search. The checker reviews all matching HTML meta tags and flags noindex or none even when another tag says index. Crawlers must access the page to read these instructions. No detected noindex is not proof of indexability or AI inclusion.",
   },
   {
     q: "Is the checker free?",
@@ -68,7 +68,7 @@ export default function MetaTagCheckerPage() {
           <div className="section-intro llms-tool-intro">
             <p className="launch-eyebrow">Free tool</p>
             <h1>Meta Tag Checker</h1>
-            <p>See a page&apos;s title, description, canonical and social tags the way search and AI engines read them, with live search and social previews.</p>
+            <p>Inspect a page&apos;s HTML title, description, canonical, robots and social tags, with illustrative search and social previews.</p>
           </div>
           <MetaTagChecker />
           <div className="llms-tool-faq">
@@ -83,7 +83,8 @@ export default function MetaTagCheckerPage() {
               To interpret each field, read the{" "}
               <Link href="/blog/how-to-check-meta-tags">step-by-step meta tag checking guide</Link>. For related on-page signals, see the{" "}
               <Link href="/blog/technical-aeo-guide">technical AEO guide</Link> and the{" "}
-              <Link href="/tools/schema-checker">schema markup checker</Link>.
+              <Link href="/tools/schema-checker">schema markup checker</Link>. For directive behavior, see{" "}
+              <a href="https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag">Google&apos;s robots meta documentation</a>.
             </p>
           </div>
         </div>
