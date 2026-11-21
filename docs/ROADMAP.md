@@ -305,3 +305,15 @@ Current main, CI/uptime and Vercel were healthy; PR #91 is merged and its claim 
 Combine repeated generic/Googlebot HTML directives and state the noindex-specific finding without promising indexability or AI visibility. Preserve scanner grades, field thresholds and fetching/quota; no HTTP-header/crawl verification is added. Verify result/retry/previews on desktop and mobile, then same-SHA production health. Search Console's meta-page inspection is an older crawl snapshot; the processed sitemap has no reported errors/warnings, not proof every URL is indexed.
 
 The 19 November Content Draft run (44556610139, job 135674247878) succeeded with generation skipped again; Issue #88 provider-auth acceptance remains unresolved. No paid generation rerun or secret changes. Next meaningful check: meta-page/query clicks and CTR in matching finalized post-release windows, with device/intent mix considered; preview and noindex correctness are not ranking gains. Actual conversion routing/consent/receipt, service delivery and full audit remain open.
+
+
+- [x] (A11/A17, 21 November) Correct sitemap index analysis: enforce per-file entry limits without treating child totals as a single file, expose selected/parsed/listed coverage, and qualify partial/legacy results. Preserve fetch caps/quota/scanner scoring; verify actual route and mobile states against protocol-backed fixtures.
+
+
+## Daily growth/product decision - 21 November 2026
+
+Main CI, uptime and Vercel were healthy; recent schema/meta releases and claim branches were reviewed rather than duplicated. Fresh private HYPD finalized Web totals, page/query comparisons, country/device and daily alerts cover 22 October-18 November versus 24 September-21 October. Paired sitemap-page queries confirm relevant existing utility intent. The highest justified available task is a demonstrated diagnostic error: an index's combined child URLs were incorrectly tested against one file's 50,000-URL limit, while the result headline obscured the five-child sample. No raw rows or performance metrics enter the public repository; anonymization, tiny click samples and mixed positions prevent release attribution.
+
+Apply the protocol limit separately to each URL file and to the index's child-entry count, while retaining non-limit aggregate diagnostics. Show listed/selected/parsed child entries, scoped totals, partial/failed/legacy caution and neutral parsed-child rows. Parsing is not a validation pass, full XML schema validation, indexing coverage or AI citation evidence. Keep current fetch/byte/child/spot-check/concurrency/time/quota limits and scanner scoring. Actual malformed-XML validation, richer fetch outcomes/provenance and broader crawler acceptance remain separate work.
+
+The latest 19 November Content Draft success still skipped generation; Issue #88 provider authentication remains unverified. No paid rerun, secret, service/billing/auth/data change. Next measurement: matching finalized sitemap-page/query clicks/CTR after enough post-release data, with intent/device mix considered. Production delivery/analytics acceptance, durable recovery/budgets and the full audit remain open.

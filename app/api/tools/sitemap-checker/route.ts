@@ -6,7 +6,7 @@ import { assertPublicUrl, pinnedFetch, safeFetch } from "@/lib/url-safety";
 import { getAuthContext } from "@/lib/auth-server";
 import { commitUsage, getClientKey, releaseUsage, reserveUsage } from "@/lib/usage-limits";
 import { runWithBudget } from "@/lib/batch";
-import { analyzeUrlset, parseSitemap, sitemapsFromRobots, type SitemapEntry, type SitemapIssue } from "@/lib/sitemap-check";
+import { analyzeUrlset, parseSitemap, sitemapEntryLimitIssue, sitemapsFromRobots, type SitemapEntry, type SitemapIndexCoverage, type SitemapIssue } from "@/lib/sitemap-check";
 
 export const runtime = "nodejs";
 export const maxDuration = 45;
@@ -102,11 +102,14 @@ export async function POST(req: Request) {
 
     let entries: SitemapEntry[] = [];
     let children: Child[] = [];
+    let indexCoverage: SitemapIndexCoverage | undefined;
     if (parsedSitemap.kind === "urlset") {
       entries = parsedSitemap.entries;
     } else if (parsedSitemap.kind === "index") {
+      const indexLimitIssue = sitemapEntryLimitIssue(parsedSitemap.children.length, "index");
+      if (indexLimitIssue) issues.push(indexLimitIssue);
       const childUrls = parsedSitemap.children.slice(0, MAX_CHILDREN);
-      if (parsedSitemap.children.length > MAX_CHILDREN) issues.push({ level: "info", message: `The index lists ${parsedSitemap.children.length} sitemaps; the first ${MAX_CHILDREN} were checked.` });
+      if (parsedSitemap.children.length > MAX_CHILDREN) issues.push({ level: "info", message: `The index lists ${parsedSitemap.children.length} sitemaps; the first ${MAX_CHILDREN} were selected for inspection.` });
       const results: Child[] = [];
       await runWithBudget(
         childUrls,
@@ -117,6 +120,8 @@ export async function POST(req: Request) {
             if (res.status !== 200) return void results.push({ url: child, error: `HTTP ${res.status}` });
             const r = parseSitemap(res.text);
             if (r.kind !== "urlset") return void results.push({ url: child, error: r.kind === "invalid" ? r.reason : "Nested sitemap index" });
+            const childLimitIssue = sitemapEntryLimitIssue(r.entries.length, "urlset");
+            if (childLimitIssue) issues.push({ ...childLimitIssue, message: `Child sitemap ${child}: ${childLimitIssue.message}` });
             entries.push(...r.entries);
             results.push({ url: child, urlCount: r.entries.length });
           } catch {
@@ -126,10 +131,11 @@ export async function POST(req: Request) {
         { concurrency: 3, budgetMs: 20_000 }
       );
       children = childUrls.map((u) => results.find((r) => r.url === u) ?? { url: u, error: "Not checked (time budget)" });
+      indexCoverage = { listed: parsedSitemap.children.length, selected: childUrls.length, parsed: children.filter((c) => !c.error).length };
       for (const c of children.filter((x) => x.error)) issues.push({ level: "error", message: `Child sitemap ${c.url} failed: ${c.error}.` });
     }
 
-    const analysis = analyzeUrlset(entries, origin);
+    const analysis = analyzeUrlset(entries, origin, new Date(), 10, parsedSitemap.kind === "index" ? "index-aggregate" : "file");
     issues.push(...analysis.issues);
     const inRobots = robotsSitemaps.some((s) => s.replace(/\/$/, "") === sitemapUrl.replace(/\/$/, ""));
     if (robotsFound && !direct && !inRobots) issues.push({ level: "warning", message: "robots.txt does not reference this sitemap. Add a line: Sitemap: " + sitemapUrl });
@@ -166,6 +172,7 @@ export async function POST(req: Request) {
       inRobots,
       robotsFound,
       children,
+      indexCoverage,
       urlCount: analysis.urlCount,
       uniqueUrlCount: analysis.uniqueUrlCount,
       withLastmod: analysis.withLastmod,

@@ -40,6 +40,16 @@ export function isValidLastmod(value: string): boolean {
   return !Number.isNaN(t);
 }
 
+export type SitemapIndexCoverage = { listed: number; selected: number; parsed: number };
+
+/** A file limit applies to each URL file or index, never to combined child URL totals. */
+export function sitemapEntryLimitIssue(count: number, kind: "urlset" | "index"): SitemapIssue | null {
+  if (count <= MAX_URLS_PER_SITEMAP) return null;
+  return { level: "error", message: kind === "index"
+    ? `${count} child sitemap entries exceeds the 50,000 limit per sitemap index file.`
+    : `${count} URLs exceeds the 50,000 limit per sitemap file. Split it with a sitemap index.` };
+}
+
 export type SitemapIssue = { level: "error" | "warning" | "info"; message: string };
 
 export type SitemapAnalysis = {
@@ -51,13 +61,14 @@ export type SitemapAnalysis = {
   sample: string[];
 };
 
-export function analyzeUrlset(entries: SitemapEntry[], siteOrigin: string, now = new Date(), sampleSize = 10): SitemapAnalysis {
+export function analyzeUrlset(entries: SitemapEntry[], siteOrigin: string, now = new Date(), sampleSize = 10, scope: "file" | "index-aggregate" = "file"): SitemapAnalysis {
   const issues: SitemapIssue[] = [];
   const locs = entries.map((e) => e.loc);
   const unique = new Set(locs);
   const siteHost = new URL(siteOrigin).hostname.replace(/^www\./, "");
 
-  if (entries.length > MAX_URLS_PER_SITEMAP) issues.push({ level: "error", message: `${entries.length} URLs exceeds the 50,000 limit per sitemap file. Split it with a sitemap index.` });
+  const limitIssue = scope === "file" ? sitemapEntryLimitIssue(entries.length, "urlset") : null;
+  if (limitIssue) issues.push(limitIssue);
   if (entries.length === 0) issues.push({ level: "error", message: "The sitemap lists no URLs." });
   if (unique.size < locs.length) issues.push({ level: "warning", message: `${locs.length - unique.size} duplicate URL${locs.length - unique.size === 1 ? "" : "s"} listed.` });
 

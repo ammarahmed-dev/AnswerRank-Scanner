@@ -16,11 +16,11 @@ export const metadata: Metadata = buildPageMetadata({
 const faqs = [
   {
     q: "How do I check my website's sitemap?",
-    a: "Enter your domain above. The checker finds your sitemap through robots.txt or the common default paths, validates the XML, counts the URLs, flags duplicates, wrong domains and odd lastmod dates, and spot-checks a sample of the listed URLs for working status codes.",
+    a: "Enter your domain above. The checker finds your sitemap through robots.txt or the common default paths, parses recognized sitemap elements, counts the inspected URLs, flags duplicates, wrong domains and odd lastmod dates, and spot-checks a sample of the listed URLs for working status codes.",
   },
   {
     q: "What does the sitemap checker test?",
-    a: "It finds your sitemap through robots.txt or the default locations, checks that it is valid XML, counts URLs, flags duplicates, URLs on another domain, http URLs and query-string URLs, validates lastmod dates, follows up to five child sitemaps and spot-checks that listed URLs return a success status.",
+    a: "It finds your sitemap through robots.txt or the default locations, parses recognized sitemap elements, counts inspected URLs, flags duplicates, URLs on another domain, http URLs and query-string URLs, validates lastmod dates, selects up to five child sitemap entries and spot-checks at most eight listed page URLs. Index totals cover parsed children only, with selected/parsed/listed coverage shown. It is not full XML schema validation or an indexing report.",
   },
   {
     q: "Why does a sitemap matter for AI search?",
@@ -36,7 +36,7 @@ const faqs = [
   },
   {
     q: "What are the sitemap limits?",
-    a: "Each sitemap file can hold up to 50,000 URLs and 50 MB uncompressed. Larger sites split into several files listed in a sitemap index.",
+    a: "The protocol permits up to 50,000 page URLs per sitemap and up to 50,000 child sitemap entries per index, with a 50 MB uncompressed file limit. Combined child URL totals may exceed 50,000. This tool has a separate 5 MiB response cap and selects at most five children; capped or failed children are not counted as parsed.",
   },
   {
     q: "Is the checker free?",
@@ -72,7 +72,7 @@ export default function SitemapCheckerPage() {
           <div className="section-intro llms-tool-intro">
             <p className="launch-eyebrow">Free tool</p>
             <h1>Sitemap Checker: Validate Your sitemap.xml</h1>
-            <p>Enter your website and see whether your sitemap is valid, current and trustworthy: URLs, lastmod dates, broken links and robots.txt reference.</p>
+            <p>Inspect recognized sitemap data, URL counts, lastmod dates and sampled links. See which child sitemaps were parsed and where coverage is limited.</p>
           </div>
           <SitemapChecker />
           <div className="llms-tool-faq">
@@ -85,7 +85,7 @@ export default function SitemapCheckerPage() {
             ))}
             <p>
               Related: the <Link href="/tools/robots-txt-generator">robots.txt generator</Link> can add your Sitemap line, and the{" "}
-              <Link href="/blog/technical-aeo-guide">technical AEO guide</Link> covers the rest of the checklist.
+              <Link href="/blog/technical-aeo-guide">technical AEO guide</Link> covers the rest of the checklist. Limits follow the <a href="https://www.sitemaps.org/protocol.html">Sitemaps protocol</a>; tool inspection caps are separate.
             </p>
           </div>
         </div>
