@@ -2,6 +2,11 @@
 
 Market and product research that feeds `docs/ROADMAP.md`. Newest first. Cite sources.
 
+## Sitemap index counting - 21 November 2026
+
+The [Sitemaps protocol](https://www.sitemaps.org/protocol.html#sitemapIndex) and [Google's index-file documentation](https://developers.google.com/search/docs/crawling-indexing/sitemaps/large-sitemaps) distinguish each URL file's 50,000 entries from an index's 50,000 child entries. An index can therefore reference more than 50,000 page URLs across files. Apply limits at file boundaries and label bounded tool samples separately from complete-site coverage. Parsed content and HTTP spot checks do not establish full validation or actual indexing/citations. Private observed utility demand supports this correction, not a performance promise.
+
+
 ## Robots meta evidence - 20 November 2026
 
 [Google's current robots-meta specification](https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag) documents repeated rules, restrictive conflicts, generic versus Googlebot scope, readable-page prerequisites, header controls and bare `none` versus preview arguments. Apply this to the existing meta tool's HTML-only findings; noindex absence is not proof of indexability. Label simulated previews and readiness separately from actual search/AI appearances. Preserve scanner scoring and fetch behavior. Private GSC evidence supports this accuracy task, with no causal performance claim.

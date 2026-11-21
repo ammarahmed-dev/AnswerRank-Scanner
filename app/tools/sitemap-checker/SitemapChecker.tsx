@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Info, Loader2, Map, XCircle } from "lucide-react";
-import type { SitemapIssue } from "@/lib/sitemap-check";
+import type { SitemapIndexCoverage, SitemapIssue } from "@/lib/sitemap-check";
 
 const CLIENT_STORAGE_KEY = "aeocheck_client_id_v1";
 
@@ -14,6 +14,7 @@ type Result = {
   sitemapUrl?: string;
   kind?: "urlset" | "index";
   inRobots?: boolean;
+  indexCoverage?: SitemapIndexCoverage;
   children?: Array<{ url: string; urlCount?: number; error?: string }>;
   urlCount?: number;
   uniqueUrlCount?: number;
@@ -46,6 +47,7 @@ export default function SitemapChecker() {
     if (!url.trim() || state === "loading") return;
     setState("loading");
     setError("");
+    setResult(null);
     try {
       const res = await fetch("/api/tools/sitemap-checker", {
         method: "POST",
@@ -68,7 +70,8 @@ export default function SitemapChecker() {
 
   const errors = result?.issues.filter((i) => i.level === "error").length ?? 0;
   const warnings = result?.issues.filter((i) => i.level === "warning").length ?? 0;
-  const tone = !result?.found || errors ? "bad" : warnings ? "warn" : "good";
+  const partialIndex = result?.kind === "index" && (!result.indexCoverage || result.indexCoverage.parsed < result.indexCoverage.listed);
+  const tone = !result?.found || errors ? "bad" : warnings || partialIndex ? "warn" : "good";
 
   return (
     <div className="surface llms-tool">
@@ -90,18 +93,22 @@ export default function SitemapChecker() {
             {result.found ? (
               <>
                 <strong>
-                  {result.kind === "index" ? "Sitemap index" : "Sitemap"} found: {result.urlCount} URL{result.urlCount === 1 ? "" : "s"}
+                  {result.kind === "index" ? `Sitemap index: ${result.urlCount} URLs in parsed children` : `Sitemap found: ${result.urlCount} URL${result.urlCount === 1 ? "" : "s"}`}
                 </strong>
                 <p>
                   <code>{result.sitemapUrl}</code>
                 </p>
+                {result.kind === "index" && <p className="sitemap-index-coverage">{result.indexCoverage
+                  ? `Parsed ${result.indexCoverage.parsed} of ${result.indexCoverage.listed} listed child entries; ${result.indexCoverage.selected} selected within the five-child limit. Totals cover parsed children only.`
+                  : "Child coverage is unavailable for this result. Totals may be partial; recheck before relying on them."}</p>}
+                <p className="crawler-verdict-meta">Sampled inspection, not a full XML schema validation, index coverage report or proof of AI citations. URL spot checks cover at most eight listed pages.</p>
                 <p className="crawler-verdict-meta">
                   {result.withLastmod} with lastmod, {result.uniqueUrlCount} unique. {errors} error{errors === 1 ? "" : "s"}, {warnings} warning{warnings === 1 ? "" : "s"}.
                 </p>
               </>
             ) : (
               <>
-                <strong>No valid sitemap found</strong>
+                <strong>No sitemap parsed in checked locations</strong>
                 <p className="crawler-verdict-meta">Checked: {result.tried?.length ? result.tried.join("; ") : "robots.txt, /sitemap.xml, /sitemap_index.xml"}</p>
               </>
             )}
@@ -123,7 +130,7 @@ export default function SitemapChecker() {
             </ul>
           )}
           {result.found && result.issues.length === 0 && (
-            <p className="extract-text"><CheckCircle2 className="h-4 w-4 inline" aria-hidden="true" /> No problems found.</p>
+            <p className="extract-text"><CheckCircle2 className="h-4 w-4 inline" aria-hidden="true" /> No issues detected in the inspected data.</p>
           )}
 
           {result.children && result.children.length > 0 && (
@@ -131,8 +138,8 @@ export default function SitemapChecker() {
               <h2>Child sitemaps</h2>
               <ul className="extract-list">
                 {result.children.map((c) => (
-                  <li key={c.url} className={c.error ? "is-blocked" : "is-allowed"}>
-                    <div className="extract-head"><strong>{c.url}</strong><span>{c.error ?? `${c.urlCount} URLs`}</span></div>
+                  <li key={c.url} className={c.error ? "is-blocked" : undefined}>
+                    <div className="extract-head"><strong>{c.url}</strong><span>{c.error ?? `${c.urlCount} URLs parsed`}</span></div>
                   </li>
                 ))}
               </ul>
@@ -153,7 +160,7 @@ export default function SitemapChecker() {
           )}
 
           <div className="llms-tool-cta">
-            <p>A good sitemap is one signal. See how the site scores across 25 AI visibility signals.</p>
+            <p>The scan adds 25 readiness checks. Sitemap discovery and sampled checks do not prove indexing or AI citations.</p>
             <Link href="/#scanner" className="btn btn-primary">Run a free AEO scan</Link>
           </div>
         </div>

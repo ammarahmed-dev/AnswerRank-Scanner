@@ -536,6 +536,68 @@ try {
   await page.unroute('**/api/tools/meta-tag-checker');
   checks.push('Meta checker desktop/mobile: generic/Googlebot restriction versus scoped no-noindex finding, HTML/header/crawl/indexing limits, illustrative previews, scanner link and failed retry without stale result');
 
+  let sitemapOutcome = 'complete';
+  const sitemapFixtures = {
+    complete: { kind: 'index', urlCount: 60000, indexCoverage: { listed: 2, selected: 2, parsed: 2 }, children: [{ url: 'https://sitemap.example.invalid/a.xml', urlCount: 30000 }, { url: 'https://sitemap.example.invalid/b.xml', urlCount: 30000 }], issues: [], tone: 'good' },
+    partial: { kind: 'index', urlCount: 10, indexCoverage: { listed: 6, selected: 5, parsed: 5 }, issues: [], tone: 'warn' },
+    failed: { kind: 'index', urlCount: 3, indexCoverage: { listed: 2, selected: 2, parsed: 1 }, issues: [{ level: 'error', message: 'Synthetic child could not be fetched.' }], tone: 'bad' },
+    legacy: { kind: 'index', urlCount: 3, issues: [], tone: 'warn' },
+    file: { kind: 'urlset', urlCount: 3, issues: [], tone: 'good' },
+  };
+  await page.route('**/api/tools/sitemap-checker', route => {
+    assert.equal(route.request().postDataJSON().url, 'https://sitemap.example.invalid');
+    if (sitemapOutcome === 'error') return route.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ error: 'Synthetic sitemap fetch unavailable.' }) });
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+      origin: 'https://sitemap.example.invalid', found: true, sitemapUrl: 'https://sitemap.example.invalid/sitemap.xml', withLastmod: 0, uniqueUrlCount: sitemapFixtures[sitemapOutcome].urlCount, ...sitemapFixtures[sitemapOutcome],
+    }) });
+  });
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await goto('/tools/sitemap-checker');
+    const paintContext = await page.locator('.llms-tool').evaluate(el => {
+      const rows = [];
+      for (let node = el; node; node = node.parentElement) {
+        const style = getComputedStyle(node);
+        rows.push({ tag: node.tagName, className: node.className, transform: style.transform, animation: style.animationName, filter: style.filter, backdrop: style.backdropFilter });
+      }
+      return rows;
+    });
+    await writeFile(`${output}/sitemap-paint-${width}.json`, JSON.stringify(paintContext, null, 2));
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/tools/sitemap-checker');
+    await page.getByRole('textbox', { name: 'Website URL', exact: true }).fill('https://sitemap.example.invalid');
+    for (const outcome of Object.keys(sitemapFixtures)) {
+      sitemapOutcome = outcome;
+      await page.getByRole('button', { name: 'Check sitemap', exact: true }).click();
+      const fixture = sitemapFixtures[outcome];
+      await until(async () => (await page.locator('.crawler-verdict strong').textContent()) === (fixture.kind === 'index' ? `Sitemap index: ${fixture.urlCount} URLs in parsed children` : `Sitemap found: ${fixture.urlCount} URLs`), 'sitemap scoped total');
+      if (fixture.kind === 'index') await until(async () => { const text = await page.locator('.sitemap-index-coverage').textContent(); return fixture.indexCoverage ? text.startsWith(`Parsed ${fixture.indexCoverage.parsed} of ${fixture.indexCoverage.listed}`) : text.includes('coverage is unavailable'); }, 'sitemap coverage transition');
+      assert.equal(await page.locator(`.crawler-verdict-${fixture.tone}`).count(), 1);
+      if (fixture.indexCoverage) assert.equal(await page.locator('.sitemap-index-coverage').innerText(), `Parsed ${fixture.indexCoverage.parsed} of ${fixture.indexCoverage.listed} listed child entries; ${fixture.indexCoverage.selected} selected within the five-child limit. Totals cover parsed children only.`);
+      if (outcome === 'legacy') assert.match(await page.locator('.sitemap-index-coverage').innerText(), /coverage is unavailable/);
+      if (outcome === 'file') assert.equal(await page.locator('.sitemap-index-coverage').count(), 0);
+      assert.match(await page.locator('.crawler-verdict').innerText(), /not a full XML schema validation/);
+      assert.equal(await page.locator('.llms-tool-cta a').getAttribute('href'), '/#scanner');
+      await noOverflow();
+      // Fixed-viewport captures avoid full-page viewport expansion during a result
+      // transition. Review both the verdict and its lower child/action neighbors.
+      if (outcome !== 'file') {
+        await page.locator('.crawler-verdict').scrollIntoViewIfNeeded();
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await screenshot(`sitemap-${outcome}-${width}`);
+        await page.locator('.llms-tool-cta').scrollIntoViewIfNeeded();
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await screenshot(`sitemap-${outcome}-lower-${width}`);
+        assert.deepEqual(page.viewportSize(), { width, height: 900 });
+      }
+    }
+    sitemapOutcome = 'error';
+    await page.getByRole('button', { name: 'Check sitemap', exact: true }).click();
+    await page.getByRole('alert').filter({ hasText: 'Synthetic sitemap fetch unavailable.' }).waitFor();
+    assert.equal(await page.locator('.llms-tool-result').count(), 0, 'failed sitemap retry clears prior totals');
+  }
+  await page.unroute('**/api/tools/sitemap-checker');
+  checks.push('Sitemap index desktop/mobile: totals scoped to parsed children, selected/listed coverage and partial/failed/legacy caution, 60000 combined URLs without file-limit claim, standalone control, scanner link and failed retry clearing');
+
   assert.deepEqual(errors, [], 'Browser page errors');
   await writeFile(`${output}/checks.json`, JSON.stringify({ checks, pageErrors: errors, synthetic: true }, null, 2));
   console.log(JSON.stringify({ passed: checks, pageErrors: errors, screenshots: output }));

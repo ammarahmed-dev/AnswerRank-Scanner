@@ -1,3 +1,11 @@
+# 2026-11-21 - Scope sitemap index totals and limits correctly
+
+Combined child totals no longer receive a false single-file 50,000-URL error. Entry limits apply to each inspected URL file and to the index's child-entry count. Results show listed/selected/parsed coverage, label totals as parsed-child counts and caution on partial/failed/legacy coverage. Parsed child rows are neutral and failed retries clear old totals. Visual review checks original PNGs and independently rendered crops: apparent missing characters were an image-preview artifact, not missing captured text. Unproven result-remount/page-transform changes were removed. Fixed-viewport captures include verdict and lower action neighbors. FAQ/source link distinguish protocol limits from the existing five-child, eight-page and 5 MiB tool caps; no full XML validation, indexing or citation claim.
+
+Nine new actual-route/pure tests cover healthy 60,000-URL aggregates, individual/index/standalone limits and capped/failed/nested/skipped coverage. Two selected regressions fail the prior route/library. Local validation passes: 1,170 tests / 104 files, four selector tests, typecheck, lint (18 existing warnings), 19-file content links and fresh production build; inspect isolated desktop/mobile browser artifacts before merge and same-SHA Vercel/public checks before calling it live. No production tool submission or provider/lead/email call.
+
+Fresh private page/query evidence supports improving the existing sitemap tool; no new page, title churn or growth attribution. Current network/usage/scanner contracts are preserved. Issue #88 provider-auth acceptance, production delivery/analytics and the complete audit remain open.
+
 # 2026-11-20 - Correct robots-meta findings in the meta checker
 
 The existing utility now combines repeated generic robots tags and Googlebot tags, catches later noindex/none, and keeps crawler scope explicit. `max-image-preview: none` is not page noindex. Clear findings no longer promise indexability; HTTP headers, other crawler tags, robots.txt access and actual indexing remain unverified. Results/FAQ explain the limits, previews are illustrative, and failed retries clear stale results. Scanner grades, scores, title/canonical, thresholds, fetching/quota and software rights are unchanged.
