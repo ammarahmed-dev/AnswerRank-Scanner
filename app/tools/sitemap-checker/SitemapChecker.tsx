@@ -40,6 +40,7 @@ export default function SitemapChecker() {
   const [url, setUrl] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [result, setResult] = useState<Result | null>(null);
+  const [resultVersion, setResultVersion] = useState(0);
   const [error, setError] = useState("");
 
   async function check(e: React.FormEvent) {
@@ -61,6 +62,7 @@ export default function SitemapChecker() {
         return;
       }
       setResult(data as Result);
+      setResultVersion((version) => version + 1);
       setState("done");
     } catch {
       setError("Network error. Please check your connection and try again.");
@@ -88,7 +90,7 @@ export default function SitemapChecker() {
       {state === "error" && <p role="alert" className="llms-tool-error">{error}</p>}
 
       {state === "done" && result && (
-        <div className="llms-tool-result">
+        <div key={resultVersion} className="llms-tool-result">
           <div className={`crawler-verdict crawler-verdict-${tone}`}>
             {result.found ? (
               <>
