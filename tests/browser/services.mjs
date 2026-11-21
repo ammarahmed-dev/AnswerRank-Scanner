@@ -569,7 +569,15 @@ try {
       assert.match(await page.locator('.crawler-verdict').innerText(), /not a full XML schema validation/);
       assert.equal(await page.locator('.llms-tool-cta a').getAttribute('href'), '/#scanner');
       await noOverflow();
-      if (outcome !== 'file') await screenshot(`sitemap-${outcome}-${width}`, true);
+      // Fixed-viewport captures avoid full-page viewport expansion during a result
+      // transition. Review both the verdict and its lower child/action neighbors.
+      if (outcome !== 'file') {
+        await page.locator('.crawler-verdict').scrollIntoViewIfNeeded();
+        await screenshot(`sitemap-${outcome}-${width}`);
+        await page.locator('.llms-tool-cta').scrollIntoViewIfNeeded();
+        await screenshot(`sitemap-${outcome}-lower-${width}`);
+        assert.deepEqual(page.viewportSize(), { width, height: 900 });
+      }
     }
     sitemapOutcome = 'error';
     await page.getByRole('button', { name: 'Check sitemap', exact: true }).click();
