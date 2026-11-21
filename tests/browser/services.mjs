@@ -554,6 +554,15 @@ try {
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await goto('/tools/sitemap-checker');
+    const paintContext = await page.locator('.llms-tool').evaluate(el => {
+      const rows = [];
+      for (let node = el; node; node = node.parentElement) {
+        const style = getComputedStyle(node);
+        rows.push({ tag: node.tagName, className: node.className, transform: style.transform, animation: style.animationName, filter: style.filter, backdrop: style.backdropFilter });
+      }
+      return rows;
+    });
+    await writeFile(`${output}/sitemap-paint-${width}.json`, JSON.stringify(paintContext, null, 2));
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/tools/sitemap-checker');
     await page.getByRole('textbox', { name: 'Website URL', exact: true }).fill('https://sitemap.example.invalid');
     for (const outcome of Object.keys(sitemapFixtures)) {
