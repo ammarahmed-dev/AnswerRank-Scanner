@@ -10462,12 +10462,6 @@ textarea.contact-control {
    compositor-layer tearing artifacts. Desktop (>1024px) keeps glass effects.
    ────────────────────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
-  /* The entry animation otherwise retains a transformed page-sized paint layer. */
-  .page-transition {
-    animation: none;
-    transform: none;
-  }
-
   * {
     filter: none !important;
     -webkit-filter: none !important;

@@ -582,8 +582,10 @@ try {
       // transition. Review both the verdict and its lower child/action neighbors.
       if (outcome !== 'file') {
         await page.locator('.crawler-verdict').scrollIntoViewIfNeeded();
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         await screenshot(`sitemap-${outcome}-${width}`);
         await page.locator('.llms-tool-cta').scrollIntoViewIfNeeded();
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         await screenshot(`sitemap-${outcome}-lower-${width}`);
         assert.deepEqual(page.viewportSize(), { width, height: 900 });
       }
