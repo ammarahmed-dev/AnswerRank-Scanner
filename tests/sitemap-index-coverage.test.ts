@@ -35,6 +35,14 @@ async function run() {
   return response.json();
 }
 describe("sitemap index file limits and coverage", () => {
+  it("returns a lastmod warning for impossible calendar dates through the real route", async () => {
+    root = '<urlset><url><loc>https://a.test/page</loc><lastmod>2026-02-30</lastmod></url></urlset>';
+    const result = await run();
+    expect(result.urlCount).toBe(1);
+    expect(result.withLastmod).toBe(1);
+    expect(result.issues).toEqual([{ level: "warning", message: '1 lastmod value is not a valid date (for example "2026-02-30"). Use YYYY-MM-DD.' }]);
+    expect(commitUsage).toHaveBeenCalledTimes(1);
+  });
   it("does not apply a per-file URL limit to a combined index total", async () => {
     child = id => new Response(file(30_000, `child${id}-`));
     const result = await run();

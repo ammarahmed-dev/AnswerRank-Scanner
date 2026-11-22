@@ -166,3 +166,10 @@ prompts/runs, and API keys + budget. See ROADMAP "Owner actions".
 ## Schema validation coverage - reviewed 18-19 November 2026
 
 Primary references: [Schema.org validator documentation](https://validator.schema.org/docs/validator.html) and [Google structured-data policies](https://developers.google.com/search/docs/appearance/structured-data/sd-policies). JSON syntax, limited field presence, full vocabulary/content correctness and Google eligibility are different checks. Preserve that distinction in the existing utility and explicitly mark unsupported types unassessed. PR #91 applies this distinction separately from the security release. The extraction denominator covers top-level/@graph type declarations, not arbitrary nested entities; the existing FAQ question/answer checks are a specific exception. Primary references were rechecked on 19 November. No observed AI inclusion or private performance rows are published.
+
+
+## 22 November 2026: sitemap lastmod calendar validation
+
+Primary protocol: https://www.sitemaps.org/protocol.html (lastmod is optional, uses W3C datetime, and describes the linked page's last modification rather than sitemap generation). Referenced datetime profile: https://www.w3.org/TR/NOTE-datetime (reduced precision, timezone-bearing times, hours 00-23 and minutes/seconds 00-59). Reviewed current primary pages on 22 November. The latter is a W3C Note, not a new Recommendation.
+
+Local reproduction shows Date.parse normalizing 2026-02-29, 2026-04-31 and 24:00 into different dates. Require actual calendar days/leap-year rules and clock bounds before parsing, without inferring page history. The existing checker warning is the appropriate output; no ranking/indexing/citation consequence is asserted. Fresh private sitemap query/page evidence confirms utility intent, not search volume or release attribution. Preserve publication metadata and avoid a competing page.

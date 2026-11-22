@@ -31,6 +31,25 @@ describe("isValidLastmod", () => {
     for (const ok of ["2026", "2026-09", "2026-09-30", "2026-09-30T10:00:00Z", "2026-09-30T10:00:00+02:00", "2026-09-30T10:00:00.123Z"]) expect(isValidLastmod(ok), ok).toBe(true);
     for (const bad of ["09/30/2026", "yesterday", "2026-13-40", "2026-9-3", ""]) expect(isValidLastmod(bad), bad).toBe(false);
   });
+
+  it.each(["2026-02-29", "2026-02-30", "2026-02-31", "2026-04-31", "2026-06-31", "1900-02-29", "2100-02-29", "2026-02-29T10:00:00+02:00"])("rejects impossible calendar date %s", (value) => {
+    expect(isValidLastmod(value)).toBe(false);
+  });
+  it.each(["2000-02-29", "2024-02-29", "2400-02-29", "2026-04-30", "2026-01-31", "2026-12-31", "2024-02-29T23:59:59.123456789-05:30", "2026-09-30T10:00Z", "2026-09-30T10:00+05:30"])("preserves valid calendar/time %s", (value) => {
+    expect(isValidLastmod(value)).toBe(true);
+  });
+  it.each(["2026-00", "2026-13", "2026-01-00", "2026-01-32", "2026-09-30T24:00:00Z", "2026-09-30T25:00Z", "2026-09-30T10:60Z", "2026-09-30T10:00:60Z", "2026-09-30T10:00:00+24:00", "2026-09-30T10:00:00+02:60", "2026-09-30T10:00:00", "2026-09-30T10:00.1Z"])("rejects out-of-range or unsupported component %s", (value) => {
+    expect(isValidLastmod(value)).toBe(false);
+  });
+  it("warns about invalid dates without treating normalized dates as stale, identical or future evidence", () => {
+    const result = analyzeUrlset([
+      { loc: "https://a.test/one", lastmod: "2026-02-30" },
+      { loc: "https://a.test/two", lastmod: "2026-02-30" },
+    ], "https://a.test", new Date("2025-01-01T00:00:00Z"));
+    expect(result.withLastmod).toBe(2);
+    expect(result.issues).toEqual([{ level: "warning", message: '2 lastmod values are not a valid date (for example "2026-02-30"). Use YYYY-MM-DD.' }]);
+  });
+
 });
 
 describe("analyzeUrlset", () => {

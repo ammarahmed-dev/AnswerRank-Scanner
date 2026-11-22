@@ -497,3 +497,10 @@ The existing five-child selection, eight-page spot checks, byte/deadline/concurr
 
 
 Visual review limitation: the image preview appeared to omit characters, but independent OCR and re-encoded crops of the original PNGs confirmed that the captured text was complete, including the initial artifact. Tentative result-remount and page-transform experiments were removed; no product repaint/CSS workaround is retained. Final review uses fixed 1280/390 by 900 verdict/lower-neighbor captures after browser paint, with original artifact bytes and independent rendering checked when preview output is suspect. Do not infer an application rendering defect from the image preview alone.
+
+
+## 22 November: calendar-safe sitemap lastmod checks (A11/A17)
+
+Written lastmod dates now reject impossible month/day combinations and out-of-range clock/offset components before Date.parse can normalize them. Preserve all supported date granularities, valid leap dates and timezone-bearing timestamps. Existing invalid-date warnings reach the actual API response; invalid dates no longer contaminate stale/future/identical timestamp diagnostics. No scanner scoring, byte/child/sample budgets, quota/auth/rights or database change. This does not verify real page-change history or implement full XML validation.
+
+Validation: 31 added cases; 1,201 tests / 104 files plus four selector tests, typecheck, lint (18 existing warnings), 19-file links and build. Eight selected cases fail the prior library. Exact-head isolated desktop/mobile warning/FAQ/retry browser checks and screenshot review gate merge; same-SHA deployment/public smoke gates live acceptance. No production submission/provider/lead/email call. Current private evidence has finalized reporting lag and no matching post-release attribution. Full audit remains unfinished.
