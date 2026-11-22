@@ -1,0 +1,99 @@
+---
+title: 'How to Fix the "Canonical URL" Check in Your AEOCheck Report'
+description: >-
+  Your scan flagged a missing, malformed or cross-domain canonical tag. Here is
+  what each result means, how to set a correct rel=canonical, and how to verify it.
+date: 2026-11-07T00:00:00.000Z
+slug: fix-canonical-url-warning
+tags:
+  - canonical-url
+  - technical-aeo
+  - duplicate-content
+  - meta-tags
+author: Ammar Ahmed
+coverImage: /images/blog/fix-canonical-url-warning.png
+coverImageAlt: 'Cover for How to Fix the Canonical URL Check'
+faqs:
+  - question: What does the Canonical URL check actually test?
+    answer: >-
+      It reads the rel=canonical link in the page HTML. It fails when there is none,
+      warns when the URL is malformed or points to a different domain, and passes
+      when a canonical on the same domain is present.
+  - question: Should a page canonical point to itself?
+    answer: >-
+      Yes, for most pages. A self-referencing canonical on the clean version of the
+      URL tells crawlers which address is authoritative when tracking parameters or
+      alternate paths serve the same content.
+  - question: Is a canonical tag a guarantee that engines use my URL?
+    answer: >-
+      No. It is a strong hint, not a directive. Engines can choose another URL if
+      your signals conflict, such as redirects, sitemap entries or internal links
+      pointing elsewhere.
+  - question: Why does the check warn when my canonical is on another domain?
+    answer: >-
+      A cross-domain canonical tells engines that another site owns this content.
+      That is correct for syndicated copies, but if the page is your own original it
+      usually means a staging domain or a wrong base URL leaked into production.
+---
+
+If your report shows **Canonical URL** as failed or warned, the scanner either found no `rel="canonical"` link in the page HTML or found one it could not trust. This guide covers each result and the fix. It belongs to the checklist in our [technical AEO guide](/blog/technical-aeo-guide).
+
+## What each result means
+
+| Result | What the scanner saw |
+| --- | --- |
+| Fail | No canonical link in the HTML |
+| Warn: malformed | A canonical value that cannot be parsed as a URL |
+| Warn: another domain | A canonical whose host differs from the scanned page (a leading `www.` is ignored) |
+| Pass | A canonical on the same domain |
+
+Canonical tags matter for answer engines for the same reason they matter for search: when several URLs serve the same content, signals get split, and a system choosing a page to cite has to guess which one is the real one.
+
+## Step 1: Pick the one clean URL
+
+Decide the single address you want cited: one protocol (https), one host (with or without `www`), no tracking parameters, and a consistent trailing-slash rule. Your redirects, sitemap and internal links should all use that same form.
+
+## Step 2: Add the tag to the page head
+
+```html
+<link rel="canonical" href="https://www.example.com/pricing" />
+```
+
+Use an absolute URL. The tag must be in the served HTML, not added only by client-side JavaScript, because many crawlers do not run scripts.
+
+In Next.js, set it through metadata:
+
+```ts
+export const metadata = {
+  alternates: { canonical: "/pricing" },
+};
+```
+
+With a `metadataBase` set in the root layout, this renders an absolute URL. Most CMS SEO plugins have a canonical field that does the same job.
+
+## Step 3: Fix the warnings
+
+- **Malformed:** look for stray spaces, a missing protocol, or a template placeholder such as `{{url}}` that was never replaced.
+- **Another domain:** check your base URL setting. A staging hostname or an old domain left in an environment variable is the usual cause. Only keep a cross-domain canonical if the page really is a syndicated copy of someone else's original.
+- **Multiple tags:** keep exactly one canonical per page. Themes and plugins sometimes each add their own.
+
+## Step 4: Verify and rescan
+
+1. Open the [meta tag checker](/tools/meta-tag-checker) with your URL to see the canonical as a crawler reads it, next to your title and description.
+2. Run the [AEOCheck scanner](/#scanner) again. The check reads the live page, so it clears on the next scan after you deploy.
+
+## What not to do
+
+Do not point every page at the homepage, and do not canonicalize paginated or filtered pages to an unrelated URL to "consolidate" them. Wrong canonicals can cause pages to drop out of indexes. If you are unsure, a self-referencing canonical is the safe default.
+
+For the other checks in the report, see the [AEO checklist](/blog/aeo-checklist). The complete report with fix guidance for every issue is available on the [pricing page](/pricing).
+
+## FAQ
+
+**What does the Canonical URL check actually test?** The presence, validity and domain of the `rel="canonical"` link in the HTML.
+
+**Should a page canonical point to itself?** Yes, for most pages.
+
+**Is a canonical tag a guarantee that engines use my URL?** No. It is a strong hint that conflicting signals can override.
+
+**Why does the check warn when my canonical is on another domain?** It signals another site owns the content, which is rarely intended for original pages.
