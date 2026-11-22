@@ -1,0 +1,96 @@
+---
+title: 'How to Fix the "H1 Tag" Check in Your AEOCheck Report'
+description: >-
+  Your scan flagged the H1 tag. Here is how the check counts H1s, why exactly one
+  is the target, and how to fix missing or duplicate H1s.
+date: 2026-11-15T00:00:00.000Z
+slug: fix-h1-tag-warning
+tags:
+  - h1
+  - technical-aeo
+  - on-page-seo
+  - headings
+author: Ammar Ahmed
+coverImage: /images/blog/fix-h1-tag-warning.png
+coverImageAlt: 'Cover for How to Fix the H1 Tag Check'
+faqs:
+  - question: What does the H1 Tag check test?
+    answer: >-
+      It counts the h1 elements on the page that contain text. Exactly one passes,
+      none fails, and two or more is a warning.
+  - question: Does an empty h1 count?
+    answer: >-
+      No. The scanner trims the text of each h1 and skips empty ones, so an h1 that
+      holds only an image without text, or only whitespace, is not counted. A page
+      whose only h1 is empty fails the check.
+  - question: Is more than one H1 always wrong?
+    answer: >-
+      HTML allows it, but the scanner asks for exactly one so the page has one clear
+      main topic. Treat the warning as a prompt to confirm that each h1 is deliberate,
+      not as an error that breaks the page.
+  - question: Should the H1 match the title tag?
+    answer: >-
+      They should describe the same topic, but they do not need to be identical. The
+      title tag is shown in search results; the H1 is the headline on the page.
+---
+
+If your report shows **H1 Tag** as failed or warned, the page has no h1 with text, or it has more than one. This guide explains how the check counts, how to fix each case and how to confirm it. It is one item in the checklist from our [technical AEO guide](/blog/technical-aeo-guide).
+
+## What each result means
+
+The scanner reads every `h1` on the page, trims its text and ignores the empty ones. Then it counts:
+
+| H1s with text | Result |
+| --- | --- |
+| 0 | Fail: "No H1 tag found" |
+| 1 | Pass: "Exactly 1 H1 tag" |
+| 2 or more | Warning: "N H1 tags found (should be exactly 1)" |
+
+## Fix a missing H1
+
+1. Pick the one phrase that says what the page is about. Write it as a plain headline, for example "Free AI SEO audit" rather than a slogan.
+2. Put it in a real `<h1>` element in the main content, near the top.
+3. Make sure the text is in the HTML your server sends. A headline drawn only by a script, or an image of text, is not read as an h1 by a text-only crawler.
+
+```html
+<main>
+  <h1>How to fix a missing H1 tag</h1>
+  <p>Short answer first...</p>
+</main>
+```
+
+## Fix several H1s
+
+Themes and page builders often add an h1 for the logo or a banner in addition to the page headline. Keep the headline as the h1 and change the others:
+
+- Logo or site name: use a `<p>` or `<div>`, or an h1 only on the home page if that is what your template intends.
+- Banner or hero slogan: use an `<h2>` or plain text.
+- Section titles: use `<h2>` and `<h3>` to match the outline. The [Heading Hierarchy check](/blog/aeo-checklist) looks at those.
+
+## Check your work
+
+Run the page through the [free scanner](/) and open the H1 Tag row. It should read "Exactly 1 H1 tag (optimal)". If you want to see the heading outline as a crawler gets it, view the page source and search for `<h1`.
+
+Clear headings also make it easier to lift a passage as an answer, which is why they sit in the technical checklist. We do not claim a single h1 changes whether an AI engine cites you. It is a clear structural signal and cheap to fix.
+
+## Frequently asked questions
+
+### What does the H1 Tag check test?
+
+It counts the h1 elements on the page that contain text. Exactly one passes, none fails, and two or more is a warning.
+
+### Does an empty h1 count?
+
+No. The scanner trims the text of each h1 and skips empty ones, so an h1 that holds only an image without text, or only whitespace, is not counted. A page whose only h1 is empty fails the check.
+
+### Is more than one H1 always wrong?
+
+HTML allows it, but the scanner asks for exactly one so the page has one clear main topic. Treat the warning as a prompt to confirm that each h1 is deliberate, not as an error that breaks the page.
+
+### Should the H1 match the title tag?
+
+They should describe the same topic, but they do not need to be identical. The title tag is shown in search results; the H1 is the headline on the page.
+
+## Next step
+
+Scan your page to see every check in one report, or compare plans on the [pricing page](/pricing).
