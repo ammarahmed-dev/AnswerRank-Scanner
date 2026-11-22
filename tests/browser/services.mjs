@@ -542,6 +542,7 @@ try {
     partial: { kind: 'index', urlCount: 10, indexCoverage: { listed: 6, selected: 5, parsed: 5 }, issues: [], tone: 'warn' },
     failed: { kind: 'index', urlCount: 3, indexCoverage: { listed: 2, selected: 2, parsed: 1 }, issues: [{ level: 'error', message: 'Synthetic child could not be fetched.' }], tone: 'bad' },
     legacy: { kind: 'index', urlCount: 3, issues: [], tone: 'warn' },
+    invalidDate: { kind: 'urlset', urlCount: 1, withLastmod: 1, issues: [{ level: 'warning', message: '1 lastmod value is not a valid date (for example \"2026-02-30\"). Use YYYY-MM-DD.' }], tone: 'warn' },
     file: { kind: 'urlset', urlCount: 3, issues: [], tone: 'good' },
   };
   await page.route('**/api/tools/sitemap-checker', route => {
@@ -569,11 +570,12 @@ try {
       sitemapOutcome = outcome;
       await page.getByRole('button', { name: 'Check sitemap', exact: true }).click();
       const fixture = sitemapFixtures[outcome];
-      await until(async () => (await page.locator('.crawler-verdict strong').textContent()) === (fixture.kind === 'index' ? `Sitemap index: ${fixture.urlCount} URLs in parsed children` : `Sitemap found: ${fixture.urlCount} URLs`), 'sitemap scoped total');
+      await until(async () => (await page.locator('.crawler-verdict strong').textContent()) === (fixture.kind === 'index' ? `Sitemap index: ${fixture.urlCount} URLs in parsed children` : `Sitemap found: ${fixture.urlCount} URL${fixture.urlCount === 1 ? '' : 's'}`), 'sitemap scoped total');
       if (fixture.kind === 'index') await until(async () => { const text = await page.locator('.sitemap-index-coverage').textContent(); return fixture.indexCoverage ? text.startsWith(`Parsed ${fixture.indexCoverage.parsed} of ${fixture.indexCoverage.listed}`) : text.includes('coverage is unavailable'); }, 'sitemap coverage transition');
       assert.equal(await page.locator(`.crawler-verdict-${fixture.tone}`).count(), 1);
       if (fixture.indexCoverage) assert.equal(await page.locator('.sitemap-index-coverage').innerText(), `Parsed ${fixture.indexCoverage.parsed} of ${fixture.indexCoverage.listed} listed child entries; ${fixture.indexCoverage.selected} selected within the five-child limit. Totals cover parsed children only.`);
       if (outcome === 'legacy') assert.match(await page.locator('.sitemap-index-coverage').innerText(), /coverage is unavailable/);
+      if (outcome === 'invalidDate') assert.match(await page.locator('.llms-tool-result').innerText(), /2026-02-30/);
       if (outcome === 'file') assert.equal(await page.locator('.sitemap-index-coverage').count(), 0);
       assert.match(await page.locator('.crawler-verdict').innerText(), /not a full XML schema validation/);
       assert.equal(await page.locator('.llms-tool-cta a').getAttribute('href'), '/#scanner');
@@ -596,7 +598,7 @@ try {
     assert.equal(await page.locator('.llms-tool-result').count(), 0, 'failed sitemap retry clears prior totals');
   }
   await page.unroute('**/api/tools/sitemap-checker');
-  checks.push('Sitemap index desktop/mobile: totals scoped to parsed children, selected/listed coverage and partial/failed/legacy caution, 60000 combined URLs without file-limit claim, standalone control, scanner link and failed retry clearing');
+  checks.push('Sitemap index desktop/mobile: totals scoped to parsed children, selected/listed coverage and partial/failed/legacy caution, 60000 combined URLs without file-limit claim, impossible lastmod warning, standalone control, scanner link and failed retry clearing');
 
   assert.deepEqual(errors, [], 'Browser page errors');
   await writeFile(`${output}/checks.json`, JSON.stringify({ checks, pageErrors: errors, synthetic: true }, null, 2));

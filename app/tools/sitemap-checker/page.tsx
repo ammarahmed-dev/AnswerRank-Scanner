@@ -28,7 +28,7 @@ const faqs = [
   },
   {
     q: "What is a good lastmod value?",
-    a: "The real date a page's content last changed, in YYYY-MM-DD or full W3C datetime format. Setting every page to the build date makes the signal useless, so crawlers learn to ignore it.",
+    a: "Use the actual date of the linked page's last meaningful content change, for example 2024-02-29 or 2026-11-22T10:30:00Z. Dates must exist in the calendar: 2026-02-29 and April 31 are invalid. Include a timezone when supplying a time. This tool checks the written date, not whether it matches the page's real update history; do not replace dates on every build.",
   },
   {
     q: "How do I tell crawlers where the sitemap is?",

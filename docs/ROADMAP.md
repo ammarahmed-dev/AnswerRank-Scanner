@@ -319,3 +319,12 @@ Apply the protocol limit separately to each URL file and to the index's child-en
 The latest 19 November Content Draft success still skipped generation; Issue #88 provider authentication remains unverified. No paid rerun, secret, service/billing/auth/data change. Next measurement: matching finalized sitemap-page/query clicks/CTR after enough post-release data, with intent/device mix considered. Production delivery/analytics acceptance, durable recovery/budgets and the full audit remain open.
 
 Visual verification lesson: the preview appeared clipped, but OCR and re-encoded crops confirmed complete text in the original PNGs, including the first artifact. Inspect original pixels with an independent renderer/OCR before changing application code for a suspected image-preview defect. All unproven result-remount/page-transform changes were removed; no global CSS change is retained.
+
+
+## Daily growth and product review: 22 November 2026
+
+- [x] (A11/A17) Reject impossible sitemap lastmod dates instead of silently normalizing them; preserve valid date granularities/timezones, exclude invalid dates from timestamp diagnostics, and cover the real API warning plus desktop/mobile UI. Release acceptance requires green exact-head CI/artifact review and same-SHA production verification.
+
+Main CI, recent uptime and Vercel are healthy. Recent PRs and all claim-branch listings were inspected; the index-coverage release is complete and remains separate. Fresh private finalized Web totals, page/query comparisons, daily alerts and country/device evidence cover 23 October-19 November versus 25 September-22 October. Relevant sitemap-page query intent supports improving the existing checker. No raw metrics/queries enter public docs; tiny samples, anonymization and mixed positions prevent attribution. No new page/title churn.
+
+The selected defect is independently reproduced: native date parsing accepts non-leap February 29 and April 31 by rolling them into the next month. Validate written fields first and retain existing warning semantics. The tool still cannot confirm real modification dates or full XML/index coverage. Next measurement: comparable finalized post-release sitemap/meta/schema page-query CTR/clicks with intent/device mix after enough data exists. Latest Content Draft success still skipped generation; Issue #88 remains unresolved without provider acceptance. Production delivery/analytics, durable budgets/recovery and the full audit remain open.
