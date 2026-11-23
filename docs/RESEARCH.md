@@ -173,3 +173,12 @@ Primary references: [Schema.org validator documentation](https://validator.schem
 Primary protocol: https://www.sitemaps.org/protocol.html (lastmod is optional, uses W3C datetime, and describes the linked page's last modification rather than sitemap generation). Referenced datetime profile: https://www.w3.org/TR/NOTE-datetime (reduced precision, timezone-bearing times, hours 00-23 and minutes/seconds 00-59). Reviewed current primary pages on 22 November. The latter is a W3C Note, not a new Recommendation.
 
 Local reproduction shows Date.parse normalizing 2026-02-29, 2026-04-31 and 24:00 into different dates. Require actual calendar days/leap-year rules and clock bounds before parsing, without inferring page history. The existing checker warning is the appropriate output; no ranking/indexing/citation consequence is asserted. Fresh private sitemap query/page evidence confirms utility intent, not search volume or release attribution. Preserve publication metadata and avoid a competing page.
+
+
+## 23 November 2026: FAQ validation intent and practical repair guidance
+
+Reviewed primary vocabulary at https://schema.org/FAQPage, https://schema.org/Question and https://schema.org/acceptedAnswer, plus https://www.schema.org/docs/validator.html. The official validator documentation supports both URL retrieval and directly provided markup; use it for unpublished code rather than implying our URL checker accepts pasted JSON. Existing checker source confirms selected field presence on fetched HTML, not browser execution, every type relationship or agreement with visible content. The worked example uses FAQPage/mainEntity/Question/name/acceptedAnswer/Answer/text and is displayed inertly beside the same Q&A.
+
+Reverified https://developers.google.com/search/updates: the May 8 entry states FAQ rich results stopped appearing starting May 7, 2026; the old FAQ rich-result documentation redirects to the changelog. Preserve the already shipped correction, without presenting the sample as a rich-result or citation promise. Primary descriptions are paraphrased; no competitor prose or invented outcomes.
+
+Fresh private FAQ-page query evidence supports practical checking/testing help on the existing page. Add missing result-to-fix guidance and contextual generator/validator/scanner links rather than a competing article. Keep private rows/metrics outside the repository and distinguish usability/readiness from observed search or AI gains.

@@ -487,10 +487,25 @@ try {
     await page.getByRole('button', { name: 'Check FAQ schema', exact: true }).click();
     await until(async () => await page.locator('.crawler-verdict strong').textContent() === '1 FAQPage declaration found with required fields', 'FAQ mode remains focused');
     assert.equal(await page.getByText('Types detected; field checks unavailable', { exact: true }).count(), 0);
+    const exampleCode = page.getByLabel('Illustrative FAQPage JSON-LD', { exact: true });
+    const snippet = await exampleCode.innerText();
+    const example = JSON.parse(snippet.replace(/^<script[^>]*>\s*/, '').replace(/\s*<\/script>$/, ''));
+    assert.equal(example.mainEntity[0].name, await page.locator('.faq-worked-copy h3').innerText());
+    assert.equal(example.mainEntity[0].acceptedAnswer.text, await page.locator('.faq-worked-copy p').innerText());
+    assert.equal(await page.locator('script[type="application/ld+json"]').count(), 1, 'displayed example must remain inert');
+    assert.match(await page.locator('#faq-next-heading').innerText(), /What should I fix/);
+    assert.equal(await page.getByRole('link', { name: 'run a free AEO scan', exact: true }).getAttribute('href'), '/#scanner');
+    assert.equal(await page.getByRole('link', { name: 'Schema Markup Validator', exact: true }).getAttribute('href'), 'https://validator.schema.org/');
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/tools/faq-schema-validator');
     await noOverflow();
+    if (width !== 320) {
+      await page.locator('section[aria-labelledby="faq-example-heading"]').screenshot({ path: `${output}/faq-example-${width}.png`, animations: 'disabled' });
+      await page.locator('section[aria-labelledby="faq-next-heading"]').screenshot({ path: `${output}/faq-next-${width}.png`, animations: 'disabled' });
+      await screenshot(`faq-guide-${width}`, true);
+    }
   }
   await page.unroute('**/api/tools/schema-checker');
-  checks.push('Schema checker desktop/mobile: explicit top-level/@graph checked/unassessed coverage and glyph bounds at 1280/390/320, mixed and untyped/absent/syntax states, valid checklist result, failed retry without stale coverage, official validator links; shared FAQ mode preserved');
+  checks.push('Schema checker desktop/mobile: explicit top-level/@graph checked/unassessed coverage and glyph bounds at 1280/390/320, mixed and untyped/absent/syntax states, valid checklist result, failed retry without stale coverage, official validator links; shared FAQ mode preserved with worked-example parity, inert code, fix guidance and scanner journey');
 
   // Meta robots verdicts are HTML evidence, not proof of indexability.
   let metaOutcome = 'generic';
