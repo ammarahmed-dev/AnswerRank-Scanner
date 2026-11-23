@@ -16,7 +16,7 @@ export const metadata: Metadata = buildPageMetadata({
 const faqs = [
   {
     q: "How do I validate my FAQ schema?",
-    a: "Enter the page URL above. The tool fetches the page, parses every JSON-LD block and lists the types it finds. For FAQPage it checks that the markup parses and that the required properties are present, so you can see whether your FAQ schema is detected and complete.",
+    a: "Enter the page URL above. The tool fetches the page, parses JSON-LD blocks in the fetched page and lists the types it finds. For FAQPage it checks selected question and answer fields. A passing field check does not establish full schema.org validity or agreement with the visible page.",
   },
   {
     q: "What does valid FAQPage markup need?",
@@ -31,10 +31,32 @@ const faqs = [
     a: "No. It checks that each JSON-LD block parses and that common types have their key properties. For edge cases also run the Schema.org validator.",
   },
   {
+    q: "Can I paste FAQ schema code into this checker?",
+    a: "This checker accepts a public page URL, not pasted code. For unpublished JSON-LD, use Schema Markup Validator to test the markup directly. After publishing, check the deployed URL and compare its questions and answers with the visible page.",
+  },
+  {
+    q: "Why is FAQ schema missing when I can see an FAQ on the page?",
+    a: "Visible FAQ text does not automatically create FAQPage JSON-LD. Check the page source for an application/ld+json script and confirm the correct URL was published. This tool does not execute page JavaScript, so markup added only after scripts run may be absent from its fetched HTML.",
+  },
+  {
     q: "Is the validator free?",
     a: "Yes. You can check up to 30 pages per month without an account.",
   },
 ];
+
+const example = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [{
+    "@type": "Question",
+    name: "What should I do after updating FAQ markup?",
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: "Publish the page, then test its public URL again.",
+    },
+  }],
+};
+const exampleMarkup = `<script type="application/ld+json">\n${JSON.stringify(example, null, 2)}\n</script>`;
 
 const schema = [
   {
@@ -74,6 +96,36 @@ export default function FaqSchemaValidatorPage() {
             <p>Paste the public URL of a page containing visible questions and answers. The checker reads JSON-LD blocks and reports whether FAQPage exists and its question and answer fields are present. It does not validate Microdata, RDFa or Google search feature eligibility.</p>
             <p>Google stopped showing FAQ rich results on May 7, 2026. Keep your FAQ markup accurate if you use it to describe real page content, but do not add it expecting a Google FAQ dropdown. See the <a href="https://developers.google.com/search/updates" target="_blank" rel="noopener noreferrer">Google Search documentation changelog</a> for the announcement.</p>
           </div>
+          <section className="llms-tool-faq" aria-labelledby="faq-example-heading">
+            <h2 id="faq-example-heading">FAQPage JSON-LD example</h2>
+            <p>Use this illustrative one-question example to understand the structure. Replace the question and answer with your own visible content before adding it to a page.</p>
+            <div className="faq-worked-copy">
+              <h3>{example.mainEntity[0].name}</h3>
+              <p>{example.mainEntity[0].acceptedAnswer.text}</p>
+            </div>
+            <pre className="report-code-block" aria-label="Illustrative FAQPage JSON-LD"><code>{exampleMarkup}</code></pre>
+            <p><code>mainEntity</code> holds the questions; each <code>Question</code> has a <code>name</code> and an <code>acceptedAnswer</code> with <code>text</code>. Compare the code with the <a href="https://schema.org/FAQPage" target="_blank" rel="noopener noreferrer">FAQPage vocabulary</a>. Code displayed here is an example, not a second FAQ declaration on this page.</p>
+            <p>Need your own markup? Use the <Link href="/tools/faq-schema-generator">FAQ schema generator</Link>, or test unpublished code in <a href="https://validator.schema.org/" target="_blank" rel="noopener noreferrer">Schema Markup Validator</a>. Then publish and recheck the exact page URL above.</p>
+          </section>
+          <section className="llms-tool-faq" aria-labelledby="faq-next-heading">
+            <h2 id="faq-next-heading">What should I fix after a FAQ schema check?</h2>
+            <div className="llms-tool-faq-item">
+              <h3>No FAQPage found</h3>
+              <p>If the page really contains FAQ content, add matching FAQPage JSON-LD with the generator. An Organization or Article declaration alone does not describe those questions. Check the published HTML; this tool does not execute page JavaScript or inspect Microdata/RDFa.</p>
+            </div>
+            <div className="llms-tool-faq-item">
+              <h3>JSON-LD syntax errors</h3>
+              <p>Inspect the reported block for trailing commas, unmatched brackets or unescaped quotation marks. Correct the source template, deploy it and recheck; adding another valid block does not fix a malformed one.</p>
+            </div>
+            <div className="llms-tool-faq-item">
+              <h3>Question or answer fields missing</h3>
+              <p>Review <code>mainEntity</code> and each question&apos;s <code>name</code>, <code>acceptedAnswer</code> and answer <code>text</code>. Use Question and Answer types as in the example. This tool checks selected field presence, not every property or type relationship.</p>
+            </div>
+            <div className="llms-tool-faq-item">
+              <h3>Checked fields present</h3>
+              <p>Compare every marked-up question and answer with the visible content yourself, and use Schema Markup Validator for broader checks. A local pass does not prove content accuracy, indexing, a Google search feature or an AI citation. For the wider site checks, <Link href="/#scanner">run a free AEO scan</Link>.</p>
+            </div>
+          </section>
           <div className="llms-tool-faq">
             <h2>FAQ schema questions</h2>
             {faqs.map((f) => (
