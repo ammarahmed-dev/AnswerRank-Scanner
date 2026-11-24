@@ -182,3 +182,12 @@ Reviewed primary vocabulary at https://schema.org/FAQPage, https://schema.org/Qu
 Reverified https://developers.google.com/search/updates: the May 8 entry states FAQ rich results stopped appearing starting May 7, 2026; the old FAQ rich-result documentation redirects to the changelog. Preserve the already shipped correction, without presenting the sample as a rich-result or citation promise. Primary descriptions are paraphrased; no competitor prose or invented outcomes.
 
 Fresh private FAQ-page query evidence supports practical checking/testing help on the existing page. Add missing result-to-fix guidance and contextual generator/validator/scanner links rather than a competing article. Keep private rows/metrics outside the repository and distinguish usability/readiness from observed search or AI gains.
+
+
+## 24 November 2026: reviewing AI-drafted articles without false readiness claims
+
+Primary sources reviewed: https://developers.google.com/search/docs/fundamentals/using-gen-ai-content and https://developers.google.com/search/docs/fundamentals/creating-helpful-content. Google advises reviewing generated content and metadata for accuracy and usefulness; mass generation without added value can violate its spam policies. Editorial review and original value cannot be inferred from a heuristic page score. Add a practical, original article-review workflow rather than a content detector or ranking formula.
+
+https://developers.openai.com/api/docs/bots distinguishes OAI-SearchBot search controls from GPTBot training controls and user-triggered retrieval. Keep rule findings separate from actual access or citations. Guide examples are explicitly illustrative review situations, not customer evidence or a vendor benchmark. No new comparative vendor-capability or price claim is made.
+
+Private finalized paired guide/query evidence supports article-review and page-level findings intent, not a fixed ranking or causal traffic change. Preserve the original publication/title/slug, add the real revision date and use the publisher's existing organization-author convention. Existing tools/report paths provide the next action; no new competing page or invented proof.
