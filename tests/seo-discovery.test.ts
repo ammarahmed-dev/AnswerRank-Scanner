@@ -21,9 +21,9 @@ describe("SEO discovery and modification dates", () => {
   it("preserves publication dates and uses a recorded substantive update in the sitemap", async () => {
     const post = getBlogPost("best-aeo-tools-ai-search-visibility");
     expect(post?.date.slice(0, 10)).toBe("2026-05-21");
-    expect(post?.updated?.slice(0, 10)).toBe("2026-10-25");
+    expect(post?.updated?.slice(0, 10)).toBe("2026-11-24");
     const page = (await sitemap()).find(page => page.url.endsWith("/blog/best-aeo-tools-ai-search-visibility"));
-    expect(new Date(page!.lastModified!).toISOString().slice(0, 10)).toBe("2026-10-25");
+    expect(new Date(page!.lastModified!).toISOString().slice(0, 10)).toBe("2026-11-24");
   });
 
   it("includes each real public tool exactly once using canonical URLs", async () => {

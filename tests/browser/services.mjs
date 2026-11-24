@@ -213,12 +213,29 @@ try {
   const compiled = ts.transpileModule(await readFile('lib/sample-report.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } });
   vm.runInNewContext(compiled.outputText, { exports: fixtureModule.exports });
   const sample = fixtureModule.exports.SAMPLE_REPORT;
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await goto('/blog/best-aeo-tools-ai-search-visibility');
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/blog/best-aeo-tools-ai-search-visibility');
+    const articleSchema = JSON.parse(await page.locator('script[type="application/ld+json"]').first().textContent());
+    assert.match(JSON.stringify(articleSchema), /2026-05-21/);
+    assert.match(JSON.stringify(articleSchema), /2026-11-24/);
+    const postSchema = articleSchema['@graph'].find(node => node['@type'] === 'BlogPosting');
+    assert.equal(postSchema.author['@type'], 'Organization');
+    assert.equal(postSchema.author.name, 'AEOCheck');
+    const workflow = page.getByRole('heading', { name: 'How do you check AI-generated articles for AEO readiness?', exact: true });
+    await workflow.waitFor();
+    assert.equal(await page.getByRole('link', { name: 'article readiness scan', exact: true }).getAttribute('href'), '/#scanner');
+    assert.equal(await page.getByRole('link', { name: 'page-level sample findings', exact: true }).getAttribute('href'), '/sample-report');
+    await noOverflow();
+    await screenshot(`article-readiness-guide-${width}`, true);
+  }
   await goto('/blog/best-aeo-tools-ai-search-visibility');
   assert.equal(await page.getByRole('link', { name: 'view a sample report', exact: true }).getAttribute('href'), '/sample-report');
   await page.getByRole('link', { name: 'Run the free AEO checker', exact: true }).click();
   await page.waitForURL(origin + '/');
   await page.getByRole('form', { name: 'Scan a website', exact: true }).waitFor();
-  checks.push('Existing best-checker guide to scanner and sample-report journey');
+  checks.push('Existing best-checker guide article-review workflow: original date, genuine update date, canonical, no overflow and scanner/sample-report journey at desktop/mobile');
   let scanSucceeds = false;
   await page.route('**/api/scan', async route => {
     const result = { ...sample, reportId: 'funnel-synthetic', url: 'https://example.invalid/private?token=secret', isFullReport: false, unlocked: false };
