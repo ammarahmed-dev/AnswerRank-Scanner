@@ -12,6 +12,8 @@ type Json = Record<string, unknown>;
 export type SchemaBlock = { index: number; valid: boolean; error?: string; types: string[] };
 export type SchemaEntity = {
   type: string;
+  /** Server-derived location in a JSON-LD script; older responses may omit it. */
+  source?: { block: number; pointer?: string };
   /** Explicit coverage; absent in an older response means unassessed, not a pass. */
   rulesChecked?: boolean;
   missingRequired: string[];
@@ -72,15 +74,21 @@ function hasValue(value: unknown): boolean {
 }
 
 /** Top-level nodes of a parsed block: handles arrays and @graph. */
-function flatten(parsed: unknown): Json[] {
-  const nodes: Json[] = [];
-  const visit = (value: unknown) => {
-    if (Array.isArray(value)) return value.forEach(visit);
-    if (!isObject(value)) return;
-    if (Array.isArray(value["@graph"])) visit(value["@graph"]);
-    if (value["@type"] !== undefined) nodes.push(value);
+function flatten(parsed: unknown): Array<{ node: Json; pointer?: string }> {
+  const nodes: Array<{ node: Json; pointer?: string }> = [];
+  // Source metadata must not grow quadratically on deeply nested @graph structures.
+  const childPointer = (pointer: string | undefined, token: string): string | undefined => {
+    if (pointer === undefined) return undefined;
+    const next = `${pointer}/${token}`;
+    return next.length <= 512 ? next : undefined;
   };
-  visit(parsed);
+  const visit = (value: unknown, pointer: string | undefined) => {
+    if (Array.isArray(value)) return value.forEach((item, index) => visit(item, childPointer(pointer, String(index))));
+    if (!isObject(value)) return;
+    if (Array.isArray(value["@graph"])) visit(value["@graph"], childPointer(pointer, "@graph"));
+    if (value["@type"] !== undefined) nodes.push({ node: value, pointer });
+  };
+  visit(parsed, "");
   return nodes;
 }
 
@@ -105,9 +113,10 @@ export function checkSchema(html: string): SchemaCheckResult {
     const raw = $(el).contents().text().trim();
     try {
       const nodes = flatten(JSON.parse(raw));
-      const types = nodes.flatMap(typesOf);
+      const types = nodes.flatMap(({ node }) => typesOf(node));
       blocks.push({ index: i + 1, valid: true, types });
-      for (const node of nodes) {
+      for (const { node, pointer } of nodes) {
+        const source = pointer === undefined ? { block: i + 1 } : { block: i + 1, pointer };
         for (const key of ["publisher", "author", "provider", "creator"]) {
           const values = Array.isArray(node[key]) ? (node[key] as unknown[]) : [node[key]];
           for (const v of values) if (isObject(v)) typesOf(v).forEach((t) => nestedTypes.add(t));
@@ -116,12 +125,12 @@ export function checkSchema(html: string): SchemaCheckResult {
           const checklist = Object.hasOwn(ALIASES, type) ? ALIASES[type] : type;
           const spec = Object.hasOwn(SPECS, checklist) ? SPECS[checklist] : undefined;
           if (!spec) {
-            entities.push({ type, rulesChecked: false, missingRequired: [], missingRecommended: [] });
+            entities.push({ type, source, rulesChecked: false, missingRequired: [], missingRecommended: [] });
             continue;
           }
           const missingRequired = spec.required.filter((p) => !hasValue(node[p]));
           if (type === "FAQPage" && !missingRequired.length) missingRequired.push(...faqProblems(node));
-          entities.push({ type, rulesChecked: true, missingRequired, missingRecommended: spec.recommended.filter((p) => !hasValue(node[p])) });
+          entities.push({ type, source, rulesChecked: true, missingRequired, missingRecommended: spec.recommended.filter((p) => !hasValue(node[p])) });
         }
       }
     } catch (err) {
