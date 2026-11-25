@@ -9,7 +9,7 @@ describe("schema check coverage", () => {
   it.each(["Recipe", "Event", "MadeUpType", "constructor", "__proto__", "toString"])("keeps %s unassessed without inventing a pass or parse failure", type => {
     const result = checkSchema(page({ "@type": type }));
     expect(result.blocks).toEqual([{ index: 1, valid: true, types: [type] }]);
-    expect(result.entities).toEqual([{ type, rulesChecked: false, missingRequired: [], missingRecommended: [] }]);
+    expect(result.entities).toEqual([{ type, source: { block: 1, pointer: "" }, rulesChecked: false, missingRequired: [], missingRecommended: [] }]);
     expect(schemaCheckSummary(result)).toMatchObject({ tone: "warn", title: "Types detected; field checks unavailable", checked: 0, unassessed: 1 });
   });
 

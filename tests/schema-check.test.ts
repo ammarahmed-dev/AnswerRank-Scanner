@@ -47,7 +47,7 @@ describe("checkSchema", () => {
     const r = checkSchema(page(JSON.stringify([{ "@type": "https://schema.org/Corporation", name: "Acme", url: "https://acme.com" }, { "@type": "Recipe", name: "Soup" }])));
     expect(r.types).toEqual(["Corporation", "Recipe"]);
     expect(r.entities[0].missingRequired).toEqual([]);
-    expect(r.entities[1]).toEqual({ type: "Recipe", rulesChecked: false, missingRequired: [], missingRecommended: [] });
+    expect(r.entities[1]).toEqual({ type: "Recipe", source: { block: 1, pointer: "/1" }, rulesChecked: false, missingRequired: [], missingRecommended: [] });
     expect(r.entities[0].rulesChecked).toBe(true);
   });
 

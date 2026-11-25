@@ -427,13 +427,16 @@ try {
 
   // Schema coverage is different from JSON syntax. All responses are synthetic and local.
   let schemaOutcome = 'unsupported';
-  const checkedEntity = { type: 'Organization', rulesChecked: true, missingRequired: [], missingRecommended: [] };
+  const checkedEntity = { type: 'Organization', source: { block: 1, pointer: '' }, rulesChecked: true, missingRequired: [], missingRecommended: [] };
   const unassessedEntity = { type: 'Recipe', rulesChecked: false, missingRequired: [], missingRecommended: [] };
   const schemaFixtures = {
     unsupported: { title: 'Types detected; field checks unavailable', tone: 'warn', entities: [unassessedEntity] },
     mixed: { title: 'Checked fields present; some types unassessed', tone: 'warn', entities: [checkedEntity, unassessedEntity] },
     checked: { title: 'Checked fields present', tone: 'good', entities: [checkedEntity] },
     missing: { title: 'Checked fields need review', tone: 'warn', entities: [{ ...checkedEntity, missingRequired: ['url'] }] },
+    located: { title: 'Checked fields need review', tone: 'warn', entities: [{ ...checkedEntity, source: { block: 2, pointer: '/@graph/1' }, missingRequired: ['url'] }, { ...checkedEntity, source: { block: 3, pointer: '/0' } }] },
+    deep: { title: 'Checked fields present', tone: 'good', entities: [{ ...checkedEntity, source: { block: 2 } }] },
+    long: { title: 'Checked fields present', tone: 'good', entities: [{ ...checkedEntity, source: { block: 2, pointer: '/@graph/0'.repeat(56) } }] },
     untyped: { title: 'JSON parsed; no typed entities found', tone: 'warn', entities: [] },
     syntax: { title: 'JSON-LD syntax errors found', tone: 'bad', entities: [checkedEntity] },
     absent: { title: 'No JSON-LD blocks found', tone: 'warn', entities: [] },
@@ -442,9 +445,13 @@ try {
     assert.equal(route.request().method(), 'POST');
     assert.equal(route.request().postDataJSON().url, 'https://schema.example.invalid/page');
     if (schemaOutcome === 'error') return route.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ error: 'Synthetic schema fetch unavailable. Try again.' }) });
-    const entities = schemaOutcome === 'faq' ? [{ type: 'FAQPage', rulesChecked: true, missingRequired: [], missingRecommended: [] }] : schemaFixtures[schemaOutcome].entities;
+    const entities = schemaOutcome === 'faq' ? [{ type: 'FAQPage', source: { block: 2, pointer: '/@graph/0' }, rulesChecked: true, missingRequired: [], missingRecommended: [] }] : schemaFixtures[schemaOutcome].entities;
     const types = entities.map(entity => entity.type);
     const blocks = schemaOutcome === 'absent' ? [] : [{ index: 1, valid: true, types }];
+    if (['located', 'deep', 'long', 'faq'].includes(schemaOutcome)) {
+      blocks.splice(0, blocks.length, { index: 1, valid: true, types: [] }, { index: 2, valid: true, types: schemaOutcome === 'located' ? ['Organization'] : types });
+      if (schemaOutcome === 'located') blocks.push({ index: 3, valid: true, types: ['Organization'] });
+    }
     if (schemaOutcome === 'syntax') blocks.push({ index: 2, valid: false, types: [], error: 'Synthetic JSON parse error' });
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ url: 'https://schema.example.invalid/page', blocks, types, entities, suggestions: [] }) });
   });
@@ -487,11 +494,21 @@ try {
         assert.match(await recipe.innerText(), /properties were not assessed/);
         assert.equal(await recipe.getAttribute('class'), null);
       }
+      if (outcome === 'located') await until(async () => (await page.locator('.schema-source-location').first().textContent()).includes('block 2'), 'located schema response');
+      if (outcome === 'long') await until(async () => (await page.locator('.schema-source-location').first().textContent()).includes('/@graph/0'.repeat(56)), 'long source pointer response');
+      const locations = await page.locator('.schema-source-location').allTextContents();
+      if (outcome === 'located') {
+        assert.match(locations[0], /JSON-LD block 2.*\/@graph\/1/);
+        assert.match(locations[1], /JSON-LD block 3.*\/0/);
+      }
+      if (outcome === 'unsupported') assert.match(locations[0], /Source location unavailable/);
+      if (outcome === 'checked') assert.match(locations[0], /block 1.*root/);
+      if (outcome === 'deep') assert.match(locations[0], /block 2.*path unavailable/);
       if (outcome === 'untyped' || outcome === 'absent') assert.equal(await page.locator('.extract-list').count(), 0);
       if (outcome === 'syntax') assert.match(await page.locator('.extract-list').first().innerText(), /not valid JSON/);
       assert.equal(await page.getByRole('link', { name: 'Schema Markup Validator', exact: true }).getAttribute('href'), 'https://validator.schema.org/');
       await noOverflow();
-      if (['unsupported', 'mixed', 'untyped', 'checked'].includes(outcome)) await screenshot(`schema-${outcome}-${width}`, true);
+      if (['unsupported', 'mixed', 'untyped', 'checked', 'located', 'deep', 'long'].includes(outcome)) await screenshot(`schema-${outcome}-${width}`, true);
     }
     schemaOutcome = 'error';
     await page.getByRole('button', { name: 'Check schema', exact: true }).click();
@@ -504,6 +521,7 @@ try {
     await page.getByRole('button', { name: 'Check FAQ schema', exact: true }).click();
     await until(async () => await page.locator('.crawler-verdict strong').textContent() === '1 FAQPage declaration found with required fields', 'FAQ mode remains focused');
     assert.equal(await page.getByText('Types detected; field checks unavailable', { exact: true }).count(), 0);
+    assert.match(await page.locator('.schema-source-location').innerText(), /block 2.*\/@graph\/0/);
     const exampleCode = page.getByLabel('Illustrative FAQPage JSON-LD', { exact: true });
     const snippet = await exampleCode.innerText();
     const example = JSON.parse(snippet.replace(/^<script[^>]*>\s*/, '').replace(/\s*<\/script>$/, ''));
@@ -522,7 +540,7 @@ try {
     }
   }
   await page.unroute('**/api/tools/schema-checker');
-  checks.push('Schema checker desktop/mobile: explicit top-level/@graph checked/unassessed coverage and glyph bounds at 1280/390/320, mixed and untyped/absent/syntax states, valid checklist result, failed retry without stale coverage, official validator links; shared FAQ mode preserved with worked-example parity, inert code, fix guidance and scanner journey');
+  checks.push('Schema checker desktop/mobile: explicit top-level/@graph checked/unassessed coverage and glyph bounds at 1280/390/320, mixed and untyped/absent/syntax states, valid checklist result, failed retry without stale coverage, official validator links; block/root/array/graph/deep/legacy source locations; shared FAQ mode preserved with worked-example parity, inert code, fix guidance and scanner journey');
 
   // Meta robots verdicts are HTML evidence, not proof of indexability.
   let metaOutcome = 'generic';

@@ -141,6 +141,12 @@ export default function SchemaChecker({ focus = "all" }: { focus?: "all" | "faq"
                       {!assessed ? <CircleHelp className="h-4 w-4" aria-hidden="true" /> : ok ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : <XCircle className="h-4 w-4" aria-hidden="true" />}
                       <strong>{e.type}</strong>
                     </div>
+                    <p className="extract-text schema-source-location">
+                      {e.source ? <>Source: JSON-LD block {e.source.block}{e.source.pointer === undefined
+                        ? " · path unavailable"
+                        : <> · <code className="break-all">{e.source.pointer || '"" (root)'}</code></>}</>
+                        : "Source location unavailable in this response."}
+                    </p>
                     {!assessed && <p className="extract-text">No field checklist is available for this type. Its properties were not assessed.</p>}
                     {assessed && e.missingRequired.length > 0 && <p className="extract-issue">{focus === "faq" ? "Missing required" : "Missing checked fields"}: {e.missingRequired.join(", ")}</p>}
                     {assessed && e.missingRecommended.length > 0 && <p className="extract-text">Optional fields to review: {e.missingRecommended.join(", ")}</p>}

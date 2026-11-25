@@ -191,3 +191,12 @@ Primary sources reviewed: https://developers.google.com/search/docs/fundamentals
 https://developers.openai.com/api/docs/bots distinguishes OAI-SearchBot search controls from GPTBot training controls and user-triggered retrieval. Keep rule findings separate from actual access or citations. Guide examples are explicitly illustrative review situations, not customer evidence or a vendor benchmark. No new comparative vendor-capability or price claim is made.
 
 Private finalized paired guide/query evidence supports article-review and page-level findings intent, not a fixed ranking or causal traffic change. Preserve the original publication/title/slug, add the real revision date and use the publisher's existing organization-author convention. Existing tools/report paths provide the next action; no new competing page or invented proof.
+
+
+## 25 November 2026: source evidence for actionable schema findings
+
+Reviewed https://www.rfc-editor.org/rfc/rfc6901 and https://www.schema.org/docs/validator.html. JSON Pointer identifies a value within one JSON document; empty points to the root and array tokens use zero-based indices. The checker can therefore report a JSON-LD script number plus a pointer for the declaration it already inspects. Only array indices and the fixed @graph token are traversed; no context expansion, arbitrary graph resolution or new nested-entity coverage is implied.
+
+Keep pointers bounded to 512 characters and mark deeper paths unavailable rather than displaying a misleading truncated location. Block indices count inspected JSON-LD scripts in fetched HTML, not every script tag. Server generation must ignore page-supplied provenance. Source metadata does not change checklist validity, confirm content accuracy or predict search/AI outcomes.
+
+Fresh private schema-page/query evidence supports repair-oriented improvements on the existing utility. Preserve recent content/metadata and avoid another page or private metric publication. Validate returned pointers against original fixture nodes, unchanged non-location findings, and desktop/mobile/legacy/FAQ UI before release.

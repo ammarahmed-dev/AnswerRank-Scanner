@@ -39,6 +39,10 @@ const faqs = [
     a: "The tool applies a small field checklist for supported types. Missing checked fields and optional suggestions are review prompts, not universal schema.org requirements. Search features have their own rules; compare the actual page and use the appropriate validator.",
   },
   {
+    q: "How do I find the JSON-LD declaration behind a finding?",
+    a: "Each finding shows its JSON-LD block number in fetched HTML, starting at 1, and a JSON Pointer within that block. The empty pointer means the root object; /@graph/1 means the second item in @graph. Match that location in your page source or template before editing. Blocks count JSON-LD scripts, not all script tags. Older responses may have no location, and paths beyond the 512-character display budget are marked unavailable. Locations identify inspected declarations; they do not expand contexts or verify every nested entity.",
+  },
+  {
     q: "Is the checker free?",
     a: "Yes. You can check up to 30 pages per month without an account.",
   },
