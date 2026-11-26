@@ -276,7 +276,7 @@ try {
   await page.getByRole('button', { name: 'Check schema', exact: true }).waitFor();
   await goto('/blog/chatgpt-product-recommendations');
   await page.getByRole('link', { name: 'Run a product-page readiness scan', exact: true }).click();
-  await page.waitForURL(origin + '/');
+  await page.waitForURL(origin + '/#scanner');
   await page.getByRole('form', { name: 'Scan a website', exact: true }).waitFor();
   checks.push('Product recommendation guide: inert Product/Organization example, visible/structured FAQ agreement, original publication/updated date/canonical, source and schema/scanner/sample paths at desktop/mobile/320px; no inclusion promise');
   let scanSucceeds = false;
