@@ -35,7 +35,11 @@ async function screenshot(name, fullPage = false) {
   await page.screenshot({ path: `${output}/${name}.png`, fullPage, animations: 'disabled' });
 }
 async function noOverflow() {
-  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Horizontal overflow');
+  const overflow = await page.evaluate(() => ({
+    viewport: innerWidth, width: document.documentElement.scrollWidth,
+    elements: document.documentElement.scrollWidth <= innerWidth + 1 ? [] : [...document.querySelectorAll('body *')].filter(el => el.getBoundingClientRect().right > innerWidth + 1 && getComputedStyle(el).position !== 'fixed').slice(0, 8).map(el => ({ tag: el.tagName, className: el.className, right: el.getBoundingClientRect().right })),
+  }));
+  assert(overflow.width <= overflow.viewport + 1, 'Horizontal overflow: ' + JSON.stringify(overflow));
 }
 async function funnelEvents() {
   return page.evaluate(() => (window.dataLayer || []).filter(item => item && ['scan_start', 'scan_complete', 'service_cta_click', 'service_form_start', 'service_lead_saved'].includes(item.event)));
@@ -240,6 +244,10 @@ try {
     await page.setViewportSize({ width, height: 900 });
     await goto('/blog/chatgpt-product-recommendations');
     assert.equal(await page.locator('h1').textContent(), 'How to Get Your Website into ChatGPT Product Recommendations');
+    assert(await page.locator('h1').evaluate(el => {
+      const range = document.createRange(); range.selectNodeContents(el);
+      return [...range.getClientRects()].every(rect => rect.left >= 0 && rect.right <= innerWidth + 1);
+    }), 'Every title line fits the viewport');
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/blog/chatgpt-product-recommendations');
     const graph = JSON.parse(await page.locator('script[type="application/ld+json"]').first().textContent())['@graph'];
     const post = graph.find(node => node['@type'] === 'BlogPosting');

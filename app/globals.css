@@ -9841,6 +9841,7 @@ textarea.contact-control {
 }
 
 .blog-post-header h1 {
+  overflow-wrap: anywhere;
   color: white;
   font-size: clamp(2.4rem, 6vw, 4.8rem);
   font-weight: 950;
