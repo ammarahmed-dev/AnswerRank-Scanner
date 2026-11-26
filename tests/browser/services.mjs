@@ -236,6 +236,41 @@ try {
   await page.waitForURL(origin + '/');
   await page.getByRole('form', { name: 'Scan a website', exact: true }).waitFor();
   checks.push('Existing best-checker guide article-review workflow: original date, genuine update date, canonical, no overflow and scanner/sample-report journey at desktop/mobile');
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await goto('/blog/chatgpt-product-recommendations');
+    assert.equal(await page.locator('h1').textContent(), 'How to Get Your Website into ChatGPT Product Recommendations');
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/blog/chatgpt-product-recommendations');
+    const graph = JSON.parse(await page.locator('script[type="application/ld+json"]').first().textContent())['@graph'];
+    const post = graph.find(node => node['@type'] === 'BlogPosting');
+    assert.match(post.datePublished, /^2026-06-05/);
+    assert.match(post.dateModified, /^2026-11-26/);
+    assert.equal(post.author['@type'], 'Organization');
+    const faq = graph.find(node => node['@type'] === 'FAQPage');
+    const bodyText = await page.locator('article').textContent();
+    for (const question of faq.mainEntity) {
+      assert(bodyText.includes(question.name));
+      assert(bodyText.includes(question.acceptedAnswer.text));
+    }
+    assert.equal(await page.locator('script[type="application/ld+json"]').count(), 1, 'Worked example stays inert');
+    const example = await page.locator('pre code').textContent();
+    assert(example.includes('LAMP-WHITE-800'));
+    assert(example.includes('https://example.com/products/lamp-white#product'));
+    await page.getByRole('heading', { name: 'What schema helps ChatGPT understand your products?', exact: true }).waitFor();
+    assert.equal(await page.getByRole('link', { name: 'check your product-page markup', exact: true }).getAttribute('href'), '/tools/schema-checker');
+    assert.equal(await page.getByRole('link', { name: 'Run a product-page readiness scan', exact: true }).getAttribute('href'), '/#scanner');
+    assert.equal(await page.getByRole('link', { name: 'inspect a sample report', exact: true }).getAttribute('href'), '/sample-report');
+    await noOverflow();
+    if (width !== 320) await screenshot(`product-schema-guide-${width}`, true);
+  }
+  await page.getByRole('link', { name: 'check your product-page markup', exact: true }).click();
+  await page.waitForURL(origin + '/tools/schema-checker');
+  await page.getByRole('button', { name: 'Check schema', exact: true }).waitFor();
+  await goto('/blog/chatgpt-product-recommendations');
+  await page.getByRole('link', { name: 'Run a product-page readiness scan', exact: true }).click();
+  await page.waitForURL(origin + '/');
+  await page.getByRole('form', { name: 'Scan a website', exact: true }).waitFor();
+  checks.push('Product recommendation guide: inert Product/Organization example, visible/structured FAQ agreement, original publication/updated date/canonical, source and schema/scanner/sample paths at desktop/mobile/320px; no inclusion promise');
   let scanSucceeds = false;
   await page.route('**/api/scan', async route => {
     const result = { ...sample, reportId: 'funnel-synthetic', url: 'https://example.invalid/private?token=secret', isFullReport: false, unlocked: false };
