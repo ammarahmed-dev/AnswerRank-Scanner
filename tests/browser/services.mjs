@@ -414,6 +414,31 @@ try {
   checks.push('Synthetic actual tracker markup at both widths: checked destinations, unavailable sources and older-method history labels; no provider/admin acceptance claimed');
 
   // Actual crawler-tool UI, isolated API responses; no external site crawl or quota mutation.
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await goto('/tools/ai-crawler-checker');
+    await page.getByRole('heading', { name: 'Example: allow search, restrict training', exact: true }).waitFor();
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/tools/ai-crawler-checker');
+    assert.equal(await page.locator('h1').textContent(), 'AI Crawler Checker');
+    const policy = await page.locator('pre[aria-label="Illustrative search and training robots policy"]').textContent();
+    assert(policy.includes('User-agent: OAI-SearchBot'));
+    assert(policy.includes('User-agent: GPTBot'));
+    assert.equal(await page.getByRole('list', { name: 'Expected example policy findings', exact: true }).locator('li').count(), 4);
+    const schemas = JSON.parse(await page.locator('script[type="application/ld+json"]').first().textContent());
+    for (const q of schemas.find(node => node['@type'] === 'FAQPage').mainEntity) {
+      await page.getByRole('heading', { name: q.name, exact: true }).waitFor();
+      assert.equal(await page.getByText(q.acceptedAnswer.text, { exact: true }).count(), 1);
+    }
+    assert.equal(await page.getByRole('link', { name: 'OpenAI crawler reference', exact: true }).getAttribute('href'), 'https://developers.openai.com/api/docs/bots');
+    assert.equal(await page.getByRole('link', { name: 'page readiness scan', exact: true }).getAttribute('href'), '/#scanner');
+    assert.equal(await page.getByRole('link', { name: 'inspect sample readiness findings', exact: true }).getAttribute('href'), '/sample-report');
+    await noOverflow();
+    if (width !== 320) await screenshot(`crawler-repair-guide-${width}`, true);
+  }
+  await page.getByRole('link', { name: 'page readiness scan', exact: true }).click();
+  await page.waitForURL(origin + '/#scanner');
+  await page.getByRole('form', { name: 'Scan a website', exact: true }).waitFor();
+  checks.push('Crawler repair guide: inert policy and four public/private expectations, visible/structured FAQ parity, source/canonical and scanner/sample journey at 1280/390/320, no overflow or production tool submission');
   let crawlerOutcome = 'training';
   const crawlerUrl = 'https://example.invalid/private?mode=secret';
   await page.route('**/api/tools/ai-crawler-check', async route => {
