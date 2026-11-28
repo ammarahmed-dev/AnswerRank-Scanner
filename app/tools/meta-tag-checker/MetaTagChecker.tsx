@@ -77,7 +77,7 @@ export default function MetaTagChecker() {
       {state === "error" && <p role="alert" className="llms-tool-error">{error}</p>}
 
       {state === "done" && result && v && (
-        <div className="llms-tool-result">
+        <div className="llms-tool-result meta-tool-result">
           <div className={`crawler-verdict crawler-verdict-${fails ? "bad" : warns ? "warn" : "good"}`}>
             <strong>{fails} problem{fails === 1 ? "" : "s"}, {warns} warning{warns === 1 ? "" : "s"}</strong>
             <p className="crawler-verdict-meta">Requested page: {result.url}</p>

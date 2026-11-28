@@ -667,7 +667,12 @@ try {
     assert((await page.locator('.crawler-verdict').innerText()).includes('Fetched page: https://destination.example.invalid/articles/page'));
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/tools/open-graph-checker');
     await noOverflow();
-    if (width !== 320) await screenshot(`open-graph-source-${width}`, true);
+    const sourceBounds = await page.locator('.crawler-verdict-meta').evaluateAll(nodes => nodes.flatMap(node => {
+      const range = document.createRange(); range.selectNodeContents(node);
+      return [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right }));
+    }));
+    assert(sourceBounds.every(rect => rect.left >= 0 && rect.right <= width + 1), 'Source URL text must fit viewport');
+    await screenshot(`open-graph-source-${width}`, true);
   }
   await page.unroute('**/api/tools/meta-tag-checker');
   checks.push('Meta/Open Graph source evidence: fetched-host versus legacy unknown states, requested identity, redirect-source labels at 1280/390/320; meta checker generic/Googlebot restriction versus scoped no-noindex finding, HTML/header/crawl/indexing limits, illustrative previews, scanner link and failed retry without stale result');

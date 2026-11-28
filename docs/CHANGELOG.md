@@ -4,6 +4,8 @@ The shared meta/Open Graph checker preserves requested and fetched URLs separate
 
 Local 1,221 tests / 109 files, four selector tests, typecheck, lint (18 existing warnings) and 19-file links pass. A selected regression fails the actual prior route; direct-page outputs remain identical. Fresh build/credential-free preview and exact-head browser/capture review gate merge; same-SHA Vercel/public smoke gates a live claim. No valid production tool/scan/provider/payment/lead/email or analytics receipt. Private finalized evidence supports relevant existing meta-checker intent; no raw metrics, causal ranking or AI-inclusion claims. Full audit and Issue #88 provider acceptance remain open.
 
+28 November browser follow-up: exact-head CI exposed 320px overflow from long source URLs. Constrain only the shared metadata result grid to a zero-minimum track and wrap its source paragraphs; assert actual text rectangles fit and capture 320px context. No global typography or fetching change. Full final CI remains required.
+
 # 2026-11-27 - Help crawler-checker visitors interpret and repair findings
 
 Add an original illustrative search/training robots policy with four expected public/private path outcomes, named-group exclusion guidance and specific allowed/disallowed/unavailable/404 next steps. Link the existing tool to scanner/sample and measured-answer guidance; cite current OpenAI/Google/RFC primary sources. Intentional training restrictions remain valid; rules are not authentication, actual access, visits, training removal, indexing or citation proof. No title/canonical, parser/API/fetch/quota/scanner score, production robots, price/right/data change or new page.
