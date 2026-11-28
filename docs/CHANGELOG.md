@@ -1,3 +1,11 @@
+# 2026-11-28 - Preserve fetched-page evidence in metadata tools
+
+The shared meta/Open Graph checker preserves requested and fetched URLs separately. Canonical checks and illustrative preview hosts now use the existing safe fetcher's destination, preventing false cross-domain warnings after redirects. Older responses explicitly lack fetched-source evidence. Add redirect, direct-page, genuine cross-domain and failed-fetch route regressions plus desktop/mobile/320px source-state browser coverage. No new tool/page, fetch-policy/request-count, quota, scanner-rule, account, price or customer-data change. Relative image/base resolution and real social-platform rendering remain separate work.
+
+Local 1,221 tests / 109 files, four selector tests, typecheck, lint (18 existing warnings) and 19-file links pass. A selected regression fails the actual prior route; direct-page outputs remain identical. Fresh build/credential-free preview and exact-head browser/capture review gate merge; same-SHA Vercel/public smoke gates a live claim. No valid production tool/scan/provider/payment/lead/email or analytics receipt. Private finalized evidence supports relevant existing meta-checker intent; no raw metrics, causal ranking or AI-inclusion claims. Full audit and Issue #88 provider acceptance remain open.
+
+28 November browser follow-up: exact-head CI exposed 320px overflow from long source URLs. Constrain only the shared metadata result grid to a zero-minimum track and wrap its source paragraphs; assert actual text rectangles fit and capture 320px context. No global typography or fetching change. Full final CI remains required.
+
 # 2026-11-27 - Help crawler-checker visitors interpret and repair findings
 
 Add an original illustrative search/training robots policy with four expected public/private path outcomes, named-group exclusion guidance and specific allowed/disallowed/unavailable/404 next steps. Link the existing tool to scanner/sample and measured-answer guidance; cite current OpenAI/Google/RFC primary sources. Intentional training restrictions remain valid; rules are not authentication, actual access, visits, training removal, indexing or citation proof. No title/canonical, parser/API/fetch/quota/scanner score, production robots, price/right/data change or new page.

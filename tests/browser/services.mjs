@@ -623,6 +623,7 @@ try {
     const fixture = metaFixtures[metaOutcome];
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
       url: 'https://meta.example.invalid/page',
+      ...(metaOutcome === 'googlebot' ? {} : { fetchedUrl: 'https://destination.example.invalid/articles/page' }),
       values: { title: 'Example page title', description: 'Example page description', ogTitle: 'Example social title', ogDescription: 'Example social description', ogImage: '' },
       checks: [{ id: 'robots_meta', label: 'Robots meta tags (generic / Googlebot)', status: fixture.status, detail: fixture.detail }],
     }) });
@@ -639,6 +640,10 @@ try {
       assert.match(await page.locator('.crawler-verdict').innerText(), /HTTP X-Robots-Tag headers/);
       assert.match(await page.locator('.crawler-verdict').innerText(), /actual indexing are not verified/);
       assert.equal(await page.getByLabel('Illustrative search result preview', { exact: true }).count(), 1);
+      assert.match(await page.locator('.crawler-verdict').innerText(), /Requested page: https:\/\/meta\.example\.invalid\/page/);
+      assert((await page.locator('.crawler-verdict').innerText()).includes(outcome === 'googlebot' ? 'Fetched page: Unavailable in this response' : 'Fetched page: https://destination.example.invalid/articles/page'));
+      assert.equal(await page.locator('.meta-serp-url').textContent(), outcome === 'googlebot' ? 'Fetched host unavailable' : 'destination.example.invalid');
+      assert.equal(await page.locator('.meta-card-body span').first().textContent(), outcome === 'googlebot' ? 'Fetched host unavailable' : 'destination.example.invalid');
       assert.equal(await page.getByLabel('Illustrative social card preview', { exact: true }).count(), 1);
       assert.equal(await page.locator('.extract-list .is-blocked').count(), outcome === 'clear' ? 0 : 1);
       assert.equal(await page.locator('.llms-tool-cta a').getAttribute('href'), '/#scanner');
@@ -651,8 +656,26 @@ try {
     assert.equal(await page.locator('.llms-tool-result').count(), 0, 'failed meta retry must not show old result');
     await noOverflow();
   }
+  metaOutcome = 'clear';
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    await goto('/tools/open-graph-checker');
+    await page.getByRole('textbox', { name: 'Page URL', exact: true }).fill('https://meta.example.invalid/page');
+    await page.getByRole('button', { name: 'Check meta tags', exact: true }).click();
+    await page.locator('.llms-tool-result').waitFor();
+    assert.equal(await page.locator('.meta-serp-url').textContent(), 'destination.example.invalid');
+    assert((await page.locator('.crawler-verdict').innerText()).includes('Fetched page: https://destination.example.invalid/articles/page'));
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), 'https://www.aeocheck.co/tools/open-graph-checker');
+    await noOverflow();
+    const sourceBounds = await page.locator('.crawler-verdict-meta').evaluateAll(nodes => nodes.flatMap(node => {
+      const range = document.createRange(); range.selectNodeContents(node);
+      return [...range.getClientRects()].map(rect => ({ left: rect.left, right: rect.right }));
+    }));
+    assert(sourceBounds.every(rect => rect.left >= 0 && rect.right <= width + 1), 'Source URL text must fit viewport');
+    await screenshot(`open-graph-source-${width}`, true);
+  }
   await page.unroute('**/api/tools/meta-tag-checker');
-  checks.push('Meta checker desktop/mobile: generic/Googlebot restriction versus scoped no-noindex finding, HTML/header/crawl/indexing limits, illustrative previews, scanner link and failed retry without stale result');
+  checks.push('Meta/Open Graph source evidence: fetched-host versus legacy unknown states, requested identity, redirect-source labels at 1280/390/320; meta checker generic/Googlebot restriction versus scoped no-noindex finding, HTML/header/crawl/indexing limits, illustrative previews, scanner link and failed retry without stale result');
 
   let sitemapOutcome = 'complete';
   const sitemapFixtures = {

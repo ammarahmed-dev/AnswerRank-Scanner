@@ -35,6 +35,10 @@ const faqs = [
     a: "A readable generic noindex directive asks search crawlers to exclude the page; a Googlebot-specific directive addresses Google Search. The checker reviews all matching HTML meta tags and flags noindex or none even when another tag says index. Crawlers must access the page to read these instructions. No detected noindex is not proof of indexability or AI inclusion.",
   },
   {
+    q: "Which URL is checked after a redirect?",
+    a: "The checker inspects HTML returned at the fetched destination and shows requested and fetched URLs separately. Canonical checks and illustrative preview host labels use the fetched URL. Older responses may lack fetch-source evidence. This does not verify indexing, crawler access or a social platform's cached preview.",
+  },
+  {
     q: "Is the checker free?",
     a: "Yes. You can check up to 30 pages per month without an account.",
   },

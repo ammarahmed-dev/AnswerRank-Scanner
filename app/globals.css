@@ -10619,6 +10619,8 @@ textarea.contact-control {
 .extract-list li.sitemap-warn svg { color: #fbbf24; }
 .sitemap-group h2 { color: white; font-size: 1.1rem; margin: 6px 0 8px; }
 
+.meta-tool-result { grid-template-columns: minmax(0, 1fr); }
+.meta-tool-result .crawler-verdict-meta { overflow-wrap: anywhere; }
 .meta-previews { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .meta-serp { display: grid; gap: 4px; padding: 16px; border: 1px solid var(--color-line); border-radius: var(--radius-lg); background: #fff; align-content: start; align-self: start; }
 .meta-serp-url { color: #202124; font-size: 0.8rem; overflow-wrap: anywhere; }
