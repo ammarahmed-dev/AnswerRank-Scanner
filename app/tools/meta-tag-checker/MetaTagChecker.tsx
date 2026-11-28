@@ -7,7 +7,7 @@ import type { MetaReport } from "@/lib/meta-check";
 
 const CLIENT_STORAGE_KEY = "aeocheck_client_id_v1";
 
-type Result = MetaReport & { url: string };
+type Result = MetaReport & { url: string; fetchedUrl?: string };
 
 function getClientId(): string | undefined {
   try {
@@ -58,6 +58,7 @@ export default function MetaTagChecker() {
   }
 
   const v = result?.values;
+  const previewHost = result?.fetchedUrl ? host(result.fetchedUrl) : "Fetched host unavailable";
   const fails = result?.checks.filter((c) => c.status === "fail").length ?? 0;
   const warns = result?.checks.filter((c) => c.status === "warn").length ?? 0;
 
@@ -79,13 +80,14 @@ export default function MetaTagChecker() {
         <div className="llms-tool-result">
           <div className={`crawler-verdict crawler-verdict-${fails ? "bad" : warns ? "warn" : "good"}`}>
             <strong>{fails} problem{fails === 1 ? "" : "s"}, {warns} warning{warns === 1 ? "" : "s"}</strong>
-            <p className="crawler-verdict-meta">{result.url}</p>
+            <p className="crawler-verdict-meta">Requested page: {result.url}</p>
+            <p className="crawler-verdict-meta">Fetched page: {result.fetchedUrl ?? "Unavailable in this response"}</p>
             <p className="crawler-verdict-meta">HTML meta inspection only: repeated generic robots and Googlebot tags are checked. HTTP X-Robots-Tag headers, other crawler-specific tags, robots.txt access and actual indexing are not verified.</p>
           </div>
 
           <div className="meta-previews">
             <div className="meta-serp" aria-label="Illustrative search result preview">
-              <span className="meta-serp-url">{host(result.url)}</span>
+              <span className="meta-serp-url">{previewHost}</span>
               <span className="meta-serp-title">{clip(v.title || "(no title)", 60)}</span>
               <span className="meta-serp-desc">{clip(v.description || "No meta description. Search engines will pick text from the page.", 160)}</span>
             </div>
@@ -97,7 +99,7 @@ export default function MetaTagChecker() {
                 <div className="meta-card-empty">{v.ogImage ? "og:image could not be loaded" : "No og:image"}</div>
               )}
               <div className="meta-card-body">
-                <span>{host(result.url)}</span>
+                <span>{previewHost}</span>
                 <strong>{clip(v.ogTitle || v.title || "(no title)", 70)}</strong>
                 <span>{clip(v.ogDescription || v.description || "", 110)}</span>
               </div>

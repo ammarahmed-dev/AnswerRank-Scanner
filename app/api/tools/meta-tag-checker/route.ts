@@ -1,7 +1,7 @@
 import { authUnavailableResponse } from "@/lib/auth-response";
 import { BodyTooLargeError, readJsonObject } from "@/lib/bounded-body";
 import { NextResponse } from "next/server";
-import { fetchHtml, normalizeUrl, validateUrl } from "@/lib/scrape";
+import { fetchHtmlPage, normalizeUrl, validateUrl } from "@/lib/scrape";
 import { assertPublicUrl } from "@/lib/url-safety";
 import { getAuthContext } from "@/lib/auth-server";
 import { commitUsage, getClientKey, releaseUsage, reserveUsage } from "@/lib/usage-limits";
@@ -48,10 +48,10 @@ export async function POST(req: Request) {
   }
 
   try {
-    const html = await fetchHtml(url);
-    const report = buildMetaReport(html, url);
+    const { html, finalUrl } = await fetchHtmlPage(url);
+    const report = buildMetaReport(html, finalUrl);
     await commitUsage(usageKey, usage);
-    return NextResponse.json({ url, ...report });
+    return NextResponse.json({ url, fetchedUrl: finalUrl, ...report });
   } catch {
     await releaseUsage(usageKey, usage);
     return NextResponse.json({ error: "We couldn't read this page. It may block automated access. Check the URL and try again." }, { status: 502 });

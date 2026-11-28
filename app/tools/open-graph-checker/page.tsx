@@ -16,7 +16,7 @@ export const metadata: Metadata = buildPageMetadata({
 const faqs = [
   {
     q: "How do I check my Open Graph tags?",
-    a: "Enter a page URL above. The checker reads og:title, og:description, og:image and og:url plus the Twitter card tags, shows a live social card preview and flags what is missing, too long or inconsistent with the canonical URL.",
+    a: "Enter a page URL above. The checker reads og:title, og:description, og:image and og:url plus the Twitter card tags, shows an illustrative social card preview and flags what is missing, too long or inconsistent with the canonical URL. Requested and fetched page URLs are shown separately; host labels and canonical checks use the fetched destination after redirects.",
   },
   {
     q: "Which Open Graph tags are required?",
